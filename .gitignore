@@ -1,0 +1,42 @@
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+
+# Nextflow
+work/
+.nextflow/
+.nextflow.log
+.timeline.html
+.report.html
+.trace.txt
+.dag.html
+
+# Outputs / large bioinformatics files
+results/
+*.bam
+*.bai
+*.sam
+*.bedgraph
+*.bw
+*.bigWig
+*.fastq
+*.fastq.gz
+*.fq.gz
+
+# Containers / temp
+tmp/
+.cache/
