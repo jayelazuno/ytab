@@ -17,6 +17,7 @@ from pathlib import Path
 from subprocess import PIPE, run
 
 from ytab.core import Shared  # keep dependency + behavior (no organism-specific calls here)
+from ytab.qc.MappingStats import compute_alignment_stats, write_mapping_stats_csv
 
 usage = """MapFastq.py
    -o  --out-dir            [str]   Output directory. Defaults to current directory if left unspecified.
@@ -198,6 +199,29 @@ def copy_to_clean_se(src_path: str, dst_path: str):
     else:
         shutil.copyfile(src_path, dst_path)
 
+def write_mapping_qc_from_sam(SamfName: str, prefix: str, out_dir: str, mapq_threshold: int, threads: int, LogFile):
+    stats_csv = os.path.join(out_dir, f"{prefix}.mapping_stats.csv")
+
+    stats = compute_alignment_stats(
+        alignment_path=SamfName,
+        sample=prefix,
+        mapq_threshold=mapq_threshold,
+        threads=threads,
+    )
+    write_mapping_stats_csv(stats, stats_csv)
+
+    LogFile.write(
+        "\r\n\r\n=== Mapping QC summary ===\r\n"
+        f"total_records: {stats['total_records']}\r\n"
+        f"primary_records: {stats['primary_records']}\r\n"
+        f"primary_mapped: {stats['primary_mapped']}\r\n"
+        f"primary_unmapped: {stats['primary_unmapped']}\r\n"
+        f"percent_mapped: {stats['percent_mapped']}\r\n"
+        f"mapq_ge_threshold: {stats['mapq_ge_threshold']}\r\n"
+        f"percent_mapq_ge_threshold: {stats['percent_mapq_ge_threshold']}\r\n"
+        f"avg_mapq_mapped_primary: {stats['avg_mapq_mapped_primary']}\r\n"
+        f"mapping_stats_csv: {stats_csv}\r\n"
+    )
 
 def main():
     parser = argparse.ArgumentParser(usage=usage)
@@ -324,6 +348,14 @@ def main():
 
         SamfName = os.path.join(args.out_dir, f"{prefix}.sam")
         AlignFastq_PE(BowtiePath, args.bt2_index, CleanR1, CleanR2, SamfName, args.threads, LogFile)
+        write_mapping_qc_from_sam(
+            SamfName=SamfName,
+            prefix=prefix,
+            out_dir=args.out_dir,
+            mapq_threshold=args.mapq,
+            threads=args.threads,
+            LogFile=LogFile,
+        )
 
         bam = os.path.splitext(SamfName)[0] + ".bam"
         sorted_bam = os.path.splitext(SamfName)[0] + ".sorted.bam"
@@ -429,6 +461,14 @@ def main():
 
         SamfName = os.path.join(args.out_dir, f"{prefix}.sam")
         AlignFastq_SE(BowtiePath, args.bt2_index, CleanfName, SamfName, args.threads, LogFile)
+        write_mapping_qc_from_sam(
+            SamfName=SamfName,
+            prefix=prefix,
+            out_dir=args.out_dir,
+            mapq_threshold=args.mapq,
+            threads=args.threads,
+            LogFile=LogFile,
+        )
 
         bam = os.path.splitext(SamfName)[0] + ".bam"
         sorted_bam = os.path.splitext(SamfName)[0] + ".sorted.bam"
