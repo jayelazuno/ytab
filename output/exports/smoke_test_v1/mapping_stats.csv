@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge20,percent_mapq_ge20,avg_mapq_mapped_primary,bam_path
+yH298-parent-pool1,24416746,24416746,24416746,0,100.0,0,0.0,24416746,100.0,41.71,/old_Users/jayelazuno/workspace/ytab/output/smoketests/mapfastq/yH298-parent-pool1/yH298-parent-pool1.sorted.bam
