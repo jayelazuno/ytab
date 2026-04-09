@@ -8,3 +8,15 @@
     24543444 (86.27%) aligned exactly 1 time
     1120426 (3.94%) aligned >1 times
 90.21% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 28449916
+primary_records: 28449916
+primary_mapped: 25663870
+primary_unmapped: 2786046
+percent_mapped: 90.207
+mapq_ge_threshold: 24416746
+percent_mapq_ge_threshold: 95.141
+avg_mapq_mapped_primary: 39.78
+mapping_stats_csv: /Users/jayelazuno/workspace/ytab/output/smoketests/mapfastq/yH298-parent-pool1/yH298-parent-pool1.mapping_stats.csv

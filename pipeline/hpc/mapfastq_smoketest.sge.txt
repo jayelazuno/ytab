@@ -16,47 +16,33 @@ start=$(date +%s)
 date
 echo "Using NSLOTS=${NSLOTS:-NA}"
 
-# -----------------------
-# Activate tnseq conda env
-# -----------------------
 source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
 conda activate tnseq
 
-# -----------------------
-# Project paths
-# -----------------------
 YTAB="/Users/jayelazuno/workspace/ytab"
-
-# Keep existing shared input/reference locations for now
 DATA_DIR="/Users/jayelazuno/workspace/HermesTnseq/data"
 BOWTIE2_INDEX="/Users/jayelazuno/workspace/HermesTnseq/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic"
 
-# Write new outputs into YTAB
-OUT_DIR="$YTAB/results/smoketests/mapfastq"
+RUN_DIR="$YTAB/output/smoketests/mapfastq"
+EXPORT_DIR="$YTAB/output/exports/smoke_test_v1"
 
-mkdir -p "$OUT_DIR"
+mkdir -p "$RUN_DIR"
+mkdir -p "$EXPORT_DIR"
 
 THREADS=56
-echo "THREADS(for MapFastq)=$THREADS"
+export PYTHONPATH="$YTAB/src"
 
-# -----------------------
-# Start with ONE sample only
-# -----------------------
 FASTQS=(
   "yH298-parent-pool1.fastq.gz"
 )
 
 echo "YTAB repo:        $YTAB"
 echo "Input FASTQ dir:  $DATA_DIR"
-echo "Output map dir:   $OUT_DIR"
+echo "Run dir:          $RUN_DIR"
+echo "Export dir:       $EXPORT_DIR"
 echo "Index prefix:     $BOWTIE2_INDEX"
 echo
 
-export PYTHONPATH="$YTAB/src"
-
-# -----------------------
-# Run mapping
-# -----------------------
 for fq_base in "${FASTQS[@]}"; do
   fq="$DATA_DIR/$fq_base"
   if [[ ! -s "$fq" ]]; then
@@ -65,7 +51,7 @@ for fq_base in "${FASTQS[@]}"; do
   fi
 
   sample="${fq_base%.fastq.gz}"
-  sample_out="$OUT_DIR/$sample"
+  sample_out="$RUN_DIR/$sample"
   mkdir -p "$sample_out"
 
   echo "[$(date)] sample=$sample"
@@ -78,6 +64,7 @@ for fq_base in "${FASTQS[@]}"; do
     -x "$BOWTIE2_INDEX" \
     -t "$THREADS"
 
+  cp "$sample_out/${sample}.mapping_stats.csv" "$EXPORT_DIR/mapping_stats.csv"
   echo
 done
 
