@@ -1,4 +1,3 @@
-
 #!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
@@ -26,35 +25,22 @@ conda activate tnseq
 # Project paths
 # -----------------------
 YTAB="/Users/jayelazuno/workspace/ytab"
-LEGACY="/Users/jayelazuno/workspace/HermesTnseq"
 
-# Input hit files from YTAB CreateHitFile smoke test
-HIT_DIR="$YTAB/output/smoketests/create_hit_file"
+HITS_ROOT="$YTAB/output/smoketests/create_hit_file"
+OUT_ROOT="$YTAB/output/smoketests/summary"
+EXPORT_ROOT="$YTAB/output/exports/smoke_test_v1/qc/summary"
 
-# Stage output for SummaryTable
-SUMMARY_DIR="$YTAB/output/smoketests/summary"
+mkdir -p "$OUT_ROOT"
+mkdir -p "$EXPORT_ROOT"
 
-# App-facing export dir
-EXPORT_DIR="$YTAB/output/exports/smoke_test_v1"
-SUMMARY_EXPORT_DIR="$EXPORT_DIR/qc/summary"
-
-# Reference / annotation assets
-REF_FASTA="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna"
-FEATURE_TABLE="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_feature_table.txt"
-
-mkdir -p "$SUMMARY_DIR"
-mkdir -p "$SUMMARY_EXPORT_DIR"
-
-THREADS=56
+THREADS=${NSLOTS:-56}
 echo "THREADS(for SummaryTable)=$THREADS"
 
-echo "YTAB repo:          $YTAB"
-echo "Hit dir:            $HIT_DIR"
-echo "Summary dir:        $SUMMARY_DIR"
-echo "Export dir:         $EXPORT_DIR"
-echo "Summary export dir: $SUMMARY_EXPORT_DIR"
-echo "Reference FASTA:    $REF_FASTA"
-echo "Feature table:      $FEATURE_TABLE"
+echo "YTAB repo:     $YTAB"
+echo "Hits root:     $HITS_ROOT"
+echo "Out root:      $OUT_ROOT"
+echo "Export root:   $EXPORT_ROOT"
+echo "Script:        $YTAB/src/ytab/summary/SummaryTable.py"
 echo
 
 export PYTHONPATH="$YTAB/src"
@@ -67,45 +53,49 @@ SAMPLES=(
 )
 
 for sample in "${SAMPLES[@]}"; do
-  in_dir="$HIT_DIR/$sample"
-  out_dir="$SUMMARY_DIR/$sample"
-  sample_export_dir="$SUMMARY_EXPORT_DIR/$sample"
+  d="$HITS_ROOT/$sample"
+  [[ -d "$d" ]] || { echo "ERROR: missing sample dir: $d" >&2; exit 1; }
 
-  if [[ ! -d "$in_dir" ]]; then
-    echo "ERROR: missing CreateHitFile output directory for $sample -> $in_dir"
+  hits_files=( "$d"/*_hits.txt )
+  if [[ ${#hits_files[@]} -eq 0 ]]; then
+    echo "ERROR: no *_hits.txt found directly inside: $d" >&2
     exit 1
   fi
 
-  mkdir -p "$out_dir"
+  out="$OUT_ROOT/$sample"
+  sample_export_dir="$EXPORT_ROOT/$sample"
+  mkdir -p "$out"
   mkdir -p "$sample_export_dir"
 
   echo "[$(date)] sample=$sample"
-  echo "  IN=$in_dir"
-  echo "  OUT=$out_dir"
-  echo "  EXPORT=$sample_export_dir"
+  echo "  input=$d"
+  echo "  output=$out"
+  echo "  export=$sample_export_dir"
 
   python3 "$YTAB/src/ytab/summary/SummaryTable.py" \
-    -i "$in_dir" \
-    -o "$out_dir" \
-    -f "$REF_FASTA" \
-    -g "$FEATURE_TABLE" \
-    --feature-format ncbi_feature_table \
-    --ncbi-chrom-field genomic_accession \
-    --ncbi-keep gene \
-    -t "$THREADS"
+    -i "$d" \
+    -o "$out" \
+    --hit-glob "*_hits.txt" \
+    --hit-format hit_table \
+    --feature-db glabrata \
+    -f 1 \
+    --neighborhood-window-size 10000 \
+    --bin-size 10000 \
+    -t "$THREADS" \
+    --overwrite
 
   # -----------------------
   # Copy app-facing summary assets
   # -----------------------
   for f in \
-    "$out_dir/stats.csv" \
-    "$out_dir/${sample}.all_hits.csv" \
-    "$out_dir/${sample}.feature_table.RDF_1.csv" \
-    "$out_dir/${sample}_analysis.csv" \
-    "$out_dir/binned_hits.RDF_1.csv" \
-    "$out_dir/hit_summary.RDF_1.csv" \
-    "$out_dir/insertion_vs_neighborhood_correlations.txt" \
-    "$out_dir/outlier_stats.txt"
+    "$out/stats.csv" \
+    "$out/${sample}.all_hits.csv" \
+    "$out/${sample}.feature_table.RDF_1.csv" \
+    "$out/${sample}_analysis.csv" \
+    "$out/binned_hits.RDF_1.csv" \
+    "$out/hit_summary.RDF_1.csv" \
+    "$out/insertion_vs_neighborhood_correlations.txt" \
+    "$out/outlier_stats.txt"
   do
     if [[ -s "$f" ]]; then
       cp -f "$f" "$sample_export_dir/"
