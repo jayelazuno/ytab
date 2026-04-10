@@ -342,10 +342,7 @@ def write_chrom_sizes(ChrLen, chrom_sizes_path):
 def write_insertions_bigwig(bedgraph_path, ChrLen, bigwig_path):
     exe = shutil.which("bedGraphToBigWig")
     if exe is None:
-        raise RuntimeError(
-            "bedGraphToBigWig not found on PATH. "
-            "Install the UCSC tool or load the appropriate module."
-        )
+        return False, "bedGraphToBigWig not found on PATH"
 
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".chrom.sizes") as tmp:
         chrom_sizes_path = tmp.name
@@ -354,11 +351,11 @@ def write_insertions_bigwig(bedgraph_path, ChrLen, bigwig_path):
         write_chrom_sizes(ChrLen, chrom_sizes_path)
         cmd = [exe, bedgraph_path, chrom_sizes_path, bigwig_path]
         p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
         if p.returncode != 0:
-            raise RuntimeError(
-                f"bedGraphToBigWig failed for {bedgraph_path}\n"
-                f"stderr:\n{p.stderr}"
-            )
+            return False, p.stderr.strip()
+
+        return True, ""
     finally:
         try:
             os.remove(chrom_sizes_path)
@@ -374,10 +371,12 @@ def write_browser_tracks(ChrHitList, ChrLen, rep_dir, prefix):
     track_rows = list(iter_track_rows(ChrHitList, ChrLen))
     write_insertions_bedgraph(track_rows, bedgraph_path)
     write_insertions_wig(track_rows, wig_path)
-    write_insertions_bigwig(bedgraph_path, ChrLen, bigwig_path)
 
-    return bedgraph_path, wig_path, bigwig_path
+    bw_written, bw_msg = write_insertions_bigwig(bedgraph_path, ChrLen, bigwig_path)
+    if not bw_written:
+        bigwig_path = None
 
+    return bedgraph_path, wig_path, bigwig_path, bw_written, bw_msg
 
 def ListHitProp_and_gene_counts(ChrHitList, HitFileName, ChrFeatC, ChrFeatW,
                                write_gene_counts=False,
@@ -587,6 +586,8 @@ if __name__ == '__main__':
         bedgraph_path = None
         wig_path = None
         bigwig_path = None
+        bw_written = False
+        bw_msg = ""
 
         if args.write_browser_tracks:
             bedgraph_path, wig_path, bigwig_path = write_browser_tracks(
@@ -607,8 +608,11 @@ if __name__ == '__main__':
                 f"  Browser tracks written:\r\n"
                 f"    {bedgraph_path}\r\n"
                 f"    {wig_path}\r\n"
-                f"    {bigwig_path}\r\n"
             )
+            if bw_written and bigwig_path is not None:
+                Log += f"    (bigwig_path)\r\n"
+            else:
+                Log += f"    (bigwig not written: {bw_msg})\r\n"
         log_path = os.path.join(rep_dir, f"{prefix}_log.txt")
         logFile = open(log_path, 'a')
         logFile.write(Log)

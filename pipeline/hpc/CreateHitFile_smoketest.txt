@@ -98,7 +98,11 @@ for sample in "${SAMPLES[@]}"; do
   # -----------------------
   cp "$out/${sample}.insertions.bedgraph" "$BROWSER_DIR/"
   cp "$out/${sample}.insertions.wig" "$BROWSER_DIR/"
-  cp "$out/${sample}.insertions.bw" "$BROWSER_DIR/"
+  if [[ -s "$out/${sample}.insertions.bw" ]]; then
+    cp "$out/${sample}.insertions.bw" "$BROWSER_DIR/"
+  else
+    echo "[WARN] bigWig not produced for $sample"
+  fi
 
   echo
 done
