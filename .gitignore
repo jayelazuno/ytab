@@ -26,7 +26,7 @@ work/
 .dag.html
 
 # Outputs / large bioinformatics files
-results/
+output/
 *.bam
 *.bai
 *.sam
@@ -36,7 +36,7 @@ results/
 *.fastq
 *.fastq.gz
 *.fq.gz
-
+*.log
 # Containers / temp
 tmp/
 .cache/
