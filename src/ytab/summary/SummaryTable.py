@@ -80,8 +80,7 @@ from ytab.core import GenomicFeatures
 from ytab.core.RangeSet import RangeSet
 
 
-# ----------------------------- File utilities -----------------------------
-
+#  File utilities 
 def _ensure_parent_dir(path):
     parent = os.path.dirname(os.path.abspath(path))
     if parent and not os.path.exists(parent):

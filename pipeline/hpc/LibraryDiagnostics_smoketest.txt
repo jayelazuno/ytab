@@ -1,0 +1,157 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_LibraryDiagnostics
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_LibraryDiagnostics.log
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="/Users/jayelazuno/workspace/ytab"
+LEGACY="/Users/jayelazuno/workspace/HermesTnseq"
+
+SCRIPT="$YTAB/src/ytab/qc/LibraryDiagnostics.py"
+
+# Input hits from YTAB smoke-test CreateHitFile stage
+HITS_ROOT="$YTAB/output/smoketests/create_hit_file"
+
+# Stage output for LibraryDiagnostics
+OUT_ROOT="$YTAB/output/smoketests/library_diagnostics"
+
+# App-facing export dirs
+EXPORT_ROOT="$YTAB/output/exports/smoke_test_v1"
+QC_EXPORT_ROOT="$EXPORT_ROOT/qc/diagnostics"
+
+mkdir -p "$OUT_ROOT"
+mkdir -p "$QC_EXPORT_ROOT"
+
+# Reference files 
+FASTA="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna"
+GFF="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff"
+CENTROMERE_BED="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/centromeres.NCBI.bed"
+
+THREADS=${NSLOTS:-56}
+echo "THREADS=$THREADS"
+echo "YTAB repo:        $YTAB"
+echo "Script:           $SCRIPT"
+echo "Hits root:        $HITS_ROOT"
+echo "Out root:         $OUT_ROOT"
+echo "Export root:      $EXPORT_ROOT"
+echo "QC export root:   $QC_EXPORT_ROOT"
+echo "FASTA:            $FASTA"
+echo "GFF (metaplot):   $GFF"
+echo "Centromeres:      $CENTROMERE_BED"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Smoke-test sample only
+# -----------------------
+samples=(
+  "yH298-parent-pool1"
+)
+
+hits_files=()
+for s in "${samples[@]}"; do
+  f="$HITS_ROOT/$s/${s}_hits.txt"
+  if [[ ! -s "$f" ]]; then
+    echo "ERROR: missing hits file: $f" >&2
+    exit 1
+  fi
+  hits_files+=( "$f" )
+done
+
+echo "Hits files (${#hits_files[@]}):"
+printf '  %s\n' "${hits_files[@]}"
+echo
+
+# -----------------------
+# Run QC diagnostics (NO normalization)
+# -----------------------
+OUTDIR="$OUT_ROOT"
+mkdir -p "$OUTDIR"
+
+echo "============================================================"
+echo "[$(date)] Running LibraryDiagnostics smoke test"
+echo "  outdir=$OUTDIR"
+echo "============================================================"
+
+python3 "$SCRIPT" \
+  --hits-txt "${hits_files[@]}" \
+  --outdir "$OUTDIR" \
+  --fasta "$FASTA" \
+  --centromeres-bed "$CENTROMERE_BED" \
+  --metaplot-gff "$GFF" \
+  --metaplot-window-bp 1000 \
+  --metaplot-bin-bp 10 \
+  --seed 1
+
+# -----------------------
+# Copy app-facing diagnostics assets
+# -----------------------
+# Combined summary
+if [[ -s "$OUTDIR/library_diagnostics.summary.csv" ]]; then
+  cp -f "$OUTDIR/library_diagnostics.summary.csv" \
+    "$QC_EXPORT_ROOT/library_diagnostics.summary.csv"
+else
+  echo "[WARN] expected summary missing: $OUTDIR/library_diagnostics.summary.csv" >&2
+fi
+
+# Per-sample assets
+for s in "${samples[@]}"; do
+  sample_src="$OUTDIR/$s"
+  sample_dst="$QC_EXPORT_ROOT/$s"
+  mkdir -p "$sample_dst"
+
+  if [[ ! -d "$sample_src" ]]; then
+    echo "[WARN] missing per-sample diagnostics dir: $sample_src" >&2
+    continue
+  fi
+
+  for f in \
+    "$sample_src/${s}.midlc.csv" \
+    "$sample_src/${s}.seqbias_2_7.tsv" \
+    "$sample_src/${s}.centromere_bins.tsv" \
+    "$sample_src/${s}.centromere_bias.png" \
+    "$sample_src/${s}.tss_metaplot.tsv" \
+    "$sample_src/${s}.tts_metaplot.tsv" \
+    "$sample_src/${s}.trna_metaplot.tsv" \
+    "$sample_src/${s}.metaplots.png" \
+    "$sample_src/${s}.summary.csv"
+  do
+    if [[ -s "$f" ]]; then
+      cp -f "$f" "$sample_dst/"
+    else
+      echo "[WARN] expected file missing: $f" >&2
+    fi
+  done
+done
+
+echo
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
+echo "Done."
+echo "Outputs:"
+echo "  Stage outputs: $OUTDIR/<sample>/"
+echo "  App exports:   $QC_EXPORT_ROOT/<sample>/"
+echo "  Combined QC:   $QC_EXPORT_ROOT/library_diagnostics.summary.csv"

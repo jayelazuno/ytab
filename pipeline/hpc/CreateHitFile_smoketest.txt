@@ -1,0 +1,109 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_CreateHitFile
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_CreateHitFile.log
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="/Users/jayelazuno/workspace/ytab"
+LEGACY="/Users/jayelazuno/workspace/HermesTnseq"
+
+# Input BAM comes from YTAB MapFastq smoke test
+MAP_DIR="$YTAB/output/smoketests/mapfastq"
+
+# Stage output for CreateHitFile
+HIT_DIR="$YTAB/output/smoketests/create_hit_file"
+
+# App-facing export dir
+EXPORT_DIR="$YTAB/output/exports/smoke_test_v1"
+BROWSER_DIR="$EXPORT_DIR/browser"
+
+# Reference assets 
+REF_FASTA="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna"
+FEATURE_TABLE="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_feature_table.txt"
+
+mkdir -p "$HIT_DIR"
+mkdir -p "$EXPORT_DIR"
+mkdir -p "$BROWSER_DIR"
+
+THREADS=56
+echo "THREADS(for CreateHitFile)=$THREADS"
+
+echo "YTAB repo:        $YTAB"
+echo "Mapping dir:      $MAP_DIR"
+echo "CreateHitFile dir:$HIT_DIR"
+echo "Export dir:       $EXPORT_DIR"
+echo "Browser dir:      $BROWSER_DIR"
+echo "Reference FASTA:  $REF_FASTA"
+echo "Feature table:    $FEATURE_TABLE"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Smoke-test sample 
+# -----------------------
+SAMPLES=(
+  "yH298-parent-pool1"
+)
+
+for sample in "${SAMPLES[@]}"; do
+  bam="$MAP_DIR/$sample/${sample}.sorted.bam"
+  if [[ ! -s "$bam" ]]; then
+    echo "ERROR: missing BAM for $sample -> $bam"
+    exit 1
+  fi
+
+  out="$HIT_DIR/$sample"
+  mkdir -p "$out"
+
+  echo "[$(date)] sample=$sample"
+  echo "  BAM=$bam"
+  echo "  OUT=$out"
+
+  python3 "$YTAB/src/ytab/insertions/CreateHitFile.py" \
+    -b "$bam" \
+    -o "$HIT_DIR" \
+    -f "$REF_FASTA" \
+    -g "$FEATURE_TABLE" \
+    --feature-format ncbi_feature_table \
+    --ncbi-chrom-field genomic_accession \
+    --ncbi-keep gene \
+    --write-gene-counts \
+    --drop-top-sites 1 \
+    --write-browser-tracks \
+    --threads "$THREADS"
+
+  # -----------------------
+  # Copy app-facing browser assets
+  # -----------------------
+  cp "$out/${sample}.insertions.bedgraph" "$BROWSER_DIR/"
+  cp "$out/${sample}.insertions.wig" "$BROWSER_DIR/"
+  cp "$out/${sample}.insertions.bw" "$BROWSER_DIR/"
+
+  echo
+done
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"

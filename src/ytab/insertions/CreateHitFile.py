@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 
 from collections import defaultdict
-import glob, os
+import glob, os, shutil, subprocess, tempfile
 import pandas as pd
 import numpy as np
 import pysam
@@ -16,7 +16,7 @@ usage = '''CreateHitFile.py
    -o  --out-dir      [str]   Output directory to which per-sample outputs will be written. Defaults to current directory if left unspecified.
    --out-prefix       [str]   Prefix for output files (per BAM). Defaults to BAM basename (without .sorted.bam/.bam).
    -q  --min-mapq     [int]   Map Quality - hits to parse from the bam file (default is 20)
-   -m  --merge-dist   [int]   Hits to merge with at most x nt distance between two hits. Default is 2 
+   -m  --merge-dist   [int]   Hits to merge with at most x nt distance between two hits. Default is 0 (no merging). 
                                 Example: Hits in positions 1 and 3  (3-1=2) will be united into a single hit
    -f  --fasta        [str]   REQUIRED. Reference genome FASTA used to derive chromosome lengths.
    -g  --features     [str]   REQUIRED. Feature table used to map hits to nearest ORFs/features.
@@ -25,7 +25,8 @@ usage = '''CreateHitFile.py
    --ncbi-keep        [str]   For ncbi_feature_table: gene | cds | all (default: gene)
    -t  --threads      [int]   Number of CPU cores to use (default: 1)
 
-   --write-gene-counts        Write GeneCount.csv and removedGeneCount.csv (Gale-style).
+   --write-gene-counts        Write GeneCount.csv and removedGeneCount.csv 
+   --write-browser-tracks    Write browser tracks (bedGraph, wig, bigwig) for the hits.
    --drop-top-sites   [int]   For removedGeneCount: remove top N sites per gene (default 1).
    -h  --help                 Show this help message and exit 
 '''
@@ -284,6 +285,99 @@ def derive_prefix_from_bam(bam_path: str) -> str:
         base = base[:-4]
     return base
 
+def iter_track_rows(ChrHitList, ChrLen):
+    chrom_order = list(ChrLen.keys())
+    seen = set()
+
+    for chrom in chrom_order:
+        if chrom not in ChrHitList:
+            continue
+        seen.add(chrom)
+        hits = sorted(ChrHitList[chrom], key=lambda x: (x[0], x[1], x[5]))
+        for StartI, StopI, Len, Count, chr_, source in hits:
+            start0 = max(0, int(StartI) - 1)   # bedGraph: 0-based start
+            end1 = int(StopI)                  # bedGraph: half-open end
+            span = int(StopI) - int(StartI) + 1
+            value = int(Count) if source == "W" else -int(Count)
+            yield chrom, start0, end1, int(StartI), span, value
+
+    for chrom in sorted(ChrHitList.keys()):
+        if chrom in seen:
+            continue
+        hits = sorted(ChrHitList[chrom], key=lambda x: (x[0], x[1], x[5]))
+        for StartI, StopI, Len, Count, chr_, source in hits:
+            start0 = max(0, int(StartI) - 1)
+            end1 = int(StopI)
+            span = int(StopI) - int(StartI) + 1
+            value = int(Count) if source == "W" else -int(Count)
+            yield chrom, start0, end1, int(StartI), span, value
+
+
+def write_insertions_bedgraph(track_rows, bedgraph_path):
+    with open(bedgraph_path, "w") as out:
+        for chrom, start0, end1, start1, span, value in track_rows:
+            out.write(f"{chrom}\t{start0}\t{end1}\t{value}\n")
+
+
+def write_insertions_wig(track_rows, wig_path):
+    last_chrom = None
+    last_span = None
+
+    with open(wig_path, "w") as out:
+        out.write("track type=wiggle_0 name=\"insertions\" description=\"YTAB merged insertion track\"\n")
+        for chrom, start0, end1, start1, span, value in track_rows:
+            if chrom != last_chrom or span != last_span:
+                out.write(f"variableStep chrom={chrom} span={span}\n")
+                last_chrom = chrom
+                last_span = span
+            out.write(f"{start1}\t{value}\n")
+
+
+def write_chrom_sizes(ChrLen, chrom_sizes_path):
+    with open(chrom_sizes_path, "w") as out:
+        for chrom, length in ChrLen.items():
+            out.write(f"{chrom}\t{length}\n")
+
+
+def write_insertions_bigwig(bedgraph_path, ChrLen, bigwig_path):
+    exe = shutil.which("bedGraphToBigWig")
+    if exe is None:
+        raise RuntimeError(
+            "bedGraphToBigWig not found on PATH. "
+            "Install the UCSC tool or load the appropriate module."
+        )
+
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".chrom.sizes") as tmp:
+        chrom_sizes_path = tmp.name
+
+    try:
+        write_chrom_sizes(ChrLen, chrom_sizes_path)
+        cmd = [exe, bedgraph_path, chrom_sizes_path, bigwig_path]
+        p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if p.returncode != 0:
+            raise RuntimeError(
+                f"bedGraphToBigWig failed for {bedgraph_path}\n"
+                f"stderr:\n{p.stderr}"
+            )
+    finally:
+        try:
+            os.remove(chrom_sizes_path)
+        except OSError:
+            pass
+
+
+def write_browser_tracks(ChrHitList, ChrLen, rep_dir, prefix):
+    bedgraph_path = os.path.join(rep_dir, prefix + ".insertions.bedgraph")
+    wig_path = os.path.join(rep_dir, prefix + ".insertions.wig")
+    bigwig_path = os.path.join(rep_dir, prefix + ".insertions.bw")
+
+    track_rows = list(iter_track_rows(ChrHitList, ChrLen))
+    write_insertions_bedgraph(track_rows, bedgraph_path)
+    write_insertions_wig(track_rows, wig_path)
+    write_insertions_bigwig(bedgraph_path, ChrLen, bigwig_path)
+
+    return bedgraph_path, wig_path, bigwig_path
+
 
 def ListHitProp_and_gene_counts(ChrHitList, HitFileName, ChrFeatC, ChrFeatW,
                                write_gene_counts=False,
@@ -352,7 +446,7 @@ if __name__ == '__main__':
     parser.add_argument("--out-prefix", default=None)
 
     parser.add_argument("-q", "--min-mapq", default=20, type=int)
-    parser.add_argument("-m", "--merge-dist", default=2, type=int)
+    parser.add_argument("-m", "--merge-dist", default=0, type=int)
 
     parser.add_argument("-f", "--fasta", required=True)
     parser.add_argument("-g", "--features", required=True)
@@ -367,6 +461,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--write-gene-counts", action="store_true", default=False)
     parser.add_argument("--drop-top-sites", type=int, default=1)
+    parser.add_argument("--write-browser-tracks", action="store_true", default=False)
 
     args = parser.parse_args()
     
@@ -489,12 +584,32 @@ if __name__ == '__main__':
             drop_top_sites=args.drop_top_sites
         )
 
-        UniqueHitPercent = round(float(TotalUniqueHits)/float(TotalHits)*100, 2)
-        
-        Log = '\r\n=== Finding hits ===\r\n%s reads found of map quality >= %s; in these:\r\n  %s hits were found; of these:\r\n    %s (%s%%) hit positions were found to be unique (Minimal distance = %s)\r\n' % (TotalReads, MapQ, TotalHits, TotalUniqueHits, UniqueHitPercent, MergeDist)
-        print(Log)
-        
-        LogFile = open('%s_log.txt' % (prefix), 'a')
-        LogFile.write(Log)
-        LogFile.close()
+        bedgraph_path = None
+        wig_path = None
+        bigwig_path = None
 
+        if args.write_browser_tracks:
+            bedgraph_path, wig_path, bigwig_path = write_browser_tracks(
+                MyList,
+                ChrLen,
+                rep_dir,
+                prefix
+            )
+
+        UniqueHitPercent = round(float(TotalUniqueHits)/float(TotalHits)*100, 2)
+
+        Log = '\r\n=== Finding hits ===\r\n%s reads found of map quality >= %s; in these:\r\n  %s hits were found; of these:\r\n    %s (%s%%) hit positions were found to be unique (Minimal distance = %s)\r\n' % (
+            TotalReads, MapQ, TotalHits, TotalUniqueHits, UniqueHitPercent, MergeDist
+        )
+
+        if args.write_browser_tracks:
+            Log += (
+                f"  Browser tracks written:\r\n"
+                f"    {bedgraph_path}\r\n"
+                f"    {wig_path}\r\n"
+                f"    {bigwig_path}\r\n"
+            )
+        log_path = os.path.join(rep_dir, f"{prefix}_log.txt")
+        logFile = open(log_path, 'a')
+        logFile.write(Log)
+        logFile.close()

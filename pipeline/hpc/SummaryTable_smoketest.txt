@@ -1,0 +1,123 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_SummaryTable
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_SummaryTable.log
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="/Users/jayelazuno/workspace/ytab"
+LEGACY="/Users/jayelazuno/workspace/HermesTnseq"
+
+# Input hit files from YTAB CreateHitFile smoke test
+HIT_DIR="$YTAB/output/smoketests/create_hit_file"
+
+# Stage output for SummaryTable
+SUMMARY_DIR="$YTAB/output/smoketests/summary"
+
+# App-facing export dir
+EXPORT_DIR="$YTAB/output/exports/smoke_test_v1"
+SUMMARY_EXPORT_DIR="$EXPORT_DIR/qc/summary"
+
+# Reference / annotation assets
+REF_FASTA="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna"
+FEATURE_TABLE="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_feature_table.txt"
+
+mkdir -p "$SUMMARY_DIR"
+mkdir -p "$SUMMARY_EXPORT_DIR"
+
+THREADS=56
+echo "THREADS(for SummaryTable)=$THREADS"
+
+echo "YTAB repo:          $YTAB"
+echo "Hit dir:            $HIT_DIR"
+echo "Summary dir:        $SUMMARY_DIR"
+echo "Export dir:         $EXPORT_DIR"
+echo "Summary export dir: $SUMMARY_EXPORT_DIR"
+echo "Reference FASTA:    $REF_FASTA"
+echo "Feature table:      $FEATURE_TABLE"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Smoke-test sample only
+# -----------------------
+SAMPLES=(
+  "yH298-parent-pool1"
+)
+
+for sample in "${SAMPLES[@]}"; do
+  in_dir="$HIT_DIR/$sample"
+  out_dir="$SUMMARY_DIR/$sample"
+  sample_export_dir="$SUMMARY_EXPORT_DIR/$sample"
+
+  if [[ ! -d "$in_dir" ]]; then
+    echo "ERROR: missing CreateHitFile output directory for $sample -> $in_dir"
+    exit 1
+  fi
+
+  mkdir -p "$out_dir"
+  mkdir -p "$sample_export_dir"
+
+  echo "[$(date)] sample=$sample"
+  echo "  IN=$in_dir"
+  echo "  OUT=$out_dir"
+  echo "  EXPORT=$sample_export_dir"
+
+  python3 "$YTAB/src/ytab/summary/SummaryTable.py" \
+    -i "$in_dir" \
+    -o "$out_dir" \
+    -f "$REF_FASTA" \
+    -g "$FEATURE_TABLE" \
+    --feature-format ncbi_feature_table \
+    --ncbi-chrom-field genomic_accession \
+    --ncbi-keep gene \
+    -t "$THREADS"
+
+  # -----------------------
+  # Copy app-facing summary assets
+  # -----------------------
+  for f in \
+    "$out_dir/stats.csv" \
+    "$out_dir/${sample}.all_hits.csv" \
+    "$out_dir/${sample}.feature_table.RDF_1.csv" \
+    "$out_dir/${sample}_analysis.csv" \
+    "$out_dir/binned_hits.RDF_1.csv" \
+    "$out_dir/hit_summary.RDF_1.csv" \
+    "$out_dir/insertion_vs_neighborhood_correlations.txt" \
+    "$out_dir/outlier_stats.txt"
+  do
+    if [[ -s "$f" ]]; then
+      cp -f "$f" "$sample_export_dir/"
+    else
+      echo "[WARN] expected file missing: $f"
+    fi
+  done
+
+  echo
+done
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
