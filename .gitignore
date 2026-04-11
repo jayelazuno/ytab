@@ -25,6 +25,53 @@ work/
 .trace.txt
 .dag.html
 
+# -----------------------
+# # YTAB species resources
+# # Track curated metadata and small support tables
+# # Ignore bulky reference assets and aligner indexes
+# # -----------------------
+#
+# # Keep documentation / manifests
+!resources/
+!resources/species/
+!resources/species/**/
+!resources/species/**/README.md
+!resources/species/**/*.md
+!resources/species/**/*.json
+!resources/species/**/*.yaml
+!resources/species/**/*.yml
+!resources/species/**/*.tsv
+!resources/species/**/*.csv
+!resources/species/**/*.bed
+!resources/species/**/*ortholog*.txt
+!resources/species/**/*feature_count*.txt
+
+# # Ignore large reference genome assets
+resources/species/**/*.fna
+resources/species/**/*.fa
+resources/species/**/*.fasta
+resources/species/**/*.faa
+resources/species/**/*.gff
+resources/species/**/*.gff3
+resources/species/**/*.gtf
+
+# # Ignore aligner indexes
+resources/species/**/*.bt2
+resources/species/**/*.bt2l
+
+# # Optional: ignore common sequence index byproducts
+resources/species/**/*.fai
+resources/species/**/*.dict
+resources/species/**/*.nhr
+resources/species/**/*.nin
+resources/species/**/*.nsq
+
+# InterProScan outputs
+resources/species/**/interproscan6/*.json
+resources/species/**/interproscan6/*.jsonl
+resources/species/**/interproscan6/*.tsv
+resources/species/**/interproscan6/*.xml
+
 # Outputs / large bioinformatics files
 output/
 *.bam

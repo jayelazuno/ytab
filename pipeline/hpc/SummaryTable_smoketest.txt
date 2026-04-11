@@ -24,11 +24,15 @@ conda activate tnseq
 # -----------------------
 # Project paths
 # -----------------------
+
 YTAB="/Users/jayelazuno/workspace/ytab"
+LEGACY="/Users/jayelazuno/workspace/HermesTnseq"
 
 HITS_ROOT="$YTAB/output/smoketests/create_hit_file"
 OUT_ROOT="$YTAB/output/smoketests/summary"
 EXPORT_ROOT="$YTAB/output/exports/smoke_test_v1/qc/summary"
+
+ORTHOLOGS="$LEGACY/transposon-pipeline/dependencies/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
 
 mkdir -p "$OUT_ROOT"
 mkdir -p "$EXPORT_ROOT"
@@ -38,6 +42,7 @@ echo "THREADS(for SummaryTable)=$THREADS"
 
 echo "YTAB repo:     $YTAB"
 echo "Hits root:     $HITS_ROOT"
+echo "Ortholog map:  $ORTHOLOGS"
 echo "Out root:      $OUT_ROOT"
 echo "Export root:   $EXPORT_ROOT"
 echo "Script:        $YTAB/src/ytab/summary/SummaryTable.py"
