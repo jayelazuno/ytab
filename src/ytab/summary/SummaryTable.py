@@ -895,12 +895,14 @@ def write_data_to_data_frame(data, cols_config):
 @Shared.memoized
 def _default_cglab_to_scer_orthologs():
     """
-    Default dependency path (your new file):
-      dependencies/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+    Default ortholog table under the YTAB species resource tree:
+      resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
     """
-    path = Shared.get_dependency("glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt")
+    path = Shared.get_dependency(
+        "glabrata",
+        "C_glabrata_BG2_S_cerevisiae_orthologs.txt",
+    )
     return _load_ortholog_table(path)
-
 
 @Shared.memoized
 def _load_scer_essential_sets():
@@ -911,8 +913,8 @@ def _load_scer_essential_sets():
 
     Assumes: first whitespace token is the ORF systematic name.
     """
-    inv_path = Shared.get_dependency("cerevisiae/cerevisiae_inviable_annotations.txt")
-    via_path = Shared.get_dependency("cerevisiae/cerevisiae_viable_annotations.txt")
+    inv_path = Shared.get_dependency("cerevisiae", "cerevisiae_inviable_annotations.txt")
+    via_path = Shared.get_dependency("cerevisiae", "cerevisiae_viable_annotations.txt")
 
     def _read_first_token(p):
         s = set()
@@ -937,7 +939,7 @@ def _load_scer_synthetic_lethal_flags():
     dependencies/cerevisiae/duplicatesSl_011116.txt
     Legacy format: columns with f1 f2 ... is_double_lethal
     """
-    path = Shared.get_dependency("cerevisiae/duplicatesSl_011116.txt")
+    path = Shared.get_dependency("cerevisiae", "duplicatesSl_011116.txt")
     sl = {}
     with open(path, "r") as fh:
         _ = fh.readline()  # header
@@ -958,7 +960,7 @@ def _load_scer_fitness():
     dependencies/cerevisiae/neFitnessStandard.txt
     Format: <orf> <fitness>
     """
-    path = Shared.get_dependency("cerevisiae/neFitnessStandard.txt")
+    path = Shared.get_dependency("cerevisiae", "neFitnessStandard.txt")
     fitness = {}
     with open(path, "r") as fh:
         for line in fh:

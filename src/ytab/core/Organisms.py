@@ -18,7 +18,7 @@ later decide to add masking files explicitly.
 
 Glabrata ↔ S. cerevisiae orthology:
 We support direct mapping using:
-  dependencies/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+  resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
 
 Columns we use
   - cglab_id  (glabrata feature id; matches FeatureDB standard_name)
@@ -123,14 +123,14 @@ class Calbicans(Organism):
         return GenomicFeatures.default_alb_db()
 
     def _get_homologous_regions(self):
-        ranges = self._read_range_data(Shared.get_dependency(os.path.join("albicans", "homologous_regions.csv")))
+        ranges = self._read_range_data(Shared.get_dependency("albicans", "homologous_regions.csv"))
         return {
             chrom: RangeSet(r for r in range_set if (r[1] - r[0] + 1) >= self._ignore_region_threshold)
             for chrom, range_set in ranges.items()
         }
 
     def _get_deleted_regions(self):
-        ranges = self._read_range_data(Shared.get_dependency(os.path.join("albicans", "deleted_regions.csv")))
+        ranges = self._read_range_data(Shared.get_dependency("albicans", "deleted_regions.csv"))
         return {
             chrom: RangeSet(r for r in range_set if (r[1] - r[0] + 1) >= self._ignore_region_threshold)
             for chrom, range_set in ranges.items()
@@ -144,7 +144,7 @@ class Calbicans(Organism):
 
     def _get_genes_with_paralogs(self):
         return Organism._get_genes_with_paralogs(
-            self, Shared.get_dependency(os.path.join("albicans", "hasParalogs_ca.txt"))
+            self, Shared.get_dependency("albicans", "hasParalogs_ca.txt")
         )
 
 
@@ -153,7 +153,7 @@ class Scerevisiae(Organism):
         return GenomicFeatures.default_cer_db()
 
     def _get_homologous_regions(self):
-        ranges = self._read_range_data(Shared.get_dependency(os.path.join("cerevisiae", "homologous_regions.csv")))
+        ranges = self._read_range_data(Shared.get_dependency("cerevisiae", "homologous_regions.csv"))
         return {
             chrom: RangeSet(r for r in range_set if (r[1] - r[0] + 1) >= self._ignore_region_threshold)
             for chrom, range_set in ranges.items()
@@ -206,7 +206,7 @@ class Scerevisiae(Organism):
 
     def _get_genes_with_paralogs(self):
         return Organism._get_genes_with_paralogs(
-            self, Shared.get_dependency(os.path.join("cerevisiae", "hasParalogs_sc.txt"))
+            self, Shared.get_dependency("cerevisiae", "hasParalogs_sc.txt")
         )
 
 
@@ -215,7 +215,7 @@ class Spombe(Organism):
         return GenomicFeatures.default_pom_db()
 
     def _get_homologous_regions(self):
-        ranges = self._read_range_data(Shared.get_dependency(os.path.join("pombe", "homologous_regions.csv")))
+        ranges = self._read_range_data(Shared.get_dependency("pombe", "homologous_regions.csv"))
         return {
             chrom: RangeSet(r for r in range_set if (r[1] - r[0] + 1) >= self._ignore_region_threshold)
             for chrom, range_set in ranges.items()
@@ -233,7 +233,7 @@ class Spombe(Organism):
     @Shared.memoized
     def _get_spom_essentials(self):
         viability_table = pd.read_csv(
-            Shared.get_dependency("pombe/FYPOviability.tsv"),
+            Shared.get_dependency("pombe", "FYPOviability.tsv"),
             header=None,
             delimiter="\t",
             names=["pombe standard name", "essentiality"],
@@ -244,7 +244,7 @@ class Spombe(Organism):
 
     def _get_genes_with_paralogs(self):
         return Organism._get_genes_with_paralogs(
-            self, Shared.get_dependency(os.path.join("pombe", "hasParalogs_sp.txt"))
+            self, Shared.get_dependency("pombe", "hasParalogs_sp.txt")
         )
 
 
@@ -278,10 +278,10 @@ class Cglabrata(Organism):
         # Optional: if you create a dependency file, wire it here.
         # If it doesn't exist, return empty set (safe default).
         try:
-            path = Shared.get_dependency(os.path.join("glabrata", "hasParalogs_cgla.txt"))
+            path = Shared.get_dependency("glabrata", "hasParalogs_cgla.txt")
         except Exception:
             print(
-                "[WARN] glabrata paralog file not found in dependencies/glabrata/hasParalogs_cgla.txt; using empty set."
+                "[WARN] glabrata paralog file not found in resources/species/glabrata/hasParalogs_cgla.txt; using empty set."
             )
             return set()
         return Organism._get_genes_with_paralogs(self, path)
@@ -418,7 +418,7 @@ def _load_gla_scer_ortholog_table():
     """
     Load glabrata↔scer ortholog table from dependencies.
 
-    File: dependencies/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+    File: resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
 
     We use:
       - cglab_id (glabrata feature id; matches glabrata FeatureDB standard_name)

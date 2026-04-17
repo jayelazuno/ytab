@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 Classifier.py  (FULL Python3 update + "pipeline-agnostic" table mode)
@@ -9,7 +8,7 @@ This file is a Python3-compatible update of the original Levitan/Berman-lab
 - All Python2-only syntax is fixed (print, xrange, iteritems, itervalues, tuple
   unpacking in def, lambda arg unpacking, cPickle, sklearn.cross_validation).
 - A new **table mode** is added so you can:
-    * Train on S. cerevisiae (dependencies / Organisms) and
+    * Train on S. cerevisiae (resources / Organisms) and
     * Classify one or more **C. glabrata BG2 feature tables** (e.g. *.feature_table.RDF_1.csv)
     * Output per-library tables.xlsx AND optionally a combined table across libraries
     * Optionally join BG2↔Scer orthology (your C_glabrata_BG2_S_cerevisiae_orthologs.txt)
@@ -97,6 +96,92 @@ def _itervalues(d):
 
 def _xrange(n):
     return range(n)
+
+
+def _first_existing_file(candidates, label="file"):
+    """Return the first existing file from a candidate list."""
+    for path in candidates:
+        if path and os.path.isfile(path):
+            return path
+    raise FileNotFoundError(
+        f"Could not find {label}. Tried:\n  " + "\n  ".join([str(p) for p in candidates if p])
+    )
+
+
+def _first_existing_dir(candidates, label="directory"):
+    """Return the first existing directory from a candidate list."""
+    for path in candidates:
+        if path and os.path.isdir(path):
+            return path
+    raise FileNotFoundError(
+        f"Could not find {label}. Tried:\n  " + "\n  ".join([str(p) for p in candidates if p])
+    )
+
+
+def _glob_existing(patterns, label="files"):
+    """Return sorted unique matches across one or more glob patterns."""
+    matches = []
+    for pattern in patterns:
+        matches.extend(glob.glob(pattern))
+    matches = sorted(set(matches))
+    if not matches:
+        raise FileNotFoundError(
+            f"Could not find {label}. Tried glob patterns:\n  " + "\n  ".join([str(p) for p in patterns if p])
+        )
+    return matches
+
+
+@Shared.memoized
+def _default_bg2_scer_orthology_file():
+    """
+    Default BG2↔S. cerevisiae orthology file under the YTAB resource tree.
+    """
+    candidates = [
+        Shared.get_dependency("glabrata", "C_glabrata_BG2_S_cerevisiae_orthologs.txt"),
+        Shared.get_dependency("glabrata", "orthology", "C_glabrata_BG2_S_cerevisiae_orthologs.txt"),
+    ]
+    return _first_existing_file(candidates, label="BG2↔Scer orthology file")
+
+
+@Shared.memoized
+def _default_kornmann_wig_files():
+    """
+    Locate S. cerevisiae WildType WIG tracks used for legacy/training mode.
+    """
+    patterns = [
+        Shared.get_dependency("Kornmann", "*WildType*.wig"),
+        Shared.get_dependency("cerevisiae", "Kornmann", "*WildType*.wig"),
+        Shared.get_dependency("cerevisiae", "experiment data", "Kornmann", "*WildType*.wig"),
+        Shared.get_dependency("cerevisiae", "experiment_data", "Kornmann", "*WildType*.wig"),
+    ]
+    return _glob_existing(patterns, label="Kornmann WildType WIG tracks")
+
+
+@Shared.memoized
+def _default_albicans_post_evo_dir():
+    """
+    Locate the legacy C. albicans post-evolution hit-table directory.
+    """
+    candidates = [
+        Shared.get_dependency("albicans", "experiment data", "post evo", "q20m2"),
+        Shared.get_dependency("albicans", "experiment_data", "post_evo", "q20m2"),
+        Shared.get_dependency("albicans", "post_evo", "q20m2"),
+    ]
+    return _first_existing_dir(candidates, label="albicans post-evo hit directory")
+
+
+@Shared.memoized
+def _default_pombe_hit_file():
+    """
+    Locate the legacy S. pombe Hermes hit table.
+    """
+    candidates = [
+        Shared.get_dependency("pombe", "hermes_hits.csv"),
+        Shared.get_dependency("pombe", "hits", "hermes_hits.csv"),
+        Shared.get_dependency("pombe", "experiment data", "hermes_hits.csv"),
+        Shared.get_dependency("pombe", "experiment_data", "hermes_hits.csv"),
+    ]
+    return _first_existing_file(candidates, label="pombe Hermes hit file")
 
 
 # ----------------------------
@@ -256,6 +341,78 @@ def combine_pre_post(pre_records, post_records):
     return result
 
 
+def _safe_ratio(numerator, denominator, default=0.0):
+    try:
+        denominator = float(denominator)
+        if denominator <= 0:
+            return default
+        return float(numerator) / denominator
+    except Exception:
+        return default
+
+
+def _augment_classifier_features(records):
+    """
+    Normalize classifier fields on each record.
+
+    For SummaryTable-derived feature tables, these values are read directly:
+      - freedom_index
+      - neighborhood_index
+      - insertion_index
+      - hits
+      - reads
+      - upstream_hits_100
+      - coding_length / length
+
+    The only derived classifier features added here are:
+      - hits_per_length  = hits / length
+      - reads_per_length = reads / length
+
+    This helper also safely casts numeric fields and fills missing legacy values
+    with 0 so older record sources do not crash the classifier.
+    """
+    for record in records:
+        length = record.get("length", record.get("coding_length", 0)) or 0
+        hits = record.get("hits", 0) or 0
+        reads = record.get("reads", 0) or 0
+
+        try:
+            length = int(length)
+        except Exception:
+            length = 0
+        try:
+            hits = float(hits)
+        except Exception:
+            hits = 0.0
+        try:
+            reads = float(reads)
+        except Exception:
+            reads = 0.0
+
+        record["length"] = length
+        record["hits"] = hits
+        record["reads"] = reads
+        record["hits_per_length"] = _safe_ratio(hits, length)
+        record["reads_per_length"] = _safe_ratio(reads, length)
+
+        for key in ("freedom_index", "neighborhood_index", "insertion_index"):
+            if record.get(key, None) in (None, ""):
+                record[key] = 0.0
+            else:
+                try:
+                    record[key] = float(record[key])
+                except Exception:
+                    record[key] = 0.0
+
+        if record.get("upstream_hits_100", None) in (None, ""):
+            record["upstream_hits_100"] = 0
+        else:
+            try:
+                record["upstream_hits_100"] = int(float(record["upstream_hits_100"]))
+            except Exception:
+                record["upstream_hits_100"] = 0
+
+
 def explode_col_config(col_config):
     """"Explodes" the column configuration to display pre- and post- data, by
     appending prefixes to the column names."""
@@ -335,6 +492,15 @@ def run_pipeline(cls_factory, cls_feature_groups, data, train_col_config, class_
 
         train_ess_records, train_non_ess_records, class_datasets, benchmarks = (data[data_key] + ({},))[:4]
         train_all_records = train_ess_records + train_non_ess_records
+
+        _augment_classifier_features(train_ess_records)
+        _augment_classifier_features(train_non_ess_records)
+        _augment_classifier_features(train_all_records)
+        for ds_records in class_datasets.values():
+            _augment_classifier_features(ds_records)
+        for bm_records in benchmarks.values():
+            _augment_classifier_features(bm_records)
+
         train_annotations = [1] * len(train_ess_records) + [0] * len(train_non_ess_records)
 
         for grp_name, features in cls_feature_groups.items():
@@ -751,6 +917,7 @@ def read_glabrata_feature_table_as_records(feature_table_csv, orth_map=None):
         "reads",
         "neighborhood_index",
         "freedom_index",
+        "insertion_index",
         "upstream_hits_100",
     }
     missing = required - set(df.columns)
@@ -780,12 +947,15 @@ def read_glabrata_feature_table_as_records(feature_table_csv, orth_map=None):
         rec["coding_length"] = int(rd.get("coding_length", 0) or 0)
         rec["length"] = rec["coding_length"]
 
-        # Core metrics used by G4:
+        # Core metrics read directly from the SummaryTable feature table:
         rec["hits"] = int(rd.get("hits", 0) or 0)
         rec["reads"] = int(rd.get("reads", 0) or 0)
         rec["neighborhood_index"] = float(rd.get("neighborhood_index", 0.0) or 0.0)
         rec["freedom_index"] = float(rd.get("freedom_index", 0.0) or 0.0)
+        rec["insertion_index"] = float(rd.get("insertion_index", 0.0) or 0.0)
         rec["upstream_hits_100"] = int(rd.get("upstream_hits_100", 0) or 0)
+        rec["hits_per_length"] = _safe_ratio(rec["hits"], rec["length"])
+        rec["reads_per_length"] = _safe_ratio(rec["reads"], rec["length"])
 
         # carry-through any extra columns
         for k, v in rd.items():
@@ -810,16 +980,17 @@ def read_glabrata_feature_table_as_records(feature_table_csv, orth_map=None):
 def build_scer_training_records_from_dependencies():
     """
     Builds Scer training records exactly like the original script did:
-    - Reads Kornmann WildType wig tracks from dependencies
+    - Reads Kornmann WildType wig tracks from resources
     - analyze_hits against Organisms.cer.feature_db
     - filters ORFs, non-dubious, non-depleted, ignores Organisms.cer.ignored_features
     Returns:
       cer_records_all, training_ess_records, training_non_ess_records
     """
     cer_db = Organisms.cer.feature_db
-    all_cer_track_files = glob.glob(Shared.get_dependency("Kornmann", "*WildType*.wig"))
-    if not all_cer_track_files:
-        raise RuntimeError("No Kornmann *WildType*.wig tracks found in dependencies.")
+    try:
+        all_cer_track_files = _default_kornmann_wig_files()
+    except FileNotFoundError as e:
+        raise RuntimeError(str(e))
 
     all_cer_tracks = [SummaryTable.get_hits_from_wig(fname) for fname in all_cer_track_files]
     cer_wt_combined = sum(all_cer_tracks, [])
@@ -955,13 +1126,21 @@ def _table_mode_scer_training_cols_config():
 def main_table_mode_scer_train_gla_classify(args):
     Shared.make_dir(args.out_dir)
 
-    # Build Scer training from dependencies
+    # Build Scer training from resources
     _cer_all, train_ess, train_non = build_scer_training_records_from_dependencies()
 
-    # Load orthology map if provided
+    # Load orthology map: use explicit CLI path if provided, otherwise try the
+    # default file under resources/species/glabrata/.
     orth_map = {}
-    if args.orthology_file:
-        orth_map = load_bg2_scer_orthology_map(args.orthology_file)
+    orthology_file = args.orthology_file or None
+    if orthology_file is None:
+        try:
+            orthology_file = _default_bg2_scer_orthology_file()
+        except FileNotFoundError:
+            orthology_file = None
+
+    if orthology_file:
+        orth_map = load_bg2_scer_orthology_map(orthology_file)
 
     # Collect glabrata feature tables
     gla_tables = list(args.gla_feature_table or [])
@@ -985,7 +1164,16 @@ def main_table_mode_scer_train_gla_classify(args):
     # Feature groups (default: original G4)
     feature_groups = OrderedDict(
         (
-            ("G4", ("neighborhood_index", "length", "hits", "reads", "freedom_index", "upstream_hits_100")),
+            ("G4", (
+                "freedom_index",
+                "neighborhood_index",
+                "hits_per_length",
+                "insertion_index",
+                "hits",
+                "reads_per_length",
+                "reads",
+                "upstream_hits_100",
+            )),
         )
     )
 
@@ -1049,25 +1237,44 @@ def main_table_mode_scer_train_gla_classify(args):
 # ============================================================
 # ORIGINAL main() (legacy paper mode) — fully Python3-fixed
 # ============================================================
-def main():
+def main(args=None):
     # List of folders used for source data:
     # TODO: this should be generalized eventually and refactored with argparse,
     # but currently too much stuff is hardcoded
     output_folder = os.path.join(Shared.get_script_dir(), "output", "predictions")
-    alb_hit_file_folder = Shared.get_dependency("albicans", "experiment data", "post evo", "q20m2")
-    all_cer_track_files = glob.glob(Shared.get_dependency("Kornmann", "*WildType*.wig"))
-    pombe_hit_file = Shared.get_dependency("pombe", "hermes_hits.csv")
+    alb_hit_file_folder = _default_albicans_post_evo_dir()
+    all_cer_track_files = _default_kornmann_wig_files()
+    pombe_hit_file = _default_pombe_hit_file()
 
     # TODO: should not be hard-coded. Consider using DomainFigures to create the figures
     # as needed, instead of copying them from somewhere else.
-    calb_source_figure_folder = "/Users/bermanlab/OneDrive2/OneDrive/Tn Paper/All gene figures/Calb"
-    calb_source_figure_list = os.listdir(calb_source_figure_folder)
+    calb_source_figure_folder = (
+        getattr(args, "calb_source_figure_dir", None)
+        if args is not None
+        else None
+    ) or _default_source_figure_dir("Calb")
+    calb_source_figure_list = _safe_listdir(calb_source_figure_folder)
 
-    scer_source_figure_folder = "/Users/bermanlab/OneDrive2/OneDrive/Tn Paper/All gene figures/Scer"
-    scer_source_figure_list = os.listdir(scer_source_figure_folder)
+    scer_source_figure_folder = (
+        getattr(args, "scer_source_figure_dir", None)
+        if args is not None
+        else None
+    ) or _default_source_figure_dir("Scer")
+    scer_source_figure_list = _safe_listdir(scer_source_figure_folder)
 
-    spom_source_figure_folder = "/Users/bermanlab/OneDrive2/OneDrive/Tn Paper/All gene figures/Spom"
-    spom_source_figure_list = os.listdir(spom_source_figure_folder)
+    spom_source_figure_folder = (
+        getattr(args, "spom_source_figure_dir", None)
+        if args is not None
+        else None
+    ) or _default_source_figure_dir("Spom")
+    spom_source_figure_list = _safe_listdir(spom_source_figure_folder)
+
+    if not calb_source_figure_folder:
+        _eprint("[WARN] Calb source figure directory not found; Calb figure copying will be skipped.")
+    if not scer_source_figure_folder:
+        _eprint("[WARN] Scer source figure directory not found; Scer figure copying will be skipped.")
+    if not spom_source_figure_folder:
+        _eprint("[WARN] Spom source figure directory not found; Spom figure copying will be skipped.")
 
     # Set up needed infrastructure
     # The feature DBs:
@@ -1242,7 +1449,16 @@ def main():
     feature_groups = OrderedDict(
         (
             # ("G3", ("neighborhood_index", "length", "hits", "freedom_index", "upstream_hits_100")),
-            ("G4", ("neighborhood_index", "length", "hits", "reads", "freedom_index", "upstream_hits_100")),
+            ("G4", (
+                "freedom_index",
+                "neighborhood_index",
+                "hits_per_length",
+                "insertion_index",
+                "hits",
+                "reads_per_length",
+                "reads",
+                "upstream_hits_100",
+            )),
             # ("G5", ("neighborhood_index", "length", "hits", "reads_ni", "freedom_index", "upstream_hits_100")),
         )
     )
@@ -1663,22 +1879,26 @@ def main():
         if not os.path.exists(target_figure_folder):
             Shared.make_dir(target_figure_folder)
 
-        for record in records:
-            feature = record["feature"]
-            gene_name = getattr(feature, "feature_name", feature.standard_name)
-            for source_figure in source_figure_list:
-                if gene_name in source_figure:
-                    break
-            else:
-                gene_name = None
+        if source_figure_folder and source_figure_list:
+            for record in records:
+                feature = record["feature"]
+                gene_name = getattr(feature, "feature_name", feature.standard_name)
+                matched_figure = None
+                for source_figure in source_figure_list:
+                    if gene_name in source_figure:
+                        matched_figure = source_figure
+                        break
 
-            # TODO: the score is hard-coded :(
-            dest = (
-                target_figure_folder
-                if not add_score
-                else os.path.join(target_figure_folder, "%.3f_%s" % (record["train-" + score_to_use], source_figure))
-            )
-            shutil.copy(os.path.join(source_figure_folder, source_figure), dest)
+                if matched_figure is None:
+                    continue
+
+                # TODO: the score is hard-coded :(
+                dest = (
+                    target_figure_folder
+                    if not add_score
+                    else os.path.join(target_figure_folder, "%.3f_%s" % (record["train-" + score_to_use], matched_figure))
+                )
+                shutil.copy(os.path.join(source_figure_folder, matched_figure), dest)
 
         with pd.ExcelWriter(os.path.join(inter_out_folder, "genes.xlsx")) as excel_writer:
             sheet = SummaryTable.write_data_to_data_frame(records, inter_col_config)
@@ -1905,7 +2125,10 @@ def _parse_args():
 
     ap.add_argument("--gla-feature-table", action="append", default=[], help="Path to one glabrata feature_table.RDF_1.csv (repeatable).")
     ap.add_argument("--gla-feature-glob", default=None, help="Glob for glabrata feature_table.RDF_1.csv files.")
-    ap.add_argument("--orthology-file", default=None, help="BG2↔Scer orthology TSV (e.g., C_glabrata_BG2_S_cerevisiae_orthologs.txt).")
+    ap.add_argument("--orthology-file", default=None, help="BG2↔Scer orthology TSV. If omitted, YTAB will look under resources/species/glabrata/ by default.")
+    ap.add_argument("--calb-source-figure-dir", default=None, help="Optional legacy source-figure directory for Calb. If omitted, YTAB will try resources/figures/Calb and skip figure copying if absent.")
+    ap.add_argument("--scer-source-figure-dir", default=None, help="Optional legacy source-figure directory for Scer. If omitted, YTAB will try resources/figures/Scer and skip figure copying if absent.")
+    ap.add_argument("--spom-source-figure-dir", default=None, help="Optional legacy source-figure directory for Spom. If omitted, YTAB will try resources/figures/Spom and skip figure copying if absent.")
     ap.add_argument("--combine", action="store_true", help="Also write combined_glabrata_RF-G4.tsv (mean score across libraries).")
     ap.add_argument("--overwrite", action="store_true", help="Allow overwriting an existing output directory / outputs.",)
 
@@ -1929,7 +2152,7 @@ if __name__ == "__main__":
     args = _parse_args()
 
     if args.mode == "legacy-paper":
-        main()
+        main(args)
     else:
         # ---- table mode sanity checks ----
         if not args.out_dir:
