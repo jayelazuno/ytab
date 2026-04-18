@@ -1,0 +1,74 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_ExportSmoke
+#$ -q UI
+#$ -pe smp 4
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_ExportSmoke.log
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="/Users/jayelazuno/workspace/ytab"
+SCRIPT="$YTAB/scripts/export_smoketest_v1.py"
+
+SMOKE_ROOT="$YTAB/output/smoketests"
+EXPORT_ROOT="$YTAB/output/exports/smoke_test_v1"
+
+echo "YTAB repo:   $YTAB"
+echo "Script:      $SCRIPT"
+echo "Smoke root:  $SMOKE_ROOT"
+echo "Export root: $EXPORT_ROOT"
+echo
+
+if [[ ! -f "$SCRIPT" ]]; then
+  echo "ERROR: export script not found: $SCRIPT" >&2
+  exit 1
+fi
+
+if [[ ! -d "$SMOKE_ROOT" ]]; then
+  echo "ERROR: smoke test directory not found: $SMOKE_ROOT" >&2
+  exit 1
+fi
+
+mkdir -p "$EXPORT_ROOT"
+
+# Optional: uncomment this if you always want a clean rebuild
+# rm -rf "$EXPORT_ROOT"
+# mkdir -p "$EXPORT_ROOT"
+
+echo "============================================================"
+echo "[$(date)] Running smoke-test export build"
+echo "============================================================"
+
+python3 "$SCRIPT"
+
+echo
+echo "Export completed."
+echo "Manifest:"
+if [[ -f "$EXPORT_ROOT/manifest.json" ]]; then
+  echo "  $EXPORT_ROOT/manifest.json"
+else
+  echo "  [WARN] manifest.json not found"
+fi
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
