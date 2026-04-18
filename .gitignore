@@ -75,8 +75,11 @@ resources/species/**/interproscan6/*.xml
 # Outputs / large bioinformatics files
 #
 ## keep output/ trackable
-!output/
-!output/**/
+output/**
+!output/exports/
+!output/exports/smoke_test_v1/
+!output/exports/smoke_test_v1/**
+
 # # ignore heavy sequencing / alignment files
 output/**/*.fastq
 output/**/*.fastq.gz
