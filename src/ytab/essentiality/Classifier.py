@@ -371,10 +371,10 @@ def _augment_classifier_features(records):
     This helper also safely casts numeric fields and fills missing legacy values
     with 0 so older record sources do not crash the classifier.
     """
-    for record in records:
-        length = record.get("length", record.get("coding_length", 0)) or 0
-        hits = record.get("hits", 0) or 0
-        reads = record.get("reads", 0) or 0
+    def _augment_classifier_features(records):
+        for record in records:
+            if "length" not in record:
+                record["length"] = record.get("coding_length", 0) or 0
 
         try:
             length = int(length)
@@ -493,13 +493,15 @@ def run_pipeline(cls_factory, cls_feature_groups, data, train_col_config, class_
         train_ess_records, train_non_ess_records, class_datasets, benchmarks = (data[data_key] + ({},))[:4]
         train_all_records = train_ess_records + train_non_ess_records
 
+        # Make sure derived classifier features exist everywhere
         _augment_classifier_features(train_ess_records)
         _augment_classifier_features(train_non_ess_records)
-        _augment_classifier_features(train_all_records)
-        for ds_records in class_datasets.values():
-            _augment_classifier_features(ds_records)
-        for bm_records in benchmarks.values():
-            _augment_classifier_features(bm_records)
+        for datasets in class_datasets.values():
+            for ds_records in datasets:
+                _augment_classifier_features(ds_records)
+        for bench_ess, bench_non_ess in benchmarks.values():
+            _augment_classifier_features(bench_ess)
+            _augment_classifier_features(bench_non_ess)
 
         train_annotations = [1] * len(train_ess_records) + [0] * len(train_non_ess_records)
 
