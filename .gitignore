@@ -73,17 +73,28 @@ resources/species/**/interproscan6/*.tsv
 resources/species/**/interproscan6/*.xml
 
 # Outputs / large bioinformatics files
-output/
-*.bam
-*.bai
-*.sam
-*.bedgraph
-*.bw
-*.bigWig
-*.fastq
-*.fastq.gz
-*.fq.gz
-*.log
+#
+## keep output/ trackable
+!output/
+!output/**/
+# # ignore heavy sequencing / alignment files
+output/**/*.fastq
+output/**/*.fastq.gz
+output/**/*.fq
+output/**/*.fq.gz
+output/**/*.bam
+output/**/*.bai
+output/**/*.sam
+output/**/*.cram
+
+# # optional: also ignore other heavy intermediates if needed later
+output/**/*.sorted
+output/**/*.tmp
+output/**/*.log
+
+# pipeline log files 
+pipeline/**/*.log
+
 # Containers / temp
 tmp/
 .cache/
