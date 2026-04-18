@@ -371,10 +371,10 @@ def _augment_classifier_features(records):
     This helper also safely casts numeric fields and fills missing legacy values
     with 0 so older record sources do not crash the classifier.
     """
-    def _augment_classifier_features(records):
-        for record in records:
-            if "length" not in record:
-                record["length"] = record.get("coding_length", 0) or 0
+    for record in records:
+        length = record.get("length", record.get("coding_length", 0)) or 0
+        hits = record.get("hits", 0) or 0
+        reads = record.get("reads", 0) or 0
 
         try:
             length = int(length)
@@ -411,8 +411,7 @@ def _augment_classifier_features(records):
                 record["upstream_hits_100"] = int(float(record["upstream_hits_100"]))
             except Exception:
                 record["upstream_hits_100"] = 0
-
-
+    
 def explode_col_config(col_config):
     """"Explodes" the column configuration to display pre- and post- data, by
     appending prefixes to the column names."""
