@@ -1,3 +1,4 @@
+
 #!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
@@ -24,15 +25,17 @@ conda activate tnseq
 # -----------------------
 # Project paths
 # -----------------------
-
 YTAB="/Users/jayelazuno/workspace/ytab"
-LEGACY="/Users/jayelazuno/workspace/HermesTnseq"
+SCRIPT="$YTAB/src/ytab/summary/SummaryTable.py"
 
+# Input hit files from YTAB CreateHitFile smoke test
 HITS_ROOT="$YTAB/output/smoketests/create_hit_file"
-OUT_ROOT="$YTAB/output/smoketests/summary"
-EXPORT_ROOT="$YTAB/output/exports/smoke_test_v1/qc/summary"
 
-ORTHOLOGS="$LEGACY/transposon-pipeline/dependencies/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+# Stage output for SummaryTable
+OUT_ROOT="$YTAB/output/smoketests/summary"
+
+# App-facing export root
+EXPORT_ROOT="$YTAB/output/exports/smoke_test_v1/qc/summary"
 
 mkdir -p "$OUT_ROOT"
 mkdir -p "$EXPORT_ROOT"
@@ -42,43 +45,46 @@ echo "THREADS(for SummaryTable)=$THREADS"
 
 echo "YTAB repo:     $YTAB"
 echo "Hits root:     $HITS_ROOT"
-echo "Ortholog map:  $ORTHOLOGS"
 echo "Out root:      $OUT_ROOT"
 echo "Export root:   $EXPORT_ROOT"
-echo "Script:        $YTAB/src/ytab/summary/SummaryTable.py"
+echo "Script:        $SCRIPT"
 echo
 
 export PYTHONPATH="$YTAB/src"
 
 # -----------------------
-# Smoke-test sample only
+# Smoke-test sample(s)
 # -----------------------
 SAMPLES=(
   "yH298-parent-pool1"
 )
 
 for sample in "${SAMPLES[@]}"; do
-  d="$HITS_ROOT/$sample"
-  [[ -d "$d" ]] || { echo "ERROR: missing sample dir: $d" >&2; exit 1; }
+  in_dir="$HITS_ROOT/$sample"
+  out="$OUT_ROOT/$sample"
+  sample_export_dir="$EXPORT_ROOT/$sample"
 
-  hits_files=( "$d"/*_hits.txt )
-  if [[ ${#hits_files[@]} -eq 0 ]]; then
-    echo "ERROR: no *_hits.txt found directly inside: $d" >&2
+  if [[ ! -d "$in_dir" ]]; then
+    echo "ERROR: missing input directory: $in_dir" >&2
     exit 1
   fi
 
-  out="$OUT_ROOT/$sample"
-  sample_export_dir="$EXPORT_ROOT/$sample"
+  hits_files=( "$in_dir"/*_hits.txt )
+  if [[ ${#hits_files[@]} -eq 0 ]]; then
+    echo "ERROR: no *_hits.txt found in: $in_dir" >&2
+    exit 1
+  fi
+
   mkdir -p "$out"
   mkdir -p "$sample_export_dir"
 
   echo "[$(date)] sample=$sample"
-  echo "  input=$d"
+  echo "  input=$in_dir"
   echo "  output=$out"
   echo "  export=$sample_export_dir"
 
-  python3 "$YTAB/src/ytab/summary/SummaryTable.py" \
-    -i "$d" \
+  python3 "$SCRIPT" \
+    -i "$in_dir" \
     -o "$out" \
     --hit-glob "*_hits.txt" \
     --hit-format hit_table \
@@ -116,3 +122,4 @@ date
 end=$(date +%s)
 runtime=$((end-start))
 echo "runtime=$runtime secs"
+echo "Done."
