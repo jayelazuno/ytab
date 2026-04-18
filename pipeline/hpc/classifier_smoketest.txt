@@ -1,0 +1,130 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Classifier
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_Classifier.log
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="/Users/jayelazuno/workspace/ytab"
+
+# Input feature tables from SummaryTable smoke test
+SUMMARY_ROOT="$YTAB/output/smoketests/summary"
+
+# Stage output for Classifier
+CLASSIFIER_DIR="$YTAB/output/smoketests/classifier"
+
+# App-facing export dir
+EXPORT_ROOT="$YTAB/output/exports/smoke_test_v1"
+CLASSIFIER_EXPORT="$EXPORT_ROOT/classifier"
+
+# Optional orthology file
+ORTH="$YTAB/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+
+# Run log outside OUT_DIR because --overwrite recreates OUT_DIR
+RUN_LOG="$YTAB/output/smoketests/YTAB_Classifier.run.log"
+
+mkdir -p "$YTAB/output/smoketests"
+mkdir -p "$CLASSIFIER_EXPORT"
+
+THREADS=${NSLOTS:-56}
+TARGET_FPR="0.10"
+
+echo "THREADS(for Classifier)=$THREADS"
+echo "TARGET_FPR=$TARGET_FPR"
+echo
+echo "YTAB repo:         $YTAB"
+echo "Summary root:      $SUMMARY_ROOT"
+echo "Classifier dir:    $CLASSIFIER_DIR"
+echo "Export root:       $EXPORT_ROOT"
+echo "Classifier export: $CLASSIFIER_EXPORT"
+echo "Orthology file:    $ORTH"
+echo "Run log:           $RUN_LOG"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Discover glabrata feature tables
+# -----------------------
+shopt -s nullglob
+
+feature_tables=( "$SUMMARY_ROOT"/*/*.feature_table.RDF_1.csv )
+
+if [[ ${#feature_tables[@]} -eq 0 ]]; then
+  echo "ERROR: no feature_table.RDF_1.csv files found under: $SUMMARY_ROOT" >&2
+  exit 1
+fi
+
+echo "Feature tables found (${#feature_tables[@]}):"
+printf '  %s\n' "${feature_tables[@]}"
+echo
+
+# -----------------------
+# Build classifier command
+# -----------------------
+cmd=(
+  python3 "$YTAB/src/ytab/essentiality/Classifier.py"
+  --mode scer-train-gla-classify
+  --out-dir "$CLASSIFIER_DIR"
+  --threads "$THREADS"
+  --target-fpr "$TARGET_FPR"
+  --combine
+  --overwrite
+)
+
+if [[ -s "$ORTH" ]]; then
+  cmd+=( --orthology-file "$ORTH" )
+else
+  echo "[WARN] orthology file not found or empty: $ORTH"
+  echo "[WARN] proceeding without orthology annotation"
+fi
+
+for ft in "${feature_tables[@]}"; do
+  cmd+=( --gla-feature-table "$ft" )
+done
+
+echo "============================================================"
+echo "[$(date)] Running Classifier"
+echo "============================================================"
+printf '  %q' "${cmd[@]}"
+echo
+echo
+
+"${cmd[@]}" 2>&1 | tee "$RUN_LOG"
+
+# -----------------------
+# Copy app-facing classifier outputs
+# -----------------------
+mkdir -p "$CLASSIFIER_EXPORT"
+rsync -av --delete "$CLASSIFIER_DIR"/ "$CLASSIFIER_EXPORT"/
+
+echo
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
+echo "Done."
+echo "Outputs:"
+echo "  Stage:  $CLASSIFIER_DIR"
+echo "  Export: $CLASSIFIER_EXPORT"
+echo "  Log:    $RUN_LOG"
