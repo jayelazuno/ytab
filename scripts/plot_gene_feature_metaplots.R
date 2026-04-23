@@ -23,7 +23,6 @@
 #   This is more comparable across positions than raw reads_sum alone.
 #
 # Usage examples:
-#   Rscript scripts/install_plot_packages.R
 #
 #   Rscript scripts/plot_gene_feature_metaplots.R \
 #     --project_root=.
