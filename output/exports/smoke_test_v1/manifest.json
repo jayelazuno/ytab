@@ -1,0 +1,116 @@
+{
+  "project": "YTAB smoke test",
+  "version": "smoke_test_v1",
+  "generated_at": "2026-04-25T14:30:00",
+  "samples": [
+    "yH298-parent-pool1",
+    "yH298-parent-pool2",
+    "yH299-parent-pool3",
+    "yH299-parent-pool4",
+    "yH298-H2O2-treated-facs-pool1",
+    "yH298-H2O2-treated-facs-pool2",
+    "yH299-H2O2-treated-facs-pool3",
+    "yH299-H2O2-treated-facs-pool4"
+  ],
+  "groups": {
+    "parent": [
+      "yH298-parent-pool1",
+      "yH298-parent-pool2",
+      "yH299-parent-pool3",
+      "yH299-parent-pool4"
+    ],
+    "H2O2-treated-facs": [
+      "yH298-H2O2-treated-facs-pool1",
+      "yH298-H2O2-treated-facs-pool2",
+      "yH299-H2O2-treated-facs-pool3",
+      "yH299-H2O2-treated-facs-pool4"
+    ]
+  },
+  "paths": {
+    "browser_dir": "browser",
+    "tracks": [],
+    "classifier_workbook": "classifier/tables/tables.xlsx",
+    "mapping_stats": "qc/tables/parent_mapping_stats.csv",
+    "library_diagnostics_summary": "qc/tables/library_diagnostics_summary.csv",
+    "library_diagnostics_per_sample": "qc/tables/library_diagnostics_per_sample.csv",
+    "midlc_long": "qc/tables/midlc_long.csv",
+    "seqbias_long": "qc/tables/seqbias_long.tsv",
+    "centromere_bins_long": "qc/tables/centromere_bins_long.tsv",
+    "tss_metaplot_long": "qc/tables/tss_metaplot_long.tsv",
+    "tts_metaplot_long": "qc/tables/tts_metaplot_long.tsv",
+    "trna_metaplot_long": "qc/tables/trna_metaplot_long.tsv",
+    "summary_stats": "qc/tables/summary_stats.csv",
+    "hit_summary_long": "qc/tables/hit_summary_long.csv",
+    "binned_hits_long": "qc/tables/binned_hits_long.csv",
+    "feature_table_long": "qc/tables/feature_table_long.csv",
+    "all_hits_long": "qc/tables/all_hits_long.csv",
+    "analysis_long": "qc/tables/analysis_long.csv",
+    "correlation_text_dir": "qc/tables"
+  },
+  "qc_panels": {
+    "mapping_qc": {
+      "title": "Mapping QC",
+      "tab": "Mapping QC",
+      "image": "qc/images/mapping_qc_overview.png",
+      "table": "qc/tables/parent_mapping_stats.csv"
+    },
+    "midlc": {
+      "title": "MidLC overview",
+      "tab": "Library Diagnostics",
+      "image": "qc/images/midlc_overview.png",
+      "table": "qc/tables/midlc_long.csv"
+    },
+    "library_complexity": {
+      "title": "Library complexity summary",
+      "tab": "Library Diagnostics",
+      "image": "qc/images/library_complexity_summary.png",
+      "table": "qc/tables/library_diagnostics_summary.csv"
+    },
+    "centromere_bias": {
+      "title": "Centromere bias",
+      "tab": "Library Diagnostics",
+      "image": "qc/images/centromere_bias_overview.png",
+      "table": "qc/tables/centromere_bins_long.tsv"
+    },
+    "sequence_bias": {
+      "title": "Sequence bias signature",
+      "tab": "Library Diagnostics",
+      "image": "qc/images/sequence_bias_signature.png",
+      "table": "qc/tables/seqbias_long.tsv"
+    },
+    "gene_feature_metaplots": {
+      "title": "Gene-feature metaplots",
+      "tab": "Library Diagnostics",
+      "image": "qc/images/gene_feature_metaplots.png",
+      "table": "qc/tables/tss_metaplot_long.tsv"
+    },
+    "feature_summary": {
+      "title": "Feature summary QC",
+      "tab": "Feature Summary",
+      "image": "qc/images/feature_summary_qc.png",
+      "table": "qc/tables/summary_stats.csv"
+    },
+    "genome_reads_10kb": {
+      "title": "Genome-wide reads (10 kb)",
+      "tab": "Genome-wide Distribution",
+      "image": "qc/images/genome_wide_reads_10000bp.png",
+      "table": "qc/tables/all_hits_long.csv"
+    },
+    "genome_hits_10kb": {
+      "title": "Genome-wide hits (10 kb)",
+      "tab": "Genome-wide Distribution",
+      "image": "qc/images/genome_wide_hits_10000bp.png",
+      "table": "qc/tables/all_hits_long.csv"
+    }
+  },
+  "tab_order": [
+    "Overview",
+    "Mapping QC",
+    "Library Diagnostics",
+    "Feature Summary",
+    "Genome-wide Distribution",
+    "Insertion Browser",
+    "Classifier"
+  ],
+  "warnings": []
+}
