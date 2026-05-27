@@ -1,13 +1,14 @@
+
 #!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
-#$ -N YTAB_LibraryDiagnostics
+#$ -N YTAB_LibraryDiagnostics_Parent_Treated
 #$ -q UI
 #$ -pe smp 56
 #$ -M jayelazuno@uiowa.edu
 #$ -m e
 #$ -j y
-#$ -o YTAB_LibraryDiagnostics.log
+#$ -o YTAB_LibraryDiagnostics_Parent_Treated.log
 
 set -euo pipefail
 
@@ -42,7 +43,7 @@ QC_EXPORT_ROOT="$EXPORT_ROOT/qc/diagnostics"
 mkdir -p "$OUT_ROOT"
 mkdir -p "$QC_EXPORT_ROOT"
 
-# Reference files 
+# Reference files
 FASTA="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna"
 GFF="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff"
 CENTROMERE_BED="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/centromeres.NCBI.bed"
@@ -63,10 +64,11 @@ echo
 export PYTHONPATH="$YTAB/src"
 
 # -----------------------
-# Smoke-test sample only
+# Smoke-test parent + treated samples
 # -----------------------
 samples=(
   "yH298-parent-pool1"
+  "yH298-H2O2-treated-facs-pool1"
 )
 
 hits_files=()
@@ -82,6 +84,17 @@ done
 echo "Hits files (${#hits_files[@]}):"
 printf '  %s\n' "${hits_files[@]}"
 echo
+
+# -----------------------
+# Clean previous diagnostics for these smoke-test samples
+# -----------------------
+rm -f "$OUT_ROOT/library_diagnostics.summary.csv"
+rm -f "$QC_EXPORT_ROOT/library_diagnostics.summary.csv"
+
+for s in "${samples[@]}"; do
+  rm -rf "$OUT_ROOT/$s"
+  rm -rf "$QC_EXPORT_ROOT/$s"
+done
 
 # -----------------------
 # Run QC diagnostics (NO normalization)

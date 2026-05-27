@@ -2,13 +2,13 @@
 #!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
-#$ -N YTAB_MapFastq
+#$ -N YTAB_MapFastq_Treated1
 #$ -q UI
 #$ -pe smp 56
 #$ -M jayelazuno@uiowa.edu
 #$ -m e
 #$ -j y
-#$ -o YTAB_MapFastq.log
+#$ -o YTAB_MapFastq_Treated1.log
 
 set -euo pipefail
 
@@ -33,7 +33,7 @@ THREADS=56
 export PYTHONPATH="$YTAB/src"
 
 FASTQS=(
-  "yH298-parent-pool1.fastq.gz"
+  "yH298-H2O2-treated-facs-pool1.fastq.gz"
 )
 
 echo "YTAB repo:        $YTAB"
@@ -64,7 +64,7 @@ for fq_base in "${FASTQS[@]}"; do
     -x "$BOWTIE2_INDEX" \
     -t "$THREADS"
 
-  cp "$sample_out/${sample}.mapping_stats.csv" "$EXPORT_DIR/mapping_stats.csv"
+  cp "$sample_out/${sample}.mapping_stats.csv" "$EXPORT_DIR/${sample}.mapping_stats.csv"
   echo
 done
 

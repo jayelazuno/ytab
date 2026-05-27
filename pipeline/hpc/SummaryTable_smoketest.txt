@@ -2,13 +2,13 @@
 #!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
-#$ -N YTAB_SummaryTable
+#$ -N YTAB_SummaryTable_Parent_Treated
 #$ -q UI
 #$ -pe smp 56
 #$ -M jayelazuno@uiowa.edu
 #$ -m e
 #$ -j y
-#$ -o YTAB_SummaryTable.log
+#$ -o YTAB_SummaryTable_Parent_Treated.log
 
 set -euo pipefail
 
@@ -31,13 +31,17 @@ SCRIPT="$YTAB/src/ytab/summary/SummaryTable.py"
 # Input hit files from YTAB CreateHitFile smoke test
 HITS_ROOT="$YTAB/output/smoketests/create_hit_file"
 
-# Stage output for SummaryTable
+# Final stage output for SummaryTable
 OUT_ROOT="$YTAB/output/smoketests/summary"
+
+# Temporary isolated working dir
+WORK_ROOT="$YTAB/output/smoketests/summary_work"
 
 # App-facing export root
 EXPORT_ROOT="$YTAB/output/exports/smoke_test_v1/qc/summary"
 
 mkdir -p "$OUT_ROOT"
+mkdir -p "$WORK_ROOT"
 mkdir -p "$EXPORT_ROOT"
 
 THREADS=${NSLOTS:-56}
@@ -46,6 +50,7 @@ echo "THREADS(for SummaryTable)=$THREADS"
 echo "YTAB repo:     $YTAB"
 echo "Hits root:     $HITS_ROOT"
 echo "Out root:      $OUT_ROOT"
+echo "Work root:     $WORK_ROOT"
 echo "Export root:   $EXPORT_ROOT"
 echo "Script:        $SCRIPT"
 echo
@@ -53,15 +58,21 @@ echo
 export PYTHONPATH="$YTAB/src"
 
 # -----------------------
-# Smoke-test sample(s)
+# Smoke-test parent + treated samples
 # -----------------------
 SAMPLES=(
   "yH298-parent-pool1"
+  "yH298-H2O2-treated-facs-pool1"
 )
 
 for sample in "${SAMPLES[@]}"; do
   in_dir="$HITS_ROOT/$sample"
-  out="$OUT_ROOT/$sample"
+
+  # Temporary output for this one SummaryTable run
+  work_out="$WORK_ROOT/$sample"
+
+  # Final stable output
+  final_out="$OUT_ROOT/$sample"
   sample_export_dir="$EXPORT_ROOT/$sample"
 
   if [[ ! -d "$in_dir" ]]; then
@@ -69,23 +80,36 @@ for sample in "${SAMPLES[@]}"; do
     exit 1
   fi
 
+  shopt -s nullglob
   hits_files=( "$in_dir"/*_hits.txt )
+  shopt -u nullglob
+
   if [[ ${#hits_files[@]} -eq 0 ]]; then
     echo "ERROR: no *_hits.txt found in: $in_dir" >&2
     exit 1
   fi
 
-  mkdir -p "$out"
+  # Clean only this sample's work/final/export dirs
+  rm -rf "$work_out"
+  rm -rf "$final_out"
+  rm -rf "$sample_export_dir"
+
+  mkdir -p "$work_out"
+  mkdir -p "$final_out"
   mkdir -p "$sample_export_dir"
 
+  echo "============================================================"
   echo "[$(date)] sample=$sample"
   echo "  input=$in_dir"
-  echo "  output=$out"
+  echo "  work_out=$work_out"
+  echo "  final_out=$final_out"
   echo "  export=$sample_export_dir"
+  echo "  hits files found: ${#hits_files[@]}"
+  echo "============================================================"
 
   python3 "$SCRIPT" \
     -i "$in_dir" \
-    -o "$out" \
+    -o "$work_out" \
     --hit-glob "*_hits.txt" \
     --hit-format hit_table \
     --feature-db glabrata \
@@ -95,18 +119,39 @@ for sample in "${SAMPLES[@]}"; do
     -t "$THREADS" \
     --overwrite
 
+  echo "Files produced in work_out:"
+  find "$work_out" -maxdepth 3 -type f | sort || true
+  echo
+
   # -----------------------
-  # Copy app-facing summary assets
+  # Detect whether SummaryTable wrote directly into work_out
+  # or created a nested sample directory
+  # -----------------------
+  if [[ -d "$work_out/$sample" ]]; then
+    result_src="$work_out/$sample"
+  else
+    result_src="$work_out"
+  fi
+
+  echo "Copying SummaryTable result from:"
+  echo "  $result_src"
+  echo "to:"
+  echo "  $final_out"
+
+  cp -a "$result_src"/. "$final_out"/
+
+  # -----------------------
+  # Copy app-facing summary assets from final_out
   # -----------------------
   for f in \
-    "$out/stats.csv" \
-    "$out/${sample}.all_hits.csv" \
-    "$out/${sample}.feature_table.RDF_1.csv" \
-    "$out/${sample}_analysis.csv" \
-    "$out/binned_hits.RDF_1.csv" \
-    "$out/hit_summary.RDF_1.csv" \
-    "$out/insertion_vs_neighborhood_correlations.txt" \
-    "$out/outlier_stats.txt"
+    "$final_out/stats.csv" \
+    "$final_out/${sample}.all_hits.csv" \
+    "$final_out/${sample}.feature_table.RDF_1.csv" \
+    "$final_out/${sample}_analysis.csv" \
+    "$final_out/binned_hits.RDF_1.csv" \
+    "$final_out/hit_summary.RDF_1.csv" \
+    "$final_out/insertion_vs_neighborhood_correlations.txt" \
+    "$final_out/outlier_stats.txt"
   do
     if [[ -s "$f" ]]; then
       cp -f "$f" "$sample_export_dir/"
@@ -118,6 +163,10 @@ for sample in "${SAMPLES[@]}"; do
   echo
 done
 
+echo "Final summary dirs:"
+find "$OUT_ROOT" -maxdepth 2 -type d | sort
+
+echo
 date
 end=$(date +%s)
 runtime=$((end-start))

@@ -1,13 +1,14 @@
+
 #!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
-#$ -N YTAB_CreateHitFile
+#$ -N YTAB_CreateHitFile_Parent_Treated
 #$ -q UI
 #$ -pe smp 56
 #$ -M jayelazuno@uiowa.edu
 #$ -m e
 #$ -j y
-#$ -o YTAB_CreateHitFile.log
+#$ -o YTAB_CreateHitFile_Parent_Treated.log
 
 set -euo pipefail
 
@@ -27,7 +28,7 @@ conda activate tnseq
 YTAB="/Users/jayelazuno/workspace/ytab"
 LEGACY="/Users/jayelazuno/workspace/HermesTnseq"
 
-# Input BAM comes from YTAB MapFastq smoke test
+# Input BAMs from YTAB MapFastq smoke test
 MAP_DIR="$YTAB/output/smoketests/mapfastq"
 
 # Stage output for CreateHitFile
@@ -37,7 +38,7 @@ HIT_DIR="$YTAB/output/smoketests/create_hit_file"
 EXPORT_DIR="$YTAB/output/exports/smoke_test_v1"
 BROWSER_DIR="$EXPORT_DIR/browser"
 
-# Reference assets 
+# Reference assets
 REF_FASTA="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna"
 FEATURE_TABLE="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_feature_table.txt"
 
@@ -45,7 +46,7 @@ mkdir -p "$HIT_DIR"
 mkdir -p "$EXPORT_DIR"
 mkdir -p "$BROWSER_DIR"
 
-THREADS=56
+THREADS=${NSLOTS:-56}
 echo "THREADS(for CreateHitFile)=$THREADS"
 
 echo "YTAB repo:        $YTAB"
@@ -60,20 +61,26 @@ echo
 export PYTHONPATH="$YTAB/src"
 
 # -----------------------
-# Smoke-test sample 
+# Smoke-test parent + treated samples
 # -----------------------
 SAMPLES=(
   "yH298-parent-pool1"
+  "yH298-H2O2-treated-facs-pool1"
 )
 
 for sample in "${SAMPLES[@]}"; do
   bam="$MAP_DIR/$sample/${sample}.sorted.bam"
+
   if [[ ! -s "$bam" ]]; then
-    echo "ERROR: missing BAM for $sample -> $bam"
+    echo "ERROR: missing BAM for $sample -> $bam" >&2
+    echo "If this sample was overwritten during MapFastq, rerun MapFastq for this sample first." >&2
     exit 1
   fi
 
   out="$HIT_DIR/$sample"
+
+  # Clean only this sample's previous CreateHitFile output
+  rm -rf "$out"
   mkdir -p "$out"
 
   echo "[$(date)] sample=$sample"
@@ -96,10 +103,20 @@ for sample in "${SAMPLES[@]}"; do
   # -----------------------
   # Copy app-facing browser assets
   # -----------------------
-  cp "$out/${sample}.insertions.bedgraph" "$BROWSER_DIR/"
-  cp "$out/${sample}.insertions.wig" "$BROWSER_DIR/"
+  if [[ -s "$out/${sample}.insertions.bedgraph" ]]; then
+    cp -f "$out/${sample}.insertions.bedgraph" "$BROWSER_DIR/"
+  else
+    echo "[WARN] bedGraph not produced for $sample"
+  fi
+
+  if [[ -s "$out/${sample}.insertions.wig" ]]; then
+    cp -f "$out/${sample}.insertions.wig" "$BROWSER_DIR/"
+  else
+    echo "[WARN] WIG not produced for $sample"
+  fi
+
   if [[ -s "$out/${sample}.insertions.bw" ]]; then
-    cp "$out/${sample}.insertions.bw" "$BROWSER_DIR/"
+    cp -f "$out/${sample}.insertions.bw" "$BROWSER_DIR/"
   else
     echo "[WARN] bigWig not produced for $sample"
   fi
@@ -111,3 +128,4 @@ date
 end=$(date +%s)
 runtime=$((end-start))
 echo "runtime=$runtime secs"
+echo "Done."
