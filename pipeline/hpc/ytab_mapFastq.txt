@@ -1,0 +1,250 @@
+## Title: script to map fastq samples using bowtie2; assumes user has already generated ref genome indexes 
+## author: Joshua Ayelazuno
+## usage:
+ ## qsub ytab_mapFastq.txt
+ ## force rerun: qsub -v FORCE=1 ytab_mapFastq.txt
+ ## use different project folder qsub -v PROJECT_ID=H2O2_screen_v1,FORCE=1 ytab_mapFastq.txt 
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_MapFastq_All
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_MapFastq_All.log
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="/Users/jayelazuno/workspace/ytab"
+DATA_DIR="/Users/jayelazuno/workspace/HermesTnseq/data"
+BOWTIE2_INDEX="/Users/jayelazuno/workspace/HermesTnseq/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic"
+
+# Permanent project/version name for app-facing analysis
+PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
+
+# Permanent pipeline stage output
+RUN_DIR="$YTAB/output/projects/$PROJECT_ID/mapfastq"
+
+# App-facing export dir
+EXPORT_DIR="$YTAB/output/exports/$PROJECT_ID"
+MAPPING_EXPORT_DIR="$EXPORT_DIR/qc/mapping"
+
+mkdir -p "$RUN_DIR"
+mkdir -p "$EXPORT_DIR"
+mkdir -p "$MAPPING_EXPORT_DIR"
+
+THREADS=${NSLOTS:-56}
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Optional manual sample list
+# -----------------------
+# Leave empty to automatically discover all *.fastq.gz and *.fq.gz in DATA_DIR.
+#
+# You may list either:
+#   1) sample names without extension:
+#        "yH298-parent-pool1"
+#   2) FASTQ filenames:
+#        "yH298-parent-pool1.fastq.gz"
+#
+# Example manual list:
+# MANUAL_SAMPLES=(
+#   "yH298-parent-pool1"
+#  "yH298-parent-pool2"
+#   "yH299-parent-pool3"
+#   "yH299-parent-pool4"
+#   "yH298-H2O2-treated-facs-pool1"
+#   "yH298-H2O2-treated-facs-pool2"
+#   "yH299-H2O2-treated-facs-pool3"
+#   "yH299-H2O2-treated-facs-pool4"
+# )
+
+MANUAL_SAMPLES=()
+
+# Set FORCE=1 to rerun samples even if sorted BAM and mapping stats already exist.
+FORCE="${FORCE:-0}"
+
+echo "YTAB repo:          $YTAB"
+echo "Project ID:         $PROJECT_ID"
+echo "Input FASTQ dir:    $DATA_DIR"
+echo "Run dir:            $RUN_DIR"
+echo "Export dir:         $EXPORT_DIR"
+echo "Mapping export dir: $MAPPING_EXPORT_DIR"
+echo "Index prefix:       $BOWTIE2_INDEX"
+echo "THREADS:            $THREADS"
+echo "FORCE:              $FORCE"
+echo
+
+# -----------------------
+# Resolve FASTQ files
+# -----------------------
+
+FASTQ_FILES=()
+
+resolve_fastq() {
+  local item="$1"
+  local fq=""
+
+  if [[ "$item" == *.fastq.gz || "$item" == *.fq.gz ]]; then
+    fq="$DATA_DIR/$item"
+  else
+    if [[ -s "$DATA_DIR/${item}.fastq.gz" ]]; then
+      fq="$DATA_DIR/${item}.fastq.gz"
+    elif [[ -s "$DATA_DIR/${item}.fq.gz" ]]; then
+      fq="$DATA_DIR/${item}.fq.gz"
+    else
+      fq="$DATA_DIR/${item}.fastq.gz"
+    fi
+  fi
+
+  echo "$fq"
+}
+
+if [[ ${#MANUAL_SAMPLES[@]} -gt 0 ]]; then
+  echo "Using manual sample list."
+  for item in "${MANUAL_SAMPLES[@]}"; do
+    FASTQ_FILES+=( "$(resolve_fastq "$item")" )
+  done
+else
+  echo "No manual sample list provided. Discovering FASTQs in DATA_DIR."
+
+  while IFS= read -r -d '' fq; do
+    FASTQ_FILES+=( "$fq" )
+  done < <(
+    find "$DATA_DIR" -maxdepth 1 -type f \
+      \( -name "*.fastq.gz" -o -name "*.fq.gz" \) \
+      -print0 | sort -z
+  )
+fi
+
+if [[ ${#FASTQ_FILES[@]} -eq 0 ]]; then
+  echo "ERROR: no FASTQ files found." >&2
+  echo "DATA_DIR=$DATA_DIR" >&2
+  exit 1
+fi
+
+echo "FASTQ files to process (${#FASTQ_FILES[@]}):"
+printf '  %s\n' "${FASTQ_FILES[@]}"
+echo
+
+# -----------------------
+# Run MapFastq
+# -----------------------
+
+for fq in "${FASTQ_FILES[@]}"; do
+  if [[ ! -s "$fq" ]]; then
+    echo "ERROR: missing input FASTQ: $fq" >&2
+    exit 1
+  fi
+
+  fq_base="$(basename "$fq")"
+
+  sample="$fq_base"
+  sample="${sample%.fastq.gz}"
+  sample="${sample%.fq.gz}"
+
+  sample_out="$RUN_DIR/$sample"
+  mkdir -p "$sample_out"
+
+  expected_bam="$sample_out/${sample}.sorted.bam"
+  expected_bai="$sample_out/${sample}.sorted.bam.bai"
+  expected_stats="$sample_out/${sample}.mapping_stats.csv"
+
+  echo "============================================================"
+  echo "[$(date)] sample=$sample"
+  echo "  input=$fq"
+  echo "  output=$sample_out"
+  echo "============================================================"
+
+  if [[ "$FORCE" != "1" && -s "$expected_bam" && -s "$expected_stats" ]]; then
+    echo "[SKIP] Existing outputs found for $sample."
+    echo "       BAM:   $expected_bam"
+    echo "       stats: $expected_stats"
+    echo "       Set FORCE=1 to rerun."
+  else
+    python3 "$YTAB/src/ytab/mapping/MapFastq.py" \
+      -i "$fq" \
+      -o "$sample_out" \
+      -x "$BOWTIE2_INDEX" \
+      -t "$THREADS"
+  fi
+
+  if [[ ! -s "$expected_bam" ]]; then
+    echo "ERROR: expected BAM was not produced: $expected_bam" >&2
+    exit 1
+  fi
+
+  if [[ ! -s "$expected_stats" ]]; then
+    echo "ERROR: expected mapping stats were not produced: $expected_stats" >&2
+    exit 1
+  fi
+
+  # -----------------------
+  # Copy app-facing mapping assets
+  # -----------------------
+  cp -f "$expected_stats" "$MAPPING_EXPORT_DIR/${sample}.mapping_stats.csv"
+
+  if [[ -s "$expected_bai" ]]; then
+    cp -f "$expected_bai" "$MAPPING_EXPORT_DIR/${sample}.sorted.bam.bai"
+  else
+    echo "[WARN] expected BAM index missing: $expected_bai"
+  fi
+
+  echo
+done
+
+# -----------------------
+# Build combined app-facing mapping stats table
+# -----------------------
+
+combined_stats="$MAPPING_EXPORT_DIR/mapping_stats.all_samples.csv"
+
+shopt -s nullglob
+stats_files=( "$MAPPING_EXPORT_DIR"/*.mapping_stats.csv )
+shopt -u nullglob
+
+if [[ ${#stats_files[@]} -gt 0 ]]; then
+  echo "Building combined mapping stats:"
+  echo "  $combined_stats"
+
+  first=1
+  : > "$combined_stats"
+
+  for f in "${stats_files[@]}"; do
+    if [[ "$first" -eq 1 ]]; then
+      cat "$f" >> "$combined_stats"
+      first=0
+    else
+      tail -n +2 "$f" >> "$combined_stats"
+    fi
+  done
+else
+  echo "[WARN] no per-sample mapping stats found in $MAPPING_EXPORT_DIR"
+fi
+
+echo
+echo "Final MapFastq outputs:"
+echo "  Pipeline stage outputs: $RUN_DIR/<sample>/"
+echo "  App-facing exports:     $MAPPING_EXPORT_DIR/"
+echo
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
+echo "Done."

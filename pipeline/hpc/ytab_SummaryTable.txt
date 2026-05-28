@@ -1,0 +1,283 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_SummaryTable_All
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_SummaryTable_All.log
+
+## title: YTAB SummaryTable job for all CreateHitFile samples
+## author: Joshua Ayelazuno
+## usage:
+##   qsub ytab_SummaryTable.txt
+##
+##   Optional:
+##     Rerun all samples even if outputs exist:
+##       qsub -v FORCE=1 ytab_SummaryTable.txt
+##
+##     Use a different project/version output folder:
+##       qsub -v PROJECT_ID=H2O2_screen_v1 ytab_SummaryTable.txt
+##
+##     Run with both:
+##       qsub -v PROJECT_ID=H2O2_screen_v1,FORCE=1 ytab_SummaryTable.txt
+##
+##     Hold this job until CreateHitFile finishes:
+##       qsub -hold_jid <CREATE_HIT_JOB_ID> ytab_SummaryTable.txt
+##
+##   Notes:
+##     - By default, this script uses the MANUAL_SAMPLES list below.
+##     - To auto-discover samples, set MANUAL_SAMPLES=() and the script
+##       will search HITS_ROOT for sample directories containing *_hits.txt.
+##     - Output is written to:
+##         output/projects/<PROJECT_ID>/summary/<sample>/
+##     - App-facing summary exports are copied to:
+##         output/exports/<PROJECT_ID>/qc/summary/<sample>/
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+SCRIPT="$YTAB/src/ytab/summary/SummaryTable.py"
+
+# Permanent project/version name for app-facing analysis
+PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
+
+# Input hit files from permanent YTAB CreateHitFile stage
+HITS_ROOT="$YTAB/output/projects/$PROJECT_ID/create_hit_file"
+
+# Permanent stage output for SummaryTable
+OUT_ROOT="$YTAB/output/projects/$PROJECT_ID/summary"
+
+# App-facing export root
+EXPORT_ROOT="$YTAB/output/exports/$PROJECT_ID/qc/summary"
+
+mkdir -p "$OUT_ROOT"
+mkdir -p "$EXPORT_ROOT"
+
+THREADS=${NSLOTS:-56}
+FORCE="${FORCE:-0}"
+
+echo "THREADS(for SummaryTable)=$THREADS"
+echo "FORCE:        $FORCE"
+echo "PROJECT_ID:   $PROJECT_ID"
+echo "YTAB repo:    $YTAB"
+echo "Hits root:    $HITS_ROOT"
+echo "Out root:     $OUT_ROOT"
+echo "Export root:  $EXPORT_ROOT"
+echo "Script:       $SCRIPT"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Manual sample list
+# -----------------------
+# Keep this list for the current H2O2 project so we do not accidentally
+# process unrelated samples.
+#
+# To auto-discover all samples instead, change to:
+#   MANUAL_SAMPLES=()
+
+MANUAL_SAMPLES=(
+  "yH298-parent-pool1"
+  "yH298-parent-pool2"
+  "yH299-parent-pool3"
+  "yH299-parent-pool4"
+  "yH298-H2O2-treated-facs-pool1"
+  "yH298-H2O2-treated-facs-pool2"
+  "yH299-H2O2-treated-facs-pool3"
+  "yH299-H2O2-treated-facs-pool4"
+)
+
+# -----------------------
+# Resolve samples
+# -----------------------
+
+SAMPLES=()
+
+if [[ ${#MANUAL_SAMPLES[@]} -gt 0 ]]; then
+  echo "Using manual sample list."
+  SAMPLES=( "${MANUAL_SAMPLES[@]}" )
+else
+  echo "No manual sample list provided. Discovering samples from HITS_ROOT."
+
+  while IFS= read -r -d '' hits_file; do
+    sample="$(basename "$(dirname "$hits_file")")"
+    SAMPLES+=( "$sample" )
+  done < <(
+    find "$HITS_ROOT" -mindepth 2 -maxdepth 2 -type f \
+      -name "*_hits.txt" \
+      -print0 | sort -z
+  )
+fi
+
+if [[ ${#SAMPLES[@]} -eq 0 ]]; then
+  echo "ERROR: no samples found." >&2
+  echo "HITS_ROOT=$HITS_ROOT" >&2
+  exit 1
+fi
+
+echo "Samples to process (${#SAMPLES[@]}):"
+printf '  %s\n' "${SAMPLES[@]}"
+echo
+
+# -----------------------
+# Run SummaryTable
+# -----------------------
+
+for sample in "${SAMPLES[@]}"; do
+  in_dir="$HITS_ROOT/$sample"
+  out="$OUT_ROOT/$sample"
+  sample_export_dir="$EXPORT_ROOT/$sample"
+
+  expected_feature_table="$out/${sample}.feature_table.RDF_1.csv"
+  expected_stats="$out/stats.csv"
+
+  if [[ ! -d "$in_dir" ]]; then
+    echo "ERROR: missing input directory: $in_dir" >&2
+    exit 1
+  fi
+
+  shopt -s nullglob
+  hits_files=( "$in_dir"/*_hits.txt )
+  shopt -u nullglob
+
+  if [[ ${#hits_files[@]} -eq 0 ]]; then
+    echo "ERROR: no *_hits.txt found in: $in_dir" >&2
+    exit 1
+  fi
+
+  echo "============================================================"
+  echo "[$(date)] sample=$sample"
+  echo "  input=$in_dir"
+  echo "  output=$out"
+  echo "  export=$sample_export_dir"
+  echo "  hits files found: ${#hits_files[@]}"
+  echo "============================================================"
+
+  if [[ "$FORCE" != "1" && -s "$expected_feature_table" && -s "$expected_stats" ]]; then
+    echo "[SKIP] Existing SummaryTable outputs found for $sample."
+    echo "       feature table: $expected_feature_table"
+    echo "       stats:         $expected_stats"
+    echo "       Set FORCE=1 to rerun."
+  else
+    # Clean only this sample's previous SummaryTable output/export
+    rm -rf "$out"
+    rm -rf "$sample_export_dir"
+
+    mkdir -p "$out"
+    mkdir -p "$sample_export_dir"
+
+    python3 "$SCRIPT" \
+      -i "$in_dir" \
+      -o "$out" \
+      --hit-glob "*_hits.txt" \
+      --hit-format hit_table \
+      --feature-db glabrata \
+      -f 1 \
+      --neighborhood-window-size 10000 \
+      --bin-size 10000 \
+      -t "$THREADS" \
+      --overwrite
+  fi
+
+  # -----------------------
+  # Validate expected outputs
+  # -----------------------
+  if [[ ! -s "$expected_feature_table" ]]; then
+    echo "ERROR: expected feature table was not produced: $expected_feature_table" >&2
+    exit 1
+  fi
+
+  if [[ ! -s "$expected_stats" ]]; then
+    echo "ERROR: expected stats file was not produced: $expected_stats" >&2
+    exit 1
+  fi
+
+  # -----------------------
+  # Copy app-facing summary assets
+  # -----------------------
+  mkdir -p "$sample_export_dir"
+
+  for f in \
+    "$out/stats.csv" \
+    "$out/${sample}.all_hits.csv" \
+    "$out/${sample}.feature_table.RDF_1.csv" \
+    "$out/${sample}_analysis.csv" \
+    "$out/binned_hits.RDF_1.csv" \
+    "$out/hit_summary.RDF_1.csv" \
+    "$out/insertion_vs_neighborhood_correlations.txt" \
+    "$out/outlier_stats.txt"
+  do
+    if [[ -s "$f" ]]; then
+      cp -f "$f" "$sample_export_dir/"
+    else
+      echo "[WARN] expected file missing: $f"
+    fi
+  done
+
+  echo
+done
+
+# -----------------------
+# Build combined app-facing summary stats table
+# -----------------------
+
+combined_stats="$EXPORT_ROOT/summary_stats.all_samples.csv"
+
+shopt -s nullglob
+stats_files=( "$EXPORT_ROOT"/*/stats.csv )
+shopt -u nullglob
+
+if [[ ${#stats_files[@]} -gt 0 ]]; then
+  echo "Building combined summary stats:"
+  echo "  $combined_stats"
+
+  first=1
+  : > "$combined_stats"
+
+  for f in "${stats_files[@]}"; do
+    sample="$(basename "$(dirname "$f")")"
+
+    if [[ "$first" -eq 1 ]]; then
+      awk -v sample="$sample" 'NR==1{print "sample,"$0; next} {print sample","$0}' "$f" >> "$combined_stats"
+      first=0
+    else
+      awk -v sample="$sample" 'NR>1{print sample","$0}' "$f" >> "$combined_stats"
+    fi
+  done
+else
+  echo "[WARN] no stats.csv files found in $EXPORT_ROOT/<sample>/"
+fi
+
+echo "Final summary dirs:"
+find "$OUT_ROOT" -maxdepth 2 -type d | sort
+
+echo
+echo "Final SummaryTable outputs:"
+echo "  Pipeline stage outputs: $OUT_ROOT/<sample>/"
+echo "  App-facing exports:     $EXPORT_ROOT/<sample>/"
+echo "  Combined summary stats: $combined_stats"
+echo
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
+echo "Done."

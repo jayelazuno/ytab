@@ -1,0 +1,299 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_LibraryDiagnostics_All
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_LibraryDiagnostics_All.log
+
+## title: YTAB LibraryDiagnostics job for all CreateHitFile samples
+## author: Joshua Ayelazuno
+## usage:
+##   qsub ytab_LibraryDiagnostics.txt
+##
+##   Optional:
+##     Rerun diagnostics even if outputs exist:
+##       qsub -v FORCE=1 ytab_LibraryDiagnostics.txt
+##
+##     Use a different project/version output folder:
+##       qsub -v PROJECT_ID=H2O2_screen_v1 ytab_LibraryDiagnostics.txt
+##
+##     Run with both:
+##       qsub -v PROJECT_ID=H2O2_screen_v1,FORCE=1 ytab_LibraryDiagnostics.txt
+##
+##     Hold this job until CreateHitFile finishes:
+##       qsub -hold_jid <CREATE_HIT_JOB_ID> ytab_LibraryDiagnostics.txt
+##
+##   Notes:
+##     - By default, this script uses the MANUAL_SAMPLES list below.
+##     - To auto-discover samples, set MANUAL_SAMPLES=() and the script
+##       will search HITS_ROOT for sample directories containing *_hits.txt.
+##     - Stage outputs are written to:
+##         output/projects/<PROJECT_ID>/library_diagnostics/<sample>/
+##     - App-facing diagnostics exports are copied to:
+##         output/exports/<PROJECT_ID>/qc/diagnostics/<sample>/
+##     - Combined diagnostics summary is copied to:
+##         output/exports/<PROJECT_ID>/qc/diagnostics/library_diagnostics.summary.csv
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+LEGACY="${LEGACY:-/Users/jayelazuno/workspace/HermesTnseq}"
+
+SCRIPT="$YTAB/src/ytab/qc/LibraryDiagnostics.py"
+
+# Permanent project/version name for app-facing analysis
+PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
+
+# Input hits from permanent YTAB CreateHitFile stage
+HITS_ROOT="$YTAB/output/projects/$PROJECT_ID/create_hit_file"
+
+# Permanent stage output for LibraryDiagnostics
+OUT_ROOT="$YTAB/output/projects/$PROJECT_ID/library_diagnostics"
+
+# App-facing export dirs
+EXPORT_ROOT="$YTAB/output/exports/$PROJECT_ID"
+QC_EXPORT_ROOT="$EXPORT_ROOT/qc/diagnostics"
+
+mkdir -p "$OUT_ROOT"
+mkdir -p "$QC_EXPORT_ROOT"
+
+# Reference files
+FASTA="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna"
+GFF="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff"
+CENTROMERE_BED="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/centromeres.NCBI.bed"
+
+THREADS=${NSLOTS:-56}
+FORCE="${FORCE:-0}"
+
+echo "THREADS=$THREADS"
+echo "FORCE:           $FORCE"
+echo "PROJECT_ID:      $PROJECT_ID"
+echo "YTAB repo:       $YTAB"
+echo "LEGACY repo:     $LEGACY"
+echo "Script:          $SCRIPT"
+echo "Hits root:       $HITS_ROOT"
+echo "Out root:        $OUT_ROOT"
+echo "Export root:     $EXPORT_ROOT"
+echo "QC export root:  $QC_EXPORT_ROOT"
+echo "FASTA:           $FASTA"
+echo "GFF (metaplot):  $GFF"
+echo "Centromeres:     $CENTROMERE_BED"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Manual sample list
+# -----------------------
+# Keep this list for the current H2O2 project so we do not accidentally
+# process unrelated samples.
+#
+# To auto-discover all samples instead, change to:
+#   MANUAL_SAMPLES=()
+
+MANUAL_SAMPLES=(
+  "yH298-parent-pool1"
+  "yH298-parent-pool2"
+  "yH299-parent-pool3"
+  "yH299-parent-pool4"
+  "yH298-H2O2-treated-facs-pool1"
+  "yH298-H2O2-treated-facs-pool2"
+  "yH299-H2O2-treated-facs-pool3"
+  "yH299-H2O2-treated-facs-pool4"
+)
+
+# -----------------------
+# Resolve samples
+# -----------------------
+
+SAMPLES=()
+
+if [[ ${#MANUAL_SAMPLES[@]} -gt 0 ]]; then
+  echo "Using manual sample list."
+  SAMPLES=( "${MANUAL_SAMPLES[@]}" )
+else
+  echo "No manual sample list provided. Discovering samples from HITS_ROOT."
+
+  while IFS= read -r -d '' hits_file; do
+    sample="$(basename "$(dirname "$hits_file")")"
+    SAMPLES+=( "$sample" )
+  done < <(
+    find "$HITS_ROOT" -mindepth 2 -maxdepth 2 -type f \
+      -name "*_hits.txt" \
+      -print0 | sort -z
+  )
+fi
+
+if [[ ${#SAMPLES[@]} -eq 0 ]]; then
+  echo "ERROR: no samples found." >&2
+  echo "HITS_ROOT=$HITS_ROOT" >&2
+  exit 1
+fi
+
+echo "Samples to process (${#SAMPLES[@]}):"
+printf '  %s\n' "${SAMPLES[@]}"
+echo
+
+# -----------------------
+# Resolve hit files
+# -----------------------
+
+hits_files=()
+
+for s in "${SAMPLES[@]}"; do
+  f="$HITS_ROOT/$s/${s}_hits.txt"
+
+  if [[ ! -s "$f" ]]; then
+    echo "ERROR: missing hits file: $f" >&2
+    exit 1
+  fi
+
+  hits_files+=( "$f" )
+done
+
+echo "Hits files (${#hits_files[@]}):"
+printf '  %s\n' "${hits_files[@]}"
+echo
+
+# -----------------------
+# Check whether diagnostics already exist
+# -----------------------
+
+all_outputs_exist=1
+
+if [[ ! -s "$OUT_ROOT/library_diagnostics.summary.csv" ]]; then
+  all_outputs_exist=0
+fi
+
+for s in "${SAMPLES[@]}"; do
+  if [[ ! -s "$OUT_ROOT/$s/${s}.midlc.csv" ]]; then
+    all_outputs_exist=0
+  fi
+
+  if [[ ! -s "$OUT_ROOT/$s/${s}.summary.csv" ]]; then
+    all_outputs_exist=0
+  fi
+done
+
+# -----------------------
+# Run QC diagnostics (NO normalization)
+# -----------------------
+
+OUTDIR="$OUT_ROOT"
+mkdir -p "$OUTDIR"
+
+if [[ "$FORCE" != "1" && "$all_outputs_exist" -eq 1 ]]; then
+  echo "[SKIP] Existing LibraryDiagnostics outputs found for all samples."
+  echo "       Summary: $OUT_ROOT/library_diagnostics.summary.csv"
+  echo "       Set FORCE=1 to rerun."
+else
+  echo "Cleaning previous diagnostics outputs for selected samples."
+
+  rm -f "$OUT_ROOT/library_diagnostics.summary.csv"
+  rm -f "$QC_EXPORT_ROOT/library_diagnostics.summary.csv"
+
+  for s in "${SAMPLES[@]}"; do
+    rm -rf "$OUT_ROOT/$s"
+    rm -rf "$QC_EXPORT_ROOT/$s"
+  done
+
+  echo "============================================================"
+  echo "[$(date)] Running LibraryDiagnostics"
+  echo "  outdir=$OUTDIR"
+  echo "============================================================"
+
+  python3 "$SCRIPT" \
+    --hits-txt "${hits_files[@]}" \
+    --outdir "$OUTDIR" \
+    --fasta "$FASTA" \
+    --centromeres-bed "$CENTROMERE_BED" \
+    --metaplot-gff "$GFF" \
+    --metaplot-window-bp 1000 \
+    --metaplot-bin-bp 10 \
+    --seed 1
+fi
+
+# -----------------------
+# Validate combined summary
+# -----------------------
+
+if [[ ! -s "$OUTDIR/library_diagnostics.summary.csv" ]]; then
+  echo "ERROR: expected summary missing: $OUTDIR/library_diagnostics.summary.csv" >&2
+  exit 1
+fi
+
+# -----------------------
+# Copy app-facing diagnostics assets
+# -----------------------
+
+# Combined summary
+cp -f "$OUTDIR/library_diagnostics.summary.csv" \
+  "$QC_EXPORT_ROOT/library_diagnostics.summary.csv"
+
+# Per-sample assets
+for s in "${SAMPLES[@]}"; do
+  sample_src="$OUTDIR/$s"
+  sample_dst="$QC_EXPORT_ROOT/$s"
+  mkdir -p "$sample_dst"
+
+  if [[ ! -d "$sample_src" ]]; then
+    echo "[WARN] missing per-sample diagnostics dir: $sample_src" >&2
+    continue
+  fi
+
+  for f in \
+    "$sample_src/${s}.midlc.csv" \
+    "$sample_src/${s}.seqbias_2_7.tsv" \
+    "$sample_src/${s}.centromere_bins.tsv" \
+    "$sample_src/${s}.centromere_bias.png" \
+    "$sample_src/${s}.tss_metaplot.tsv" \
+    "$sample_src/${s}.tts_metaplot.tsv" \
+    "$sample_src/${s}.trna_metaplot.tsv" \
+    "$sample_src/${s}.metaplots.png" \
+    "$sample_src/${s}.summary.csv"
+  do
+    if [[ -s "$f" ]]; then
+      cp -f "$f" "$sample_dst/"
+    else
+      echo "[WARN] expected file missing: $f" >&2
+    fi
+  done
+
+  if [[ ! -s "$sample_dst/${s}.midlc.csv" ]]; then
+    echo "ERROR: expected MidLC export missing for $s" >&2
+    exit 1
+  fi
+
+  echo "Copied diagnostics export for $s -> $sample_dst"
+done
+
+echo
+echo "Final LibraryDiagnostics outputs:"
+echo "  Stage outputs: $OUTDIR/<sample>/"
+echo "  App exports:   $QC_EXPORT_ROOT/<sample>/"
+echo "  Combined QC:   $QC_EXPORT_ROOT/library_diagnostics.summary.csv"
+echo
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
+echo "Done."

@@ -1,0 +1,294 @@
+
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_CreateHitFile_All
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_CreateHitFile_All.log
+
+## title: YTAB CreateHitFile job for all mapped samples
+## author: Joshua Ayelazuno
+## usage:
+##   qsub ytab_CreateHitFile.txt
+##
+##   Optional:
+##     Rerun all samples even if outputs exist:
+##       qsub -v FORCE=1 ytab_CreateHitFile.txt
+##
+##     Use a different project/version output folder:
+##       qsub -v PROJECT_ID=H2O2_screen_v1 ytab_CreateHitFile.txt
+##
+##     Run with both:
+##       qsub -v PROJECT_ID=H2O2_screen_v1,FORCE=1 ytab_CreateHitFile.txt
+##
+##     Hold this job until MapFastq finishes:
+##       qsub -hold_jid <MAPFASTQ_JOB_ID> ytab_CreateHitFile.txt
+##
+##   Notes:
+##     - By default, this script uses the MANUAL_SAMPLES list below.
+##     - To auto-discover samples, set MANUAL_SAMPLES=() and the script
+##       will search MAP_DIR for */*.sorted.bam.
+##     - Final output is written to:
+##         output/projects/<PROJECT_ID>/create_hit_file/<sample>/
+##     - Browser tracks are copied to:
+##         output/exports/<PROJECT_ID>/browser/
+##     - Each sample is run in an isolated hidden run directory first, so
+##       CreateHitFile.py cannot overwrite previously completed samples.
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+LEGACY="${LEGACY:-/Users/jayelazuno/workspace/HermesTnseq}"
+
+# Permanent project/version name for app-facing analysis
+PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
+
+# Input BAMs from permanent YTAB MapFastq stage
+MAP_DIR="$YTAB/output/projects/$PROJECT_ID/mapfastq"
+
+# Permanent stage output for CreateHitFile
+HIT_DIR="$YTAB/output/projects/$PROJECT_ID/create_hit_file"
+
+# App-facing export dir
+EXPORT_DIR="$YTAB/output/exports/$PROJECT_ID"
+BROWSER_DIR="$EXPORT_DIR/browser"
+
+# Reference assets
+REF_FASTA="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna"
+FEATURE_TABLE="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_feature_table.txt"
+
+mkdir -p "$HIT_DIR"
+mkdir -p "$EXPORT_DIR"
+mkdir -p "$BROWSER_DIR"
+
+THREADS=${NSLOTS:-56}
+FORCE="${FORCE:-0}"
+
+echo "THREADS(for CreateHitFile)=$THREADS"
+echo "FORCE:             $FORCE"
+echo "PROJECT_ID:        $PROJECT_ID"
+echo "YTAB repo:         $YTAB"
+echo "LEGACY repo:       $LEGACY"
+echo "Mapping dir:       $MAP_DIR"
+echo "CreateHitFile dir: $HIT_DIR"
+echo "Export dir:        $EXPORT_DIR"
+echo "Browser dir:       $BROWSER_DIR"
+echo "Reference FASTA:   $REF_FASTA"
+echo "Feature table:     $FEATURE_TABLE"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Manual sample list
+# -----------------------
+# Keep this list for the current H2O2 project so we do not accidentally
+# process unrelated mapped samples.
+#
+# To auto-discover all mapped samples instead, change to:
+#   MANUAL_SAMPLES=()
+
+MANUAL_SAMPLES=(
+  "yH298-parent-pool1"
+  "yH298-parent-pool2"
+  "yH299-parent-pool3"
+  "yH299-parent-pool4"
+  "yH298-H2O2-treated-facs-pool1"
+  "yH298-H2O2-treated-facs-pool2"
+  "yH299-H2O2-treated-facs-pool3"
+  "yH299-H2O2-treated-facs-pool4"
+)
+
+# -----------------------
+# Resolve samples
+# -----------------------
+
+SAMPLES=()
+
+if [[ ${#MANUAL_SAMPLES[@]} -gt 0 ]]; then
+  echo "Using manual sample list."
+  SAMPLES=( "${MANUAL_SAMPLES[@]}" )
+else
+  echo "No manual sample list provided. Discovering samples from MAP_DIR."
+
+  while IFS= read -r -d '' bam; do
+    sample="$(basename "$(dirname "$bam")")"
+    SAMPLES+=( "$sample" )
+  done < <(
+    find "$MAP_DIR" -mindepth 2 -maxdepth 2 -type f \
+      -name "*.sorted.bam" \
+      -print0 | sort -z
+  )
+fi
+
+if [[ ${#SAMPLES[@]} -eq 0 ]]; then
+  echo "ERROR: no samples found." >&2
+  echo "MAP_DIR=$MAP_DIR" >&2
+  exit 1
+fi
+
+echo "Samples to process (${#SAMPLES[@]}):"
+printf '  %s\n' "${SAMPLES[@]}"
+echo
+
+# -----------------------
+# Run CreateHitFile
+# -----------------------
+
+for sample in "${SAMPLES[@]}"; do
+  bam="$MAP_DIR/$sample/${sample}.sorted.bam"
+
+  if [[ ! -s "$bam" ]]; then
+    echo "ERROR: missing BAM for $sample -> $bam" >&2
+    echo "Run MapFastq for this sample first." >&2
+    exit 1
+  fi
+
+  # Final permanent output for this sample
+  out="$HIT_DIR/$sample"
+
+  # Isolated hidden run root for this sample.
+  # CreateHitFile.py receives this as -o, so if it clears its output
+  # directory internally, it only clears this one sample run area.
+  sample_run_root="$HIT_DIR/.run_${sample}"
+
+  expected_hits="$out/${sample}_hits.txt"
+  expected_bedgraph="$out/${sample}.insertions.bedgraph"
+  expected_wig="$out/${sample}.insertions.wig"
+  expected_bw="$out/${sample}.insertions.bw"
+
+  echo "============================================================"
+  echo "[$(date)] sample=$sample"
+  echo "  BAM=$bam"
+  echo "  RUN_ROOT=$sample_run_root"
+  echo "  FINAL_OUT=$out"
+  echo "============================================================"
+
+  if [[ "$FORCE" != "1" && -s "$expected_hits" && -s "$expected_bedgraph" ]]; then
+    echo "[SKIP] Existing CreateHitFile outputs found for $sample."
+    echo "       hits:     $expected_hits"
+    echo "       bedGraph: $expected_bedgraph"
+    echo "       Set FORCE=1 to rerun."
+  else
+    # Clean only this sample's isolated run area and final output.
+    rm -rf "$sample_run_root"
+    rm -rf "$out"
+
+    mkdir -p "$sample_run_root"
+    mkdir -p "$out"
+
+    python3 "$YTAB/src/ytab/insertions/CreateHitFile.py" \
+      -b "$bam" \
+      -o "$sample_run_root" \
+      -f "$REF_FASTA" \
+      -g "$FEATURE_TABLE" \
+      --feature-format ncbi_feature_table \
+      --ncbi-chrom-field genomic_accession \
+      --ncbi-keep gene \
+      --write-gene-counts \
+      --drop-top-sites 1 \
+      --write-browser-tracks \
+      --threads "$THREADS"
+
+    echo "Files produced in isolated run root:"
+    find "$sample_run_root" -maxdepth 3 -type f | sort || true
+    echo
+
+    # Detect whether CreateHitFile.py wrote directly into sample_run_root
+    # or created a nested sample directory inside sample_run_root.
+    if [[ -s "$sample_run_root/$sample/${sample}_hits.txt" ]]; then
+      result_src="$sample_run_root/$sample"
+    elif [[ -s "$sample_run_root/${sample}_hits.txt" ]]; then
+      result_src="$sample_run_root"
+    else
+      echo "ERROR: could not find expected hits output for $sample in:" >&2
+      echo "  $sample_run_root" >&2
+      find "$sample_run_root" -maxdepth 3 -type f | sort >&2 || true
+      exit 1
+    fi
+
+    echo "Copying CreateHitFile result from:"
+    echo "  $result_src"
+    echo "to:"
+    echo "  $out"
+
+    cp -a "$result_src"/. "$out"/
+
+    # Remove isolated run root after successful copy.
+    rm -rf "$sample_run_root"
+  fi
+
+  # -----------------------
+  # Validate expected outputs
+  # -----------------------
+  if [[ ! -s "$expected_hits" ]]; then
+    echo "ERROR: expected hits file was not produced: $expected_hits" >&2
+    exit 1
+  fi
+
+  if [[ ! -s "$expected_bedgraph" ]]; then
+    echo "ERROR: expected bedGraph was not produced: $expected_bedgraph" >&2
+    exit 1
+  fi
+
+  # -----------------------
+  # Copy app-facing browser assets
+  # -----------------------
+  cp -f "$expected_bedgraph" "$BROWSER_DIR/"
+
+  if [[ -s "$expected_wig" ]]; then
+    cp -f "$expected_wig" "$BROWSER_DIR/"
+  else
+    echo "[WARN] WIG not produced for $sample: $expected_wig"
+  fi
+
+  if [[ -s "$expected_bw" ]]; then
+    cp -f "$expected_bw" "$BROWSER_DIR/"
+  else
+    echo "[WARN] bigWig not produced for $sample"
+  fi
+
+  # Optional gene-count outputs from --write-gene-counts
+  if [[ -s "$out/${sample}.GeneCount.csv" ]]; then
+    cp -f "$out/${sample}.GeneCount.csv" "$BROWSER_DIR/"
+  fi
+
+  if [[ -s "$out/${sample}.removedGeneCount.csv" ]]; then
+    cp -f "$out/${sample}.removedGeneCount.csv" "$BROWSER_DIR/"
+  fi
+
+  echo
+done
+
+echo "Final CreateHitFile outputs:"
+echo "  Pipeline stage outputs: $HIT_DIR/<sample>/"
+echo "  Browser exports:        $BROWSER_DIR/"
+echo
+
+echo "Final sample directories:"
+find "$HIT_DIR" -mindepth 1 -maxdepth 1 -type d ! -name ".run_*" | sort
+echo
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
+echo "Done."
