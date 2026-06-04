@@ -590,12 +590,27 @@ if __name__ == '__main__':
         bw_msg = ""
 
         if args.write_browser_tracks:
-            bedgraph_path, wig_path, bigwig_path = write_browser_tracks(
+            track_outputs = write_browser_tracks(
                 MyList,
                 ChrLen,
                 rep_dir,
                 prefix
             )
+
+            if len(track_outputs) < 3:
+                raise RuntimeError(
+                    f"write_browser_tracks returned {len(track_outputs)} values; expected at least 3"
+                )
+
+            bedgraph_path, wig_path, bigwig_path = track_outputs[:3]
+
+            # Some versions of write_browser_tracks may also return bigWig status/message.
+            # Keep these if present, but do not require them.
+            if len(track_outputs) >= 4:
+                bw_written = track_outputs[3]
+
+            if len(track_outputs) >= 5:
+                bw_msg = track_outputs[4]
 
         UniqueHitPercent = round(float(TotalUniqueHits)/float(TotalHits)*100, 2)
 
