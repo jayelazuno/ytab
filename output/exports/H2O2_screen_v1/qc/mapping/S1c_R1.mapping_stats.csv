@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+S1c_R1,9845338,9845338,8886857,958481,90.265,0,0.0,8457536,95.169,39.79,/old_Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/mapfastq/S1c_R1/S1c_R1.sam

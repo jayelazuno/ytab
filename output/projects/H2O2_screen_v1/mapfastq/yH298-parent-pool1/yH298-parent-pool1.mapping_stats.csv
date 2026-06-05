@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+yH298-parent-pool1,28449916,28449916,25663870,2786046,90.207,0,0.0,24416746,95.141,39.78,/old_Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/mapfastq/yH298-parent-pool1/yH298-parent-pool1.sam

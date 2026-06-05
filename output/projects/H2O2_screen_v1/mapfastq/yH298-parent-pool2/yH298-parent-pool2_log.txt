@@ -1,0 +1,22 @@
+=== Trimming step skipped ===
+
+
+=== Sequence alignment ===
+42752505 reads; of these:
+  42752505 (100.00%) were unpaired; of these:
+    6520849 (15.25%) aligned 0 times
+    34499168 (80.70%) aligned exactly 1 time
+    1732488 (4.05%) aligned >1 times
+84.75% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 42752505
+primary_records: 42752505
+primary_mapped: 36231656
+primary_unmapped: 6520849
+percent_mapped: 84.747
+mapq_ge_threshold: 33901264
+percent_mapq_ge_threshold: 93.568
+avg_mapq_mapped_primary: 39.04
+mapping_stats_csv: /Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/mapfastq/yH298-parent-pool2/yH298-parent-pool2.mapping_stats.csv

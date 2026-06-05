@@ -1,0 +1,9 @@
+
+=== Finding hits ===
+18790684 reads found of map quality >= 20; in these:
+  43704 hits were found; of these:
+    43704 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/create_hit_file/.run_yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2.insertions.bedgraph
+    /Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/create_hit_file/.run_yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2.insertions.wig
+    (bigwig not written: Error - overlapping regions in bedGraph line 93 of /Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/create_hit_file/.run_yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2.insertions.bedgraph)
