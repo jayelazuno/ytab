@@ -1,0 +1,340 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_SummaryTable_Normalized
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_SummaryTable_Normalized.log
+
+## title: YTAB SummaryTable job for normalized hit files
+## author: Joshua Ayelazuno
+## usage:
+##   qsub ytab_SummaryTable_Normalized.txt
+##
+##   Optional:
+##     Rerun all targets/samples even if outputs exist:
+##       qsub -v FORCE=1 ytab_SummaryTable_Normalized.txt
+##
+##     Use a different project/version output folder:
+##       qsub -v PROJECT_ID=H2O2_screen_v1 ytab_SummaryTable_Normalized.txt
+##
+##     Choose one or more normalization targets:
+##       qsub -v TARGETS="60" ytab_SummaryTable_Normalized.txt
+##       qsub -v TARGETS="20 30 40 50 60 80 100" ytab_SummaryTable_Normalized.txt
+##
+##     Hold this job until sample normalization finishes:
+##       qsub -hold_jid <NORMALIZATION_JOB_ID> ytab_SummaryTable_Normalized.txt
+##
+##   Notes:
+##     - This script runs SummaryTable on normalized hit files.
+##     - It is modeled after the old working SummaryTable_norm script.
+##     - Input normalized hits:
+##         output/projects/<PROJECT_ID>/sample_normalization/T060/<sample>/*_normalized_hits.txt
+##     - Output normalized feature tables:
+##         output/projects/<PROJECT_ID>/summary_normalized/T060/<sample>/
+##     - App-facing exports:
+##         output/exports/<PROJECT_ID>/qc/summary_normalized/T060/<sample>/
+##
+##   Workflow:
+##     1. Run ytab_SampleNormlization.txt.
+##     2. Choose normalization target(s), for example T060.
+##     3. Run this script.
+##     4. Run classifier using the selected normalized SummaryTable outputs.
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+SCRIPT="$YTAB/src/ytab/summary/SummaryTable.py"
+
+PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
+
+# Input normalized hits from sample normalization stage
+QC_ROOT="$YTAB/output/projects/$PROJECT_ID/sample_normalization"
+
+# Output normalized SummaryTable stage
+OUT_ROOT="$YTAB/output/projects/$PROJECT_ID/summary_normalized"
+
+# App-facing export root
+EXPORT_ROOT="$YTAB/output/exports/$PROJECT_ID/qc/summary_normalized"
+
+mkdir -p "$OUT_ROOT"
+mkdir -p "$EXPORT_ROOT"
+
+THREADS=${NSLOTS:-56}
+FORCE="${FORCE:-0}"
+
+echo "THREADS=$THREADS"
+echo "FORCE=$FORCE"
+echo "PROJECT_ID=$PROJECT_ID"
+echo "YTAB repo:   $YTAB"
+echo "Script:      $SCRIPT"
+echo "QC root:     $QC_ROOT"
+echo "Out root:    $OUT_ROOT"
+echo "Export root: $EXPORT_ROOT"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Normalization targets
+# -----------------------
+# Default targets. Override with:
+#   qsub -v TARGETS="60" ytab_SummaryTable_Normalized.txt
+#   qsub -v TARGETS="20 30 40 50 60 80 100" ytab_SummaryTable_Normalized.txt
+#
+# Use numeric values here, not T060, to avoid Bash octal interpretation.
+
+TARGETS_STR="${TARGETS:-20 30 40 50 60 80 100}"
+read -r -a TARGETS_ARRAY <<< "$TARGETS_STR"
+
+echo "Targets requested:"
+printf '  %s\n' "${TARGETS_ARRAY[@]}"
+echo
+
+# -----------------------
+# Optional manual sample list
+# -----------------------
+# For classifier preparation, this should usually be parent/control pools.
+# Leave empty to auto-discover sample dirs inside each target folder.
+#
+# Example manual list:
+# MANUAL_SAMPLES=(
+#   "yH298-parent-pool1"
+#   "yH298-parent-pool2"
+#   "yH299-parent-pool3"
+#   "yH299-parent-pool4"
+# )
+
+MANUAL_SAMPLES=(
+  "yH298-parent-pool1"
+  "yH298-parent-pool2"
+  "yH299-parent-pool3"
+  "yH299-parent-pool4"
+)
+
+shopt -s nullglob
+
+# -----------------------
+# Run SummaryTable for each target/sample
+# -----------------------
+
+for T in "${TARGETS_ARRAY[@]}"; do
+  # Strip optional T/t and leading zeros safely.
+  # This avoids Bash interpreting 060 as octal.
+  T_clean="${T#T}"
+  T_clean="${T_clean#t}"
+  T_clean="$(printf '%s' "$T_clean" | sed -E 's/^0+//')"
+  T_clean="${T_clean:-0}"
+
+  if ! [[ "$T_clean" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: invalid normalization target: $T" >&2
+    exit 1
+  fi
+
+  tag=$(printf "T%03d" "$T_clean")
+
+  echo "=============================="
+  echo "Normalization target: $tag"
+  echo "=============================="
+
+  TDIR="$QC_ROOT/$tag"
+
+  if [[ ! -d "$TDIR" ]]; then
+    echo "[WARN] missing $TDIR, skipping"
+    continue
+  fi
+
+  OUT_T="$OUT_ROOT/$tag"
+  EXPORT_T="$EXPORT_ROOT/$tag"
+
+  mkdir -p "$OUT_T"
+  mkdir -p "$EXPORT_T"
+
+  # -----------------------
+  # Resolve samples for this target
+  # -----------------------
+  SAMPLES=()
+
+  if [[ ${#MANUAL_SAMPLES[@]} -gt 0 ]]; then
+    SAMPLES=( "${MANUAL_SAMPLES[@]}" )
+  else
+    for sample_dir in "$TDIR"/*; do
+      [[ -d "$sample_dir" ]] || continue
+      SAMPLES+=( "$(basename "$sample_dir")" )
+    done
+  fi
+
+  if [[ ${#SAMPLES[@]} -eq 0 ]]; then
+    echo "[WARN] no samples found for $tag in $TDIR"
+    continue
+  fi
+
+  echo "Samples for $tag:"
+  printf '  %s\n' "${SAMPLES[@]}"
+  echo
+
+  # -----------------------
+  # Iterate over samples
+  # -----------------------
+  feature_table_list="$OUT_T/normalized_feature_tables.${tag}.txt"
+  : > "$feature_table_list"
+
+  for sample in "${SAMPLES[@]}"; do
+    sample_dir="$TDIR/$sample"
+
+    if [[ ! -d "$sample_dir" ]]; then
+      echo "[WARN] missing sample dir: $sample_dir"
+      continue
+    fi
+
+    hits_files=( "$sample_dir"/*_normalized_hits.txt )
+
+    if [[ ${#hits_files[@]} -eq 0 ]]; then
+      echo "[WARN] no normalized hits in $sample_dir"
+      continue
+    fi
+
+    out="$OUT_T/$sample"
+    sample_export_dir="$EXPORT_T/$sample"
+
+    expected_stats="$out/stats.csv"
+
+    echo "[$(date)] target=$tag sample=$sample"
+    echo "  input=$sample_dir"
+    echo "  output=$out"
+    echo "  export=$sample_export_dir"
+    echo "  normalized hits files: ${#hits_files[@]}"
+
+    if [[ "$FORCE" != "1" && -s "$expected_stats" && -n "$(find "$out" -maxdepth 1 -name "*.feature_table.RDF_1.csv" -print -quit 2>/dev/null)" ]]; then
+      echo "[SKIP] Existing normalized SummaryTable output found for $sample at $tag"
+      echo "       Set FORCE=1 to rerun."
+    else
+      rm -rf "$out"
+      rm -rf "$sample_export_dir"
+
+      mkdir -p "$out"
+      mkdir -p "$sample_export_dir"
+
+      python3 "$SCRIPT" \
+        -i "$sample_dir" \
+        -o "$out" \
+        --hit-glob "*_normalized_hits.txt" \
+        --hit-format hit_table \
+        --feature-db glabrata \
+        -f 1 \
+        --neighborhood-window-size 10000 \
+        --bin-size 10000 \
+        -t "$THREADS" \
+        --overwrite
+    fi
+
+    # -----------------------
+    # Validate feature table
+    # -----------------------
+    actual_feature_table="$(find "$out" -maxdepth 1 -type f -name "*.feature_table.RDF_1.csv" | sort | head -n 1 || true)"
+
+    if [[ -z "$actual_feature_table" || ! -s "$actual_feature_table" ]]; then
+      echo "ERROR: no normalized feature table produced for $sample at $tag" >&2
+      echo "Output dir: $out" >&2
+      find "$out" -maxdepth 2 -type f | sort >&2 || true
+      exit 1
+    fi
+
+    if [[ ! -s "$expected_stats" ]]; then
+      echo "ERROR: expected stats file not produced: $expected_stats" >&2
+      exit 1
+    fi
+
+    echo "$actual_feature_table" >> "$feature_table_list"
+
+    # -----------------------
+    # Copy app-facing summary assets
+    # -----------------------
+    mkdir -p "$sample_export_dir"
+
+    for f in \
+      "$out/stats.csv" \
+      "$out"/*.all_hits.csv \
+      "$out"/*.feature_table.RDF_1.csv \
+      "$out"/*_analysis.csv \
+      "$out/binned_hits.RDF_1.csv" \
+      "$out/hit_summary.RDF_1.csv" \
+      "$out/insertion_vs_neighborhood_correlations.txt" \
+      "$out/outlier_stats.txt"
+    do
+      if [[ -s "$f" ]]; then
+        cp -f "$f" "$sample_export_dir/"
+      fi
+    done
+
+    echo
+  done
+
+  # -----------------------
+  # Build combined stats for this normalization target
+  # -----------------------
+  combined_stats="$EXPORT_T/summary_stats.normalized.${tag}.all_samples.csv"
+
+  stats_files=( "$EXPORT_T"/*/stats.csv )
+
+  if [[ ${#stats_files[@]} -gt 0 ]]; then
+    echo "Building combined normalized summary stats:"
+    echo "  $combined_stats"
+
+    first=1
+    : > "$combined_stats"
+
+    for f in "${stats_files[@]}"; do
+      sample="$(basename "$(dirname "$f")")"
+
+      if [[ "$first" -eq 1 ]]; then
+        awk -v sample="$sample" -v norm="$tag" 'NR==1{print "norm_target,sample,"$0; next} {print norm","sample","$0}' "$f" >> "$combined_stats"
+        first=0
+      else
+        awk -v sample="$sample" -v norm="$tag" 'NR>1{print norm","sample","$0}' "$f" >> "$combined_stats"
+      fi
+    done
+  else
+    echo "[WARN] no stats.csv files found in $EXPORT_T/<sample>/"
+  fi
+
+  cp -f "$feature_table_list" "$EXPORT_T/normalized_feature_tables.${tag}.txt"
+
+  echo "Finished target: $tag"
+  echo "  Feature table list: $feature_table_list"
+  echo "  Exported list:      $EXPORT_T/normalized_feature_tables.${tag}.txt"
+  echo
+done
+
+shopt -u nullglob
+
+echo "Final normalized SummaryTable dirs:"
+find "$OUT_ROOT" -maxdepth 2 -type d | sort
+
+echo
+echo "Final normalized SummaryTable outputs:"
+echo "  Pipeline stage outputs: $OUT_ROOT/T*/<sample>/"
+echo "  App-facing exports:     $EXPORT_ROOT/T*/<sample>/"
+echo
+
+date
+end=$(date +%s)
+echo "runtime=$((end-start)) secs"
+echo "Done."

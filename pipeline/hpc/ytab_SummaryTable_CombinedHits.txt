@@ -1,0 +1,241 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_SummaryTable_CombinedHits
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_SummaryTable_CombinedHits.log
+
+## title: YTAB SummaryTable job for combined normalized parent hits
+## author: Joshua Ayelazuno
+## usage:
+##   qsub ytab_SummaryTable_CombinedHits.txt
+##
+##   Optional:
+##     Choose normalization target:
+##       qsub -v TARGET=60 ytab_SummaryTable_CombinedHits.txt
+##
+##     Rerun even if outputs exist:
+##       qsub -v TARGET=60,FORCE=1 ytab_SummaryTable_CombinedHits.txt
+##
+##     Use a different project/version output folder:
+##       qsub -v PROJECT_ID=H2O2_screen_v1,TARGET=60 ytab_SummaryTable_CombinedHits.txt
+##
+##     Hold this job until combined hits are generated:
+##       qsub -hold_jid <COMBINE_HITS_JOB_ID> -v TARGET=60 ytab_SummaryTable_CombinedHits.txt
+##
+##   Notes:
+##     - This runs SummaryTable on the combined normalized parent hit file.
+##     - This is the classifier input path as described by Gale et al 2020:
+##         normalize parent pools -> combine normalized hits -> SummaryTable -> classifier
+##     - Input:
+##         output/projects/<PROJECT_ID>/combined_hits/T060/yH-parent-combined-T060/
+##     - Output:
+##         output/projects/<PROJECT_ID>/summary_combined/T060/yH-parent-combined-T060/
+##     - App-facing export:
+##         output/exports/<PROJECT_ID>/qc/summary_combined/T060/yH-parent-combined-T060/
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+SCRIPT="$YTAB/src/ytab/summary/SummaryTable.py"
+
+PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
+
+# -----------------------
+# Normalization target
+# -----------------------
+# Use numeric TARGET to avoid Bash octal problems.
+# Example:
+#   TARGET=60 -> T060
+
+TARGET="${TARGET:-60}"
+
+TARGET_CLEAN="${TARGET#T}"
+TARGET_CLEAN="${TARGET_CLEAN#t}"
+TARGET_CLEAN="$(printf '%s' "$TARGET_CLEAN" | sed -E 's/^0+//')"
+TARGET_CLEAN="${TARGET_CLEAN:-0}"
+
+if ! [[ "$TARGET_CLEAN" =~ ^[0-9]+$ ]]; then
+  echo "ERROR: TARGET must be numeric or T### format, got: $TARGET" >&2
+  exit 1
+fi
+
+NORM_TAG=$(printf "T%03d" "$TARGET_CLEAN")
+
+# Combined pseudo-sample name
+COMBINED_SAMPLE="${COMBINED_SAMPLE:-yH-parent-combined-${NORM_TAG}}"
+
+# Input combined hits from CombineHitFiles.py
+COMBINED_HITS_DIR="$YTAB/output/projects/$PROJECT_ID/combined_hits/$NORM_TAG/$COMBINED_SAMPLE"
+
+# Output SummaryTable result for combined library
+OUT_ROOT="$YTAB/output/projects/$PROJECT_ID/summary_combined/$NORM_TAG"
+OUT_DIR="$OUT_ROOT/$COMBINED_SAMPLE"
+
+# App-facing export
+EXPORT_ROOT="$YTAB/output/exports/$PROJECT_ID/qc/summary_combined/$NORM_TAG"
+EXPORT_DIR="$EXPORT_ROOT/$COMBINED_SAMPLE"
+
+mkdir -p "$OUT_ROOT"
+mkdir -p "$EXPORT_ROOT"
+
+THREADS=${NSLOTS:-56}
+FORCE="${FORCE:-0}"
+
+echo "THREADS(for SummaryTable)=$THREADS"
+echo "FORCE:              $FORCE"
+echo "PROJECT_ID:         $PROJECT_ID"
+echo "TARGET:             $TARGET"
+echo "NORM_TAG:           $NORM_TAG"
+echo "COMBINED_SAMPLE:    $COMBINED_SAMPLE"
+echo "YTAB repo:          $YTAB"
+echo "Script:             $SCRIPT"
+echo "Combined hits dir:  $COMBINED_HITS_DIR"
+echo "Out dir:            $OUT_DIR"
+echo "Export dir:         $EXPORT_DIR"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Validate combined hit file
+# -----------------------
+if [[ ! -d "$COMBINED_HITS_DIR" ]]; then
+  echo "ERROR: missing combined hits directory:" >&2
+  echo "  $COMBINED_HITS_DIR" >&2
+  echo "Run ytab_CombineNormalizedHits.txt first." >&2
+  exit 1
+fi
+
+shopt -s nullglob
+combined_hits=( "$COMBINED_HITS_DIR"/*_hits.txt )
+shopt -u nullglob
+
+if [[ ${#combined_hits[@]} -eq 0 ]]; then
+  echo "ERROR: no *_hits.txt file found in:" >&2
+  echo "  $COMBINED_HITS_DIR" >&2
+  exit 1
+fi
+
+echo "Combined hit files found (${#combined_hits[@]}):"
+printf '  %s\n' "${combined_hits[@]}"
+echo
+
+# -----------------------
+# Expected outputs
+# -----------------------
+expected_stats="$OUT_DIR/stats.csv"
+expected_feature_table="$OUT_DIR/${COMBINED_SAMPLE}.feature_table.RDF_1.csv"
+
+echo "============================================================"
+echo "[$(date)] Running SummaryTable on combined normalized hits"
+echo "============================================================"
+
+if [[ "$FORCE" != "1" && -s "$expected_stats" && -s "$expected_feature_table" ]]; then
+  echo "[SKIP] Existing combined SummaryTable outputs found."
+  echo "       stats:         $expected_stats"
+  echo "       feature table: $expected_feature_table"
+  echo "       Set FORCE=1 to rerun."
+else
+  rm -rf "$OUT_DIR"
+  rm -rf "$EXPORT_DIR"
+
+  mkdir -p "$OUT_DIR"
+  mkdir -p "$EXPORT_DIR"
+
+  python3 "$SCRIPT" \
+    -i "$COMBINED_HITS_DIR" \
+    -o "$OUT_DIR" \
+    --hit-glob "*_hits.txt" \
+    --hit-format hit_table \
+    --feature-db glabrata \
+    -f 1 \
+    --neighborhood-window-size 10000 \
+    --bin-size 10000 \
+    -t "$THREADS" \
+    --overwrite
+fi
+
+# -----------------------
+# Validate outputs
+# -----------------------
+actual_feature_table=""
+
+if [[ -s "$expected_feature_table" ]]; then
+  actual_feature_table="$expected_feature_table"
+else
+  actual_feature_table="$(find "$OUT_DIR" -maxdepth 1 -type f -name "*.feature_table.RDF_1.csv" | sort | head -n 1 || true)"
+fi
+
+if [[ -z "$actual_feature_table" || ! -s "$actual_feature_table" ]]; then
+  echo "ERROR: no combined feature table produced." >&2
+  echo "Output dir: $OUT_DIR" >&2
+  find "$OUT_DIR" -maxdepth 2 -type f | sort >&2 || true
+  exit 1
+fi
+
+if [[ ! -s "$expected_stats" ]]; then
+  echo "ERROR: expected stats file missing:" >&2
+  echo "  $expected_stats" >&2
+  exit 1
+fi
+
+# -----------------------
+# Copy app-facing summary assets
+# -----------------------
+mkdir -p "$EXPORT_DIR"
+
+for f in \
+  "$OUT_DIR/stats.csv" \
+  "$OUT_DIR"/*.all_hits.csv \
+  "$OUT_DIR"/*.feature_table.RDF_1.csv \
+  "$OUT_DIR"/*_analysis.csv \
+  "$OUT_DIR/binned_hits.RDF_1.csv" \
+  "$OUT_DIR/hit_summary.RDF_1.csv" \
+  "$OUT_DIR/insertion_vs_neighborhood_correlations.txt" \
+  "$OUT_DIR/outlier_stats.txt"
+do
+  if [[ -s "$f" ]]; then
+    cp -f "$f" "$EXPORT_DIR/"
+  fi
+done
+
+# Save classifier-ready feature table path
+FEATURE_TABLE_LIST="$OUT_ROOT/combined_feature_table.${NORM_TAG}.txt"
+echo "$actual_feature_table" > "$FEATURE_TABLE_LIST"
+cp -f "$FEATURE_TABLE_LIST" "$EXPORT_ROOT/combined_feature_table.${NORM_TAG}.txt"
+
+echo
+echo "Done."
+echo "Combined SummaryTable outputs:"
+echo "  Stage output:       $OUT_DIR"
+echo "  App export:         $EXPORT_DIR"
+echo "  Feature table:      $actual_feature_table"
+echo "  Classifier input:   $FEATURE_TABLE_LIST"
+echo
+echo "Next step:"
+echo "  Run classifier using this single combined feature table."
+echo
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"

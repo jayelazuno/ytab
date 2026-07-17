@@ -1,0 +1,5 @@
+norm_target,sample,File name,Total Reads,Total Hits,% of hits in features,% of intergenic hits,% of features hit,Mean hits per feature,Mean reads per feature,Mean Reads Per Hit,Mean reads per hit in feature
+T060,yH298-parent-pool1,yH298-parent-pool1_normalized,6142649,56690,20.85%,79.15%,44.69%,5.1,410.1239846088072,108.35507144117128,81.16422709197056
+T060,yH298-parent-pool2,yH298-parent-pool2_normalized,24578226,86457,23.82%,76.18%,57.32%,6.9,1396.8593333333333,284.2826607446476,203.5249150072851
+T060,yH299-parent-pool3,yH299-parent-pool3_normalized,6143388,35328,18.99%,81.01%,31.43%,4.1,579.6419452887538,173.89572010869566,142.12416157400506
+T060,yH299-parent-pool4,yH299-parent-pool4_normalized,6143784,20950,16.56%,83.44%,20.58%,3.2,692.8709377901579,293.2593794749403,215.11155952724127

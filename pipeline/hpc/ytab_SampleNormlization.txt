@@ -1,0 +1,343 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_SampleNormlization
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_SampleNormlization.log
+
+## title: YTAB sample MidLC normalization sweep
+## author: Joshua Ayelazuno
+## usage:
+##   qsub ytab_SampleNormlization.txt
+##
+##   Optional:
+##     Rerun all normalization targets even if outputs exist:
+##       qsub -v FORCE=1 ytab_SampleNormlization.txt
+##
+##     Use a different project/version output folder:
+##       qsub -v PROJECT_ID=H2O2_screen_v1 ytab_SampleNormlization.txt
+##
+##     Choose custom MidLC normalization targets:
+##       qsub -v NORM_TARGETS="20 40 60 80" ytab_SampleNormlization.txt
+##
+##     Run with both:
+##       qsub -v PROJECT_ID=H2O2_screen_v1,NORM_TARGETS="20 40 60 80",FORCE=1 ytab_SampleNormlization.txt
+##
+##     Hold this job until CreateHitFile finishes:
+##       qsub -hold_jid <CREATE_HIT_JOB_ID> ytab_SampleNormlization.txt
+##
+##   Notes:
+##     - This job performs MidLC-based depth normalization.
+##     - It can be used for parent-only samples before classifier,
+##       or any user-specified sample set.
+##     - By default, this script uses the MANUAL_SAMPLES list below.
+##     - To auto-discover all samples, set:
+##         MANUAL_SAMPLES=()
+##     - Stage outputs:
+##         output/projects/<PROJECT_ID>/sample_normalization/T020/
+##         output/projects/<PROJECT_ID>/sample_normalization/T030/
+##         ...
+##     - App-facing summaries:
+##         output/exports/<PROJECT_ID>/qc/sample_normalization/
+##
+##   Interpretation:
+##     - TARGET means TARGET x MidLC.
+##     - reads_target = TARGET * MidLC_est.
+##     - If total_reads > reads_target, counts are downsampled.
+##     - If total_reads <= reads_target, the sample is left unchanged.
+##     - No upsampling is performed.
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+LEGACY="${LEGACY:-/Users/jayelazuno/workspace/HermesTnseq}"
+
+SCRIPT="$YTAB/src/ytab/qc/LibraryDiagnostics.py"
+
+# Permanent project/version name
+PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
+
+# Input hits from permanent CreateHitFile stage
+HITS_ROOT="$YTAB/output/projects/$PROJECT_ID/create_hit_file"
+
+# Permanent stage output for sample normalization sweep
+OUT_ROOT="$YTAB/output/projects/$PROJECT_ID/sample_normalization"
+
+# App-facing export dir
+EXPORT_ROOT="$YTAB/output/exports/$PROJECT_ID/qc/sample_normalization"
+
+mkdir -p "$OUT_ROOT"
+mkdir -p "$EXPORT_ROOT"
+
+# Reference files
+FASTA="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna"
+GFF="$LEGACY/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff"
+
+THREADS=${NSLOTS:-56}
+FORCE="${FORCE:-0}"
+
+# Default MidLC normalization sweep targets.
+# Override with:
+#   qsub -v NORM_TARGETS="20 40 60 80" ytab_SampleNormlization.txt
+NORM_TARGETS="${NORM_TARGETS:-20 30 40 50 60 80 100}"
+
+echo "THREADS=$THREADS"
+echo "FORCE:        $FORCE"
+echo "PROJECT_ID:   $PROJECT_ID"
+echo "YTAB repo:    $YTAB"
+echo "LEGACY repo:  $LEGACY"
+echo "Script:       $SCRIPT"
+echo "Hits root:    $HITS_ROOT"
+echo "Out root:     $OUT_ROOT"
+echo "Export root:  $EXPORT_ROOT"
+echo "FASTA:        $FASTA"
+echo "GFF:          $GFF"
+echo "Targets:      $NORM_TARGETS"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Manual sample list
+# -----------------------
+# Use this list when you want to normalize a specific sample set.
+#
+# For classifier preparation, this should usually be the parent/control pools:
+#
+# MANUAL_SAMPLES=(
+#   "yH298-parent-pool1"
+#   "yH298-parent-pool2"
+#   "yH299-parent-pool3"
+#   "yH299-parent-pool4"
+# )
+#
+# To normalize all samples found in HITS_ROOT, use:
+#   MANUAL_SAMPLES=()
+
+MANUAL_SAMPLES=(
+  "yH298-parent-pool1"
+  "yH298-parent-pool2"
+  "yH299-parent-pool3"
+  "yH299-parent-pool4"
+)
+
+# -----------------------
+# Resolve samples
+# -----------------------
+
+SAMPLES=()
+
+if [[ ${#MANUAL_SAMPLES[@]} -gt 0 ]]; then
+  echo "Using manual sample list."
+  SAMPLES=( "${MANUAL_SAMPLES[@]}" )
+else
+  echo "No manual sample list provided. Discovering samples from HITS_ROOT."
+
+  while IFS= read -r -d '' hits_file; do
+    sample="$(basename "$(dirname "$hits_file")")"
+    SAMPLES+=( "$sample" )
+  done < <(
+    find "$HITS_ROOT" -mindepth 2 -maxdepth 2 -type f \
+      -name "*_hits.txt" \
+      -print0 | sort -z
+  )
+fi
+
+if [[ ${#SAMPLES[@]} -eq 0 ]]; then
+  echo "ERROR: no samples found." >&2
+  echo "HITS_ROOT=$HITS_ROOT" >&2
+  exit 1
+fi
+
+echo "Samples to normalize (${#SAMPLES[@]}):"
+printf '  %s\n' "${SAMPLES[@]}"
+echo
+
+# -----------------------
+# Resolve hit files
+# -----------------------
+
+hits_files=()
+
+for s in "${SAMPLES[@]}"; do
+  f="$HITS_ROOT/$s/${s}_hits.txt"
+
+  if [[ ! -s "$f" ]]; then
+    echo "ERROR: missing hits file: $f" >&2
+    echo "Run CreateHitFile for this sample first." >&2
+    exit 1
+  fi
+
+  hits_files+=( "$f" )
+done
+
+echo "Hit files (${#hits_files[@]}):"
+printf '  %s\n' "${hits_files[@]}"
+echo
+
+# -----------------------
+# Sweep MidLC normalization targets
+# -----------------------
+
+read -r -a TARGETS <<< "$NORM_TARGETS"
+
+for T in "${TARGETS[@]}"; do
+  tag=$(printf "T%03d" "$T")
+  outdir="$OUT_ROOT/$tag"
+  export_dir="$EXPORT_ROOT/$tag"
+
+  mkdir -p "$outdir"
+  mkdir -p "$export_dir"
+
+  summary_file="$outdir/library_diagnostics.summary.csv"
+  export_summary="$export_dir/library_diagnostics.summary.${tag}.csv"
+  norm_list="$outdir/normalized_hits.list.txt"
+
+  echo "============================================================"
+  echo "[$(date)] Running sample normalization target = ${T}x MidLC (${tag})"
+  echo "  outdir=$outdir"
+  echo "  export_dir=$export_dir"
+  echo "============================================================"
+
+  if [[ "$FORCE" != "1" && -s "$summary_file" ]]; then
+    echo "[SKIP] Existing normalization output found for ${tag}."
+    echo "       summary: $summary_file"
+    echo "       Set FORCE=1 to rerun."
+  else
+    rm -rf "$outdir"
+    rm -rf "$export_dir"
+    mkdir -p "$outdir"
+    mkdir -p "$export_dir"
+
+    python3 "$SCRIPT" \
+      --hits-txt "${hits_files[@]}" \
+      --outdir "$outdir" \
+      --fasta "$FASTA" \
+      --remove-top-site-per-gene \
+      --gene-gff "$GFF" \
+      --gene-feature-types gene \
+      --gene-id-attr ID \
+      --normalize-to-midlc "$T" \
+      --normalized-hits-suffix "_normalized_hits.txt" \
+      --seed 1
+  fi
+
+  # -----------------------
+  # Validate and export summary
+  # -----------------------
+  if [[ -s "$summary_file" ]]; then
+    cp -f "$summary_file" "$export_summary"
+    cp -f "$summary_file" "$OUT_ROOT/library_diagnostics.summary.${tag}.csv"
+    cp -f "$summary_file" "$EXPORT_ROOT/library_diagnostics.summary.${tag}.csv"
+  else
+    echo "ERROR: expected summary missing: $summary_file" >&2
+    exit 1
+  fi
+
+  # -----------------------
+  # Write normalized hits list for downstream steps
+  # -----------------------
+  find "$outdir" -type f -name "*_normalized_hits.txt" | sort > "$norm_list"
+
+  if [[ ! -s "$norm_list" ]]; then
+    echo "[WARN] no normalized hits files found for ${tag}: $norm_list" >&2
+  else
+    cp -f "$norm_list" "$export_dir/normalized_hits.list.${tag}.txt"
+    cp -f "$norm_list" "$EXPORT_ROOT/normalized_hits.list.${tag}.txt"
+  fi
+
+  # -----------------------
+  # Copy small per-sample summaries to app-facing export dir
+  # -----------------------
+  for s in "${SAMPLES[@]}"; do
+    sample_src="$outdir/$s"
+    sample_dst="$export_dir/$s"
+    mkdir -p "$sample_dst"
+
+    if [[ -d "$sample_src" ]]; then
+      for f in \
+        "$sample_src/${s}.midlc.csv" \
+        "$sample_src/${s}.summary.csv"
+      do
+        if [[ -s "$f" ]]; then
+          cp -f "$f" "$sample_dst/"
+        else
+          echo "[WARN] expected file missing: $f" >&2
+        fi
+      done
+    else
+      echo "[WARN] missing per-sample normalization dir: $sample_src" >&2
+    fi
+  done
+
+  echo
+done
+
+# -----------------------
+# Build combined target summary index
+# -----------------------
+
+combined_summary="$EXPORT_ROOT/sample_normalization.all_targets.csv"
+
+shopt -s nullglob
+summary_files=( "$EXPORT_ROOT"/library_diagnostics.summary.T*.csv )
+shopt -u nullglob
+
+if [[ ${#summary_files[@]} -gt 0 ]]; then
+  echo "Building combined normalization summary:"
+  echo "  $combined_summary"
+
+  first=1
+  : > "$combined_summary"
+
+  for f in "${summary_files[@]}"; do
+    base="$(basename "$f")"
+    tag="${base#library_diagnostics.summary.}"
+    tag="${tag%.csv}"
+
+    if [[ "$first" -eq 1 ]]; then
+      awk -v target="$tag" 'NR==1{print "norm_target,"$0; next} {print target","$0}' "$f" >> "$combined_summary"
+      first=0
+    else
+      awk -v target="$tag" 'NR>1{print target","$0}' "$f" >> "$combined_summary"
+    fi
+  done
+else
+  echo "[WARN] no target summaries found in $EXPORT_ROOT"
+fi
+
+echo
+echo "Done."
+echo "Sample normalization sweep outputs:"
+echo "  Stage outputs:        $OUT_ROOT/T*/"
+echo "  App-facing summaries: $EXPORT_ROOT/"
+echo "  Combined summary:     $combined_summary"
+echo
+echo "Next step:"
+echo "  Inspect sample_normalization.all_targets.csv and the per-target summaries."
+echo "  Choose one normalization target, then use that target's normalized hits"
+echo "  for downstream SummaryTable, parent-combining, and classifier input."
+echo
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"

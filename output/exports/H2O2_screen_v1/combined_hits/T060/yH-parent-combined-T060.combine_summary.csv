@@ -1,0 +1,5 @@
+file,rows_after_parse,unique_sites_after_parse,reads_after_parse,chrom_col,position_col,reads_col
+/old_Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/sample_normalization/T060/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt,56690,56268,6142649,Chromosome,Hit position,Hit count
+/old_Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/sample_normalization/T060/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt,86457,85562,24578226,Chromosome,Hit position,Hit count
+/old_Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/sample_normalization/T060/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt,35328,35147,6143388,Chromosome,Hit position,Hit count
+/old_Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/sample_normalization/T060/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt,20950,20862,6143784,Chromosome,Hit position,Hit count

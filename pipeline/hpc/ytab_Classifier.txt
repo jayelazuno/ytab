@@ -1,0 +1,278 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Classifier
+#$ -q UI
+#$ -pe smp 56
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_Classifier.log
+
+## title: YTAB classifier job using selected normalized SummaryTable outputs
+## author: Joshua Ayelazuno
+## usage:
+##   qsub ytab_Classifier.txt
+##
+##   Optional:
+##     Choose normalization target:
+##       qsub -v TARGET=60 ytab_Classifier.txt
+##       qsub -v NORM_TARGET=60 ytab_Classifier.txt
+##       qsub -v NORM_TARGET=T060 ytab_Classifier.txt
+##
+##     Use a different project/version output folder:
+##       qsub -v PROJECT_ID=H2O2_screen_v1 ytab_Classifier.txt
+##
+##     Change classifier target FPR:
+##       qsub -v TARGET_FPR=0.10 ytab_Classifier.txt
+##
+##     Rerun classifier even if outputs exist:
+##       qsub -v FORCE=1 ytab_Classifier.txt
+##
+##     Run with all:
+##       qsub -v PROJECT_ID=H2O2_screen_v1,TARGET=60,TARGET_FPR=0.10,FORCE=1 ytab_Classifier.txt
+##
+##     Hold this job until normalized SummaryTable finishes:
+##       qsub -hold_jid <SUMMARY_NORMALIZED_JOB_ID> -v TARGET=60 ytab_Classifier.txt
+##
+##   Notes:
+##     - This job runs classifier after normalized SummaryTable.
+##     - It should usually use parent/control normalized feature tables only.
+##     - Input feature-table list is expected here:
+##         output/projects/<PROJECT_ID>/summary_normalized/T060/normalized_feature_tables.T060.txt
+##     - Classifier outputs:
+##         output/projects/<PROJECT_ID>/classifier/T060/
+##     - App-facing classifier exports:
+##         output/exports/<PROJECT_ID>/classifier/T060/
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+
+PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
+
+# -----------------------
+# Normalization target
+# -----------------------
+# Preferred:
+#   TARGET=60
+#
+# Also supports:
+#   NORM_TARGET=60
+#   NORM_TARGET=T060
+#
+# This avoids Bash octal interpretation where 060 becomes decimal 48.
+
+TARGET_RAW="${TARGET:-${NORM_TARGET:-60}}"
+
+TARGET_CLEAN="${TARGET_RAW#T}"
+TARGET_CLEAN="${TARGET_CLEAN#t}"
+
+# Strip leading zeros safely.
+TARGET_CLEAN="$(printf '%s' "$TARGET_CLEAN" | sed -E 's/^0+//')"
+TARGET_CLEAN="${TARGET_CLEAN:-0}"
+
+if ! [[ "$TARGET_CLEAN" =~ ^[0-9]+$ ]]; then
+  echo "ERROR: TARGET/NORM_TARGET must be numeric or T### format, got: $TARGET_RAW" >&2
+  exit 1
+fi
+
+NORM_TAG=$(printf "T%03d" "$TARGET_CLEAN")
+
+# -----------------------
+# Inputs from normalized SummaryTable
+# -----------------------
+SUMMARY_NORM_ROOT="$YTAB/output/projects/$PROJECT_ID/summary_normalized/$NORM_TAG"
+FEATURE_TABLE_LIST="$SUMMARY_NORM_ROOT/normalized_feature_tables.${NORM_TAG}.txt"
+
+# Stage output for Classifier
+CLASSIFIER_DIR="$YTAB/output/projects/$PROJECT_ID/classifier/$NORM_TAG"
+
+# App-facing export dir
+EXPORT_ROOT="$YTAB/output/exports/$PROJECT_ID"
+CLASSIFIER_EXPORT="$EXPORT_ROOT/classifier/$NORM_TAG"
+
+# Logs outside classifier OUT_DIR because --overwrite may recreate OUT_DIR
+LOG_DIR="$YTAB/output/projects/$PROJECT_ID/logs"
+RUN_LOG="$LOG_DIR/YTAB_Classifier.${NORM_TAG}.run.log"
+
+# Optional orthology file
+ORTH="$YTAB/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+
+mkdir -p "$LOG_DIR"
+mkdir -p "$CLASSIFIER_EXPORT"
+
+THREADS=${NSLOTS:-56}
+TARGET_FPR="${TARGET_FPR:-0.10}"
+FORCE="${FORCE:-0}"
+
+echo "THREADS(for Classifier)=$THREADS"
+echo "TARGET_FPR=$TARGET_FPR"
+echo "FORCE=$FORCE"
+echo "PROJECT_ID=$PROJECT_ID"
+echo "TARGET_RAW=$TARGET_RAW"
+echo "TARGET_CLEAN=$TARGET_CLEAN"
+echo "NORM_TAG=$NORM_TAG"
+echo
+echo "YTAB repo:              $YTAB"
+echo "Summary normalized root:$SUMMARY_NORM_ROOT"
+echo "Feature table list:     $FEATURE_TABLE_LIST"
+echo "Classifier dir:         $CLASSIFIER_DIR"
+echo "Export root:            $EXPORT_ROOT"
+echo "Classifier export:      $CLASSIFIER_EXPORT"
+echo "Orthology file:         $ORTH"
+echo "Run log:                $RUN_LOG"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Resolve classifier input feature tables
+# -----------------------
+
+feature_tables=()
+
+if [[ -s "$FEATURE_TABLE_LIST" ]]; then
+  echo "Using normalized feature-table list:"
+  echo "  $FEATURE_TABLE_LIST"
+
+  while IFS= read -r ft; do
+    [[ -n "$ft" ]] || continue
+
+    if [[ -s "$ft" ]]; then
+      feature_tables+=( "$ft" )
+    else
+      echo "[WARN] listed feature table does not exist or is empty: $ft" >&2
+    fi
+  done < "$FEATURE_TABLE_LIST"
+else
+  echo "[WARN] feature table list not found: $FEATURE_TABLE_LIST"
+  echo "[WARN] falling back to discovery under: $SUMMARY_NORM_ROOT"
+
+  while IFS= read -r -d '' ft; do
+    feature_tables+=( "$ft" )
+  done < <(
+    find "$SUMMARY_NORM_ROOT" -mindepth 2 -maxdepth 2 -type f \
+      -name "*.feature_table.RDF_1.csv" \
+      -print0 | sort -z
+  )
+fi
+
+if [[ ${#feature_tables[@]} -eq 0 ]]; then
+  echo "ERROR: no normalized feature tables found for classifier." >&2
+  echo "Expected list:" >&2
+  echo "  $FEATURE_TABLE_LIST" >&2
+  echo "Or feature tables under:" >&2
+  echo "  $SUMMARY_NORM_ROOT/<sample>/" >&2
+  echo >&2
+  echo "Run normalized SummaryTable first:" >&2
+  echo "  qsub -v TARGETS=\"$TARGET_CLEAN\" ytab_SummaryTable_Normalized.txt" >&2
+  exit 1
+fi
+
+echo "Normalized feature tables found (${#feature_tables[@]}):"
+printf '  %s\n' "${feature_tables[@]}"
+echo
+
+# -----------------------
+# Build classifier command
+# -----------------------
+
+cmd=(
+  python3 "$YTAB/src/ytab/essentiality/Classifier.py"
+  --mode scer-train-gla-classify
+  --out-dir "$CLASSIFIER_DIR"
+  --threads "$THREADS"
+  --target-fpr "$TARGET_FPR"
+  --combine
+  --overwrite
+)
+
+if [[ -s "$ORTH" ]]; then
+  cmd+=( --orthology-file "$ORTH" )
+else
+  echo "[WARN] orthology file not found or empty: $ORTH"
+  echo "[WARN] proceeding without orthology annotation"
+fi
+
+for ft in "${feature_tables[@]}"; do
+  cmd+=( --gla-feature-table "$ft" )
+done
+
+# -----------------------
+# Run Classifier
+# -----------------------
+
+echo "============================================================"
+echo "[$(date)] Running Classifier"
+echo "  normalization target: $NORM_TAG"
+echo "============================================================"
+printf '  %q' "${cmd[@]}"
+echo
+echo
+
+if [[ "$FORCE" != "1" && -d "$CLASSIFIER_DIR" && -n "$(find "$CLASSIFIER_DIR" -type f -print -quit 2>/dev/null)" ]]; then
+  echo "[SKIP] Existing classifier outputs found:"
+  echo "       $CLASSIFIER_DIR"
+  echo "       Set FORCE=1 to rerun."
+else
+  "${cmd[@]}" 2>&1 | tee "$RUN_LOG"
+fi
+
+# -----------------------
+# Save input metadata
+# -----------------------
+
+mkdir -p "$CLASSIFIER_DIR"
+mkdir -p "$CLASSIFIER_EXPORT"
+
+INPUT_LIST="$CLASSIFIER_DIR/classifier_input_feature_tables.${NORM_TAG}.txt"
+
+{
+  echo "PROJECT_ID=$PROJECT_ID"
+  echo "TARGET_RAW=$TARGET_RAW"
+  echo "TARGET_CLEAN=$TARGET_CLEAN"
+  echo "NORM_TAG=$NORM_TAG"
+  echo "TARGET_FPR=$TARGET_FPR"
+  echo "ORTHOLOGY_FILE=$ORTH"
+  echo
+  echo "FEATURE_TABLES:"
+  printf '%s\n' "${feature_tables[@]}"
+} > "$INPUT_LIST"
+
+cp -f "$INPUT_LIST" "$CLASSIFIER_EXPORT/"
+
+if [[ -s "$RUN_LOG" ]]; then
+  cp -f "$RUN_LOG" "$CLASSIFIER_EXPORT/"
+fi
+
+# -----------------------
+# Copy app-facing classifier outputs
+# -----------------------
+
+rsync -av --delete "$CLASSIFIER_DIR"/ "$CLASSIFIER_EXPORT"/
+
+echo
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
+echo "Done."
+echo "Outputs:"
+echo "  Stage:  $CLASSIFIER_DIR"
+echo "  Export: $CLASSIFIER_EXPORT"
+echo "  Log:    $RUN_LOG"

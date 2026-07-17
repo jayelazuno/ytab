@@ -1,0 +1,234 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_CombineNormalizedHits
+#$ -q UI
+#$ -pe smp 8
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_CombineNormalizedHits.log
+
+## title: YTAB combine normalized hit files before classifier
+## author: Joshua Ayelazuno
+## usage:
+##   qsub ytab_CombineNormalizedHits.txt
+##
+##   Optional:
+##     Choose normalization target:
+##       qsub -v TARGET=60 ytab_CombineNormalizedHits.txt
+##       qsub -v TARGET=80 ytab_CombineNormalizedHits.txt
+##
+##     Use a different project/version output folder:
+##       qsub -v PROJECT_ID=H2O2_screen_v1 ytab_CombineNormalizedHits.txt
+##
+##     Rerun even if output exists:
+##       qsub -v FORCE=1 ytab_CombineNormalizedHits.txt
+##
+##     Run with all:
+##       qsub -v PROJECT_ID=H2O2_screen_v1,TARGET=60,FORCE=1 ytab_CombineNormalizedHits.txt
+##
+##     Hold until sample normalization finishes:
+##       qsub -hold_jid <NORMALIZATION_JOB_ID> -v TARGET=60 ytab_CombineNormalizedHits.txt
+##
+##   Notes:
+##     - This combines normalized parent hit files before SummaryTable/classifier.
+##     - This follows the Gale-style logic:
+##         normalize parent pools -> combine normalized hits -> SummaryTable -> classifier
+##     - Input:
+##         output/projects/<PROJECT_ID>/sample_normalization/T060/<sample>/*_normalized_hits.txt
+##     - Output:
+##         output/projects/<PROJECT_ID>/combined_hits/T060/yH-parent-combined-T060/
+##     - App-facing metadata:
+##         output/exports/<PROJECT_ID>/combined_hits/T060/
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "Using NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Activate tnseq conda env
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate tnseq
+
+# -----------------------
+# Project paths
+# -----------------------
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
+
+SCRIPT="$YTAB/src/ytab/insertions/CombineHitFiles.py"
+
+# -----------------------
+# Normalization target
+# -----------------------
+# Use numeric TARGET to avoid Bash octal problems.
+# Example:
+#   TARGET=60 -> T060
+
+TARGET="${TARGET:-60}"
+
+TARGET_CLEAN="${TARGET#T}"
+TARGET_CLEAN="${TARGET_CLEAN#t}"
+TARGET_CLEAN="$(printf '%s' "$TARGET_CLEAN" | sed -E 's/^0+//')"
+TARGET_CLEAN="${TARGET_CLEAN:-0}"
+
+if ! [[ "$TARGET_CLEAN" =~ ^[0-9]+$ ]]; then
+  echo "ERROR: TARGET must be numeric or T### format, got: $TARGET" >&2
+  exit 1
+fi
+
+NORM_TAG=$(printf "T%03d" "$TARGET_CLEAN")
+
+# -----------------------
+# Input/output dirs
+# -----------------------
+NORM_ROOT="$YTAB/output/projects/$PROJECT_ID/sample_normalization/$NORM_TAG"
+
+COMBINED_SAMPLE="yH-parent-combined-${NORM_TAG}"
+
+OUT_ROOT="$YTAB/output/projects/$PROJECT_ID/combined_hits/$NORM_TAG"
+OUT_DIR="$OUT_ROOT/$COMBINED_SAMPLE"
+
+EXPORT_ROOT="$YTAB/output/exports/$PROJECT_ID/combined_hits/$NORM_TAG"
+
+mkdir -p "$OUT_ROOT"
+mkdir -p "$OUT_DIR"
+mkdir -p "$EXPORT_ROOT"
+
+FORCE="${FORCE:-0}"
+
+echo "PROJECT_ID:       $PROJECT_ID"
+echo "TARGET:           $TARGET"
+echo "NORM_TAG:         $NORM_TAG"
+echo "YTAB repo:        $YTAB"
+echo "Script:           $SCRIPT"
+echo "Norm root:        $NORM_ROOT"
+echo "Combined sample:  $COMBINED_SAMPLE"
+echo "Out dir:          $OUT_DIR"
+echo "Export root:      $EXPORT_ROOT"
+echo "FORCE:            $FORCE"
+echo
+
+export PYTHONPATH="$YTAB/src"
+
+# -----------------------
+# Parent samples to combine
+# -----------------------
+# Keep this explicit so treated/selected pools are not accidentally included.
+
+PARENT_SAMPLES=(
+  "yH298-parent-pool1"
+  "yH298-parent-pool2"
+  "yH299-parent-pool3"
+  "yH299-parent-pool4"
+)
+
+# -----------------------
+# Resolve normalized hit files
+# -----------------------
+HITS_FILES=()
+
+for sample in "${PARENT_SAMPLES[@]}"; do
+  f="$NORM_ROOT/$sample/${sample}_normalized_hits.txt"
+
+  if [[ ! -s "$f" ]]; then
+    echo "ERROR: missing normalized hits file for $sample:" >&2
+    echo "  $f" >&2
+    echo "Run ytab_SampleNormlization.txt first for $NORM_TAG." >&2
+    exit 1
+  fi
+
+  HITS_FILES+=( "$f" )
+done
+
+echo "Normalized parent hit files (${#HITS_FILES[@]}):"
+printf '  %s\n' "${HITS_FILES[@]}"
+echo
+
+# -----------------------
+# Combine normalized hits
+# -----------------------
+EXPECTED_HITS="$OUT_DIR/${COMBINED_SAMPLE}_hits.txt"
+EXPECTED_SUMMARY="$OUT_DIR/${COMBINED_SAMPLE}.combine_summary.csv"
+EXPECTED_MANIFEST="$OUT_DIR/${COMBINED_SAMPLE}.combine_manifest.json"
+
+if [[ "$FORCE" != "1" && -s "$EXPECTED_HITS" && -s "$EXPECTED_SUMMARY" ]]; then
+  echo "[SKIP] Existing combined hits output found:"
+  echo "  $EXPECTED_HITS"
+  echo "Set FORCE=1 to rerun."
+else
+  rm -rf "$OUT_DIR"
+  mkdir -p "$OUT_DIR"
+
+  echo "============================================================"
+  echo "[$(date)] Combining normalized parent hit files"
+  echo "============================================================"
+
+  python3 "$SCRIPT" \
+    --hits-txt "${HITS_FILES[@]}" \
+    --outdir "$OUT_DIR" \
+    --sample-name "$COMBINED_SAMPLE" \
+    --sort
+fi
+
+# -----------------------
+# Validate outputs
+# -----------------------
+if [[ ! -s "$EXPECTED_HITS" ]]; then
+  echo "ERROR: expected combined hits file missing:" >&2
+  echo "  $EXPECTED_HITS" >&2
+  exit 1
+fi
+
+if [[ ! -s "$EXPECTED_SUMMARY" ]]; then
+  echo "ERROR: expected combine summary missing:" >&2
+  echo "  $EXPECTED_SUMMARY" >&2
+  exit 1
+fi
+
+if [[ ! -s "$EXPECTED_MANIFEST" ]]; then
+  echo "ERROR: expected combine manifest missing:" >&2
+  echo "  $EXPECTED_MANIFEST" >&2
+  exit 1
+fi
+
+# -----------------------
+# App-facing exports
+# -----------------------
+cp -f "$EXPECTED_SUMMARY" "$EXPORT_ROOT/"
+cp -f "$EXPECTED_MANIFEST" "$EXPORT_ROOT/"
+cp -f "$EXPECTED_HITS" "$EXPORT_ROOT/"
+
+# Save input list for reproducibility
+INPUT_LIST="$OUT_DIR/${COMBINED_SAMPLE}.input_hits.${NORM_TAG}.txt"
+printf '%s\n' "${HITS_FILES[@]}" > "$INPUT_LIST"
+cp -f "$INPUT_LIST" "$EXPORT_ROOT/"
+
+echo
+echo "Done."
+echo "Combined hit file:"
+echo "  $EXPECTED_HITS"
+echo
+echo "Combine metadata:"
+echo "  $EXPECTED_SUMMARY"
+echo "  $EXPECTED_MANIFEST"
+echo
+echo "App-facing exports:"
+echo "  $EXPORT_ROOT"
+echo
+echo "Next step:"
+echo "  Run SummaryTable on:"
+echo "    $OUT_DIR"
+echo "  using:"
+echo "    --hit-glob '*_hits.txt'"
+echo
+
+date
+end=$(date +%s)
+runtime=$((end-start))
+echo "runtime=$runtime secs"
