@@ -70,10 +70,14 @@ import csv
 import argparse
 import glob
 import math
+from pathlib import Path
 from collections import defaultdict
 from itertools import chain
 
 import numpy as np
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from ytab.core import Shared
 from ytab.core import GenomicFeatures
@@ -683,6 +687,7 @@ def _write_feature_table(out_path, analysis, read_depth_filter, overwrite=False,
                 getattr(f, "coding_length", 0),
                 r["hits"], r["reads"], r["insertion_index"], r["neighborhood_index"], r["reads_ni"],
                 r["max_free_region"], r["freedom_index"], r["logit_fi"], r["s_value"],
+                r["upstream_hits_100"],
                 r["hits_in_domains"], r["reads_in_domains"], r["domain_coverage"], r["domain_ratio"],
                 r["bps_between_hits_in_feature"], r["bps_between_hits_in_neihgborhood"]
             ]
@@ -1066,7 +1071,7 @@ def _write_analyzed_gla_records(records, output_file, cglab2scer, overwrite=Fals
 
 
 # Feature DB 
-def load_feature_db(kind):
+def load_feature_db(kind, feature_gff=None, reference_fasta=None):
     if kind == "albicans":
         return GenomicFeatures.default_alb_db()
     if kind == "pombe":
@@ -1074,6 +1079,8 @@ def load_feature_db(kind):
     if kind == "cerevisiae":
         return GenomicFeatures.default_cer_db()
     if kind == "glabrata":
+        if feature_gff:
+            return GenomicFeatures.GlabrataFeatureDB(feature_gff, reference_fasta, None)
         return GenomicFeatures.default_glab_db()
     raise ValueError(f"Unsupported --feature-db: {kind}")
 
@@ -1114,6 +1121,10 @@ def main():
     parser.add_argument("--strict-hit-table", action="store_true", default=False)
 
     parser.add_argument("--feature-db", default=None, choices=["albicans", "pombe", "cerevisiae", "glabrata"])
+    parser.add_argument("--feature-gff", default=None,
+                        help="Optional explicit GFF/GTF override for the feature database.")
+    parser.add_argument("--reference-fasta", default=None,
+                        help="Optional explicit reference FASTA used with --feature-gff.")
 
     parser.add_argument("-f", "--read-depth-filter", type=int, default=1)
     parser.add_argument("--neighborhood-window-size", type=int, default=10000)
@@ -1213,7 +1224,7 @@ def main():
     if needs_feature_db:
         if args.feature_db is None:
             parser.error("--feature-db is required for feature-level outputs (default writes all outputs)")
-        feature_db = load_feature_db(args.feature_db)
+        feature_db = load_feature_db(args.feature_db, args.feature_gff, args.reference_fasta)
         ignored_by_chrom = _parse_ignored_regions(args.ignored_regions)
 
         if args.threads and args.threads > 1 and len(all_hits) > 1:
@@ -1402,4 +1413,3 @@ def main():
         )        
 if __name__ == "__main__":
     main()
-

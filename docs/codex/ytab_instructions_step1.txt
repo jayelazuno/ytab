@@ -1,0 +1,502 @@
+
+We are converting the current YTAB HPC prototype into a local, public-facing Shiny app pipeline that can run on a normal computer, including laptops with about 8 GB RAM. You have permission to create, change, and reorganize files/directories as needed, but do not delete existing outputs and do not rewrite the scientific algorithms yet.
+
+Important correction:
+- The public app should be built in Shiny, not Streamlit.
+- Do not build new work around app/streamlit_app.py.
+- Leave app/streamlit_app.py in place as legacy for now unless imports require a small compatibility fix.
+- The Shiny app will be the public user interface.
+- The existing Python YTAB modules remain the computational backend.
+
+Current repo context:
+- The repo root contains:
+  app/
+  configs/
+  containers/
+  docs/
+  output/
+  pipeline/
+  resources/
+  scripts/
+  src/
+  tnseq.yml
+
+- The old reproducible HPC jobs are in:
+  pipeline/hpc/
+
+- Current core Python pipeline modules already exist:
+  src/ytab/mapping/MapFastq.py
+  src/ytab/insertions/CreateHitFile.py
+  src/ytab/summary/SummaryTable.py
+  src/ytab/qc/LibraryDiagnostics.py
+  src/ytab/insertions/CombineHitFiles.py
+  src/ytab/essentiality/Classifier.py
+
+- Species resources are stored under:
+  resources/species/<species>/
+
+- Reference genome files are stored under:
+  resources/species/<species>/reference_genome/
+
+- Current species directories include:
+  glabrata
+  albicans
+  cerevisiae
+  pombe
+
+- Existing glabrata and albicans resources already contain Bowtie2 .bt2 indexes.
+- Therefore, if a complete Bowtie2 index already exists, indexing must be skipped.
+- Later, we may distribute prebuilt yeast Bowtie2 indexes with the app or as downloadable release assets.
+- For now, Step 1 should detect existing indexes and report whether indexing is needed.
+
+Big-picture product goal:
+The final public Shiny app should allow a user to:
+1. Open YTAB Shiny app.
+2. Point the app to a FASTQ directory.
+3. Choose a species/reference from resources/species/.
+4. Let the app detect samples.
+5. Review/edit the sample sheet.
+6. Run the full local pipeline from alignment to final results.
+7. Explore normalization interactively.
+8. Compare treated vs untreated libraries.
+9. Export tables, plots, and reports.
+
+Architecture:
+- Shiny = user interface, project setup, plots, tables, progress display, result exploration.
+- Python modules = computational backend.
+- Shiny should call Python CLI wrappers using system2() or processx, not reimplement the pipeline in R.
+- Pipeline steps should write config files, logs, manifests, CSV/TSV/JSON outputs, and plots.
+- Shiny should read those outputs and display them.
+- Long-running alignment should not happen directly inside a reactive expression without a controlled process wrapper.
+
+For this first Codex task, implement only the local project foundation. Do not run MapFastq/CreateHitFile/SummaryTable/LibraryDiagnostics yet.
+
+Goal for Step 1 only:
+Create the local pipeline foundation needed by both command line and Shiny:
+- reference discovery
+- Bowtie2 index detection
+- FASTQ sample discovery
+- project config creation
+- project validation
+- dry-run CLI initialization
+- smoke test for species/reference discovery
+- minimal Shiny project setup skeleton that can call the initialization command later
+
+Important constraints:
+- Do not use qsub.
+- Do not use GridEngine/SGE.
+- Do not hard-code /Users/jayelazuno paths.
+- All paths should be relative to repo root unless the user gives absolute paths.
+- Keep memory low.
+- Do not read FASTQ contents; only inspect filenames.
+- Do not delete output folders.
+- Do not rewrite MapFastq/CreateHitFile/SummaryTable/LibraryDiagnostics/Classifier algorithms yet.
+- This foundation must work for command line and Shiny.
+- The local pipeline must run on normal computers with at least 2 CPU threads.
+- Minimum threads: 2.
+- Default threads should be laptop-safe, but user-selectable:
+  detected_cpu = os.cpu_count() or 2
+  if detected_cpu < 2: fail with a clear error.
+  default_threads = max(2, min(4, detected_cpu))
+- However, do not cap the user at 4 threads.
+- If a machine has more than 4 cores, the user should be allowed to choose more than 4 threads.
+- User-selected threads may be any integer from 2 to detected_cpu.
+- If user-supplied --threads is less than 2, validation must fail.
+- If user-supplied --threads is greater than detected_cpu, validation must fail or warn clearly and refuse to proceed unless corrected.
+- The Shiny UI should eventually expose a thread selector from 2 to detected_cpu, defaulting to default_threads.
+- Add a memory caution message if user selects many threads on an 8 GB machine, but do not block them solely because threads > 4.
+
+Implement these files:
+
+1. src/ytab/pipeline/__init__.py
+
+Create the package initializer. Export the main public functions/classes from the new pipeline modules if appropriate.
+
+2. src/ytab/pipeline/reference_registry.py
+
+Requirements:
+- Define a dataclass called ReferenceInfo.
+- It should contain at least:
+  species
+  species_dir
+  reference_dir
+  fasta
+  feature_table
+  gff
+  gffutils_db
+  bowtie2_index_prefix
+  bowtie2_index_complete
+  bowtie2_index_type
+  centromere_bed
+  trna_bed
+  orthology_file
+  warnings
+
+Implement:
+  list_available_species(resources_dir: Path) -> list[str]
+  resolve_reference(species: str, repo_root: Path | None = None) -> ReferenceInfo
+  find_bowtie2_index_prefix(reference_dir: Path) -> tuple[Path | None, bool, str | None]
+
+Bowtie2 index rules:
+- A complete Bowtie2 small index requires all six files:
+  <prefix>.1.bt2
+  <prefix>.2.bt2
+  <prefix>.3.bt2
+  <prefix>.4.bt2
+  <prefix>.rev.1.bt2
+  <prefix>.rev.2.bt2
+
+- Also support Bowtie2 large indexes:
+  <prefix>.1.bt2l
+  <prefix>.2.bt2l
+  <prefix>.3.bt2l
+  <prefix>.4.bt2l
+  <prefix>.rev.1.bt2l
+  <prefix>.rev.2.bt2l
+
+- If complete .bt2 index exists, return:
+  bowtie2_index_complete=True
+  bowtie2_index_type="bt2"
+  bowtie2_index_prefix=<prefix without .1.bt2 extension>
+
+- If complete .bt2l index exists, return:
+  bowtie2_index_complete=True
+  bowtie2_index_type="bt2l"
+  bowtie2_index_prefix=<prefix without .1.bt2l extension>
+
+- If no complete index exists, return:
+  bowtie2_index_complete=False
+  bowtie2_index_type=None
+  bowtie2_index_prefix=None
+  warning: "No complete Bowtie2 index found. Indexing will be required before alignment."
+
+- Do not build indexes in Step 1.
+- If chosen species already has complete index, later app should display:
+  "Bowtie2 index found; indexing skipped."
+
+Robust file detection:
+- FASTA candidates:
+  *.fna
+  *.fa
+  *.fasta
+- GFF candidates:
+  *.gff
+  *.gff3
+- feature table candidates:
+  *feature_table*.txt
+  *chromosomal_feature*.tab
+- gffutils db candidates:
+  *.gffutils_db.sqlite
+- centromere candidates:
+  centromeres*.bed
+- tRNA candidates:
+  *tRNA*.bed
+  tRNAs.bed
+- orthology candidates outside reference_genome:
+  *orthologs*.txt
+- Prefer species-specific known files when multiple exist, but do not hard-code only glabrata.
+- Use warnings if multiple candidates are found and one is selected.
+- Use pathlib throughout.
+
+3. src/ytab/pipeline/sample_discovery.py
+
+Requirements:
+- Implement FASTQ discovery for a user-provided directory.
+- Recognize:
+  *.fastq
+  *.fastq.gz
+  *.fq
+  *.fq.gz
+
+- Return a pandas DataFrame with columns:
+  sample
+  fastq_1
+  fastq_2
+  layout
+  guessed_condition
+  guessed_background
+  guessed_pool
+  include
+  warnings
+
+- Support single-end and paired-end data.
+- Paired-end naming examples:
+  sample_R1.fastq.gz / sample_R2.fastq.gz
+  sample_1.fastq.gz / sample_2.fastq.gz
+  sample.R1.fastq.gz / sample.R2.fastq.gz
+
+- Single-end should be supported because Hermes SE150 data may be single-end.
+
+- For sample names, strip common read suffixes:
+  _R1
+  _R2
+  _1
+  _2
+  .R1
+  .R2
+
+- Heuristically guess:
+  guessed_condition = "parent" if sample contains "parent"
+  guessed_condition = "treated" if sample contains "treated", "H2O2", "h2o2", "facs", "selected", or "selection"
+  guessed_background = yH298/yH299/H298/H299 if present
+  guessed_pool = number after "pool"
+
+- Do not enforce guesses. These values are for editable sample sheets.
+
+Add:
+  discover_fastqs(fastq_dir: Path) -> pandas.DataFrame
+  write_sample_sheet(df, out_csv: Path)
+
+- If a paired sample is missing R1 or R2, include a warning.
+- Do not read FASTQ contents.
+
+4. src/ytab/pipeline/project_config.py
+
+Requirements:
+- Implement a simple local project config system using YAML.
+- Include fields:
+  project_id
+  repo_root
+  fastq_dir
+  output_project_dir
+  output_export_dir
+  species
+  threads
+  reference
+  samples
+  created_at
+  ytab_version_or_git_commit_if_available
+
+Implement:
+  detected_cpu_count() -> int
+  default_threads(max_threads: int | None = None) -> int
+  create_project_config(project_id, fastq_dir, species, repo_root=None, threads=None) -> dict
+  load_project_config(config_path: Path) -> dict
+  validate_project_config(config: dict) -> list[str]
+
+Thread logic:
+- detected_cpu_count should use os.cpu_count() or 2.
+- If detected CPU count is less than 2, validation should fail with:
+  "YTAB local pipeline requires at least 2 CPU threads."
+- default_threads:
+  detected = os.cpu_count() or 2
+  if detected < 2:
+      raise RuntimeError("YTAB local pipeline requires at least 2 CPU threads.")
+  default = max(2, min(4, detected))
+  if max_threads is provided:
+      default = min(default, max_threads)
+      if default < 2:
+          raise RuntimeError("YTAB local pipeline requires at least 2 CPU threads.")
+  return default
+- User-selected threads:
+  must be >= 2
+  should be <= detected CPU count
+  may be > 4 if the machine has >4 CPU threads
+- Validation error if threads < 2:
+  "threads must be >= 2 for local YTAB runs"
+- Validation error or blocking warning if threads > detected CPU count:
+  "requested threads exceed detected CPU count"
+- Add a non-blocking warning if threads > 4:
+  "Using more than 4 threads may increase memory use on low-memory machines."
+
+create_project_config should:
+- Resolve the selected reference using resolve_reference().
+- Discover FASTQs using discover_fastqs().
+- Create output dirs:
+  output/projects/<PROJECT_ID>/
+  output/exports/<PROJECT_ID>/
+  output/projects/<PROJECT_ID>/logs/
+  output/projects/<PROJECT_ID>/config/
+- Write:
+  output/projects/<PROJECT_ID>/config/project.yaml
+  output/projects/<PROJECT_ID>/config/sample_sheet.csv
+  output/projects/<PROJECT_ID>/config/reference_resolved.json
+- Store sample sheet entries in the YAML or reference the sample_sheet.csv path.
+- Store resolved reference information, including Bowtie2 index prefix and whether index is complete.
+- Use relative paths where possible, but support absolute paths.
+
+validate_project_config should check:
+- FASTQ dir exists.
+- At least one sample has include=True.
+- At least one FASTQ is detected.
+- Reference FASTA exists.
+- Feature table or GFF exists.
+- Bowtie2 index complete OR a warning that index building is needed later.
+- threads >= 2.
+- threads <= available CPUs or blocking warning/error.
+- output dirs are writable.
+
+5. scripts/local/ytab_init_local_project.py
+
+Requirements:
+- Command-line wrapper for Step 1.
+- Usage:
+  python scripts/local/ytab_init_local_project.py \
+    --project-id H2O2_screen_v1 \
+    --fastq-dir /path/to/fastqs \
+    --species glabrata \
+    --threads 4
+
+Arguments:
+  --project-id required
+  --fastq-dir required
+  --species required
+  --threads optional
+  --repo-root optional
+  --force optional, but do not delete old outputs; only overwrite config files if needed.
+
+It should print:
+  available species
+  selected species
+  reference FASTA
+  feature table
+  GFF
+  gffutils DB if present
+  Bowtie2 index prefix
+  Bowtie2 index type
+  whether Bowtie2 index is complete
+  whether indexing is skipped or required later
+  detected CPU count
+  selected thread count
+  whether thread count is default or user-selected
+  number of FASTQs found
+  number of samples detected
+  number of included samples
+  output project dir
+  output export dir
+  project.yaml path
+  sample_sheet.csv path
+  reference_resolved.json path
+  validation warnings/errors
+
+It should exit nonzero if:
+  no FASTQs are found
+  no samples are detected
+  critical reference files are missing
+  threads < 2
+  threads > detected CPU count, unless you implement a deliberate override flag
+
+It should not run alignment yet.
+
+6. scripts/local/ytab_smoke_reference_discovery.py
+
+Requirements:
+- Lightweight smoke test without pytest.
+- It should:
+  list species from resources/species
+  resolve glabrata if present
+  print the reference summary
+  assert that glabrata has a FASTA
+  assert that if .bt2 files are present, bowtie2_index_complete is True
+  resolve albicans if present
+  assert that if .bt2 files are present, bowtie2_index_complete is True
+  print detected CPU count
+  print default thread count
+  assert default thread count >= 2
+  print a clear PASS/FAIL message
+- It should not require FASTQs.
+- It should not build indexes.
+
+7. Optional but useful: scripts/local/ytab_make_small_fastq_subset.py
+
+Only add this if simple and safe.
+
+Purpose:
+- Make tiny test FASTQs from larger FASTQ or FASTQ.GZ files.
+- This will help us create local test data from parent and treated libraries.
+
+Requirements:
+- Inputs:
+  --fastq-dir
+  --out-dir
+  --reads-per-sample default 10000
+
+- It should preserve FASTQ format.
+- It should support .fastq and .fastq.gz.
+- It should not modify original FASTQs.
+- It should write subset files to the chosen out-dir.
+- It should be memory-safe and stream line-by-line.
+- It should preserve paired-end pairing if paired data are detected.
+- For single-end, just take first N reads.
+
+8. Minimal Shiny skeleton for local app
+
+Create:
+  app/shiny/app.R
+  app/shiny/R/
+  app/shiny/R/modules/
+
+For Step 1, keep Shiny minimal. Do not implement the full pipeline UI yet.
+
+The Shiny app should:
+- Display title:
+  "YTAB: Yeast Transposon Analysis Browser"
+- Include a Project Setup section.
+- Allow user to enter:
+  project_id
+  fastq_dir
+  species
+  threads
+- List available species from resources/species if easy, or call the Python discovery CLI.
+- Display detected CPU count.
+- Let user select threads from 2 to detected CPU count.
+- Default to the Python default thread value.
+- Include placeholder button:
+  "Initialize local project"
+- The button may call:
+  python scripts/local/ytab_init_local_project.py ...
+  using system2() or processx if available.
+- Display command output/log text.
+- Do not run alignment yet.
+- Do not implement normalization/classifier pages yet.
+- This is only a skeleton proving Shiny can call the Python local initializer.
+
+9. Do not alter the existing HPC scripts except if needed to keep imports working.
+- pipeline/hpc/ remains provenance.
+- Local public app work should go under:
+  src/ytab/pipeline/
+  scripts/local/
+  app/shiny/
+
+Run checks after implementation:
+  python -m py_compile src/ytab/pipeline/reference_registry.py
+  python -m py_compile src/ytab/pipeline/sample_discovery.py
+  python -m py_compile src/ytab/pipeline/project_config.py
+  python -m py_compile scripts/local/ytab_init_local_project.py
+  python -m py_compile scripts/local/ytab_smoke_reference_discovery.py
+  python scripts/local/ytab_smoke_reference_discovery.py
+
+If R is available, also run:
+  Rscript -e 'if (!requireNamespace("shiny", quietly=TRUE)) quit(status=0); source("app/shiny/app.R", local=TRUE)'
+
+Then show:
+  git status --short
+  tree src/ytab/pipeline scripts/local app/shiny -L 3
+
+Also show example commands:
+  python scripts/local/ytab_init_local_project.py \
+    --project-id local_smoke_test_v1 \
+    --fastq-dir /path/to/small_fastq_subset \
+    --species glabrata \
+    --threads 2
+
+  python scripts/local/ytab_init_local_project.py \
+    --project-id local_smoke_test_v1 \
+    --fastq-dir /path/to/small_fastq_subset \
+    --species glabrata \
+    --threads 8
+
+Expected successful behavior:
+- For glabrata:
+  Bowtie2 index complete: yes
+  Indexing skipped: yes
+- It should create:
+  output/projects/local_smoke_test_v1/config/project.yaml
+  output/projects/local_smoke_test_v1/config/sample_sheet.csv
+  output/projects/local_smoke_test_v1/config/reference_resolved.json
+- It should not run alignment.
+
+After this Step 1 is complete, stop and summarize exactly what changed. Do not proceed to Step 2 yet.
+
+Step 2 later will be:
+Convert MapFastq into a local low-memory runner that uses the resolved reference index and processes samples one at a time with user-selected threads.

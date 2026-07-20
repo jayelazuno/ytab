@@ -1,0 +1,351 @@
+
+Read the completed Step 1, Step 1.5, Step 1.6, Step 2, and Step 3 implementations for context. Now implement Step 4 only: local SummaryTable runner. Do not implement LibraryDiagnostics, normalization, classifier, or treated-vs-parent analysis yet.
+
+Current successful state:
+- Project initialization works.
+- Environment setup works.
+- glabrata reference is complete and runnable.
+- MapFastq local runner works for all 8 small FASTQ samples.
+- CreateHitFile local runner works for all 8 samples.
+- All 8 hit files are present under:
+    output/projects/local_glabrata_smoke_v1/create_hit_file/<sample>/<sample>_hits.txt
+- bedGraph and WIG browser tracks are present.
+- BigWig is optional and unavailable for now; do not block Step 4 on BigWig.
+
+Goal of Step 4:
+Create a local, app-compatible SummaryTable runner that reads per-sample hit files and generates per-sample feature-level summary tables using the existing src/ytab/summary/SummaryTable.py logic. This should wrap the existing SummaryTable.py code without changing the scientific algorithm.
+
+Important:
+- Public app is Shiny, not Streamlit.
+- Python remains the computational backend.
+- Shiny will call CLI wrappers using system2() or processx.
+- Do not use qsub.
+- Do not use GridEngine/SGE.
+- Do not hard-code /Users/jayelazuno, /old_Users, /Volumes, /mnt, or machine-specific paths.
+- All paths must come from project.yaml, sample_sheet.csv, reference_resolved.json, CLI args, or repo-relative defaults.
+- Do not modify scientific SummaryTable logic unless required to remove hard-coded paths or make inputs/outputs configurable.
+- Do not run LibraryDiagnostics or downstream steps.
+- Do not delete old outputs.
+- Make the runner restartable and cache-aware.
+- Keep memory low.
+- Process one sample at a time by default.
+- Use user-selected threads only if SummaryTable supports it.
+- If hit file is missing, fail clearly for that sample.
+- If feature annotation files are missing, fail clearly and tell user to fix reference resources.
+
+Expected local output layout:
+  output/projects/<PROJECT_ID>/summary/<sample>/
+  output/projects/<PROJECT_ID>/logs/summary/
+  output/projects/<PROJECT_ID>/manifests/summary/
+  output/exports/<PROJECT_ID>/qc/summary/
+
+Each sample should produce the normal SummaryTable outputs, including feature-level tables such as:
+  *.feature_table*.csv
+  *.feature_table*.tsv
+  *.feature_table*.txt
+
+Do not invent the exact output names if SummaryTable.py already produces specific names. Detect and record the outputs that are actually created.
+
+Each sample should also get a manifest:
+  output/projects/<PROJECT_ID>/manifests/summary/<sample>.summary_manifest.json
+
+The manifest should include:
+  project_id
+  sample
+  input_hits_file
+  species
+  reference files used
+  output_dir
+  detected_feature_tables
+  log_file
+  status: success/failed/skipped
+  start_time
+  end_time
+  elapsed_seconds
+  command_run
+  warnings
+  error_message if failed
+
+Also write/update a combined status file:
+  output/projects/<PROJECT_ID>/manifests/summary/summary_status.csv
+
+Status columns:
+  sample
+  status
+  input_hits_file
+  output_dir
+  feature_tables
+  log_file
+  elapsed_seconds
+  message
+
+Also write a combined summary statistics table if possible:
+  output/projects/<PROJECT_ID>/summary/summary_stats.all_samples.csv
+  output/exports/<PROJECT_ID>/qc/summary/summary_stats.all_samples.csv
+
+The combined stats table should include per-sample metrics reported by SummaryTable if available, such as:
+  sample
+  total_reads
+  total_hits
+  percent_hits_in_features
+  percent_intergenic_hits
+  percent_features_hit
+  mean_hits_per_feature
+  mean_reads_per_feature
+  mean_reads_per_hit
+  mean_reads_per_hit_in_feature
+
+If SummaryTable.py already creates a stats file, collect/copy/merge that instead of recomputing.
+
+Implement:
+
+1. src/ytab/pipeline/summary_table_runner.py
+
+Create a local runner module.
+
+Functions to implement:
+  load_project_for_summary_table(project_config: Path) -> dict
+  get_included_samples(config: dict) -> list[dict]
+  validate_summary_table_inputs(config: dict) -> list[str]
+  find_sample_hits_file(sample: dict, config: dict) -> Path
+  build_summary_table_command(sample: dict, config: dict, threads: int | None = None) -> list[str]
+  run_summary_table_sample(sample: dict, config: dict, threads: int | None = None, force: bool = False, dry_run: bool = False) -> dict
+  run_summary_table_project(project_config: Path, samples: list[str] | None = None, threads: int | None = None, force: bool = False, dry_run: bool = False, keep_going: bool = False) -> dict
+  collect_summary_stats(config: dict) -> Path | None
+
+Behavior:
+- Read project.yaml.
+- Read sample_sheet.csv if project.yaml references it.
+- Read reference_resolved.json.
+- Use hit files from:
+    output/projects/<PROJECT_ID>/create_hit_file/<sample>/<sample>_hits.txt
+- Use reference annotation paths from reference_resolved.json.
+- Validate hit file exists.
+- Validate feature_table or GFF/GTF exists.
+- Only run samples where include is true.
+- Support sample filtering by name.
+- Write outputs under:
+    output/projects/<PROJECT_ID>/summary/<sample>/
+- Write logs under:
+    output/projects/<PROJECT_ID>/logs/summary/
+- Write manifests under:
+    output/projects/<PROJECT_ID>/manifests/summary/
+- Copy or collect useful QC tables to:
+    output/exports/<PROJECT_ID>/qc/summary/
+- Skip a sample if it already has a successful manifest and expected feature table unless force=True.
+- dry_run=True should print/write commands but not execute.
+- keep_going=True should continue remaining samples if one fails.
+- keep_going=False should stop at first failed sample.
+- Return a summary dictionary.
+
+Important safety:
+- Do not let SummaryTable write directly to the stage root where it may overwrite other samples.
+- Use a per-sample output directory:
+    output/projects/<PROJECT_ID>/summary/<sample>/
+- If SummaryTable.py internally clears its output directory, isolate each sample.
+- If needed, use a temporary run directory:
+    output/projects/<PROJECT_ID>/summary/.run_<sample>/
+  then copy the final result to:
+    output/projects/<PROJECT_ID>/summary/<sample>/
+  and remove the temporary directory only after success.
+
+2. Patch src/ytab/summary/SummaryTable.py only if needed
+
+Requirements:
+- Remove or avoid hard-coded paths.
+- Ensure it accepts:
+    input hits file or hits directory
+    sample name / prefix
+    output directory
+    reference feature table or GFF/GTF
+    optional chromosome length / mapping files if required
+- Ensure command-line help works:
+    python src/ytab/summary/SummaryTable.py --help
+- Preserve existing behavior used by HPC scripts if possible.
+- If backward compatibility aliases are needed, keep them.
+- Do not change summary-table scientific logic.
+
+3. scripts/local/ytab_run_summary_table.py
+
+Create a CLI wrapper.
+
+Usage:
+  python scripts/local/ytab_run_summary_table.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --threads 2
+
+Options:
+  --project-config required
+  --samples optional comma-separated sample names
+  --threads optional
+  --force optional
+  --dry-run optional
+  --keep-going optional
+
+Behavior:
+- Print project id.
+- Print species.
+- Print number of included samples.
+- Print selected samples.
+- Print input create_hit_file directory.
+- Print output summary directory.
+- In dry-run mode, print commands and exit 0 without creating summary tables.
+- In normal mode, run SummaryTable one sample at a time.
+- Write per-sample manifests and combined status CSV.
+- Write or collect combined summary_stats.all_samples.csv.
+- Exit nonzero if any selected sample fails, unless dry-run.
+- If keep-going is enabled, continue but still exit nonzero at end if any failed.
+
+4. scripts/local/ytab_smoke_summary_table_one_sample.py
+
+Create a lightweight smoke runner for one sample from a project.
+
+Usage:
+  python scripts/local/ytab_smoke_summary_table_one_sample.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --sample yH298-parent-pool1 \
+    --threads 2
+
+Behavior:
+- Runs SummaryTable for one selected sample.
+- Prints input hits file.
+- Prints output directory.
+- Prints detected feature table path(s).
+- Prints manifest path.
+- Prints PASS/FAIL.
+- Does not run LibraryDiagnostics or downstream steps.
+
+5. Update app/shiny/app.R minimally
+
+Add a “Build Summary Tables” placeholder section after Create Hit Files.
+
+It should allow:
+- project_config path input
+- threads input
+- sample selection text box or “all included samples”
+- dry-run checkbox
+- button: “Run SummaryTable”
+
+The button should call:
+  python scripts/local/ytab_run_summary_table.py --project-config <project.yaml> --threads <threads>
+
+Add optional --dry-run if selected.
+
+Display command output/log text in the app.
+
+Do not implement LibraryDiagnostics or downstream pages.
+
+6. Update docs/setup_local.md
+
+Add a Step 4 section:
+
+  Build summary tables
+
+Include commands:
+  mamba activate ytab-local
+
+  python scripts/local/ytab_run_summary_table.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --threads 2 \
+    --dry-run
+
+  python scripts/local/ytab_smoke_summary_table_one_sample.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --sample yH298-parent-pool1 \
+    --threads 2
+
+  python scripts/local/ytab_run_summary_table.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --threads 2 \
+    --keep-going
+
+Explain:
+- SummaryTable runs one sample at a time.
+- Existing successful samples are skipped unless --force is used.
+- Input hit files come from output/projects/<PROJECT_ID>/create_hit_file/.
+- Output feature tables are written to output/projects/<PROJECT_ID>/summary/.
+- This step does not run LibraryDiagnostics yet.
+
+7. Checks
+
+Run:
+  python -m py_compile src/ytab/pipeline/summary_table_runner.py
+  python -m py_compile scripts/local/ytab_run_summary_table.py
+  python -m py_compile scripts/local/ytab_smoke_summary_table_one_sample.py
+  python src/ytab/summary/SummaryTable.py --help
+
+Dry-run:
+  python scripts/local/ytab_run_summary_table.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --threads 2 \
+    --dry-run
+
+If hit file exists for yH298-parent-pool1, also run:
+  python scripts/local/ytab_smoke_summary_table_one_sample.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --sample yH298-parent-pool1 \
+    --threads 2
+
+Expected after successful one-sample smoke:
+  output/projects/local_glabrata_smoke_v1/summary/yH298-parent-pool1/
+  output/projects/local_glabrata_smoke_v1/logs/summary/yH298-parent-pool1.log
+  output/projects/local_glabrata_smoke_v1/manifests/summary/yH298-parent-pool1.summary_manifest.json
+  output/projects/local_glabrata_smoke_v1/manifests/summary/summary_status.csv
+
+Then, if one-sample smoke passes, run all eight:
+  python scripts/local/ytab_run_summary_table.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --threads 2 \
+    --keep-going
+
+Expected after full small-subset SummaryTable:
+  8 per-sample summary output directories
+  8 per-sample manifests
+  1 summary_status.csv
+  summary_stats.all_samples.csv if available
+
+8. Hard-coded path cleanup
+
+Search for hard-coded paths in new/modified local files:
+  grep -R "/Users/jayelazuno\\|/old_Users\\|/Volumes/rdss\\|/mnt/archived_data\\|/workspace/HermesTnseq" -n src scripts app docs
+
+Rules:
+- Do not introduce hard-coded paths.
+- Existing legacy HPC scripts may contain old paths; leave them alone.
+- New local/app files must not contain hard-coded local or HPC paths.
+- SummaryTable.py should not require hard-coded paths for local operation.
+
+9. App organization compatibility
+
+Ensure new local runner is compatible with this app flow:
+  Shiny app
+    -> project.yaml
+    -> sample_sheet.csv
+    -> reference_resolved.json
+    -> ytab_run_summary_table.py
+    -> output/projects/<PROJECT_ID>/summary/
+    -> manifests/status files
+    -> Shiny reads status/results
+
+Do not require users to manually edit Python code.
+
+10. Stop point
+
+Stop after Step 4.
+Do not implement:
+- LibraryDiagnostics
+- normalization explorer
+- classifier
+- treated-vs-parent screen
+
+After implementation, show:
+  git status --short
+  find src/ytab/pipeline scripts/local app/shiny output/projects/local_glabrata_smoke_v1 -maxdepth 4 -type f | sort
+
+Summarize:
+- files created/modified
+- whether dry-run passed
+- whether one-sample SummaryTable smoke test passed
+- whether all-eight SummaryTable run passed, if run
+- where outputs were written
+- any failures or missing resources

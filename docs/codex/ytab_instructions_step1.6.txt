@@ -1,0 +1,192 @@
+
+Read the existing Step 1 and Step 1.5 implementation for context. Now implement Step 1.6 only: reference/resource preparation and species discovery cleanup. Do not implement MapFastq or alignment yet.
+
+Current status:
+- The ytab-local environment now works.
+- glabrata reference resources are now complete.
+- glabrata has FASTA, GFF, feature table, gffutils DB, complete Bowtie2 index, centromere BED, tRNA BED, and orthology file.
+- Kornmann is not a species. It is legacy/resource material and should not appear as a selectable species.
+- Other users may add new species later under resources/species/<species>/reference_genome/.
+- Therefore, species discovery should remain dynamic and should not be hard-coded only to glabrata/albicans/cerevisiae/pombe.
+
+Goal:
+Add a clean reference preparation layer before alignment. The app and CLI should be able to check whether a selected species has a usable reference. If Bowtie2 indexes are missing but a FASTA exists, the pipeline should be able to build the Bowtie2 index as an explicit reference-preparation step. Do not hide index building inside the alignment algorithm.
+
+Important design:
+- Bowtie2 index is built from FASTA only.
+- GFF/GTF/feature_table are used for feature annotation and SummaryTable, not for Bowtie2 indexing.
+- If complete Bowtie2 indexes already exist, skip indexing.
+- If FASTA exists but Bowtie2 indexes are missing, allow the user to build indexes with a separate prepare-reference command.
+- If FASTA is missing, do not attempt indexing. Show a clear error telling the user to restore/download/provide reference FASTA.
+- Do not restrict YTAB to only the species currently in the repo.
+- Species discovery should support future user-added species.
+- Do not delete existing outputs.
+- Do not modify scientific algorithms.
+- Do not run alignment.
+- Do not use qsub or HPC paths.
+
+Species discovery rules:
+- list_available_species() should not list every folder blindly.
+- A folder under resources/species/<name>/ should be considered a selectable species only if:
+    resources/species/<name>/reference_genome/ exists
+    AND it contains at least one likely reference file:
+      *.fna, *.fa, *.fasta, *.gff, *.gff3, *.gtf, *feature_table*.txt, or *chromosomal_feature*.tab
+- Kornmann should not appear as a species unless it has a valid reference_genome with real reference files, which it currently does not.
+- Do not create a fixed-only species manifest that blocks future species.
+- Optional: create resources/species/species_manifest.yaml only as metadata/labels, but the pipeline must still support unlisted user-added species if they have valid reference files.
+
+Update src/ytab/pipeline/reference_registry.py:
+- Add support for GTF detection:
+    *.gtf
+- Add:
+    reference_is_selectable(info: ReferenceInfo) -> bool
+    reference_can_be_prepared(info: ReferenceInfo) -> bool
+    reference_is_runnable(info: ReferenceInfo) -> bool
+
+Definitions:
+- selectable:
+    reference_genome directory exists
+    AND at least one reference-like file exists
+- can_be_prepared:
+    FASTA exists
+    AND at least one of GFF, GTF, or feature_table exists
+    Bowtie2 index may be missing
+- runnable:
+    FASTA exists
+    AND at least one of GFF, GTF, or feature_table exists
+    AND Bowtie2 index is complete
+
+Warnings:
+- FASTA missing:
+    "Reference FASTA missing. Cannot build Bowtie2 index."
+- annotation missing:
+    "No GFF/GTF/feature table found. Feature annotation will not be available."
+- index missing but FASTA present:
+    "No complete Bowtie2 index found. Run reference preparation before alignment."
+- index complete:
+    "Bowtie2 index found; indexing skipped."
+
+Add src/ytab/pipeline/reference_prepare.py
+
+Implement:
+    build_bowtie2_index(fasta: Path, index_prefix: Path, threads: int = 2, force: bool = False) -> dict
+    ensure_fasta_index(fasta: Path, force: bool = False) -> dict
+    prepare_reference(species: str, repo_root: Path | None = None, threads: int = 2, force: bool = False) -> dict
+
+Behavior:
+- Resolve the species using reference_registry.resolve_reference().
+- If complete Bowtie2 index already exists and force is false, skip index building.
+- If index is missing and FASTA exists, run:
+    bowtie2-build --threads <threads> <fasta> <index_prefix>
+- Choose index_prefix as FASTA path without final FASTA suffix.
+  Example:
+    GCA_014217725.1_ASM1421772v1_genomic.fna
+  gives:
+    GCA_014217725.1_ASM1421772v1_genomic
+- If FASTA .fai is missing, run:
+    samtools faidx <fasta>
+- If GFF exists and gffutils DB is missing, do not force DB generation yet unless current YTAB code already has a known safe utility for it. Instead write a warning:
+    "gffutils DB missing; DB generation will be added in a later reference-prep step."
+- Write:
+    resources/species/<species>/reference_genome/reference_prepare_manifest.json
+- Manifest should include:
+    species
+    fasta
+    index_prefix
+    bowtie2_index_complete_before
+    bowtie2_index_complete_after
+    fasta_index_created
+    commands_run
+    warnings
+    timestamp
+
+Add scripts/local/ytab_prepare_reference.py
+
+CLI usage:
+    python scripts/local/ytab_prepare_reference.py \
+      --species glabrata \
+      --threads 4
+
+Options:
+    --species required
+    --threads optional, default from project_config.default_threads()
+    --repo-root optional
+    --force optional
+
+Behavior:
+- Print selected species.
+- Print FASTA path.
+- Print annotation path: GFF/GTF/feature table.
+- Print current Bowtie2 index status.
+- If index exists, print:
+    "Bowtie2 index found; indexing skipped."
+- If index missing and FASTA exists, build the index.
+- If FASTA missing, exit nonzero with clear message.
+- Do not run alignment.
+
+Update scripts/local/ytab_check_resources.py:
+- Do not list Kornmann as a species if it is not selectable.
+- Use the new dynamic selectable/runnable/can_prepare logic.
+- For each selectable species, report:
+    FASTA found yes/no
+    GFF found yes/no
+    GTF found yes/no
+    feature table found yes/no
+    gffutils DB found yes/no
+    Bowtie2 index complete yes/no
+    centromere BED found yes/no
+    tRNA BED found yes/no
+    orthology file found yes/no
+    selectable yes/no
+    can_prepare yes/no
+    runnable yes/no
+- If FASTA exists but index missing:
+    say reference can be prepared.
+- If FASTA missing:
+    say reference files must be restored/downloaded/provided.
+- Exit zero if at least one species is runnable or can_prepare.
+- Exit nonzero only if no species can run and no species can be prepared.
+- With the current repo, glabrata should be reported as runnable.
+
+Update app/shiny/app.R minimally:
+- Add a placeholder Reference Preparation section.
+- Display selected species.
+- Display whether reference is runnable.
+- Display whether Bowtie2 index exists.
+- Add a button:
+    "Prepare reference / build index"
+- For now, the button may call:
+    python scripts/local/ytab_prepare_reference.py --species <species> --threads <threads>
+- Do not implement alignment.
+
+Update docs/setup_local.md:
+Add a section:
+    Reference resources and indexing
+
+Explain:
+- Bowtie2 indexes are reused if already present.
+- Bowtie2 indexes are built from FASTA only.
+- GFF/GTF/feature_table are used for gene annotation.
+- If FASTA is missing, user must restore/download/provide reference files.
+- Future species can be added under:
+    resources/species/<species>/reference_genome/
+- Kornmann is legacy data, not a selectable species.
+
+Run checks:
+    python -m py_compile src/ytab/pipeline/reference_registry.py
+    python -m py_compile src/ytab/pipeline/reference_prepare.py
+    python -m py_compile scripts/local/ytab_prepare_reference.py
+    python scripts/local/ytab_check_resources.py
+    python scripts/local/ytab_prepare_reference.py --species glabrata --threads 2
+
+Expected:
+- glabrata should be runnable.
+- glabrata should report Bowtie2 index found and skip indexing.
+- Kornmann should not appear as an available/selectable species.
+- No alignment should run.
+
+Then show:
+    git status --short
+    tree src/ytab/pipeline scripts/local app/shiny -L 3
+
+Stop after Step 1.6. Do not proceed to Step 2.

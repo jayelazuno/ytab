@@ -1,0 +1,570 @@
+
+Read the completed Step 1 through Step 9 implementations for context. Now implement Step 10 only: local essentiality classifier runner using the combined parent feature table. Do not implement treated-vs-parent analysis yet.
+
+Current successful state:
+- Project initialization works.
+- Reference discovery and preparation work.
+- MapFastq works.
+- CreateHitFile works.
+- Raw SummaryTable works.
+- Raw LibraryDiagnostics works.
+- MidLC normalization exploration works.
+- SummaryTable on normalized individual parent hits works.
+- Normalized parent hit-file combining works.
+- SummaryTable on the combined normalized parent library works.
+- Step 9 produced stable classifier inputs:
+    output/projects/local_glabrata_smoke_v1/summary_combined/T6400/combined_feature_table.T6400.txt
+    output/projects/local_glabrata_smoke_v1/summary_combined/T059p7/combined_feature_table.T059p7.txt
+- Both smoke feature tables contain 5,234 features.
+- Recommended smoke target currently resolves to T6400.
+- T6400 is not a biological recommendation for this shallow 10,000-read smoke dataset. It represents unchanged normalized copies because the requested depth exceeded the observed library depth.
+
+Goal of Step 10:
+Create a local, app-compatible runner around the existing:
+    src/ytab/essentiality/Classifier.py
+
+The runner should take one stable combined parent feature table from Step 9, run the existing essentiality classifier, capture all classifier outputs, and expose the results to the Shiny app.
+
+Scientific workflow:
+    normalized parent hit files
+    -> combine normalized parent hit files
+    -> SummaryTable on combined normalized parent library
+    -> Classifier.py on one combined parent feature table
+
+Important:
+- Public app is Shiny, not Streamlit.
+- Python remains the computational backend.
+- Shiny calls CLI wrappers using system2() or processx.
+- Do not use qsub.
+- Do not use GridEngine/SGE.
+- Do not hard-code /Users/jayelazuno, /old_Users, /Volumes, /mnt, workspace paths, or any machine-specific location.
+- All paths must come from project.yaml, sample_sheet.csv, reference_resolved.json, classifier resource configuration, CLI arguments, or repository-relative defaults.
+- Do not rewrite or replace the existing scientific classifier.
+- Do not change feature engineering, training labels, thresholds, model type, cross-validation, or prediction logic unless a change is strictly required to remove hard-coded paths or expose existing inputs and outputs.
+- Preserve backward compatibility with the existing Classifier.py workflow where practical.
+- Do not implement treated-vs-parent analysis.
+- Do not delete previous outputs.
+- Make the runner restartable and cache-aware.
+- Keep memory usage appropriate for an ordinary computer with approximately 8 GB RAM.
+- Use the active Python interpreter through sys.executable.
+- Record enough metadata to make classifier results reproducible.
+
+Target-selection behavior:
+The wrapper must allow:
+    --target recommended
+    --target auto
+    --target feature-recommended
+    --target site-recommended
+    --target T6400
+    --target T059p7
+    --target 59.7
+    --target 60
+
+Resolution rules:
+- recommended or feature-recommended:
+    read:
+      output/projects/<PROJECT_ID>/sample_normalization/normalization_feature_recommendation.json
+- If the feature-level recommendation is unavailable:
+    fall back to:
+      output/projects/<PROJECT_ID>/sample_normalization/normalization_recommendation.json
+    and record a warning.
+- auto:
+    treat as recommended.
+- site-recommended:
+    use normalization_recommendation.json.
+- Manual numeric targets:
+    convert using the Step 6 target-tag formatter.
+- Manual target tags:
+    validate and use directly.
+- Do not run normalization, combine hits, or SummaryTable in Step 10.
+- The selected target must already have:
+    output/projects/<PROJECT_ID>/summary_combined/<TARGET_TAG>/combined_feature_table.<TARGET_TAG>.txt
+- Fail clearly when the selected combined feature table does not exist and tell the user to run Steps 8 and 9 for that target.
+- The Shiny interface should list existing combined-summary targets whenever possible rather than assuming only the recommended target is available.
+
+Final classifier target selection:
+Do not silently declare the automatically recommended smoke target to be the final biological target.
+
+Add optional persistence of an explicitly selected final target:
+    output/projects/<PROJECT_ID>/config/final_classifier_target.txt
+    output/projects/<PROJECT_ID>/config/final_classifier_target.json
+
+Only write these files when:
+    --save-final-target
+is supplied.
+
+The JSON file should include:
+    project_id
+    target
+    target_tag
+    selection_source
+    feature_table
+    selected_by
+    timestamp
+    warning
+
+For the smoke project, include:
+    "This target was selected during workflow testing with a shallow FASTQ subset and should not be interpreted as a biological normalization recommendation."
+
+Input validation:
+- Validate that the stable combined feature table exists and is non-empty.
+- Inspect Classifier.py to determine its required columns.
+- Validate all required classifier columns before running.
+- When required columns are missing, fail with a clear list of missing columns.
+- Validate any required species-specific files, such as:
+    orthology mappings
+    known essential/nonessential training labels
+    curated reference sets
+    classifier model resources
+- Resolve these from reference_resolved.json, resources/species/<species>/, a repository-relative classifier resource directory, or explicit CLI options.
+- Do not introduce glabrata-only hard-coded paths.
+- If the classifier currently supports only particular species, report unsupported species clearly instead of failing with an obscure traceback.
+- Do not fabricate missing classifier training labels or orthology data.
+
+Expected output layout:
+    output/projects/<PROJECT_ID>/classifier/<TARGET_TAG>/
+    output/projects/<PROJECT_ID>/logs/classifier/
+    output/projects/<PROJECT_ID>/manifests/classifier/
+    output/exports/<PROJECT_ID>/classifier/<TARGET_TAG>/
+
+Stable main output:
+    output/projects/<PROJECT_ID>/classifier/<TARGET_TAG>/essentiality_predictions.<TARGET_TAG>.csv
+
+Classifier.py may produce its own output filenames or multiple result files. Preserve all original outputs.
+
+After the classifier runs:
+- Detect the primary gene/feature-level prediction table.
+- Copy it without altering contents to:
+    essentiality_predictions.<TARGET_TAG>.csv
+- If the original table is tab-delimited, preserve the original file and create the stable CSV only through a lossless table conversion.
+- Preserve identifiers, probabilities, scores, classes, and all other columns.
+- Do not rename scientific result columns merely for presentation.
+- If no unambiguous prediction table can be found, fail clearly and record all candidate files.
+
+Also create:
+    output/projects/<PROJECT_ID>/classifier/<TARGET_TAG>/classifier_summary.<TARGET_TAG>.csv
+    output/projects/<PROJECT_ID>/classifier/<TARGET_TAG>/classifier_run_metadata.<TARGET_TAG>.json
+
+classifier_summary should include only metrics that can be obtained safely from actual classifier outputs, such as:
+    target
+    target_tag
+    input_feature_count
+    output_prediction_count
+    prediction_label
+    prediction_count
+    prediction_fraction
+    probability_column if detected
+    mean_probability if available
+    median_probability if available
+    minimum_probability if available
+    maximum_probability if available
+
+Do not invent class names. Use the labels emitted by Classifier.py.
+
+If classifier outputs model-performance metrics, preserve and export them, such as:
+    confusion matrix
+    cross-validation summary
+    ROC/AUC data
+    precision/recall
+    feature importance
+    model coefficients
+    classifier plots
+
+Do not require these outputs if the current classifier does not generate them.
+
+Manifest:
+    output/projects/<PROJECT_ID>/manifests/classifier/<TARGET_TAG>.classifier_manifest.json
+
+The manifest should include:
+    project_id
+    species
+    target
+    target_tag
+    target_resolution_source
+    input_combined_feature_table
+    input_sha256
+    input_feature_count
+    classifier_script
+    classifier_resources
+    output_dir
+    stable_prediction_table
+    detected_outputs
+    classifier_summary_file
+    run_metadata_file
+    log_file
+    seed if applicable
+    Python version
+    numpy version
+    pandas version
+    scikit-learn version if used
+    status: success/failed/skipped
+    start_time
+    end_time
+    elapsed_seconds
+    command_run
+    warnings
+    error_message if failed
+
+Status CSV:
+    output/projects/<PROJECT_ID>/manifests/classifier/classifier_status.csv
+
+Status columns:
+    target
+    target_tag
+    status
+    input_combined_feature_table
+    input_feature_count
+    stable_prediction_table
+    output_prediction_count
+    output_dir
+    log_file
+    elapsed_seconds
+    message
+
+Implement:
+
+1. src/ytab/pipeline/classifier_runner.py
+
+Create the local classifier runner.
+
+Functions to implement:
+    load_project_for_classifier(project_config: Path) -> dict
+    resolve_classifier_target(config: dict, target: str = "recommended") -> dict
+    find_combined_feature_table(config: dict, target_tag: str) -> Path
+    resolve_classifier_resources(config: dict) -> dict
+    inspect_classifier_requirements(config: dict, feature_table: Path, resources: dict) -> dict
+    validate_classifier_inputs(config: dict, target_info: dict, feature_table: Path, resources: dict) -> list[str]
+    build_classifier_command(config: dict, target_info: dict, feature_table: Path, resources: dict, seed: int | None = None) -> list[str]
+    detect_classifier_outputs(output_dir: Path) -> list[Path]
+    choose_primary_prediction_table(outputs: list[Path]) -> Path
+    summarize_classifier_predictions(prediction_table: Path, target_info: dict) -> Path
+    write_classifier_run_metadata(config: dict, target_info: dict, feature_table: Path, resources: dict, outputs: list[Path], seed: int | None = None) -> Path
+    persist_final_classifier_target(config: dict, target_info: dict, feature_table: Path, warning: str | None = None) -> dict
+    run_classifier_project(project_config: Path, target: str = "recommended", seed: int | None = None, force: bool = False, dry_run: bool = False, save_final_target: bool = False) -> dict
+
+Behavior:
+- Read project.yaml.
+- Read reference_resolved.json.
+- Resolve the requested target.
+- Locate:
+    output/projects/<PROJECT_ID>/summary_combined/<TARGET_TAG>/combined_feature_table.<TARGET_TAG>.txt
+- Resolve all required classifier resources.
+- Validate the input table and resources.
+- Inspect the existing Classifier.py CLI and use its actual flags.
+- Run the existing classifier once for the selected target.
+- Write outputs under:
+    output/projects/<PROJECT_ID>/classifier/<TARGET_TAG>/
+- Write logs under:
+    output/projects/<PROJECT_ID>/logs/classifier/
+- Write manifests under:
+    output/projects/<PROJECT_ID>/manifests/classifier/
+- Copy useful outputs to:
+    output/exports/<PROJECT_ID>/classifier/<TARGET_TAG>/
+- Create the stable prediction table.
+- Create classifier summary and metadata files.
+- Skip if a successful manifest and stable prediction table already exist unless force=True.
+- dry_run=True must validate and print the command without executing the classifier.
+- Do not write final_classifier_target files during dry-run.
+- Only persist final target selection when save_final_target=True.
+- Return a summary dictionary.
+
+Caching:
+A classifier result may be skipped only if:
+- the existing manifest reports success
+- the stable prediction table exists
+- the input combined feature-table SHA256 matches the current input
+- the selected target matches
+- the recorded classifier resources still match when hashes are available
+- force=False
+
+If the input hash changed, rerun even if files already exist.
+
+Reproducibility:
+- If Classifier.py accepts a random seed, expose it.
+- If Classifier.py uses randomness but has no seed option, minimally patch it to accept a seed while preserving its former default behavior.
+- Do not introduce randomness into a deterministic classifier.
+- Record the seed and package versions.
+- Default seed may be 42 only if a seed is required and the existing classifier does not already define one.
+- Do not change the scientific model merely to impose a seed.
+
+2. Patch src/ytab/essentiality/Classifier.py only if needed
+
+Requirements:
+- Remove or avoid hard-coded paths.
+- Ensure it accepts configurable:
+    input combined feature table
+    output directory
+    species-specific resource files
+    seed, if the model uses randomness
+- Ensure:
+    python src/ytab/essentiality/Classifier.py --help
+  works.
+- Preserve existing scientific calculations and output columns.
+- Preserve old CLI aliases where practical.
+- Do not change model architecture, thresholds, feature definitions, labels, or training scheme.
+- Do not replace the existing classifier with a new generic scikit-learn model.
+- Do not silently drop features with missing values unless that is already established behavior.
+- Report excluded rows and reasons if the existing classifier excludes data.
+
+3. scripts/local/ytab_run_classifier.py
+
+Create a CLI wrapper.
+
+Usage:
+    python scripts/local/ytab_run_classifier.py \
+      --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+      --target recommended
+
+Options:
+    --project-config required
+    --target optional, default recommended
+      accepts recommended, auto, feature-recommended, site-recommended, numeric targets, and target tags
+    --seed optional
+    --force optional
+    --dry-run optional
+    --save-final-target optional
+
+Behavior:
+- Print project id.
+- Print species.
+- Print requested target.
+- Print resolved target and target tag.
+- Print target resolution source.
+- Print input combined feature table.
+- Print input feature count.
+- Print resolved classifier resources.
+- Print classifier output directory.
+- Print whether final target selection will be saved.
+- In dry-run mode, print the exact classifier command and exit 0 without executing.
+- In normal mode, run the classifier.
+- Print stable prediction table.
+- Print output prediction count.
+- Print class counts when available.
+- Write manifest and status CSV.
+- Exit nonzero if classifier validation or execution fails.
+
+4. scripts/local/ytab_smoke_classifier.py
+
+Create a lightweight smoke runner.
+
+Usage:
+    python scripts/local/ytab_smoke_classifier.py \
+      --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+      --target recommended
+
+Also support:
+    python scripts/local/ytab_smoke_classifier.py \
+      --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+      --target T059p7
+
+Behavior:
+- Defaults to the recommended target.
+- Does not save the selected target as the final biological target unless:
+    --save-final-target
+  is explicitly provided.
+- Prints selected target.
+- Prints combined feature table.
+- Prints required classifier resources.
+- Runs the classifier.
+- Prints stable prediction table.
+- Prints output row count and detected class counts.
+- Prints manifest path.
+- Prints PASS/FAIL.
+- Does not run treated-vs-parent analysis.
+
+5. Update app/shiny/app.R
+
+Add an “Essentiality Classifier” section after Combined Parent Summary.
+
+Controls:
+- project_config path input
+- target selector:
+    recommended
+    feature-recommended
+    site-recommended
+    available target
+    manual
+- For available target:
+    detect target directories under:
+      output/projects/<PROJECT_ID>/summary_combined/
+- Manual target field:
+    accepts a target tag or positive numeric target
+- Optional random-seed input, only passed if supplied
+- dry-run checkbox
+- force checkbox
+- checkbox:
+    "Save this as the final classifier target"
+- button:
+    "Run essentiality classifier"
+
+The app command should call:
+    python scripts/local/ytab_run_classifier.py \
+      --project-config <project.yaml> \
+      --target <target>
+
+Add optional:
+    --seed <seed>
+    --dry-run
+    --force
+    --save-final-target
+
+Display command output and log text.
+
+If classifier_status.csv exists, display it with DT if available.
+If classifier_summary.<TARGET_TAG>.csv exists, display it.
+If essentiality_predictions.<TARGET_TAG>.csv exists:
+- display the first rows in DT
+- provide filters based on actual output columns
+- do not assume a particular class-column name
+- do not rename classifier labels
+
+Show a clear warning for smoke projects:
+    "Results from shallow FASTQ subsets validate the workflow but should not be interpreted as final biological essentiality calls."
+
+Add a note:
+    "Treated-versus-parent fitness analysis is a separate downstream step and is not run by the essentiality classifier."
+
+6. Update docs/setup_local.md
+
+Add Step 10:
+
+    Run the essentiality classifier
+
+Document:
+
+Environment:
+    mamba activate ytab-local
+
+Dry-run recommended target:
+    python scripts/local/ytab_run_classifier.py \
+      --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+      --target recommended \
+      --dry-run
+
+Recommended-target smoke:
+    python scripts/local/ytab_smoke_classifier.py \
+      --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+      --target recommended
+
+Manual target smoke:
+    python scripts/local/ytab_smoke_classifier.py \
+      --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+      --target T059p7
+
+Explicitly save a final target:
+    python scripts/local/ytab_run_classifier.py \
+      --project-config output/projects/<PROJECT_ID>/config/project.yaml \
+      --target <TARGET_TAG> \
+      --save-final-target
+
+Explain:
+- The classifier consumes one stable combined parent feature table.
+- Normalization, combining, and SummaryTable must already be complete for the selected target.
+- The automatically recommended target is not silently saved as the final biological selection.
+- Use --save-final-target only after reviewing normalization retention and library QC.
+- Smoke-subset classifier calls test software behavior only.
+- This step does not compare treated and parent libraries.
+
+7. Checks
+
+Run:
+    python -m py_compile src/ytab/pipeline/classifier_runner.py
+    python -m py_compile scripts/local/ytab_run_classifier.py
+    python -m py_compile scripts/local/ytab_smoke_classifier.py
+    python src/ytab/essentiality/Classifier.py --help
+
+Run Shiny syntax check:
+    Rscript -e "parse(file='app/shiny/app.R')" >/dev/null
+
+Dry-run recommended:
+    python scripts/local/ytab_run_classifier.py \
+      --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+      --target recommended \
+      --dry-run
+
+Smoke recommended:
+    python scripts/local/ytab_smoke_classifier.py \
+      --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+      --target recommended
+
+Smoke manual:
+    python scripts/local/ytab_smoke_classifier.py \
+      --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+      --target T059p7
+
+Cache test:
+    rerun the successful smoke command and verify that it skips only when the input hash and required resources are unchanged.
+
+Do not use --save-final-target during smoke validation.
+
+Expected outputs for recommended target:
+    output/projects/local_glabrata_smoke_v1/classifier/T6400/
+    output/projects/local_glabrata_smoke_v1/classifier/T6400/essentiality_predictions.T6400.csv
+    output/projects/local_glabrata_smoke_v1/classifier/T6400/classifier_summary.T6400.csv
+    output/projects/local_glabrata_smoke_v1/classifier/T6400/classifier_run_metadata.T6400.json
+    output/projects/local_glabrata_smoke_v1/manifests/classifier/T6400.classifier_manifest.json
+    output/projects/local_glabrata_smoke_v1/manifests/classifier/classifier_status.csv
+    output/exports/local_glabrata_smoke_v1/classifier/T6400/
+
+Expected outputs for manual T059p7 smoke:
+    output/projects/local_glabrata_smoke_v1/classifier/T059p7/
+    output/projects/local_glabrata_smoke_v1/classifier/T059p7/essentiality_predictions.T059p7.csv
+
+Do not require final_classifier_target.txt or JSON after smoke tests because --save-final-target should not be used.
+
+8. Hard-coded path cleanup
+
+Search the new and modified local files:
+    grep -R "/Users/jayelazuno\\|/old_Users\\|/Volumes/rdss\\|/mnt/archived_data\\|/workspace/HermesTnseq" -n src scripts app docs
+
+Rules:
+- Do not introduce hard-coded paths.
+- Existing legacy HPC scripts may retain old paths.
+- New local and app files must not contain machine-specific paths.
+- Classifier.py must not require hard-coded paths for local execution.
+
+9. App-organization compatibility
+
+Ensure this workflow:
+    Shiny app
+      -> project.yaml
+      -> reference_resolved.json
+      -> normalization recommendation files
+      -> summary_combined/<TARGET_TAG>/combined_feature_table.<TARGET_TAG>.txt
+      -> ytab_run_classifier.py
+      -> classifier/<TARGET_TAG>/
+      -> stable prediction table
+      -> manifest/status/summary
+      -> Shiny displays results
+
+Users must not need to edit Python source code.
+
+10. Stop point
+
+Stop after Step 10.
+
+Do not implement:
+- treated-vs-parent fitness analysis
+- condition-comparison statistics
+- gene-level treatment depletion/enrichment
+- final report generation
+
+After implementation, show:
+    git status --short
+    find src/ytab/pipeline scripts/local app/shiny output/projects/local_glabrata_smoke_v1 -maxdepth 5 -type f | sort
+
+Summarize:
+- files created and modified
+- whether compilation and CLI help passed
+- whether recommended-target dry-run passed
+- whether recommended-target classifier smoke passed
+- whether manual T059p7 smoke passed
+- whether the cache-aware rerun skipped correctly
+- classifier resources used
+- input feature count
+- output prediction count
+- actual prediction labels and counts
+- stable prediction-table paths
+- any excluded features or warnings
+- any failures or missing resources
+- confirmation that no treated-vs-parent analysis ran

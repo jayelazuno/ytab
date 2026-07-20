@@ -1,0 +1,333 @@
+
+Read the completed Step 1, Step 1.5, Step 1.6, and Step 2 implementation for context. Now implement Step 3 only: local CreateHitFile runner. Do not implement SummaryTable, LibraryDiagnostics, normalization, classifier, or treated-vs-parent analysis yet.
+
+Current successful state:
+- Project initialization works.
+- Environment setup works.
+- glabrata reference is complete and runnable.
+- MapFastq local runner works.
+- One-sample MapFastq smoke test passed.
+- Full small-subset mapping may produce sorted BAMs under:
+  output/projects/local_glabrata_smoke_v1/mapfastq/<sample>/
+
+Goal of Step 3:
+Create a local, app-compatible CreateHitFile runner that reads the initialized project config and converts mapped BAM files into per-sample Hermes insertion hit files, one sample at a time. This should wrap the existing src/ytab/insertions/CreateHitFile.py logic without changing the scientific algorithm.
+
+Important:
+- Public app is Shiny, not Streamlit.
+- Python remains the computational backend.
+- Shiny will call CLI wrappers using system2() or processx.
+- Do not use qsub.
+- Do not use GridEngine/SGE.
+- Do not hard-code /Users/jayelazuno, /old_Users, /Volumes, /mnt, or machine-specific paths.
+- All paths must come from project.yaml, sample_sheet.csv, reference_resolved.json, CLI args, or repo-relative defaults.
+- Do not modify downstream algorithms.
+- Do not run SummaryTable or later steps.
+- Do not delete old outputs.
+- Make the runner restartable and cache-aware.
+- Keep memory low.
+- Process one sample at a time by default.
+- Use user-selected threads from config/CLI where CreateHitFile supports it.
+- If mapped BAM is missing, fail clearly for that sample.
+- If feature annotation files are missing, fail clearly and tell user to fix reference resources.
+
+Expected local output layout:
+  output/projects/<PROJECT_ID>/create_hit_file/<sample>/
+  output/projects/<PROJECT_ID>/logs/create_hit_file/
+  output/projects/<PROJECT_ID>/manifests/create_hit_file/
+  output/exports/<PROJECT_ID>/browser_tracks/create_hit_file/
+
+Each sample should produce:
+  output/projects/<PROJECT_ID>/create_hit_file/<sample>/<sample>_hits.txt
+
+If CreateHitFile.py produces browser tracks, preserve and export them:
+  *.bed
+  *.bedgraph
+  *.wig
+  *.bw
+  *.bigwig
+
+Each sample should also get a manifest:
+  output/projects/<PROJECT_ID>/manifests/create_hit_file/<sample>.create_hit_file_manifest.json
+
+The manifest should include:
+  project_id
+  sample
+  input_bam
+  species
+  reference files used
+  output_dir
+  hits_file
+  log_file
+  status: success/failed/skipped
+  start_time
+  end_time
+  elapsed_seconds
+  command_run
+  detected_outputs
+  warnings
+  error_message if failed
+
+Also write/update a combined status file:
+  output/projects/<PROJECT_ID>/manifests/create_hit_file/create_hit_file_status.csv
+
+Status columns:
+  sample
+  status
+  input_bam
+  hits_file
+  output_dir
+  log_file
+  elapsed_seconds
+  message
+
+Implement:
+
+1. src/ytab/pipeline/create_hit_file_runner.py
+
+Create a local runner module.
+
+Functions to implement:
+  load_project_for_create_hit_file(project_config: Path) -> dict
+  get_included_samples(config: dict) -> list[dict]
+  validate_create_hit_file_inputs(config: dict) -> list[str]
+  find_sample_bam(sample: dict, config: dict) -> Path
+  build_create_hit_file_command(sample: dict, config: dict, threads: int | None = None) -> list[str]
+  run_create_hit_file_sample(sample: dict, config: dict, threads: int | None = None, force: bool = False, dry_run: bool = False) -> dict
+  run_create_hit_file_project(project_config: Path, samples: list[str] | None = None, threads: int | None = None, force: bool = False, dry_run: bool = False, keep_going: bool = False) -> dict
+
+Behavior:
+- Read project.yaml.
+- Read sample_sheet.csv if project.yaml references it.
+- Read reference_resolved.json.
+- Use mapped BAMs from:
+    output/projects/<PROJECT_ID>/mapfastq/<sample>/<sample>.sorted.bam
+- Use reference annotation paths from reference_resolved.json.
+- Validate BAM exists and BAM index exists.
+- Validate feature_table or GFF/GTF exists.
+- Only run samples where include is true.
+- Support sample filtering by name.
+- Write outputs under:
+    output/projects/<PROJECT_ID>/create_hit_file/<sample>/
+- Write logs under:
+    output/projects/<PROJECT_ID>/logs/create_hit_file/
+- Write manifests under:
+    output/projects/<PROJECT_ID>/manifests/create_hit_file/
+- Skip a sample if it already has a successful manifest and expected hits file unless force=True.
+- dry_run=True should print/write commands but not execute.
+- keep_going=True should continue remaining samples if one fails.
+- keep_going=False should stop at first failed sample.
+- Return a summary dictionary.
+
+Important safety pattern:
+- Do not let CreateHitFile write directly to the stage root where it may overwrite other samples.
+- Use a per-sample output directory:
+    output/projects/<PROJECT_ID>/create_hit_file/<sample>/
+- If CreateHitFile.py internally clears its output directory, isolate each sample.
+- If needed, use a temporary run directory:
+    output/projects/<PROJECT_ID>/create_hit_file/.run_<sample>/
+  then copy the final result to:
+    output/projects/<PROJECT_ID>/create_hit_file/<sample>/
+  and remove the temporary directory only after success.
+
+2. Patch src/ytab/insertions/CreateHitFile.py only if needed
+
+Requirements:
+- Remove or avoid hard-coded paths.
+- Ensure it accepts:
+    input BAM
+    sample name / prefix
+    output directory
+    reference feature table or GFF/GTF
+    optional chromosome length / mapping files if required
+    optional browser-track flag
+- Ensure command-line help works:
+    python src/ytab/insertions/CreateHitFile.py --help
+- Preserve existing behavior used by HPC scripts if possible.
+- If backward compatibility aliases are needed, keep them.
+- Do not change hit-calling scientific logic.
+
+Important previously observed patch:
+If CreateHitFile.py has browser track unpacking like:
+    bedgraph_path, wig_path, bigwig_path = write_browser_tracks(...)
+make it robust to optional return values:
+    track_outputs = write_browser_tracks(...)
+    if len(track_outputs) < 3:
+        raise RuntimeError(...)
+    bedgraph_path, wig_path, bigwig_path = track_outputs[:3]
+    if len(track_outputs) >= 4:
+        bw_written = track_outputs[3]
+    if len(track_outputs) >= 5:
+        bw_msg = track_outputs[4]
+
+3. scripts/local/ytab_run_create_hit_file.py
+
+Create a CLI wrapper.
+
+Usage:
+  python scripts/local/ytab_run_create_hit_file.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --threads 2
+
+Options:
+  --project-config required
+  --samples optional comma-separated sample names
+  --threads optional
+  --force optional
+  --dry-run optional
+  --keep-going optional
+
+Behavior:
+- Print project id.
+- Print species.
+- Print number of included samples.
+- Print selected samples.
+- Print input BAM directory.
+- Print output create_hit_file directory.
+- In dry-run mode, print commands and exit 0 without creating hit files.
+- In normal mode, run CreateHitFile one sample at a time.
+- Write per-sample manifests and combined status CSV.
+- Exit nonzero if any selected sample fails, unless dry-run.
+- If keep-going is enabled, continue but still exit nonzero at end if any failed.
+
+4. scripts/local/ytab_smoke_create_hit_file_one_sample.py
+
+Create a lightweight smoke runner for one sample from a project.
+
+Usage:
+  python scripts/local/ytab_smoke_create_hit_file_one_sample.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --sample yH298-parent-pool1 \
+    --threads 2
+
+Behavior:
+- Runs CreateHitFile for one selected sample.
+- Prints input BAM.
+- Prints output directory.
+- Prints hits file path.
+- Prints manifest path.
+- Prints PASS/FAIL.
+- Does not run SummaryTable or downstream steps.
+
+5. Update app/shiny/app.R minimally
+
+Add a “Create Hit Files” placeholder section after Run Mapping.
+
+It should allow:
+- project_config path input
+- threads input
+- sample selection text box or “all included samples”
+- dry-run checkbox
+- button: “Run CreateHitFile”
+
+The button should call:
+  python scripts/local/ytab_run_create_hit_file.py --project-config <project.yaml> --threads <threads>
+
+Add optional --dry-run if selected.
+
+Display command output/log text in the app.
+
+Do not implement SummaryTable or downstream pages.
+
+6. Update docs/setup_local.md
+
+Add a Step 3 section:
+
+  Create hit files
+
+Include commands:
+  mamba activate ytab-local
+
+  python scripts/local/ytab_run_create_hit_file.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --threads 2 \
+    --dry-run
+
+  python scripts/local/ytab_smoke_create_hit_file_one_sample.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --sample yH298-parent-pool1 \
+    --threads 2
+
+  python scripts/local/ytab_run_create_hit_file.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --threads 2 \
+    --keep-going
+
+Explain:
+- CreateHitFile runs one sample at a time.
+- Existing successful samples are skipped unless --force is used.
+- Input BAMs come from output/projects/<PROJECT_ID>/mapfastq/.
+- Output hit files are written to output/projects/<PROJECT_ID>/create_hit_file/.
+- This step does not run SummaryTable yet.
+
+7. Checks
+
+Run:
+  python -m py_compile src/ytab/pipeline/create_hit_file_runner.py
+  python -m py_compile scripts/local/ytab_run_create_hit_file.py
+  python -m py_compile scripts/local/ytab_smoke_create_hit_file_one_sample.py
+  python src/ytab/insertions/CreateHitFile.py --help
+
+Dry-run:
+  python scripts/local/ytab_run_create_hit_file.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --threads 2 \
+    --dry-run
+
+If mapped BAM exists for yH298-parent-pool1, also run:
+  python scripts/local/ytab_smoke_create_hit_file_one_sample.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --sample yH298-parent-pool1 \
+    --threads 2
+
+Expected after successful one-sample smoke:
+  output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt
+  output/projects/local_glabrata_smoke_v1/logs/create_hit_file/yH298-parent-pool1.log
+  output/projects/local_glabrata_smoke_v1/manifests/create_hit_file/yH298-parent-pool1.create_hit_file_manifest.json
+  output/projects/local_glabrata_smoke_v1/manifests/create_hit_file/create_hit_file_status.csv
+
+8. Hard-coded path cleanup
+
+Search for hard-coded paths in new/modified local files:
+  grep -R "/Users/jayelazuno\\|/old_Users\\|/Volumes/rdss\\|/mnt/archived_data\\|/workspace/HermesTnseq" -n src scripts app docs
+
+Rules:
+- Do not introduce hard-coded paths.
+- Existing legacy HPC scripts may contain old paths; leave them alone.
+- New local/app files must not contain hard-coded local or HPC paths.
+- CreateHitFile.py should not require hard-coded paths for local operation.
+
+9. App organization compatibility
+
+Ensure new local runner is compatible with this app flow:
+  Shiny app
+    -> project.yaml
+    -> sample_sheet.csv
+    -> reference_resolved.json
+    -> ytab_run_create_hit_file.py
+    -> output/projects/<PROJECT_ID>/create_hit_file/
+    -> manifests/status files
+    -> Shiny reads status/results
+
+Do not require users to manually edit Python code.
+
+10. Stop point
+
+Stop after Step 3.
+Do not implement:
+- SummaryTable
+- LibraryDiagnostics
+- normalization explorer
+- classifier
+- treated-vs-parent screen
+
+After implementation, show:
+  git status --short
+  find src/ytab/pipeline scripts/local app/shiny output/projects/local_glabrata_smoke_v1 -maxdepth 4 -type f | sort
+
+Summarize:
+- files created/modified
+- whether dry-run passed
+- whether one-sample CreateHitFile smoke test passed
+- where outputs were written
+- any failures or missing resources

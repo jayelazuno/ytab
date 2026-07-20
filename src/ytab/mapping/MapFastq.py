@@ -16,6 +16,9 @@ import argparse
 from pathlib import Path
 from subprocess import PIPE, run
 
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from ytab.core import Shared  # keep dependency + behavior (no organism-specific calls here)
 from ytab.qc.MappingStats import compute_alignment_stats, write_mapping_stats_csv
 
@@ -29,6 +32,7 @@ usage = """MapFastq.py
    -k  --keep-clean-fqs             Keep the cleaned FASTQ files.
    -p  --primer-check               Check primer specificity if percent transposon in reads is low.
    -t  --threads             [int]  Threads for bowtie2/samtools (default 32)
+   --sample-name            [str]  Output prefix/sample name (defaults to FASTQ filename).
 
    -x  --bt2-index          [str]   REQUIRED. Bowtie2 index prefix (the value you would pass to bowtie2 -x).
                                      Can be a full path to the index prefix.
@@ -239,6 +243,7 @@ def main():
     parser.add_argument("-k", "--keep-clean-fastqs", action="store_true")
     parser.add_argument("-p", "--primer_check", action="store_true")
     parser.add_argument("-t", "--threads", type=int, default=32)
+    parser.add_argument("--sample-name", default=None)
 
     parser.add_argument("--trim-5p-seq", default=None)
     parser.add_argument("--trim-5p-seq-r2", default=None)
@@ -266,11 +271,19 @@ def main():
 
     os.makedirs(args.out_dir, exist_ok=True)
 
-    CutAdaptPath = which_or_die("cutadapt")
+    CutAdaptPath = (
+        which_or_die("cutadapt")
+        if args.trim_5p_seq is not None or args.clean_adapters not in (None, "")
+        else None
+    )
     BowtiePath = which_or_die("bowtie2")
     which_or_die("samtools")
 
-    if pe_mode:
+    if args.sample_name and Path(args.sample_name).name != args.sample_name:
+        raise RuntimeError("ERROR: --sample-name must not contain path separators.")
+    if args.sample_name:
+        prefix = args.sample_name
+    elif pe_mode:
         prefix = derive_prefix(args.r1)
     else:
         prefix = derive_prefix(args.input_file_name)

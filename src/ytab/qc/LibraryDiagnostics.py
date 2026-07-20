@@ -78,6 +78,7 @@ import os
 import sys
 import csv
 import bisect
+import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import Dict, Tuple, List, Optional, Iterable
@@ -94,6 +95,12 @@ import matplotlib.pyplot as plt
 def die(msg: str) -> None:
     print(f"ERROR: {msg}", file=sys.stderr)
     sys.exit(1)
+
+def positive_float(value: str) -> float:
+    number = float(value)
+    if not math.isfinite(number) or number <= 0:
+        raise argparse.ArgumentTypeError("must be a finite positive number")
+    return number
 
 def mkdir_p(path: str) -> None:
     os.makedirs(path, exist_ok=True)
@@ -913,7 +920,7 @@ def parse_args() -> argparse.Namespace:
     )
 
     # MidLC-based normalization (optional)
-    p.add_argument("--normalize-to-midlc", type=float, default=None,
+    p.add_argument("--normalize-to-midlc", type=positive_float, default=None,
                    help="Downsample libraries to TARGET × MidLC_est (MidLC units). Downsample only; never upsample.")
     p.add_argument("--normalized-suffix", default="normalized",
                    help="Suffix used for normalized site outputs (non-hits modes). Default: normalized")
@@ -1159,6 +1166,21 @@ def main() -> None:
 
                         normalized_output = out_bg
                         normalized_written = 1
+                elif mode == "hits-txt":
+                    # Normalization never upsamples. Still emit a stable hits artifact so
+                    # downstream local runners can distinguish an unchanged normalized
+                    # library from a missing/failed normalization output.
+                    thinning_p = 1.0
+                    normalized_output = os.path.join(sample_outdir, f"{sample}{args.normalized_hits_suffix}")
+                    _before, _after = downsample_hits_txt_binomial(
+                        in_hits=path,
+                        out_hits=normalized_output,
+                        p=1.0,
+                        seed=args.seed,
+                        drop_sites=drop_sites if args.remove_top_site_per_gene else None,
+                    )
+                    reads_after_norm = _after
+                    normalized_written = 1
 
         # ---- Seq bias (+2/+7) ----
         seqbias_done = 0
@@ -1220,4 +1242,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

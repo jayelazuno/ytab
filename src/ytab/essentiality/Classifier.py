@@ -42,6 +42,12 @@ NOTES
 3) Threads are applied via RandomForestClassifier(n_jobs=threads).
 """
 
+import sys
+from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from ytab.core import Shared
 from ytab.core import GenomicFeatures
 from ytab.summary import SummaryTable
@@ -187,7 +193,7 @@ def _default_pombe_hit_file():
 # ----------------------------
 # Core classifier helpers
 # ----------------------------
-def test_classifier(classifier, features, annotations):
+def test_classifier(classifier, features, annotations, random_state=0):
     """Test a classifier using given features and annotations. Uses a 5-fold
     cross-validation method to score all of the test data points.
 
@@ -209,10 +215,10 @@ def test_classifier(classifier, features, annotations):
     scores = np.empty(len(annotations), dtype=float)
 
     if _SKF_STYLE == "new":
-        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
+        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
         splits = skf.split(np.zeros(len(annotations)), annotations)
     else:
-        skf = StratifiedKFold(y=annotations, n_folds=5, shuffle=True, random_state=0)  # type: ignore
+        skf = StratifiedKFold(y=annotations, n_folds=5, shuffle=True, random_state=random_state)  # type: ignore
         splits = skf  # old style yields (train_ix, test_ix)
 
     for roc_train, roc_test in splits:
@@ -430,7 +436,7 @@ def explode_col_config(col_config):
     return result
 
 
-def run_pipeline(cls_factory, cls_feature_groups, data, train_col_config, class_col_config, output_folder, target_fpr):
+def run_pipeline(cls_factory, cls_feature_groups, data, train_col_config, class_col_config, output_folder, target_fpr, random_state=0):
     """Classify the given datasets and store the output into the given folder.
 
     Parameters
@@ -518,6 +524,7 @@ def run_pipeline(cls_factory, cls_feature_groups, data, train_col_config, class_
                     cls_creator(),
                     train_all_features,
                     train_annotations,
+                    random_state=random_state,
                 )
 
                 # Write out AUC curve
@@ -612,7 +619,7 @@ def run_pipeline(cls_factory, cls_feature_groups, data, train_col_config, class_
                 else:
                     assert len(datasets) == 1
                     pred_df = SummaryTable.write_data_to_data_frame(datasets[0], class_col_config)
-                    pred_df.to_excel(excel_writer, sheet_name="%s - class" % ds_label, index=False)
+                    pred_df.to_excel(excel_writer, sheet_name=("%s - class" % ds_label)[:31], index=False)
 
             train_df = SummaryTable.write_data_to_data_frame(train_ess_records + train_non_ess_records, train_col_config)
             train_df.to_excel(excel_writer, sheet_name="Training", index=False)
@@ -853,12 +860,9 @@ def _read_any_table(path):
 
     skiprows = 1 if first.startswith("RDF") else 0
 
-    # extension-based default
-    if path.lower().endswith((".tsv", ".txt")):
-        sep = "\t"
-    else:
-        # sniff delimiter for "csv" too (some are actually tab-delimited)
-        sep = "\t" if ("\t" in second and "," not in second) else ","
+    # Sniff content because the pipeline's stable .txt file preserves the
+    # original comma-delimited SummaryTable contents unchanged.
+    sep = "\t" if ("\t" in second and "," not in second) else ","
 
     df = pd.read_csv(path, sep=sep, skiprows=skiprows)
     df.columns = [str(c).strip() for c in df.columns]
@@ -1060,8 +1064,14 @@ def build_scer_training_records_from_dependencies():
     ess_names = (Organisms.cer.literature_essentials - ignored) - scer_training_fps
     non_names = (Organisms.cer.literature_non_essentials - ignored) - scer_training_fns
 
-    training_ess = [dict(r) for r in cer_records if r["feature"].standard_name in ess_names]
-    training_non = [dict(r) for r in cer_records if r["feature"].standard_name in non_names]
+    training_ess = sorted(
+        (dict(r) for r in cer_records if r["feature"].standard_name in ess_names),
+        key=lambda r: r["feature"].standard_name,
+    )
+    training_non = sorted(
+        (dict(r) for r in cer_records if r["feature"].standard_name in non_names),
+        key=lambda r: r["feature"].standard_name,
+    )
 
     return cer_records, training_ess, training_non
 
@@ -1180,7 +1190,7 @@ def main_table_mode_scer_train_gla_classify(args):
 
     # Classifier factories
     cls_factory = {
-        "RF": lambda: RandomForestClassifier(n_estimators=100, random_state=0, n_jobs=int(args.threads)),
+        "RF": lambda: RandomForestClassifier(n_estimators=100, random_state=int(args.seed), n_jobs=int(args.threads)),
         # keep LR option, but off by default unless asked
     }
     if args.include_lr:
@@ -1199,7 +1209,22 @@ def main_table_mode_scer_train_gla_classify(args):
     run_pipeline(cls_factory, feature_groups, data,
              train_cols_config,
              class_cols_config,
-             args.out_dir, float(args.target_fpr))
+             args.out_dir, float(args.target_fpr), random_state=int(args.seed))
+
+    # Expose each prediction sheet as a lossless CSV table for pipeline callers.
+    prediction_cols_config = list(class_cols_config)
+    prediction_cols_config[-2:-2] = [
+        {"field_name": "ground_truth", "csv_name": "Ess. ground truth"},
+        {"field_name": "RF-G4", "csv_name": "RF - G4", "format": "%.3f", "local": True},
+        {
+            "field_name": "RF-G4-verdict",
+            "csv_name": "RF - G4 - ess. for FPR %.3f" % float(args.target_fpr),
+            "local": True,
+        },
+    ]
+    for label, recs in per_lib_records.items():
+        prediction_df = SummaryTable.write_data_to_data_frame(recs, prediction_cols_config)
+        prediction_df.to_csv(os.path.join(args.out_dir, "%s.predictions.csv" % label), index=False)
 
     # Optional: combined table (mean score across libraries)
     if args.combine:
@@ -2029,12 +2054,12 @@ COLS_CONFIG = [
     {
         "field_name": "feature",
         "csv_name": "Sc ortholog",
-        "format": lambda f: ",".join(f.cerevisiae_orthologs) if hasattr(f, "cerevisiae_orthologs") else "",
+        "format": lambda f: ",".join(sorted(f.cerevisiae_orthologs)) if hasattr(f, "cerevisiae_orthologs") else "",
     },
     {
         "field_name": "feature",
         "csv_name": "Sc std name",
-        "format": lambda f: Organisms.cer.feature_db.get_feature_by_name(list(f.cerevisiae_orthologs)[0]).standard_name
+        "format": lambda f: Organisms.cer.feature_db.get_feature_by_name(sorted(f.cerevisiae_orthologs)[0]).standard_name
         if len(getattr(f, "cerevisiae_orthologs", [])) > 0
         else "",
     },
@@ -2121,6 +2146,7 @@ def _parse_args():
     )
     ap.add_argument("--out-dir", default=None, help="Output directory (table mode).")
     ap.add_argument("--threads", type=int, default=1, help="Threads (RF n_jobs).")
+    ap.add_argument("--seed", type=int, default=0, help="Random seed for RF and cross-validation (legacy default: 0).")
     ap.add_argument("--target-fpr", type=float, default=0.10, help="Target FPR used for verdict threshold selection.")
     ap.add_argument("--include-lr", action="store_true", help="Also run LogisticRegression in table mode.")
 

@@ -1,0 +1,409 @@
+
+Read the completed Step 1 through Step 7 implementations for context. Now implement Step 8 only: combine normalized parent hit files for a selected normalization target. Do not implement SummaryTable on combined hits, classifier, or treated-vs-parent analysis yet.
+
+Current successful state:
+- MapFastq works.
+- CreateHitFile works.
+- Raw SummaryTable works.
+- Raw LibraryDiagnostics works.
+- Normalization explorer works.
+- SummaryTable on normalized hits works.
+- Step 7 produced feature-level target evaluation.
+- Step 7 feature recommendation for the smoke project is:
+    target: 6400
+    target_tag: T6400
+- Note: T6400 is not biologically meaningful for the 10k-read smoke subset because normalization emitted unchanged copies. This is acceptable for workflow testing.
+
+Goal of Step 8:
+Create a local, app-compatible runner that combines normalized parent hit files for a selected target into one combined parent-library hit file. This combined parent hit file will be used in the next step for SummaryTable on the combined parent library, and then later for the Gale-style essentiality classifier.
+
+Important:
+- Public app is Shiny, not Streamlit.
+- Python remains the computational backend.
+- Shiny calls CLI wrappers using system2() or processx.
+- Do not use qsub.
+- Do not use GridEngine/SGE.
+- Do not hard-code /Users/jayelazuno, /old_Users, /Volumes, /mnt, or machine-specific paths.
+- All paths must come from project.yaml, sample_sheet.csv, reference_resolved.json, CLI args, or repo-relative defaults.
+- Do not modify scientific combine logic unless required for configurable input/output paths.
+- Do not run SummaryTable on the combined hit file yet.
+- Do not run classifier.
+- Do not run treated-vs-parent analysis.
+- Do not delete old outputs.
+- Make the runner restartable and cache-aware.
+- Keep memory low.
+
+Scientific logic:
+- Use existing src/ytab/insertions/CombineHitFiles.py if available.
+- Preserve the existing combine algorithm.
+- Expected logic:
+    group by chromosome + position
+    sum count/read support columns
+    preserve required hit-file columns
+- Do not invent a new hit-file format.
+- Combined file must remain compatible with SummaryTable.py.
+
+Default sample logic:
+- Combine parent samples only by default.
+- Parent samples are selected where:
+    condition == parent
+    or guessed_condition == parent
+    or sample name contains "parent"
+- Allow explicit --samples override.
+- Do not combine treated samples by default.
+
+Target logic:
+- User can provide:
+    --target recommended
+    --target auto
+    --target feature-recommended
+    --target site-recommended
+    --target T6400
+    --target T059p7
+    --target 59.7
+    --target 60
+- If --target recommended or --target feature-recommended:
+    read output/projects/<PROJECT_ID>/sample_normalization/normalization_feature_recommendation.json
+    use recommended_target_tag
+- If feature recommendation is missing:
+    fall back to output/projects/<PROJECT_ID>/sample_normalization/normalization_recommendation.json
+    and warn clearly
+- If --target auto:
+    treat as recommended
+- If --target site-recommended:
+    read normalization_recommendation.json
+- If manual numeric target is provided:
+    convert to target tag using the same tag logic from Step 6
+- If manual target tag is provided:
+    use it directly after validating that the target directory exists
+- Do not rerun normalization in Step 8.
+- Do not rerun normalized SummaryTable in Step 8.
+
+Expected local output layout:
+  output/projects/<PROJECT_ID>/combined_hits/<TARGET_TAG>/
+  output/projects/<PROJECT_ID>/logs/combined_hits/
+  output/projects/<PROJECT_ID>/manifests/combined_hits/
+  output/exports/<PROJECT_ID>/qc/combined_hits/
+
+Expected combined output:
+  output/projects/<PROJECT_ID>/combined_hits/<TARGET_TAG>/combined_parent_hits.<TARGET_TAG>.txt
+
+Also write a metadata file:
+  output/projects/<PROJECT_ID>/combined_hits/<TARGET_TAG>/combined_parent_hits.<TARGET_TAG>.metadata.json
+
+The metadata should include:
+  project_id
+  species
+  target
+  target_tag
+  combined_sample_name
+  selected_parent_samples
+  input_normalized_hit_files
+  output_combined_hits_file
+  total_input_files
+  total_combined_sites
+  total_combined_reads if available
+  timestamp
+  warnings
+
+Manifest:
+  output/projects/<PROJECT_ID>/manifests/combined_hits/<TARGET_TAG>.combined_hits_manifest.json
+
+Manifest should include:
+  project_id
+  species
+  target
+  target_tag
+  selected_samples
+  input_normalized_hit_files
+  output_dir
+  combined_hits_file
+  log_file
+  status: success/failed/skipped
+  start_time
+  end_time
+  elapsed_seconds
+  command_run
+  detected_outputs
+  warnings
+  error_message if failed
+
+Status CSV:
+  output/projects/<PROJECT_ID>/manifests/combined_hits/combined_hits_status.csv
+
+Status columns:
+  target
+  target_tag
+  status
+  selected_samples
+  input_hit_files_count
+  combined_hits_file
+  output_dir
+  log_file
+  elapsed_seconds
+  message
+
+Implement:
+
+1. src/ytab/pipeline/combine_hits_runner.py
+
+Create a local runner module.
+
+Functions to implement:
+  load_project_for_combine_hits(project_config: Path) -> dict
+  get_parent_samples(config: dict, samples: list[str] | None = None) -> list[dict]
+  resolve_combine_target(config: dict, target: str = "recommended") -> dict
+  find_normalized_parent_hits(config: dict, target_tag: str, selected_samples: list[dict]) -> list[Path]
+  validate_combine_hits_inputs(config: dict, target_info: dict, selected_samples: list[dict]) -> list[str]
+  build_combine_hits_command(config: dict, target_info: dict, selected_samples: list[dict]) -> list[str]
+  run_combine_hits_project(project_config: Path, target: str = "recommended", samples: list[str] | None = None, force: bool = False, dry_run: bool = False) -> dict
+  collect_combined_hits_metadata(combined_hits_file: Path) -> dict
+
+Behavior:
+- Read project.yaml.
+- Read sample_sheet.csv if project.yaml references it.
+- Read reference_resolved.json.
+- Resolve target tag.
+- Select parent samples by default.
+- Use normalized hit files from:
+    output/projects/<PROJECT_ID>/sample_normalization/<TARGET_TAG>/<sample>/<sample>_normalized_hits.txt
+- Validate at least one input hit file exists.
+- Prefer requiring at least two parent hit files for a real combined parent library.
+- For smoke testing, allow at least two parents.
+- Fail clearly if no parent hit files are found.
+- Run CombineHitFiles.py or equivalent existing utility.
+- Write combined output under:
+    output/projects/<PROJECT_ID>/combined_hits/<TARGET_TAG>/
+- Write logs under:
+    output/projects/<PROJECT_ID>/logs/combined_hits/
+- Write manifests under:
+    output/projects/<PROJECT_ID>/manifests/combined_hits/
+- Copy useful outputs to:
+    output/exports/<PROJECT_ID>/qc/combined_hits/
+- Skip if successful manifest and combined hit file already exist unless force=True.
+- dry_run=True should print/write command but not execute.
+- Return a summary dictionary.
+
+Important:
+- build_combine_hits_command must inspect and use the current CombineHitFiles.py CLI if it has one.
+- Do not invent CLI flags if CombineHitFiles.py already defines different names.
+- If CombineHitFiles.py lacks a clean CLI, add one while preserving existing importable behavior.
+- Use sys.executable, not hard-coded python.
+- Do not change scientific combine logic.
+
+2. Patch src/ytab/insertions/CombineHitFiles.py only if needed
+
+Requirements:
+- Remove or avoid hard-coded paths.
+- Ensure it accepts:
+    multiple input hit files
+    output combined hit file
+    optional sample/combined name if needed
+- Ensure command-line help works:
+    python src/ytab/insertions/CombineHitFiles.py --help
+- Preserve existing behavior if imported by other code.
+- Do not change the scientific combine logic.
+
+3. scripts/local/ytab_run_combine_hits.py
+
+Create a CLI wrapper.
+
+Usage:
+  python scripts/local/ytab_run_combine_hits.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --target recommended
+
+Options:
+  --project-config required
+  --target optional, default recommended
+      accepts recommended, auto, feature-recommended, site-recommended, target tags, numeric targets
+  --samples optional comma-separated parent sample names
+  --force optional
+  --dry-run optional
+
+Behavior:
+- Print project id.
+- Print species.
+- Print target and target tag.
+- Print selected parent samples.
+- Print input normalized hit files.
+- Print output combined hit file.
+- In dry-run mode, print command and exit 0 without combining.
+- In normal mode, combine normalized parent hit files.
+- Write manifest, metadata JSON, and status CSV.
+- Exit nonzero if combine fails.
+
+4. scripts/local/ytab_smoke_combine_hits.py
+
+Create a lightweight smoke runner.
+
+Usage:
+  python scripts/local/ytab_smoke_combine_hits.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --target recommended
+
+Also support:
+  python scripts/local/ytab_smoke_combine_hits.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --target T059p7
+
+Behavior:
+- Combines normalized parent hit files for one selected target.
+- Defaults to recommended target.
+- Prints selected target.
+- Prints selected parent samples.
+- Prints input normalized hit files.
+- Prints output combined hit file.
+- Prints manifest path.
+- Prints PASS/FAIL.
+- Does not run SummaryTable on combined hits.
+- Does not run classifier.
+
+5. Update app/shiny/app.R
+
+Add a “Combine Parent Hits” placeholder section after Normalized Summary / Target Evaluation.
+
+It should allow:
+- project_config path input
+- target selector:
+    recommended
+    site-recommended
+    feature-recommended
+    manual
+- manual target field:
+    accepts target tags or positive numeric values
+- optional parent sample override field
+- dry-run checkbox
+- force checkbox
+- button:
+    "Combine normalized parent hits"
+
+The button should call:
+  python scripts/local/ytab_run_combine_hits.py --project-config <project.yaml> --target <target>
+
+Add optional:
+  --dry-run
+  --force
+  --samples <samples>
+
+Display command output/log text in the app.
+
+If combined_hits_status.csv exists, display it using DT if available.
+
+Add note:
+  "This step combines normalized parent libraries for the selected target. SummaryTable on the combined parent library and classifier input generation come next."
+
+6. Update docs/setup_local.md
+
+Add a Step 8 section:
+
+  Combine normalized parent hit files
+
+Include commands:
+  mamba activate ytab-local
+
+Dry-run:
+  python scripts/local/ytab_run_combine_hits.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --target recommended \
+    --dry-run
+
+Smoke:
+  python scripts/local/ytab_smoke_combine_hits.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --target recommended
+
+Manual target:
+  python scripts/local/ytab_smoke_combine_hits.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --target T059p7
+
+Explain:
+- This step combines normalized parent hit files for one selected target.
+- It uses parent samples by default.
+- It does not run SummaryTable on the combined hit file yet.
+- It does not run classifier yet.
+- The combined hit file is the input for the next step.
+
+7. Checks
+
+Run:
+  python -m py_compile src/ytab/pipeline/combine_hits_runner.py
+  python -m py_compile scripts/local/ytab_run_combine_hits.py
+  python -m py_compile scripts/local/ytab_smoke_combine_hits.py
+  python src/ytab/insertions/CombineHitFiles.py --help
+
+Dry-run:
+  python scripts/local/ytab_run_combine_hits.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --target recommended \
+    --dry-run
+
+Smoke recommended:
+  python scripts/local/ytab_smoke_combine_hits.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --target recommended
+
+Smoke manual:
+  python scripts/local/ytab_smoke_combine_hits.py \
+    --project-config output/projects/local_glabrata_smoke_v1/config/project.yaml \
+    --target T059p7
+
+Expected outputs:
+  output/projects/local_glabrata_smoke_v1/combined_hits/T6400/combined_parent_hits.T6400.txt
+  output/projects/local_glabrata_smoke_v1/combined_hits/T6400/combined_parent_hits.T6400.metadata.json
+  output/projects/local_glabrata_smoke_v1/manifests/combined_hits/T6400.combined_hits_manifest.json
+  output/projects/local_glabrata_smoke_v1/manifests/combined_hits/combined_hits_status.csv
+  output/exports/local_glabrata_smoke_v1/qc/combined_hits/
+
+If manual T059p7 smoke is run, expected:
+  output/projects/local_glabrata_smoke_v1/combined_hits/T059p7/combined_parent_hits.T059p7.txt
+
+8. Hard-coded path cleanup
+
+Search for hard-coded paths in new/modified local files:
+  grep -R "/Users/jayelazuno\\|/old_Users\\|/Volumes/rdss\\|/mnt/archived_data\\|/workspace/HermesTnseq" -n src scripts app docs
+
+Rules:
+- Do not introduce hard-coded paths.
+- Existing legacy HPC scripts may contain old paths; leave them alone.
+- New local/app files must not contain hard-coded local or HPC paths.
+- CombineHitFiles.py should not require hard-coded paths for local operation.
+
+9. App organization compatibility
+
+Ensure new local runner is compatible with this app flow:
+  Shiny app
+    -> project.yaml
+    -> sample_sheet.csv
+    -> reference_resolved.json
+    -> normalization_feature_recommendation.json
+    -> ytab_run_combine_hits.py
+    -> output/projects/<PROJECT_ID>/combined_hits/<TARGET_TAG>/
+    -> manifests/status files
+    -> Shiny reads status/results
+
+Do not require users to manually edit Python code.
+
+10. Stop point
+
+Stop after Step 8.
+Do not implement:
+- SummaryTable on combined parent hits
+- classifier
+- treated-vs-parent screen
+
+After implementation, show:
+  git status --short
+  find src/ytab/pipeline scripts/local app/shiny output/projects/local_glabrata_smoke_v1 -maxdepth 4 -type f | sort
+
+Summarize:
+- files created/modified
+- whether dry-run passed
+- whether recommended-target combine passed
+- whether manual T059p7 combine passed, if run
+- number of parent normalized hit files combined
+- combined hit file path
+- total combined sites
+- where outputs were written
+- any failures or missing resources

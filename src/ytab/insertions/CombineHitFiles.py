@@ -123,6 +123,15 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--output-file",
+        default=None,
+        help=(
+            "Optional output filename or path for the combined hit table. "
+            "Default remains <sample-name>_hits.txt under --outdir."
+        ),
+    )
+
+    parser.add_argument(
         "--chrom-col",
         default=None,
         help="Optional explicit chromosome column name.",
@@ -526,7 +535,12 @@ def main() -> None:
     if not sample_name:
         raise SystemExit("ERROR: --sample-name cannot be empty.")
 
-    output_hits = outdir / f"{sample_name}_hits.txt"
+    if args.output_file:
+        requested_output = Path(args.output_file).expanduser()
+        output_hits = requested_output.resolve() if requested_output.is_absolute() else outdir / requested_output
+        output_hits.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        output_hits = outdir / f"{sample_name}_hits.txt"
     output_summary_csv = outdir / f"{sample_name}.combine_summary.csv"
     output_manifest_json = outdir / f"{sample_name}.combine_manifest.json"
 

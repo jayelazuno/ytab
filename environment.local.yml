@@ -1,0 +1,31 @@
+name: ytab-local
+
+channels:
+  - conda-forge
+  - bioconda
+
+dependencies:
+  - python>=3.10
+  - pip
+  - pandas
+  - pyyaml
+  - biopython
+  - pysam
+  - gffutils
+  - numpy
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - matplotlib-venn
+  - openpyxl
+  - bowtie2
+  - samtools
+  - r-base
+  - r-shiny
+  - r-bslib
+  - r-dt
+  - r-tidyverse
+  - r-jsonlite
+  - r-yaml
+  - r-processx
+  - r-plotly

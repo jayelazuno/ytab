@@ -2,11 +2,15 @@
 #!/usr/bin/env python3
 
 from collections import defaultdict
-import glob, os, shutil, subprocess, tempfile
+import glob, os, shutil, subprocess, sys, tempfile
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import pysam
 import itertools
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from ytab.core import Shared
 
 
@@ -15,6 +19,7 @@ usage = '''CreateHitFile.py
    -b  --bam          [str]   One sorted BAM to parse (repeatable). If provided, overrides directory scanning.
    -o  --out-dir      [str]   Output directory to which per-sample outputs will be written. Defaults to current directory if left unspecified.
    --out-prefix       [str]   Prefix for output files (per BAM). Defaults to BAM basename (without .sorted.bam/.bam).
+   --flat-output              Write directly to --out-dir instead of a prefix subdirectory.
    -q  --min-mapq     [int]   Map Quality - hits to parse from the bam file (default is 20)
    -m  --merge-dist   [int]   Hits to merge with at most x nt distance between two hits. Default is 0 (no merging). 
                                 Example: Hits in positions 1 and 3  (3-1=2) will be united into a single hit
@@ -272,9 +277,71 @@ def load_features(feature_path: str, feature_format: str,
                 ChrFeature[c] = ""
         ChrFeature["StartCoord"] = pd.to_numeric(ChrFeature["StartCoord"], errors="coerce").astype(int)
         ChrFeature["StopCoord"] = pd.to_numeric(ChrFeature["StopCoord"], errors="coerce").astype(int)
-        return ChrFeature
+        return ChrFeature.reset_index(drop=True)
 
-    raise ValueError("Only ncbi_feature_table is enabled in this universalized version for now.")
+    if feature_format == "cgd_tab":
+        ChrFeature = pd.read_table(
+            feature_path, comment="!", header=None, names=ChrFeatCols, dtype=str
+        )
+        ChrFeature["StartCoord"] = pd.to_numeric(ChrFeature["StartCoord"], errors="coerce")
+        ChrFeature["StopCoord"] = pd.to_numeric(ChrFeature["StopCoord"], errors="coerce")
+        ChrFeature = ChrFeature.dropna(subset=["Chromosome", "StartCoord", "StopCoord", "Strand"])
+        ChrFeature = ChrFeature[ChrFeature["Strand"].isin(["W", "C"])].copy()
+        ChrFeature["StartCoord"] = ChrFeature["StartCoord"].astype(int)
+        ChrFeature["StopCoord"] = ChrFeature["StopCoord"].astype(int)
+        return ChrFeature.reset_index(drop=True)
+
+    if feature_format in ("gff", "gtf"):
+        rows = []
+        with _open_maybe_gz(feature_path, "rt") as handle:
+            for line in handle:
+                if not line.strip() or line.startswith("#"):
+                    continue
+                fields = line.rstrip("\n").split("\t")
+                if len(fields) < 9 or fields[2].lower() != "gene":
+                    continue
+                chrom, _, feature_type, start, end, _, strand, _, attributes = fields
+                if strand not in ("+", "-"):
+                    continue
+                parsed = {}
+                for item in attributes.strip().rstrip(";").split(";"):
+                    item = item.strip()
+                    if not item:
+                        continue
+                    if "=" in item:
+                        key, value = item.split("=", 1)
+                    elif " " in item:
+                        key, value = item.split(" ", 1)
+                    else:
+                        continue
+                    parsed[key.strip()] = value.strip().strip('"')
+                feature_name = next(
+                    (parsed[key] for key in ("locus_tag", "gene_id", "ID", "Name", "gene") if parsed.get(key)),
+                    "NA",
+                )
+                gene_name = next(
+                    (parsed[key] for key in ("gene", "gene_name", "Name", "locus_tag", "gene_id") if parsed.get(key)),
+                    feature_name,
+                )
+                rows.append({
+                    "FeatureName": feature_name.removeprefix("gene-"),
+                    "GeneName": gene_name,
+                    "Aliases": "",
+                    "FeatureType": feature_type,
+                    "Chromosome": chrom,
+                    "StartCoord": int(start),
+                    "StopCoord": int(end),
+                    "Strand": "W" if strand == "+" else "C",
+                })
+        if not rows:
+            raise ValueError(f"No gene features found in {feature_format.upper()} file: {feature_path}")
+        ChrFeature = pd.DataFrame(rows)
+        for column in ChrFeatCols:
+            if column not in ChrFeature.columns:
+                ChrFeature[column] = ""
+        return ChrFeature.reset_index(drop=True)
+
+    raise ValueError(f"Unsupported feature format: {feature_format}")
 
 
 def derive_prefix_from_bam(bam_path: str) -> str:
@@ -443,6 +510,7 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--in-dir", default='.')
     parser.add_argument("-b", "--bam", action="append", default=[])
     parser.add_argument("--out-prefix", default=None)
+    parser.add_argument("--flat-output", action="store_true", default=False)
 
     parser.add_argument("-q", "--min-mapq", default=20, type=int)
     parser.add_argument("-m", "--merge-dist", default=0, type=int)
@@ -451,7 +519,7 @@ if __name__ == '__main__':
     parser.add_argument("-g", "--features", required=True)
 
     parser.add_argument("--feature-format", default="ncbi_feature_table",
-                        choices=["ncbi_feature_table"])
+                        choices=["ncbi_feature_table", "cgd_tab", "gff", "gtf"])
     parser.add_argument("--ncbi-chrom-field", default="genomic_accession",
                         choices=["genomic_accession", "chromosome"])
     parser.add_argument("--ncbi-keep", default="gene", choices=["gene", "cds", "all"])
@@ -556,7 +624,7 @@ if __name__ == '__main__':
         prefix = args.out_prefix if args.out_prefix is not None else derive_prefix_from_bam(bam_path)
 
         # per-replicate subdir (so later aggregation is trivial)
-        rep_dir = os.path.join(OutDir, prefix)
+        rep_dir = OutDir if args.flat_output else os.path.join(OutDir, prefix)
         if not os.path.isdir(rep_dir):
             os.makedirs(rep_dir)
 
@@ -612,7 +680,7 @@ if __name__ == '__main__':
             if len(track_outputs) >= 5:
                 bw_msg = track_outputs[4]
 
-        UniqueHitPercent = round(float(TotalUniqueHits)/float(TotalHits)*100, 2)
+        UniqueHitPercent = round(float(TotalUniqueHits)/float(TotalHits)*100, 2) if TotalHits else 0.0
 
         Log = '\r\n=== Finding hits ===\r\n%s reads found of map quality >= %s; in these:\r\n  %s hits were found; of these:\r\n    %s (%s%%) hit positions were found to be unique (Minimal distance = %s)\r\n' % (
             TotalReads, MapQ, TotalHits, TotalUniqueHits, UniqueHitPercent, MergeDist
