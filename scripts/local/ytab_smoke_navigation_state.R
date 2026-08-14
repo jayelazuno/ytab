@@ -1,0 +1,11 @@
+#!/usr/bin/env Rscript
+args<-commandArgs(trailingOnly=TRUE);stopifnot(length(args)==1L)
+all<-commandArgs(trailingOnly=FALSE);self<-normalizePath(sub("^--file=","",grep("^--file=",all,value=TRUE)[[1L]]),winslash="/");root<-normalizePath(file.path(dirname(self),"../.."),winslash="/")
+`%||%`<-function(left,right)if(is.null(left)||!length(left))right else left;source(file.path(root,"app/shiny/R/navigation.R"))
+state<-navigation_state_defaults("preprocessing");state<-record_navigation_selection(state,"preprocessing_tabs","hit_files");stopifnot(state$active_preprocessing_subtab=="hit_files");unchanged<-state;stopifnot(identical(unchanged,state))
+state<-record_navigation_selection(state,"workspace_tabs","quality_control");state<-record_navigation_selection(state,"qc_tabs","diagnostic_files");stopifnot(state$active_qc_subtab=="diagnostic_files")
+state<-record_navigation_selection(state,"workspace_tabs","essentiality");state<-record_navigation_selection(state,"essentiality_tabs","combined_summary");stopifnot(state$active_essentiality_subtab=="combined_summary");restored<-normalize_navigation_state(state);stopifnot(restored$active_essentiality_subtab=="combined_summary")
+state<-record_navigation_selection(state,"workspace_tabs","fitness");state<-record_navigation_selection(state,"fitness_tabs","fitness_run");stopifnot(state$active_fitness_subtab=="fitness_run");state<-record_navigation_selection(state,"essentiality_results_view","predictions");stopifnot(state$active_results_view=="predictions")
+app<-paste(readLines(file.path(root,"app/shiny/app.R"),warn=FALSE),collapse="\n");stopifnot(grepl("restore_navigation_state",app,fixed=TRUE),grepl("record_navigation_selection",app,fixed=TRUE),!grepl("state$load(active_project_path(),repo_root);go_to",app,fixed=TRUE))
+landing<-navigation_state_defaults("overview");stopifnot(landing$active_top_tab=="overview",landing$active_preprocessing_subtab=="samples")
+cat("PASS\n")

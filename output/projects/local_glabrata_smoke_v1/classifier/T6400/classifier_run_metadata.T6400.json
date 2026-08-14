@@ -1,0 +1,65 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "species": "glabrata",
+  "target": 6400.0,
+  "target_tag": "T6400",
+  "target_resolution_source": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/normalization_feature_recommendation.json",
+  "input_combined_feature_table": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/summary_combined/T6400/combined_feature_table.T6400.txt",
+  "input_sha256": "86bc47bc8ac85309d2ddbebdc6528c425c6e406047459ffe342b44a7fd3b94fe",
+  "classifier_resources": {
+    "orthology_file": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt",
+        "sha256": "2a869b00f071b3d9659cfd64c5ba0ec5cee0b2a8b1581218bb970ad71b338840"
+      }
+    ],
+    "kornmann_wig_files": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/Kornmann/07 - WildType1.wig",
+        "sha256": "78decdbafd3bd01a9e94a74cfc0ec76d1a49d45c40abcbde576ac2a1034305d3"
+      },
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/Kornmann/08 - WildType2.wig",
+        "sha256": "c752dcefe635fc6a7ed358f65821990cdbb4e99053d310f2ed768a6c79f34920"
+      }
+    ],
+    "cerevisiae_feature_table": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/cerevisiae/SGD_features.tab",
+        "sha256": "ee5017b6e5a93c01ee245eae7c590e6fe194a3791e763b3651be977572df91e3"
+      }
+    ],
+    "cerevisiae_viable_annotations": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/cerevisiae/cerevisiae_viable_annotations.txt",
+        "sha256": "dd7fc5147902419e757463d2d61da89041788ae66a8b1f187812f7ea6ddac9bc"
+      }
+    ],
+    "cerevisiae_inviable_annotations": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/cerevisiae/cerevisiae_inviable_annotations.txt",
+        "sha256": "b03112f718254ee49059645b95ca6e86c2dbc6a913791088d203f2889869b8ad"
+      }
+    ],
+    "cerevisiae_paralogs": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/cerevisiae/hasParalogs_sc.txt",
+        "sha256": "c134b0a48935b72ee8b4bc29cf8efc0d336c89b73ed6092929875326dc621010"
+      }
+    ]
+  },
+  "detected_outputs": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/classification - Scer training - filtered (table mode)/tables.xlsx",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/classification - Scer training - filtered (table mode)/train_AUC.RF-G4.png",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/combined_feature_table.T6400.txt.predictions.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/combined_glabrata_RF-G4.tsv"
+  ],
+  "seed": 0,
+  "python_version": "3.14.6",
+  "package_versions": {
+    "numpy": "2.5.1",
+    "pandas": "3.0.3",
+    "sklearn": "1.9.0"
+  },
+  "timestamp": "2026-07-28T19:26:37.362088+00:00"
+}

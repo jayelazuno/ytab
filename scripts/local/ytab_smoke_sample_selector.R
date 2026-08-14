@@ -1,0 +1,9 @@
+#!/usr/bin/env Rscript
+args<-commandArgs(trailingOnly=TRUE);if(length(args)!=1L)stop("Provide project.yaml",call.=FALSE)
+all<-commandArgs(trailingOnly=FALSE);self<-normalizePath(sub("^--file=","",grep("^--file=",all,value=TRUE)[[1]]),winslash="/");root<-normalizePath(file.path(dirname(self),"../.."),winslash="/")
+library(shiny);library(bslib);`%||%`<-function(left,right)if(is.null(left)||!length(left))right else left
+source(file.path(root,"app/shiny/R/project_discovery.R"),local=TRUE);source(file.path(root,"app/shiny/R/preprocessing_status.R"),local=TRUE);source(file.path(root,"app/shiny/R/sample_selector.R"),local=TRUE)
+project<-read_project_summary(args[[1]],root);samples<-project$samples;status<-build_sample_pipeline_status(project);inc<-tolower(as.character(samples$include))%in%c("true","1","yes");included<-as.character(samples$sample[inc]);stopifnot(length(included)>0)
+server<-function(input,output,session){chosen<-sample_selector_server("selector",reactive(samples),status_data=reactive(status));session$userData$chosen<-chosen}
+shiny::testServer(server,{session$flushReact();stopifnot(setequal(session$userData$chosen(),included));session$setInputs(`selector-none`=1);session$flushReact();stopifnot(length(session$userData$chosen())==0);session$setInputs(`selector-all`=1);session$flushReact();stopifnot(setequal(session$userData$chosen(),included));session$setInputs(`selector-parents`=1);session$flushReact();stopifnot(all(tolower(samples$guessed_condition[match(session$userData$chosen(),samples$sample)])=="parent"));session$setInputs(`selector-treated`=1);session$flushReact();stopifnot(all(tolower(samples$guessed_condition[match(session$userData$chosen(),samples$sample)])=="treated"))})
+ui_text<-paste(deparse(sample_selector_ui("selector")),collapse=" ");stopifnot(!grepl("comma-separated",ui_text,fixed=TRUE));cat("PASS\n")

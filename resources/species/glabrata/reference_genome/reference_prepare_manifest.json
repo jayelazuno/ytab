@@ -1,0 +1,15 @@
+{
+  "species": "glabrata",
+  "fasta": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+  "index_prefix": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic",
+  "bowtie2_index_complete_before": true,
+  "bowtie2_index_complete_after": true,
+  "fasta_index_created": false,
+  "commands_run": [],
+  "warnings": [
+    "Multiple feature table candidates found; selected C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab.",
+    "Multiple centromere BED candidates found; selected centromeres.CGD.bed.",
+    "Bowtie2 index found; indexing skipped."
+  ],
+  "timestamp": "2026-07-20T16:55:41.598086+00:00"
+}

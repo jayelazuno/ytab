@@ -22,7 +22,7 @@ PYTHON_MODULES = {
     "openpyxl": "openpyxl",
 }
 COMMANDS = ("bowtie2", "samtools", "Rscript")
-R_PACKAGES = ("shiny", "processx", "jsonlite", "yaml", "DT", "bslib", "tidyverse")
+R_PACKAGES = ("shiny", "shinyFiles", "processx", "jsonlite", "yaml", "DT", "bslib", "tidyverse")
 
 
 def report(ok: bool, label: str, detail: str = "") -> bool:

@@ -88,6 +88,17 @@ def _select(candidates: list[Path], label: str, species: str, warnings: list[str
     return unique[0]
 
 
+def _select_centromere_bed(reference_dir: Path, species: str, warnings: list[str]) -> Path | None:
+    candidates = sorted(set(_glob_many(reference_dir, ("centromeres*.bed",))), key=lambda path: path.name.lower())
+    if not candidates:
+        return None
+    preferred = [path for path in candidates if "ncbi" in path.name.lower()]
+    selected = (preferred or candidates)[0]
+    if len(candidates) > 1:
+        warnings.append(f"Multiple centromere BED candidates found; selected {selected.name}.")
+    return selected
+
+
 def _glob_many(directory: Path, patterns: tuple[str, ...]) -> list[Path]:
     return [path for pattern in patterns for path in directory.glob(pattern) if path.is_file()]
 
@@ -108,7 +119,7 @@ def resolve_reference(species: str, repo_root: Path | None = None) -> ReferenceI
     gtf = _select(_glob_many(reference_dir, ("*.gtf",)), "GTF", species, warnings)
     feature = _select(_glob_many(reference_dir, ("*feature_table*.txt", "*chromosomal_feature*.tab")), "feature table", species, warnings)
     database = _select(_glob_many(reference_dir, ("*.gffutils_db.sqlite",)), "gffutils DB", species, warnings)
-    centromere = _select(_glob_many(reference_dir, ("centromeres*.bed",)), "centromere BED", species, warnings)
+    centromere = _select_centromere_bed(reference_dir, species, warnings)
     trna = _select(_glob_many(reference_dir, ("*tRNA*.bed", "tRNAs.bed")), "tRNA BED", species, warnings)
     orthology = _select(_glob_many(species_dir, ("*orthologs*.txt",)), "orthology file", species, warnings)
     prefix, complete, index_type = find_bowtie2_index_prefix(reference_dir)

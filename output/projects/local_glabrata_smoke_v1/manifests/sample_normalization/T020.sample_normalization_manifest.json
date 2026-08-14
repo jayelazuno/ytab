@@ -1,0 +1,120 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "species": "glabrata",
+  "target": "20",
+  "target_tag": "T020",
+  "selected_samples": [
+    "yH298-parent-pool1",
+    "yH298-parent-pool2",
+    "yH299-parent-pool3",
+    "yH299-parent-pool4"
+  ],
+  "input_hit_files": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool2/yH298-parent-pool2_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH299-parent-pool4/yH299-parent-pool4_hits.txt"
+  ],
+  "output_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020",
+  "export_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/exports/local_glabrata_smoke_v1/qc/sample_normalization/T020",
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/logs/sample_normalization/T020.log",
+  "status": "success",
+  "start_time": "2026-07-18T19:00:34.988573+00:00",
+  "end_time": "2026-07-18T19:00:41.869750+00:00",
+  "elapsed_seconds": 6.882,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/qc/LibraryDiagnostics.py",
+    "--hits-txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool2/yH298-parent-pool2_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH299-parent-pool4/yH299-parent-pool4_hits.txt",
+    "--outdir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020",
+    "--normalize-to-midlc",
+    "20",
+    "--normalized-hits-suffix",
+    "_normalized_hits.txt"
+  ],
+  "normalized_hit_files": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt"
+  ],
+  "comparison_rows": [
+    {
+      "target": "20",
+      "target_tag": "T020",
+      "sample": "yH298-parent-pool1",
+      "condition": "parent",
+      "raw_hit_sites": 6986,
+      "normalized_hit_sites": 6986,
+      "hit_site_retention_fraction": 1.0,
+      "hit_site_loss_fraction": 0.0,
+      "raw_total_reads": 8733,
+      "normalized_total_reads": 8733,
+      "raw_percent_features_hit": "NA",
+      "normalized_percent_features_hit": "NA",
+      "normalized_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+      "status": "success",
+      "warning": "Normalized feature-level metrics require SummaryTable on normalized hits in a later step."
+    },
+    {
+      "target": "20",
+      "target_tag": "T020",
+      "sample": "yH298-parent-pool2",
+      "condition": "parent",
+      "raw_hit_sites": 6817,
+      "normalized_hit_sites": 6817,
+      "hit_site_retention_fraction": 1.0,
+      "hit_site_loss_fraction": 0.0,
+      "raw_total_reads": 8251,
+      "normalized_total_reads": 8251,
+      "raw_percent_features_hit": "NA",
+      "normalized_percent_features_hit": "NA",
+      "normalized_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+      "status": "success",
+      "warning": "Normalized feature-level metrics require SummaryTable on normalized hits in a later step."
+    },
+    {
+      "target": "20",
+      "target_tag": "T020",
+      "sample": "yH299-parent-pool3",
+      "condition": "parent",
+      "raw_hit_sites": 6233,
+      "normalized_hit_sites": 6233,
+      "hit_site_retention_fraction": 1.0,
+      "hit_site_loss_fraction": 0.0,
+      "raw_total_reads": 8473,
+      "normalized_total_reads": 8473,
+      "raw_percent_features_hit": "NA",
+      "normalized_percent_features_hit": "NA",
+      "normalized_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+      "status": "success",
+      "warning": "Normalized feature-level metrics require SummaryTable on normalized hits in a later step."
+    },
+    {
+      "target": "20",
+      "target_tag": "T020",
+      "sample": "yH299-parent-pool4",
+      "condition": "parent",
+      "raw_hit_sites": 4898,
+      "normalized_hit_sites": 4898,
+      "hit_site_retention_fraction": 1.0,
+      "hit_site_loss_fraction": 0.0,
+      "raw_total_reads": 6917,
+      "normalized_total_reads": 6917,
+      "raw_percent_features_hit": "NA",
+      "normalized_percent_features_hit": "NA",
+      "normalized_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T020/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt",
+      "status": "success",
+      "warning": "Normalized feature-level metrics require SummaryTable on normalized hits in a later step."
+    }
+  ],
+  "warnings": [
+    "Feature-level retention requires SummaryTable on normalized hits and will be confirmed in a later step."
+  ],
+  "error_message": null
+}

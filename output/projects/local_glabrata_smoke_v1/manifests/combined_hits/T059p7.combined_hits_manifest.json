@@ -1,0 +1,51 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "species": "glabrata",
+  "target": 59.7,
+  "target_tag": "T059p7",
+  "selected_samples": [
+    "yH298-parent-pool1",
+    "yH298-parent-pool2",
+    "yH299-parent-pool3",
+    "yH299-parent-pool4"
+  ],
+  "input_normalized_hit_files": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T059p7/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T059p7/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T059p7/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T059p7/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt"
+  ],
+  "output_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T059p7",
+  "combined_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T059p7/combined_parent_hits.T059p7.txt",
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/logs/combined_hits/T059p7.log",
+  "status": "success",
+  "start_time": "2026-07-18T19:32:40.411134+00:00",
+  "end_time": "2026-07-18T19:32:52.752871+00:00",
+  "elapsed_seconds": 12.341,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/insertions/CombineHitFiles.py",
+    "--hits-txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T059p7/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T059p7/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T059p7/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T059p7/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt",
+    "--outdir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T059p7",
+    "--sample-name",
+    "combined_parent_hits.T059p7",
+    "--output-file",
+    "combined_parent_hits.T059p7.txt",
+    "--sort"
+  ],
+  "detected_outputs": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T059p7/combined_parent_hits.T059p7.combine_manifest.json",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T059p7/combined_parent_hits.T059p7.combine_summary.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T059p7/combined_parent_hits.T059p7.metadata.json",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T059p7/combined_parent_hits.T059p7.txt"
+  ],
+  "warnings": [],
+  "error_message": null,
+  "total_combined_sites": 20787,
+  "total_combined_reads": 32374
+}

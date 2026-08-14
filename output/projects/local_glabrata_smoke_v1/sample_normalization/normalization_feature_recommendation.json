@@ -1,0 +1,16 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "species": "glabrata",
+  "recommended_target": 6400.0,
+  "recommended_target_tag": "T6400",
+  "min_feature_retention": 0.95,
+  "evaluated_target_tags": [
+    "T059p7",
+    "T6400"
+  ],
+  "reason": "Highest evaluated target satisfying the minimum feature-retention threshold across selected samples.",
+  "warnings": [
+    "The 10k smoke-subset recommendation is a workflow test, not a biological recommendation."
+  ],
+  "timestamp": "2026-07-28T19:25:48.490207+00:00"
+}

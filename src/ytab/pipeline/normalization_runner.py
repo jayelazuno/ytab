@@ -325,7 +325,8 @@ def run_normalization_target(
             "log_file": str(paths["log"]), "elapsed_seconds": manifest["elapsed_seconds"],
             "message": manifest.get("error_message") or "; ".join(warnings),
         })
-    _write_json(paths["manifest"], {key: value for key, value in manifest.items() if key != "sample_results"})
+    if not dry_run:
+        _write_json(paths["manifest"], {key: value for key, value in manifest.items() if key != "sample_results"})
     manifest["manifest_path"] = str(paths["manifest"])
     return manifest
 
@@ -453,13 +454,14 @@ def recommend_normalization_target(
         "reason": reason, "warnings": warnings + [RETENTION_WARNING], "timestamp": _now(),
     }
     paths = _paths(config)
-    _write_json(paths["recommendation"], recommendation)
-    paths["export"].mkdir(parents=True, exist_ok=True)
-    with paths["export_recommendation"].open("w", newline="", encoding="utf-8") as handle:
-        fields = ["recommended_target", "recommended_target_tag", "min_site_retention_observed", "mean_site_retention_observed", "retention_threshold", "reason"]
-        writer = csv.DictWriter(handle, fieldnames=fields)
-        writer.writeheader()
-        writer.writerow({key: recommendation[key] for key in fields})
+    if not dry_run:
+        _write_json(paths["recommendation"], recommendation)
+        paths["export"].mkdir(parents=True, exist_ok=True)
+        with paths["export_recommendation"].open("w", newline="", encoding="utf-8") as handle:
+            fields = ["recommended_target", "recommended_target_tag", "min_site_retention_observed", "mean_site_retention_observed", "retention_threshold", "reason"]
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            writer.writeheader()
+            writer.writerow({key: recommendation[key] for key in fields})
     return {**recommendation, "target_result": target_result, "recommendation_path": str(paths["recommendation"]), "recommendation_csv": str(paths["export_recommendation"])}
 
 
@@ -492,7 +494,8 @@ def run_normalization_project(
             results.append(result)
             if result["status"] == "failed" and not keep_going:
                 break
-    _write_status(_paths(config)["status"], results)
+    if not dry_run:
+        _write_status(_paths(config)["status"], results)
     comparison = None if dry_run else collect_normalization_comparison(config)
     return {
         "project_id": config.get("project_id"), "species": config.get("species"),

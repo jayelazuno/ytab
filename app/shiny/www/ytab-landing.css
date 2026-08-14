@@ -1,0 +1,8 @@
+.ytab-entry-grid .ytab-card { height: 100%; }
+.ytab-actions { margin-top: .8rem; }
+.ytab-button { padding: .65rem 1rem; border-radius: 7px; font-weight: 600; }
+.btn-secondary { background: white; border: 1px solid #6c8495; color: #28475b; }
+.btn-secondary:hover { background: #edf4f7; color: #17384c; }
+.ytab-project-preview { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: 1rem; }
+.ytab-preview-badge { background: #e8f3f4; color: #18565c; border-radius: 999px; padding: .3rem .65rem; font-size: .84rem; }
+.ytab-test-badge { background: #fff0cf; color: #805200; }

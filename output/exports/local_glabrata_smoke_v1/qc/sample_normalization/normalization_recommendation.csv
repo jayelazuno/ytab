@@ -1,0 +1,2 @@
+recommended_target,recommended_target_tag,min_site_retention_observed,mean_site_retention_observed,retention_threshold,reason
+6400.0,T6400,1.0,1.0,0.95,Highest candidate target satisfying the insertion-site retention threshold across selected samples.

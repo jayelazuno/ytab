@@ -1,0 +1,9 @@
+sample,fastq_1,fastq_2,layout,guessed_condition,guessed_background,guessed_pool,include,warnings
+yH298-H2O2-treated-facs-pool1,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-H2O2-treated-facs-pool1.fastq.gz,,single,treated,yH298,1,True,
+yH298-H2O2-treated-facs-pool2,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-H2O2-treated-facs-pool2.fastq.gz,,single,treated,yH298,2,True,
+yH298-parent-pool1,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-parent-pool1.fastq.gz,,single,parent,yH298,1,True,
+yH298-parent-pool2,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-parent-pool2.fastq.gz,,single,parent,yH298,2,True,
+yH299-H2O2-treated-facs-pool3,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH299-H2O2-treated-facs-pool3.fastq.gz,,single,treated,yH299,3,True,
+yH299-H2O2-treated-facs-pool4,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH299-H2O2-treated-facs-pool4.fastq.gz,,single,treated,yH299,4,True,
+yH299-parent-pool3,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH299-parent-pool3.fastq.gz,,single,parent,yH299,3,True,
+yH299-parent-pool4,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH299-parent-pool4.fastq.gz,,single,parent,yH299,4,True,

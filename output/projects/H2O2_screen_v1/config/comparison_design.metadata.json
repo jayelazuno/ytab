@@ -1,0 +1,19 @@
+{
+  "project_id": "H2O2_screen_v1",
+  "generated_at": "2026-08-05T16:59:07.893667+00:00",
+  "design_version": 1,
+  "valid_comparison_count": 4,
+  "included_comparison_count": 4,
+  "design_issues": [],
+  "sample_sheet_sha256": "15725a8104d18afb02f2f252b548d3a2ed099ed41b5fdca322ef07acdd54fe9b",
+  "raw_summary_inputs": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-parent-pool1/yH298-parent-pool1.feature_table.RDF_1.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1.feature_table.RDF_1.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-parent-pool2/yH298-parent-pool2.feature_table.RDF_1.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2.feature_table.RDF_1.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-parent-pool3/yH299-parent-pool3.feature_table.RDF_1.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-H2O2-treated-facs-pool3/yH299-H2O2-treated-facs-pool3.feature_table.RDF_1.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-parent-pool4/yH299-parent-pool4.feature_table.RDF_1.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-H2O2-treated-facs-pool4/yH299-H2O2-treated-facs-pool4.feature_table.RDF_1.csv"
+  ]
+}

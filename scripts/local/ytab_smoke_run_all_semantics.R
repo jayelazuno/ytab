@@ -1,0 +1,11 @@
+#!/usr/bin/env Rscript
+args<-commandArgs(trailingOnly=TRUE);stopifnot(length(args)==1L,file.exists(args[[1L]]))
+all<-commandArgs(trailingOnly=FALSE);self<-normalizePath(sub("^--file=","",grep("^--file=",all,value=TRUE)[[1L]]),winslash="/");root<-normalizePath(file.path(dirname(self),"../.."),winslash="/")
+source(file.path(root,"app/shiny/R/ui_preprocessing.R"))
+for(stage in c("mapfastq","create_hit_file","summary"))stopifnot(resolve_keep_going(stage,4,TRUE,FALSE),identical(keep_going_argument(stage,4,TRUE,FALSE),"--keep-going"))
+stopifnot(!resolve_keep_going("library_diagnostics",4,TRUE,TRUE),length(keep_going_argument("library_diagnostics",4,TRUE,TRUE))==0L)
+stopifnot(resolve_keep_going("sample_normalization",3,TRUE,FALSE),resolve_keep_going("summary_normalized",3,TRUE,FALSE))
+stopifnot(!resolve_keep_going("mapfastq",1,FALSE,TRUE),resolve_keep_going("mapfastq",2,FALSE,TRUE),!resolve_keep_going("mapfastq",2,FALSE,FALSE),resolve_keep_going("fitness_analysis",4,TRUE,FALSE))
+server<-paste(readLines(file.path(root,"app/shiny/app.R"),warn=FALSE),collapse="\n");essentiality<-paste(readLines(file.path(root,"app/shiny/R/essentiality_server.R"),warn=FALSE),collapse="\n")
+stopifnot(grepl("effective_keep<-resolve_keep_going",server,fixed=TRUE),grepl("keep_going = TRUE",essentiality,fixed=TRUE),grepl("Selected multi-sample runs continue by default",server,fixed=TRUE))
+cat("PASS\n")

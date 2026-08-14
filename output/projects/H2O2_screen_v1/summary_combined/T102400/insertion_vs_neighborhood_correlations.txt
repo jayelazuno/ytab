@@ -1,0 +1,3 @@
+combined_parent_hits.T102400
+Pearson: PearsonRResult(statistic=np.float64(0.7941191322685599), pvalue=np.float64(0.0))
+Spearman: SignificanceResult(statistic=np.float64(0.9323965525123867), pvalue=np.float64(0.0))

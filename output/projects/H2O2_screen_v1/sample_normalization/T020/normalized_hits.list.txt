@@ -1,4 +1,0 @@
-/Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/sample_normalization/T020/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt
-/Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/sample_normalization/T020/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt
-/Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/sample_normalization/T020/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt
-/Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/sample_normalization/T020/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt

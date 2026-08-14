@@ -1,0 +1,102 @@
+project_id: local_glabrata_smoke_v1
+repo_root: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab
+fastq_dir: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k
+output_project_dir: output/projects/local_glabrata_smoke_v1
+output_export_dir: output/exports/local_glabrata_smoke_v1
+species: glabrata
+threads: 2
+reference:
+  species: glabrata
+  species_dir: resources/species/glabrata
+  reference_dir: resources/species/glabrata/reference_genome
+  fasta: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna
+  feature_table: resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab
+  gff: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff
+  gtf: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf
+  gffutils_db: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/glabrata/reference_genome/centromeres.CGD.bed
+  trna_bed: resources/species/glabrata/reference_genome/tRNAs.bed
+  orthology_file: resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+  warnings:
+  - Multiple feature table candidates found; selected C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab.
+  - Multiple centromere BED candidates found; selected centromeres.CGD.bed.
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: yH298-H2O2-treated-facs-pool1
+  fastq_1: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-H2O2-treated-facs-pool1.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: treated
+  guessed_background: yH298
+  guessed_pool: '1'
+  include: true
+  warnings: ''
+- sample: yH298-H2O2-treated-facs-pool2
+  fastq_1: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-H2O2-treated-facs-pool2.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: treated
+  guessed_background: yH298
+  guessed_pool: '2'
+  include: true
+  warnings: ''
+- sample: yH298-parent-pool1
+  fastq_1: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-parent-pool1.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: parent
+  guessed_background: yH298
+  guessed_pool: '1'
+  include: true
+  warnings: ''
+- sample: yH298-parent-pool2
+  fastq_1: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-parent-pool2.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: parent
+  guessed_background: yH298
+  guessed_pool: '2'
+  include: true
+  warnings: ''
+- sample: yH299-H2O2-treated-facs-pool3
+  fastq_1: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH299-H2O2-treated-facs-pool3.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: treated
+  guessed_background: yH299
+  guessed_pool: '3'
+  include: true
+  warnings: ''
+- sample: yH299-H2O2-treated-facs-pool4
+  fastq_1: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH299-H2O2-treated-facs-pool4.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: treated
+  guessed_background: yH299
+  guessed_pool: '4'
+  include: true
+  warnings: ''
+- sample: yH299-parent-pool3
+  fastq_1: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH299-parent-pool3.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: parent
+  guessed_background: yH299
+  guessed_pool: '3'
+  include: true
+  warnings: ''
+- sample: yH299-parent-pool4
+  fastq_1: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH299-parent-pool4.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: parent
+  guessed_background: yH299
+  guessed_pool: '4'
+  include: true
+  warnings: ''
+sample_sheet: output/projects/local_glabrata_smoke_v1/config/sample_sheet.csv
+created_at: '2026-07-17T22:46:30.815416+00:00'
+ytab_version_or_git_commit_if_available: 69827e1

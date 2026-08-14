@@ -1,0 +1,3 @@
+target,target_tag,sample_count,min_hit_site_retention_fraction,mean_hit_site_retention_fraction,min_feature_retention_fraction,mean_feature_retention_fraction,max_feature_loss_fraction,mean_normalized_percent_features_hit,status,recommended_by_site_retention,recommended_by_feature_retention
+59.7,T059p7,4,1.0,1.0,1.0,1.0,0.0,17.1725,success,False,False
+6400.0,T6400,4,1.0,1.0,1.0,1.0,0.0,17.1725,success,True,True

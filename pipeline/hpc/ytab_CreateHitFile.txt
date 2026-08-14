@@ -1,5 +1,3 @@
-
-
 #!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
@@ -18,27 +16,22 @@
 ##
 ##   Optional:
 ##     Rerun all samples even if outputs exist:
-##       qsub -v FORCE=1 ytab_CreateHitFile.txt
+##       qsub -v FORCE=1 ytab_CreateHitFile
 ##
 ##     Use a different project/version output folder:
-##       qsub -v PROJECT_ID=H2O2_screen_v1 ytab_CreateHitFile.txt
+##       qsub -v PROJECT_ID=H2O2_screen_v1 ytab_CreateHitFile
 ##
 ##     Run with both:
-##       qsub -v PROJECT_ID=H2O2_screen_v1,FORCE=1 ytab_CreateHitFile.txt
-##
-##     Hold this job until MapFastq finishes:
-##       qsub -hold_jid <MAPFASTQ_JOB_ID> ytab_CreateHitFile.txt
+##       qsub -v PROJECT_ID=H2O2_screen_v1,FORCE=1 ytab_CreateHitFile
 ##
 ##   Notes:
 ##     - By default, this script uses the MANUAL_SAMPLES list below.
 ##     - To auto-discover samples, set MANUAL_SAMPLES=() and the script
 ##       will search MAP_DIR for */*.sorted.bam.
-##     - Final output is written to:
+##     - Output is written to:
 ##         output/projects/<PROJECT_ID>/create_hit_file/<sample>/
 ##     - Browser tracks are copied to:
 ##         output/exports/<PROJECT_ID>/browser/
-##     - Each sample is run in an isolated hidden run directory first, so
-##       CreateHitFile.py cannot overwrite previously completed samples.
 
 set -euo pipefail
 
@@ -55,8 +48,8 @@ conda activate tnseq
 # -----------------------
 # Project paths
 # -----------------------
-YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
-LEGACY="${LEGACY:-/Users/jayelazuno/workspace/HermesTnseq}"
+YTAB="/Users/jayelazuno/workspace/ytab"
+LEGACY="/Users/jayelazuno/workspace/HermesTnseq"
 
 # Permanent project/version name for app-facing analysis
 PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
@@ -86,7 +79,6 @@ echo "THREADS(for CreateHitFile)=$THREADS"
 echo "FORCE:             $FORCE"
 echo "PROJECT_ID:        $PROJECT_ID"
 echo "YTAB repo:         $YTAB"
-echo "LEGACY repo:       $LEGACY"
 echo "Mapping dir:       $MAP_DIR"
 echo "CreateHitFile dir: $HIT_DIR"
 echo "Export dir:        $EXPORT_DIR"
@@ -162,24 +154,16 @@ for sample in "${SAMPLES[@]}"; do
     exit 1
   fi
 
-  # Final permanent output for this sample
   out="$HIT_DIR/$sample"
-
-  # Isolated hidden run root for this sample.
-  # CreateHitFile.py receives this as -o, so if it clears its output
-  # directory internally, it only clears this one sample run area.
-  sample_run_root="$HIT_DIR/.run_${sample}"
 
   expected_hits="$out/${sample}_hits.txt"
   expected_bedgraph="$out/${sample}.insertions.bedgraph"
   expected_wig="$out/${sample}.insertions.wig"
-  expected_bw="$out/${sample}.insertions.bw"
 
   echo "============================================================"
   echo "[$(date)] sample=$sample"
   echo "  BAM=$bam"
-  echo "  RUN_ROOT=$sample_run_root"
-  echo "  FINAL_OUT=$out"
+  echo "  OUT=$out"
   echo "============================================================"
 
   if [[ "$FORCE" != "1" && -s "$expected_hits" && -s "$expected_bedgraph" ]]; then
@@ -188,16 +172,13 @@ for sample in "${SAMPLES[@]}"; do
     echo "       bedGraph: $expected_bedgraph"
     echo "       Set FORCE=1 to rerun."
   else
-    # Clean only this sample's isolated run area and final output.
-    rm -rf "$sample_run_root"
+    # Clean only this sample's previous CreateHitFile output
     rm -rf "$out"
-
-    mkdir -p "$sample_run_root"
     mkdir -p "$out"
 
     python3 "$YTAB/src/ytab/insertions/CreateHitFile.py" \
       -b "$bam" \
-      -o "$sample_run_root" \
+      -o "$HIT_DIR" \
       -f "$REF_FASTA" \
       -g "$FEATURE_TABLE" \
       --feature-format ncbi_feature_table \
@@ -207,33 +188,6 @@ for sample in "${SAMPLES[@]}"; do
       --drop-top-sites 1 \
       --write-browser-tracks \
       --threads "$THREADS"
-
-    echo "Files produced in isolated run root:"
-    find "$sample_run_root" -maxdepth 3 -type f | sort || true
-    echo
-
-    # Detect whether CreateHitFile.py wrote directly into sample_run_root
-    # or created a nested sample directory inside sample_run_root.
-    if [[ -s "$sample_run_root/$sample/${sample}_hits.txt" ]]; then
-      result_src="$sample_run_root/$sample"
-    elif [[ -s "$sample_run_root/${sample}_hits.txt" ]]; then
-      result_src="$sample_run_root"
-    else
-      echo "ERROR: could not find expected hits output for $sample in:" >&2
-      echo "  $sample_run_root" >&2
-      find "$sample_run_root" -maxdepth 3 -type f | sort >&2 || true
-      exit 1
-    fi
-
-    echo "Copying CreateHitFile result from:"
-    echo "  $result_src"
-    echo "to:"
-    echo "  $out"
-
-    cp -a "$result_src"/. "$out"/
-
-    # Remove isolated run root after successful copy.
-    rm -rf "$sample_run_root"
   fi
 
   # -----------------------
@@ -260,8 +214,8 @@ for sample in "${SAMPLES[@]}"; do
     echo "[WARN] WIG not produced for $sample: $expected_wig"
   fi
 
-  if [[ -s "$expected_bw" ]]; then
-    cp -f "$expected_bw" "$BROWSER_DIR/"
+  if [[ -s "$out/${sample}.insertions.bw" ]]; then
+    cp -f "$out/${sample}.insertions.bw" "$BROWSER_DIR/"
   else
     echo "[WARN] bigWig not produced for $sample"
   fi
@@ -281,10 +235,6 @@ done
 echo "Final CreateHitFile outputs:"
 echo "  Pipeline stage outputs: $HIT_DIR/<sample>/"
 echo "  Browser exports:        $BROWSER_DIR/"
-echo
-
-echo "Final sample directories:"
-find "$HIT_DIR" -mindepth 1 -maxdepth 1 -type d ! -name ".run_*" | sort
 echo
 
 date

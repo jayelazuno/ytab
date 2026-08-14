@@ -1,0 +1,53 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "species": "glabrata",
+  "target": 6400.0,
+  "target_tag": "T6400",
+  "selected_samples": [
+    "yH298-parent-pool1",
+    "yH298-parent-pool2",
+    "yH299-parent-pool3",
+    "yH299-parent-pool4"
+  ],
+  "input_normalized_hit_files": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt"
+  ],
+  "output_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T6400",
+  "combined_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T6400/combined_parent_hits.T6400.txt",
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/logs/combined_hits/T6400.log",
+  "status": "skipped",
+  "start_time": "2026-07-28T19:25:50.142960+00:00",
+  "end_time": "2026-07-28T19:25:50.162225+00:00",
+  "elapsed_seconds": 0.019,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/insertions/CombineHitFiles.py",
+    "--hits-txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt",
+    "--outdir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T6400",
+    "--sample-name",
+    "combined_parent_hits.T6400",
+    "--output-file",
+    "combined_parent_hits.T6400.txt",
+    "--sort"
+  ],
+  "detected_outputs": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T6400/combined_parent_hits.T6400.combine_manifest.json",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T6400/combined_parent_hits.T6400.combine_summary.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T6400/combined_parent_hits.T6400.metadata.json",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T6400/combined_parent_hits.T6400.txt"
+  ],
+  "warnings": [
+    "Successful cached combined parent hit file found; combine skipped."
+  ],
+  "error_message": null,
+  "total_combined_sites": 20787,
+  "total_combined_reads": 32374
+}

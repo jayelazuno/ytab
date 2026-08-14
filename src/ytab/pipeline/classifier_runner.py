@@ -295,6 +295,35 @@ def persist_final_classifier_target(config: dict, target_info: dict, feature_tab
     return {"text": str(paths["final_txt"]), "json": str(paths["final_json"])}
 
 
+def save_reviewed_classifier_target(project_config: Path, target: str) -> dict:
+    """Persist a reviewed result without fitting or invoking the classifier."""
+    config = load_project_for_classifier(project_config)
+    target_info = resolve_classifier_target(config, target)
+    feature_table = find_combined_feature_table(config, target_info["target_tag"])
+    paths = _paths(config, target_info["target_tag"])
+    if not feature_table.is_file() or feature_table.stat().st_size == 0:
+        raise FileNotFoundError(f"Combined feature table is missing or empty: {feature_table}")
+    if not paths["stable"].is_file() or paths["stable"].stat().st_size == 0:
+        raise FileNotFoundError(f"Reviewed classifier predictions are missing: {paths['stable']}")
+    try:
+        manifest = json.loads(paths["manifest"].read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"A successful classifier manifest is required before saving the final target: {paths['manifest']}") from exc
+    if manifest.get("status") not in {"success", "skipped", "cached"}:
+        raise ValueError(f"Classifier result is not successful for {target_info['target_tag']}.")
+    if manifest.get("target_tag") != target_info["target_tag"]:
+        raise ValueError("Classifier manifest target does not match the reviewed result.")
+    info = _prediction_info(paths["stable"])
+    if not info["rows"]:
+        raise ValueError(f"Reviewed classifier predictions are unreadable or empty: {paths['stable']}")
+    files = persist_final_classifier_target(config, target_info, feature_table)
+    return {
+        "project_id": config.get("project_id"), "target": target_info["target"],
+        "target_tag": target_info["target_tag"], "prediction_table": str(paths["stable"]),
+        "prediction_rows": len(info["rows"]), "final_target_files": files,
+    }
+
+
 def _write_status(path: Path, manifest: dict) -> None:
     existing = {}
     if path.is_file():
@@ -324,17 +353,28 @@ def run_classifier_project(project_config: Path, target: str = "recommended", se
     inspection = inspect_classifier_requirements(config, feature_table, resources)
     input_hash = _sha256(feature_table)
     paths = _paths(config, target_info["target_tag"])
+    resolved_seed = 0 if seed is None else int(seed)
     command = build_classifier_command(config, target_info, feature_table, resources, seed)
     resource_snapshot = _serial_resources(resources, hashes=True)
+    classifier_script_hash = _sha256(Path(command[1]))
+    runner_path = Path(__file__).resolve()
+    runner_hash = _sha256(runner_path)
     started = time.monotonic()
     manifest = {
         "project_id": config.get("project_id"), "species": config.get("species"), "target": target_info["target"],
         "target_tag": target_info["target_tag"], "target_resolution_source": target_info["source"],
         "input_combined_feature_table": str(feature_table), "input_sha256": input_hash,
         "input_feature_count": inspection["input_feature_count"], "classifier_script": command[1],
+        "classifier_script_sha256": classifier_script_hash,
+        "classifier_runner": str(runner_path), "classifier_runner_sha256": runner_hash,
         "classifier_resources": resource_snapshot, "output_dir": str(paths["output"]), "stable_prediction_table": None,
+        "stable_prediction_sha256": None,
         "detected_outputs": [], "classifier_summary_file": None, "run_metadata_file": None,
-        "log_file": str(paths["log"]), "seed": 0 if seed is None else seed,
+        "log_file": str(paths["log"]), "seed": resolved_seed,
+        "scientific_parameters": {
+            "mode": "scer-train-gla-classify", "target_fpr": 0.10,
+            "combine": True, "deterministic_ordering": True,
+        },
         "python_version": platform.python_version(), "numpy_version": _package_versions()["numpy"],
         "pandas_version": _package_versions()["pandas"], "scikit_learn_version": _package_versions()["sklearn"],
         "status": "failed", "start_time": _now(), "end_time": None,
@@ -347,7 +387,20 @@ def run_classifier_project(project_config: Path, target: str = "recommended", se
             previous = json.loads(paths["manifest"].read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             previous = {}
-        cached = previous.get("status") == "success" and previous.get("target_tag") == target_info["target_tag"] and previous.get("input_sha256") == input_hash and previous.get("classifier_resources") == resource_snapshot
+        cached = (
+            previous.get("status") == "success"
+            and previous.get("target") == target_info["target"]
+            and previous.get("target_tag") == target_info["target_tag"]
+            and previous.get("input_combined_feature_table") == str(feature_table)
+            and previous.get("input_sha256") == input_hash
+            and previous.get("classifier_script_sha256") == classifier_script_hash
+            and previous.get("classifier_runner_sha256") == runner_hash
+            and previous.get("seed", 0) == resolved_seed
+            and previous.get("classifier_resources") == resource_snapshot
+            and previous.get("species") == config.get("species")
+            and previous.get("scientific_parameters") == manifest["scientific_parameters"]
+            and previous.get("stable_prediction_sha256") == _sha256(paths["stable"])
+        )
     if cached:
         manifest["status"] = "skipped"
         manifest["warnings"].append("Successful cached classifier result matches the current input and resources; classifier skipped.")
@@ -365,6 +418,12 @@ def run_classifier_project(project_config: Path, target: str = "recommended", se
             outputs = detect_classifier_outputs(paths["output"])
             primary = choose_primary_prediction_table(outputs)
             shutil.copy2(primary, paths["stable"])
+            stable_info = _prediction_info(paths["stable"])
+            if not stable_info["rows"]:
+                raise RuntimeError("Classifier completed without readable prediction rows.")
+            if len(stable_info["rows"]) > inspection["input_feature_count"]:
+                raise RuntimeError("Classifier prediction row count exceeds the combined feature-table row count.")
+            manifest["excluded_feature_count"] = inspection["input_feature_count"] - len(stable_info["rows"])
             summary = summarize_classifier_predictions(paths["stable"], target_info)
             metadata = write_classifier_run_metadata(config, target_info, feature_table, resources, outputs, seed)
             paths["export"].mkdir(parents=True, exist_ok=True)
@@ -379,15 +438,18 @@ def run_classifier_project(project_config: Path, target: str = "recommended", se
     if paths["stable"].is_file():
         info = _prediction_info(paths["stable"])
         manifest["stable_prediction_table"] = str(paths["stable"])
+        manifest["stable_prediction_sha256"] = _sha256(paths["stable"])
         manifest["output_prediction_count"] = len(info["rows"])
         manifest["class_counts"] = info["class_counts"]
+        manifest["excluded_feature_count"] = max(0, inspection["input_feature_count"] - len(info["rows"]))
     if paths["summary"].is_file(): manifest["classifier_summary_file"] = str(paths["summary"])
     if paths["metadata"].is_file(): manifest["run_metadata_file"] = str(paths["metadata"])
     if save_final_target and not dry_run and manifest["status"] in {"success", "skipped"}:
         manifest["final_target_files"] = persist_final_classifier_target(config, target_info, feature_table)
     manifest["end_time"] = _now(); manifest["elapsed_seconds"] = round(time.monotonic() - started, 3)
     paths["manifest"].parent.mkdir(parents=True, exist_ok=True)
-    if not cached:
+    if not cached and not dry_run:
         paths["manifest"].write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    _write_status(_paths(config)["status"], manifest)
+    if not dry_run:
+        _write_status(_paths(config)["status"], manifest)
     return {**manifest, "manifest_path": str(paths["manifest"]), "classifier_resources_resolved": _serial_resources(resources), "save_final_target": save_final_target, "dry_run": dry_run}

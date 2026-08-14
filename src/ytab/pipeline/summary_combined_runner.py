@@ -247,6 +247,7 @@ def run_summary_combined_project(
         manifest["summary_stats_file"] = str(paths["stable_stats"])
     manifest["end_time"] = _now()
     manifest["elapsed_seconds"] = round(time.monotonic() - started, 3)
-    _write_json(paths["manifest"], manifest)
-    _write_status(_paths(config)["status"], manifest)
+    if not dry_run:
+        _write_json(paths["manifest"], manifest)
+        _write_status(_paths(config)["status"], manifest)
     return {**manifest, "manifest_path": str(paths["manifest"]), "dry_run": dry_run}

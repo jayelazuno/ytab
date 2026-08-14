@@ -1,0 +1,120 @@
+{
+  "project_id": "H2O2_screen_v1",
+  "species": "glabrata",
+  "target": "102400",
+  "target_tag": "T102400",
+  "selected_samples": [
+    "yH298-parent-pool1",
+    "yH298-parent-pool2",
+    "yH299-parent-pool3",
+    "yH299-parent-pool4"
+  ],
+  "input_hit_files": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool2/yH298-parent-pool2_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool4/yH299-parent-pool4_hits.txt"
+  ],
+  "output_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400",
+  "export_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/exports/H2O2_screen_v1/qc/sample_normalization/T102400",
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/logs/sample_normalization/T102400.log",
+  "status": "success",
+  "start_time": "2026-08-05T16:51:54.082598+00:00",
+  "end_time": "2026-08-05T16:53:53.961635+00:00",
+  "elapsed_seconds": 119.876,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/qc/LibraryDiagnostics.py",
+    "--hits-txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool2/yH298-parent-pool2_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool4/yH299-parent-pool4_hits.txt",
+    "--outdir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400",
+    "--normalize-to-midlc",
+    "102400",
+    "--normalized-hits-suffix",
+    "_normalized_hits.txt"
+  ],
+  "normalized_hit_files": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt"
+  ],
+  "comparison_rows": [
+    {
+      "target": "102400",
+      "target_tag": "T102400",
+      "sample": "yH298-parent-pool1",
+      "condition": "parent",
+      "raw_hit_sites": 64018,
+      "normalized_hit_sites": 64018,
+      "hit_site_retention_fraction": 1.0,
+      "hit_site_loss_fraction": 0.0,
+      "raw_total_reads": 24416746,
+      "normalized_total_reads": 24416746,
+      "raw_percent_features_hit": "NA",
+      "normalized_percent_features_hit": "NA",
+      "normalized_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+      "status": "success",
+      "warning": "Normalized feature-level metrics require SummaryTable on normalized hits in a later step."
+    },
+    {
+      "target": "102400",
+      "target_tag": "T102400",
+      "sample": "yH298-parent-pool2",
+      "condition": "parent",
+      "raw_hit_sites": 91892,
+      "normalized_hit_sites": 91892,
+      "hit_site_retention_fraction": 1.0,
+      "hit_site_loss_fraction": 0.0,
+      "raw_total_reads": 33901264,
+      "normalized_total_reads": 33901264,
+      "raw_percent_features_hit": "NA",
+      "normalized_percent_features_hit": "NA",
+      "normalized_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+      "status": "success",
+      "warning": "Normalized feature-level metrics require SummaryTable on normalized hits in a later step."
+    },
+    {
+      "target": "102400",
+      "target_tag": "T102400",
+      "sample": "yH299-parent-pool3",
+      "condition": "parent",
+      "raw_hit_sites": 44068,
+      "normalized_hit_sites": 44068,
+      "hit_site_retention_fraction": 1.0,
+      "hit_site_loss_fraction": 0.0,
+      "raw_total_reads": 25534450,
+      "normalized_total_reads": 25534450,
+      "raw_percent_features_hit": "NA",
+      "normalized_percent_features_hit": "NA",
+      "normalized_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+      "status": "success",
+      "warning": "Normalized feature-level metrics require SummaryTable on normalized hits in a later step."
+    },
+    {
+      "target": "102400",
+      "target_tag": "T102400",
+      "sample": "yH299-parent-pool4",
+      "condition": "parent",
+      "raw_hit_sites": 26507,
+      "normalized_hit_sites": 26507,
+      "hit_site_retention_fraction": 1.0,
+      "hit_site_loss_fraction": 0.0,
+      "raw_total_reads": 17785287,
+      "normalized_total_reads": 17785287,
+      "raw_percent_features_hit": "NA",
+      "normalized_percent_features_hit": "NA",
+      "normalized_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt",
+      "status": "success",
+      "warning": "Normalized feature-level metrics require SummaryTable on normalized hits in a later step."
+    }
+  ],
+  "warnings": [
+    "Feature-level retention requires SummaryTable on normalized hits and will be confirmed in a later step."
+  ],
+  "error_message": null
+}

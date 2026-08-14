@@ -13,6 +13,7 @@ from pathlib import Path
 
 from .mapfastq_runner import get_included_samples as _get_included_samples
 from .mapfastq_runner import load_project_for_mapping
+from .progress_tracker import ProgressTracker, make_job_id
 
 
 STATUS_FIELDS = [
@@ -246,7 +247,8 @@ def _write_status(path: Path, results: list[dict]) -> None:
 def run_create_hit_file_project(
     project_config: Path, samples: list[str] | None = None,
     threads: int | None = None, force: bool = False, dry_run: bool = False,
-    keep_going: bool = False,
+    keep_going: bool = False, job_id: str | None = None,
+    progress_file: Path | None = None,
 ) -> dict:
     config = load_project_for_create_hit_file(project_config)
     if threads is not None:
@@ -260,13 +262,19 @@ def run_create_hit_file_project(
     unknown = [name for name in selected_names if name not in by_name]
     if unknown:
         raise ValueError(f"Selected samples are not included or do not exist: {', '.join(unknown)}")
+    project_dir=_paths(config,selected_names[0])["project"] if selected_names else _resolve(config.get("output_project_dir"),Path(config["_repo_root"]))
+    job_id=job_id or make_job_id("create_hit_file");progress_file=Path(progress_file) if progress_file else project_dir/"manifests"/"jobs"/f"{job_id}.progress.json"
+    tracker=ProgressTracker.create(progress_file,job_id,str(config.get("project_id")),"create_hit_file",selected_names,input_files={n:str(find_sample_bam(by_name[n],config)) for n in selected_names});tracker.state["dry_run"]=dry_run;tracker.start("Hit-file creation started")
     results = []
-    for name in selected_names:
+    for index,name in enumerate(selected_names,1):
+        tracker.start_item(name,index,"cache check");paths=_paths(config,name);running={"sample":name,"status":"running","input_bam":str(find_sample_bam(by_name[name],config)),"hits_file":str(paths["hits"]),"output_dir":str(paths["output"]),"log_file":str(paths["log"]),"elapsed_seconds":0.0,"warnings":[],"error_message":"CreateHitFile command starting."};_write_status(paths["status"],results+[running]);tracker.phase("insertion calling","CreateHitFile running")
         result = run_create_hit_file_sample(by_name[name], config, threads, force, dry_run)
         results.append(result)
         _write_status(_paths(config, name)["status"], results)
+        message=result.get("error_message") or "; ".join(result.get("warnings") or []);tracker.finish_item(name,result["status"],result.get("detected_outputs"),message,result.get("error_message") or "")
         if result["status"] == "failed" and not keep_going:
             break
+    final_status="success" if not any(x["status"]=="failed" for x in results) else ("partial" if any(x["status"] in {"success","skipped"} for x in results) else "failed");tracker.finalize("dry_run_success" if dry_run else final_status,"Commands were validated but hit-file creation was not executed." if dry_run else "Hit-file creation complete")
     return {
         "project_id": config.get("project_id"), "species": config.get("species"),
         "threads": int(config["threads"]), "included_samples": len(included),
@@ -276,5 +284,5 @@ def run_create_hit_file_project(
         "success": sum(row["status"] == "success" for row in results),
         "failed": sum(row["status"] == "failed" for row in results),
         "skipped": sum(row["status"] == "skipped" for row in results),
-        "dry_run": dry_run,
+        "dry_run": dry_run,"job_id":job_id,"progress_file":str(progress_file),
     }

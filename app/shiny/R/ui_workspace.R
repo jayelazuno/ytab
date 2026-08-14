@@ -1,0 +1,25 @@
+workspace_ui <- function(detected_cpu) {
+  tags$div(class="ytab-workspace",
+    tags$header(class="ytab-workspace-header", tags$div(tags$b("YTAB"), tags$span("Yeast Transposon Analysis Browser")), project_badge(), actionButton("switch_project", "Switch project")),
+    job_progress_ui("global_job",compact=TRUE),
+    navbarPage(id="workspace_tabs", title=NULL, collapsible=TRUE, inverse=TRUE,
+      tabPanel("Overview",value="overview", panel_card("Project overview", uiOutput("overview_ui"), tags$div(class="ytab-actions", actionButton("overview_continue", "Continue preprocessing", class="btn-primary"), actionButton("refresh_project_status", "Refresh status")), tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("project_status_text")))),
+      tabPanel("Project & Data",value="project_data",navset_tab(
+        nav_panel("Project",panel_card("Project metadata",uiOutput("project_metadata_ui"))),
+        nav_panel("Samples",panel_card("Project sample sheet",uiOutput("sample_metadata_summary"),DT::DTOutput("sample_sheet_table"))),
+        nav_panel("Reference",panel_card("Reference resources",uiOutput("reference_readiness_ui_project"))),
+        nav_panel("Files",panel_card("Project files",uiOutput("project_files_ui"))))),
+      tabPanel("Pipeline",value="pipeline", panel_card("Profile orchestrator",
+        selectInput("pipeline_profile","Profile",c("core","classifier","fitness","all"),"all"), sliderInput("pipeline_threads","Threads",1,max(2,detected_cpu),2),
+        textInput("pipeline_target","Classifier target","recommended"), textInput("pipeline_analysis_id","Fitness analysis ID","treated_vs_parent_raw_cpm"),
+        actionButton("preview_pipeline","Preview plan"), actionButton("run_pipeline","Run selected profile",class="btn-primary"), actionButton("cancel_pipeline","Cancel current job"), tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("pipeline_job_text")))),
+      tabPanel("Preprocessing",value="preprocessing", preprocessing_ui()),
+      tabPanel("Quality Control",value="quality_control",quality_control_ui()),
+      tabPanel("Essentiality",value="essentiality", essentiality_ui()),
+      tabPanel("Fitness Screen",value="fitness",fitness_ui()),
+      tabPanel("Comparative Species",value="comparative_species",comparative_ui()),
+      tabPanel("Genome Browser",value="genome_browser", panel_card("Genome Browser", "Genome-browser integration will use existing WIG/bedGraph tracks in a later step.")),
+      tabPanel("Results & Exports",value="results_exports", panel_card("Reports and exports",uiOutput("results_readiness"),actionButton("build_project_report","Build project summary report"),actionButton("build_export_bundle","Create compact export bundle"),actionButton("refresh_exports","Refresh exports"),tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("exports_text")))),
+      tabPanel("Logs & Provenance",value="logs_provenance",panel_card("Logs and provenance",uiOutput("provenance_ui"),uiOutput("last_job_summary"),verbatimTextOutput("pipeline_job_text_logs"))),
+      tabPanel("Help",value="help",panel_card("Quick start",uiOutput("help_ui"),low_memory_note()))))
+}

@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+yH298-parent-pool2,10000,10000,8777,1223,87.77,0,0.0,8251,94.007,39.29,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-parent-pool2/yH298-parent-pool2.sam

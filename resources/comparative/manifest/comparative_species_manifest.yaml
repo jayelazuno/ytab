@@ -1,0 +1,29 @@
+glabrata:
+  label: Candida glabrata
+  enabled: true
+  ytab_species_key: glabrata
+  rnacross_aliases: [cg, cgla, C_glabrata, Candida glabrata]
+
+albicans:
+  label: Candida albicans
+  enabled: true
+  ytab_species_key: albicans
+  rnacross_aliases: [ca, calb, C_albicans, Candida albicans]
+
+cerevisiae:
+  label: Saccharomyces cerevisiae
+  enabled: true
+  ytab_species_key: cerevisiae
+  rnacross_aliases: [sc, scer, S_cerevisiae, Saccharomyces cerevisiae]
+
+lactis:
+  label: Kluyveromyces lactis
+  enabled: true
+  ytab_species_key: lactis
+  rnacross_aliases: [kl, klac, K_lactis, Kluyveromyces lactis]
+
+pombe:
+  label: Schizosaccharomyces pombe
+  enabled: false
+  placeholder: true
+  note: Placeholder only; no orthology mapping is currently migrated.

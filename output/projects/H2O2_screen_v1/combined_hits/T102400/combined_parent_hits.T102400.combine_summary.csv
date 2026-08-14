@@ -1,0 +1,5 @@
+file,rows_after_parse,unique_sites_after_parse,reads_after_parse,chrom_col,position_col,reads_col
+/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt,64018,63543,24416746,Chromosome,Hit position,Hit count
+/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt,91892,90967,33901264,Chromosome,Hit position,Hit count
+/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt,44068,43833,25534450,Chromosome,Hit position,Hit count
+/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt,26507,26393,17785287,Chromosome,Hit position,Hit count

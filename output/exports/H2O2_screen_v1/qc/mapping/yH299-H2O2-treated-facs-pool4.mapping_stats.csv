@@ -1,2 +1,0 @@
-sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
-yH299-H2O2-treated-facs-pool4,25648565,25648565,22762799,2885766,88.749,0,0.0,20766254,91.229,37.97,/old_Users/jayelazuno/workspace/ytab/output/projects/H2O2_screen_v1/mapfastq/yH299-H2O2-treated-facs-pool4/yH299-H2O2-treated-facs-pool4.sam

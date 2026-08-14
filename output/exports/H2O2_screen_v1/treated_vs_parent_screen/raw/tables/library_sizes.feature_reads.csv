@@ -1,0 +1,9 @@
+sample,condition,background,pool,total_feature_reads,features_with_reads
+yH298-parent-pool1,parent,H298,1,5503956,3428
+yH298-H2O2-treated-facs-pool1,treated,H298,1,4654293,2782
+yH298-parent-pool2,parent,H298,2,8119668,3877
+yH298-H2O2-treated-facs-pool2,treated,H298,2,4754213,2819
+yH299-parent-pool3,parent,H299,3,6388828,2898
+yH299-H2O2-treated-facs-pool3,treated,H299,3,5043889,3272
+yH299-parent-pool4,parent,H299,4,4223882,2326
+yH299-H2O2-treated-facs-pool4,treated,H299,4,5747369,2404

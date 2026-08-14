@@ -1,0 +1,33 @@
+{
+  "sample_name": "combined_parent_hits.T6400",
+  "output_hits": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T6400/combined_parent_hits.T6400.txt",
+  "n_input_files": 4,
+  "input_files": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/T6400/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt"
+  ],
+  "combined_unique_sites": 20787,
+  "combined_reads": 32374,
+  "output_summary_csv": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/combined_hits/T6400/combined_parent_hits.T6400.combine_summary.csv",
+  "chrom_col": "Chromosome",
+  "position_col": "Hit position",
+  "reads_col": "Hit count",
+  "preserved_columns": [
+    "Chromosome",
+    "Source",
+    "Up feature type",
+    "Up feature name",
+    "Up gene name",
+    "Up feature dist",
+    "Down feature type",
+    "Down feature name",
+    "Down gene name",
+    "Down feature dist",
+    "IntergenicType",
+    "Hit position",
+    "Hit count"
+  ],
+  "annotation_conflict_policy": "For non-key/non-count columns, unique non-empty values are collapsed with ';'."
+}

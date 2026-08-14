@@ -1,0 +1,9 @@
+sample,fastq_1,fastq_2,layout,condition,background,pool,treatment,species,hit_file,guessed_condition,guessed_background,guessed_pool,include,import_status,warnings
+yH298-H2O2-treated-facs-pool1,,,imported_hit_file,treated,yH298,1,H2O2,glabrata,output/projects/H2O2_screen_v1/create_hit_file/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1_hits.txt,treated,yH298,1,true,imported_success,
+yH298-H2O2-treated-facs-pool2,,,imported_hit_file,treated,yH298,2,H2O2,glabrata,output/projects/H2O2_screen_v1/create_hit_file/yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2_hits.txt,treated,yH298,2,true,imported_success,
+yH298-parent-pool1,,,imported_hit_file,parent,yH298,1,,glabrata,output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt,parent,yH298,1,true,imported_success,
+yH298-parent-pool2,,,imported_hit_file,parent,yH298,2,,glabrata,output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool2/yH298-parent-pool2_hits.txt,parent,yH298,2,true,imported_success,
+yH299-H2O2-treated-facs-pool3,,,imported_hit_file,treated,yH299,3,H2O2,glabrata,output/projects/H2O2_screen_v1/create_hit_file/yH299-H2O2-treated-facs-pool3/yH299-H2O2-treated-facs-pool3_hits.txt,treated,yH299,3,true,imported_success,
+yH299-H2O2-treated-facs-pool4,,,imported_hit_file,treated,yH299,4,H2O2,glabrata,output/projects/H2O2_screen_v1/create_hit_file/yH299-H2O2-treated-facs-pool4/yH299-H2O2-treated-facs-pool4_hits.txt,treated,yH299,4,true,imported_success,
+yH299-parent-pool3,,,imported_hit_file,parent,yH299,3,,glabrata,output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt,parent,yH299,3,true,imported_success,
+yH299-parent-pool4,,,imported_hit_file,parent,yH299,4,,glabrata,output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool4/yH299-parent-pool4_hits.txt,parent,yH299,4,true,imported_success,

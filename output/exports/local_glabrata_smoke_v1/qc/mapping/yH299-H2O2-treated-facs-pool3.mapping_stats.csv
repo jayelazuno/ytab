@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+yH299-H2O2-treated-facs-pool3,10000,10000,9409,591,94.09,0,0.0,8764,93.145,38.87,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH299-H2O2-treated-facs-pool3/yH299-H2O2-treated-facs-pool3.sam

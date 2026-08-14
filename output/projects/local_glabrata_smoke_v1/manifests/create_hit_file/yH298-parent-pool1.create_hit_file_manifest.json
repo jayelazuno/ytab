@@ -1,0 +1,48 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "sample": "yH298-parent-pool1",
+  "input_bam": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-parent-pool1/yH298-parent-pool1.sorted.bam",
+  "species": "glabrata",
+  "reference_files_used": {
+    "fasta": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "features": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1",
+  "hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt",
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/logs/create_hit_file/yH298-parent-pool1.log",
+  "status": "skipped",
+  "start_time": "2026-07-20T00:54:24.056044+00:00",
+  "end_time": "2026-07-20T00:54:24.086263+00:00",
+  "elapsed_seconds": 0.0,
+  "command_run": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/.venv/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-parent-pool1/yH298-parent-pool1.sorted.bam",
+    "--out-dir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1",
+    "--out-prefix",
+    "yH298-parent-pool1",
+    "--flat-output",
+    "--fasta",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "--features",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "2",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1.insertions.bedgraph",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1.insertions.wig",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_log.txt"
+  ],
+  "warnings": [
+    "Successful cached hit file found; CreateHitFile skipped."
+  ],
+  "error_message": null
+}

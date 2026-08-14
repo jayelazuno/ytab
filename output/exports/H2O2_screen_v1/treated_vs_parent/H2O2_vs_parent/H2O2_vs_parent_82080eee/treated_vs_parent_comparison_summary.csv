@@ -1,0 +1,5 @@
+comparison_id,pair_id,parent_sample,treated_sample,background,pool,result_rows,call_counts
+yH298_pool1_treated_vs_parent,yH298_pool1,yH298-parent-pool1,yH298-H2O2-treated-facs-pool1,yH298,1,5234,"{""depleted"": 213, ""enriched"": 89, ""none"": 4932}"
+yH298_pool2_treated_vs_parent,yH298_pool2,yH298-parent-pool2,yH298-H2O2-treated-facs-pool2,yH298,2,5234,"{""depleted"": 260, ""enriched"": 39, ""none"": 4935}"
+yH299_pool3_treated_vs_parent,yH299_pool3,yH299-parent-pool3,yH299-H2O2-treated-facs-pool3,yH299,3,5234,"{""depleted"": 3, ""enriched"": 7, ""none"": 5224}"
+yH299_pool4_treated_vs_parent,yH299_pool4,yH299-parent-pool4,yH299-H2O2-treated-facs-pool4,yH299,4,5234,"{""depleted"": 39, ""enriched"": 18, ""none"": 5177}"

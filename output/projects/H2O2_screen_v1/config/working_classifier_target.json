@@ -1,0 +1,11 @@
+{
+  "project_id": "H2O2_screen_v1",
+  "record_type": "working_classifier_target",
+  "final_reviewed_target": false,
+  "target": 102400.0,
+  "target_tag": "T102400",
+  "target_resolution_source": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/normalization_feature_recommendation.json",
+  "combined_feature_table": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary_combined/T102400/combined_feature_table.T102400.txt",
+  "recorded_at": "2026-08-05T17:01:19.943818+00:00",
+  "message": "Working target for downstream release analysis; not a saved final classifier target."
+}

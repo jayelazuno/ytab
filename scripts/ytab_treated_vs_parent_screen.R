@@ -579,29 +579,48 @@ ggsave(
   dpi = 300
 )
 
-p_ma_all <- contrast_results %>%
-  ggplot(aes(x = A_exp + 1, y = log2FC)) +
+combined_ma <- contrast_results %>%
+  group_by(feature_id) %>%
+  summarise(
+    A_combined = mean(A_exp, na.rm = TRUE),
+    M_combined = mean(log2FC, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  left_join(summary_results %>% select(feature_id, final_call), by = "feature_id") %>%
+  mutate(
+    combined_call = case_when(
+      final_call %in% c("consistently_depleted", "single_pool_depleted") ~ "depleted",
+      final_call %in% c("consistently_enriched", "single_pool_enriched") ~ "enriched",
+      final_call == "mixed" ~ "mixed",
+      TRUE ~ "none"
+    ),
+    combined_call = factor(combined_call, levels = c("depleted", "none", "enriched", "mixed"))
+  )
+
+p_ma_all <- combined_ma %>%
+  ggplot(aes(x = A_combined + 1, y = M_combined)) +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_point(aes(color = call), alpha = 0.35, size = 1.1) +
-  scale_color_manual(values = c(depleted = "blue", none = "grey70", enriched = "red")) +
+  geom_point(aes(color = combined_call), alpha = 0.45, size = 1.1) +
+  scale_color_manual(values = c(depleted = "blue", none = "grey70", enriched = "red", mixed = "black")) +
   scale_x_log10() +
-  facet_grid(background ~ pool) +
   theme_bw(base_size = 12) +
   theme(
-    axis.title = element_text(face = "bold"),
-    strip.text = element_text(face = "bold"),
+    axis.text = element_text(color = "black", face = "bold"),
+    axis.title = element_text(face = "bold", size = 14),
+    plot.title = element_text(face = "bold", size = 15),
+    plot.subtitle = element_text(face = "bold", size = 12),
     legend.title = element_text(face = "bold")
   ) +
   labs(
-    title = "Treated versus parent MA plots",
-    subtitle = paste0(PROJECT_ID, "; raw summary / CPM"),
-    x = "A = average CPM (treated + parent) / 2 + 1",
-    y = "M = log2FC treated / parent",
+    title = "Combined treated versus parent MA plot",
+    subtitle = paste0(PROJECT_ID, "; all selected pools combined; raw summary / CPM"),
+    x = "A = mean average CPM across treated-parent comparisons + 1",
+    y = "M = mean log2FC treated / parent",
     color = "Call"
   )
 
 ggsave(
-  file.path(plot_dir, "MA_treated_vs_parent_all_pools.png"),
+  file.path(plot_dir, "MA_treated_vs_parent_combined.png"),
   p_ma_all,
   width = 10,
   height = 7,

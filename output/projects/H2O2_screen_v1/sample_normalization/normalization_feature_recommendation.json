@@ -1,0 +1,15 @@
+{
+  "project_id": "H2O2_screen_v1",
+  "species": "glabrata",
+  "recommended_target": 102400.0,
+  "recommended_target_tag": "T102400",
+  "min_feature_retention": 0.95,
+  "evaluated_target_tags": [
+    "T102400"
+  ],
+  "reason": "Highest evaluated target satisfying the minimum feature-retention threshold across selected samples.",
+  "warnings": [
+    "The 10k smoke-subset recommendation is a workflow test, not a biological recommendation."
+  ],
+  "timestamp": "2026-08-05T16:56:29.726683+00:00"
+}

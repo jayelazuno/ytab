@@ -1,0 +1,40 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "sample": "yH298-H2O2-treated-facs-pool1",
+  "fastq_1": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-H2O2-treated-facs-pool1.fastq.gz",
+  "fastq_2": null,
+  "layout": "single",
+  "species": "glabrata",
+  "bowtie2_index_prefix": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic",
+  "threads": 2,
+  "output_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-H2O2-treated-facs-pool1",
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/logs/mapfastq/yH298-H2O2-treated-facs-pool1.log",
+  "status": "skipped",
+  "start_time": "2026-07-20T19:51:14.863383+00:00",
+  "end_time": "2026-07-20T19:51:14.901040+00:00",
+  "elapsed_seconds": 0.0,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/mapping/MapFastq.py",
+    "--out-dir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-H2O2-treated-facs-pool1",
+    "--bt2-index",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic",
+    "--threads",
+    "2",
+    "--sample-name",
+    "yH298-H2O2-treated-facs-pool1",
+    "--input-file-name",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab_small_fastq_subset_10k/yH298-H2O2-treated-facs-pool1.fastq.gz"
+  ],
+  "detected_outputs": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1.mapping_stats.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1.sorted.bam",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1.sorted.bam.bai",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1_log.txt"
+  ],
+  "warnings": [
+    "Successful cached outputs found; mapping skipped."
+  ],
+  "error_message": null
+}

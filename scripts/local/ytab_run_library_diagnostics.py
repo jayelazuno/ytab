@@ -25,6 +25,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threads", type=int, help="Reserved runner resource setting")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--job-id")
+    parser.add_argument("--progress-file", type=Path)
     return parser.parse_args()
 
 
@@ -36,7 +38,7 @@ def main() -> int:
         included = get_included_samples(config)
         summary = run_library_diagnostics_project(
             args.project_config, samples=selected, threads=args.threads,
-            force=args.force, dry_run=args.dry_run,
+            force=args.force, dry_run=args.dry_run,job_id=args.job_id,progress_file=args.progress_file,
         )
     except (FileNotFoundError, OSError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

@@ -1,0 +1,47 @@
+{
+  "project_id": "H2O2_screen_v1",
+  "sample": "yH299-H2O2-treated-facs-pool3",
+  "input_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-H2O2-treated-facs-pool3/yH299-H2O2-treated-facs-pool3_hits.txt",
+  "species": "glabrata",
+  "reference_files_used": {
+    "fasta": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "gff": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "gtf": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf",
+    "feature_table": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab",
+    "orthology_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  },
+  "output_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-H2O2-treated-facs-pool3",
+  "detected_feature_tables": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-H2O2-treated-facs-pool3/yH299-H2O2-treated-facs-pool3.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/logs/summary/yH299-H2O2-treated-facs-pool3.log",
+  "status": "skipped",
+  "start_time": "2026-08-05T16:45:54.664851+00:00",
+  "end_time": "2026-08-05T16:45:54.704707+00:00",
+  "elapsed_seconds": 0.0,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-H2O2-treated-facs-pool3",
+    "--hit-glob",
+    "yH299-H2O2-treated-facs-pool3_hits.txt",
+    "--output-dir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-H2O2-treated-facs-pool3",
+    "--feature-db",
+    "glabrata",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "--reference-fasta",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "--scer-orthologs",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  ],
+  "warnings": [
+    "Successful cached feature table found; SummaryTable skipped."
+  ],
+  "error_message": null
+}

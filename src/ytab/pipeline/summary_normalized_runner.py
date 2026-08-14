@@ -284,7 +284,8 @@ def run_summary_normalized_sample(
     manifest["end_time"] = _now()
     manifest["elapsed_seconds"] = round(time.monotonic() - started, 3)
     manifest["feature_tables"] = [str(path) for path in _feature_tables(paths["output"])]
-    _write_json(paths["manifest"], manifest)
+    if not dry_run:
+        _write_json(paths["manifest"], manifest)
     manifest["manifest_path"] = str(paths["manifest"])
     return manifest
 
@@ -494,7 +495,8 @@ def run_summary_normalized_project(
         for sample in selected:
             result = run_summary_normalized_sample(config, target_info, sample, threads, force, dry_run)
             results.append(result)
-            _write_status(_paths(config)["status"], results)
+            if not dry_run:
+                _write_status(_paths(config)["status"], results)
             if result["status"] == "failed" and not keep_going:
                 stop = True
                 break

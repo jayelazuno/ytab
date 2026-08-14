@@ -1,0 +1,41 @@
+{
+  "project_id": "H2O2_screen_v1",
+  "species": "glabrata",
+  "target": 102400.0,
+  "target_tag": "T102400",
+  "sample": "yH298-parent-pool2",
+  "condition": "parent",
+  "input_normalized_hits_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+  "output_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary_normalized/T102400/yH298-parent-pool2",
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/logs/summary_normalized/T102400/yH298-parent-pool2.log",
+  "status": "success",
+  "start_time": "2026-08-05T16:54:43.133077+00:00",
+  "end_time": "2026-08-05T16:55:20.781726+00:00",
+  "elapsed_seconds": 37.648,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool2",
+    "--hit-glob",
+    "yH298-parent-pool2_normalized_hits.txt",
+    "--output-dir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary_normalized/T102400/yH298-parent-pool2",
+    "--feature-db",
+    "glabrata",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "--reference-fasta",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "--scer-orthologs",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  ],
+  "feature_tables": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary_normalized/T102400/yH298-parent-pool2/yH298-parent-pool2_normalized.feature_table.RDF_1.csv"
+  ],
+  "warnings": [],
+  "error_message": null
+}

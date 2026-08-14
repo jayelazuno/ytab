@@ -10,11 +10,12 @@ def main():
     p.add_argument("--comparison-design",type=Path); p.add_argument("--comparisons",help="Comma-separated comparison or pair IDs")
     p.add_argument("--input-mode",choices=("auto","raw-summary"),default="auto"); p.add_argument("--annotate-classifier",action="store_true")
     p.add_argument("--classifier-target"); p.add_argument("--force",action="store_true"); p.add_argument("--dry-run",action="store_true")
-    p.add_argument("--keep-going",action="store_true"); p.add_argument("--extra-r-arg",action="append",default=[]); a=p.parse_args()
+    p.add_argument("--keep-going",action="store_true"); p.add_argument("--extra-r-arg",action="append",default=[])
+    p.add_argument("--job-id");p.add_argument("--progress-file",type=Path);a=p.parse_args()
     try:
         result=run_treated_vs_parent_project(a.project_config,a.analysis_id,a.comparison_design,
           a.comparisons.split(",") if a.comparisons else None,a.input_mode,a.classifier_target,a.annotate_classifier,
-          a.force,a.dry_run,a.keep_going,a.extra_r_arg)
+          a.force,a.dry_run,a.keep_going,a.extra_r_arg,a.job_id,a.progress_file)
     except Exception as exc: print(f"ERROR: {exc}",file=sys.stderr); return 1
     print(f"Project ID: {result['project_id']}"); print(f"Species: {result['species']}"); print(f"Analysis ID: {result['analysis_id']}")
     print(f"Comparison design: {result['comparison_design_file']}"); print(f"Requested input mode: {a.input_mode}"); print("Resolved input mode: raw-summary")
@@ -23,5 +24,5 @@ def main():
     print("CPM evidence: "+"; ".join(inspection["cpm_detection_evidence"])); print(f"Classifier annotation requested: {a.annotate_classifier}")
     print("Command: "+shlex.join(result["command_run"])); print(f"Status: {result['status']}"); print(f"Output directory: {result['output_dir']}")
     if result.get("stable_result_table"): print(f"Stable result table: {result['stable_result_table']}"); print(f"Result rows: {result.get('result_row_count','')}"); print("Scientific columns: "+", ".join(result.get("scientific_columns",[])))
-    return 0 if result["status"] in {"success","skipped","dry-run"} else 1
+    return 0 if result["status"] in {"success","cached","skipped","dry-run"} else 1
 if __name__=="__main__": raise SystemExit(main())

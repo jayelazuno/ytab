@@ -1,0 +1,3 @@
+target,target_tag,input_feature_count,output_prediction_count,prediction_label,prediction_count,prediction_fraction,probability_column,mean_probability,median_probability,minimum_probability,maximum_probability
+59.7,T059p7,5234,5234,No,47,0.008979747802827665,RF - G4,0.676062476117692,0.868,0.03,1.0
+59.7,T059p7,5234,5234,Yes,5187,0.9910202521971724,RF - G4,0.676062476117692,0.868,0.03,1.0

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "job_id": "sample_normalization_20260805T165149Z_7f853f",
+  "project_id": "H2O2_screen_v1",
+  "stage": "sample_normalization",
+  "profile": null,
+  "status": "success",
+  "command": [],
+  "selected_items": [
+    "normalization sweep"
+  ],
+  "total_items": 1,
+  "processed_items": 1,
+  "successful_items": 1,
+  "skipped_items": 0,
+  "failed_items": 0,
+  "remaining_items": 0,
+  "current_item": null,
+  "current_item_index": 1,
+  "current_item_started_at": null,
+  "current_phase": "complete",
+  "job_started_at": "2026-08-05T16:51:49.483082+00:00",
+  "updated_at": "2026-08-05T16:53:59.731113+00:00",
+  "job_elapsed_seconds": 130.2,
+  "current_item_elapsed_seconds": 0.0,
+  "progress_fraction": 1.0,
+  "progress_percent": 100.0,
+  "eta_seconds": 0.0,
+  "estimated_completion_time": "2026-08-05T16:53:59.731113+00:00",
+  "eta_method": "completed items in current run",
+  "eta_confidence": "low",
+  "message": "Parent MidLC normalization complete",
+  "cancel_requested": false,
+  "pid": 62394,
+  "items": [
+    {
+      "item": "normalization sweep",
+      "input_file": "",
+      "input_size_bytes": 0,
+      "status": "success",
+      "started_at": "2026-08-05T16:51:49.603692+00:00",
+      "finished_at": "2026-08-05T16:53:59.668972+00:00",
+      "elapsed_seconds": 130.065,
+      "output_files": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool1/yH298-parent-pool1_normalized_hits.txt",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH298-parent-pool2/yH298-parent-pool2_normalized_hits.txt",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH299-parent-pool3/yH299-parent-pool3_normalized_hits.txt",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/sample_normalization/T102400/yH299-parent-pool4/yH299-parent-pool4_normalized_hits.txt"
+      ],
+      "message": "Parent MidLC normalization complete",
+      "error_message": ""
+    }
+  ],
+  "dry_run": false,
+  "execution_mode": "run",
+  "parent_samples": [
+    "yH298-parent-pool1",
+    "yH298-parent-pool2",
+    "yH299-parent-pool3",
+    "yH299-parent-pool4"
+  ],
+  "parent_count": 4,
+  "target_mode": "auto",
+  "target_count": null
+}

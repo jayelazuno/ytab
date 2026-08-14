@@ -1,0 +1,129 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "profile": "all",
+  "target": "recommended",
+  "analysis_id": "H2O2_vs_parent",
+  "plan": [
+    {
+      "stage": "reference",
+      "branch": "setup",
+      "current_status": "success",
+      "dependencies": [
+        "project_config"
+      ],
+      "target": null,
+      "analysis_id": null
+    },
+    {
+      "stage": "mapfastq",
+      "branch": "core",
+      "current_status": "success",
+      "dependencies": [
+        "reference"
+      ],
+      "target": null,
+      "analysis_id": null
+    },
+    {
+      "stage": "create_hit_file",
+      "branch": "core",
+      "current_status": "success",
+      "dependencies": [
+        "mapfastq"
+      ],
+      "target": null,
+      "analysis_id": null
+    },
+    {
+      "stage": "summary",
+      "branch": "core",
+      "current_status": "success",
+      "dependencies": [
+        "create_hit_file"
+      ],
+      "target": null,
+      "analysis_id": null
+    },
+    {
+      "stage": "library_diagnostics",
+      "branch": "qc",
+      "current_status": "success",
+      "dependencies": [
+        "create_hit_file"
+      ],
+      "target": null,
+      "analysis_id": null
+    },
+    {
+      "stage": "sample_normalization",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "create_hit_file"
+      ],
+      "target": null,
+      "analysis_id": null
+    },
+    {
+      "stage": "summary_normalized",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "sample_normalization"
+      ],
+      "target": "recommended",
+      "analysis_id": null
+    },
+    {
+      "stage": "combined_hits",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "summary_normalized"
+      ],
+      "target": "recommended",
+      "analysis_id": null
+    },
+    {
+      "stage": "summary_combined",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "combined_hits"
+      ],
+      "target": "recommended",
+      "analysis_id": null
+    },
+    {
+      "stage": "classifier",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "summary_combined"
+      ],
+      "target": "recommended",
+      "analysis_id": null
+    },
+    {
+      "stage": "comparison_design",
+      "branch": "fitness",
+      "current_status": "success",
+      "dependencies": [
+        "summary"
+      ],
+      "target": null,
+      "analysis_id": null
+    },
+    {
+      "stage": "treated_vs_parent",
+      "branch": "fitness",
+      "current_status": "success",
+      "dependencies": [
+        "summary",
+        "comparison_design"
+      ],
+      "target": null,
+      "analysis_id": "H2O2_vs_parent"
+    }
+  ]
+}

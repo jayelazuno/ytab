@@ -1,0 +1,51 @@
+discover_fitness_results <- function(project) {
+  root<-file.path(project$project_root,"treated_vs_parent");if(!dir.exists(root))return(list());tables<-list.files(root,pattern="^treated_vs_parent_results\\.csv$",recursive=TRUE,full.names=TRUE);tables<-tables[!grepl("/runs/",tables,fixed=TRUE)];lapply(tables,function(table){analysis<-basename(dirname(table));manifest<-file.path(project$project_root,"manifests","treated_vs_parent",paste0(analysis,".treated_vs_parent_manifest.json"));meta<-if(file.exists(manifest))tryCatch(jsonlite::fromJSON(manifest,simplifyVector=FALSE),error=function(e)list())else list();selected<-meta$selected_comparisons%||%list();ids<-vapply(selected,function(x)as.character(x$comparison_id%||%""),"");data<-tryCatch(read.csv(table,stringsAsFactors=FALSE,check.names=FALSE),error=function(e)data.frame());list(analysis_id=analysis,run_id=as.character(meta$run_id%||%analysis),cache_signature=as.character(meta$cache_signature%||%""),selected_comparisons=ids,status=as.character(meta$status%||%"success"),legacy=!nzchar(as.character(meta$cache_signature%||%"")),completed=as.character(meta$end_time%||%meta$timestamp%||%format(file.info(table)$mtime)),classifier_annotation=isTRUE(meta$classifier_annotation)||isTRUE(meta$classifier_annotation_used),classifier_target=as.character(meta$classifier_target%||%""),design_sha256=as.character(meta$design_sha256%||%""),input_summary_hashes=meta$input_summary_hashes%||%list(),table=table,comparison_summary=file.path(dirname(table),"treated_vs_parent_comparison_summary.csv"),metadata=file.path(dirname(table),"treated_vs_parent_run_metadata.json"),manifest=manifest,feature_count=nrow(data),output_dir=dirname(table),command=meta$command_run%||%character(),warnings=meta$warnings%||%list())})
+}
+choose_latest_fitness_result <- function(results){if(!length(results))return(NULL);times<-vapply(results,function(x){value<-file.info(x$table)$mtime;if(length(value)&&!is.na(value))as.numeric(value)else 0},0);results[[which.max(times)]]}
+resolve_fitness_result_state <- function(selected_comparisons,current_cache_signature="",available_results=list(),design_available=TRUE){selected<-sort(as.character(selected_comparisons));matching<-Filter(function(x)!x$legacy&&nzchar(current_cache_signature)&&identical(x$cache_signature,current_cache_signature)&&setequal(x$selected_comparisons,selected),available_results);match<-choose_latest_fitness_result(matching);latest<-choose_latest_fitness_result(available_results);same_subset<-any(vapply(available_results,function(x)setequal(x$selected_comparisons,selected),FALSE));status<-if(!design_available)"no_design"else if(!length(selected))"no_selection"else if(!length(available_results))"no_result"else if(!is.null(match)&&match$status=="failed")"failed_result"else if(!is.null(match)&&match$status=="cached")"matching_cached_result"else if(!is.null(match))"matching_completed_result"else if(!is.null(latest)&&latest$legacy)"legacy_result"else if(!same_subset)"incompatible_result"else"historical_result_only";list(status=status,selection_count=length(selected),matching_result=match,latest_historical_result=latest)}
+fitness_current_cache_signature <- function(results,selected,project,analysis_id,classifier_annotation=FALSE,classifier_target="") {
+  design<-fitness_design_path(project);if(!file.exists(design)||!requireNamespace("digest",quietly=TRUE))return("");sha<-function(path)digest::digest(file=path,algo="sha256",serialize=FALSE);design_hash<-sha(design);hits<-Filter(function(x){if(x$legacy||!identical(x$analysis_id,analysis_id)||!setequal(x$selected_comparisons,selected)||!identical(x$design_sha256,design_hash)||!identical(x$classifier_annotation,isTRUE(classifier_annotation)))return(FALSE);if(classifier_annotation&&!identical(x$classifier_target,classifier_target))return(FALSE);hashes<-x$input_summary_hashes;if(!length(hashes))return(FALSE);all(vapply(names(hashes),function(path)file.exists(path)&&identical(sha(path),as.character(hashes[[path]])),FALSE))},results);if(length(hits))hits[[1]]$cache_signature else""
+}
+fitness_result_data <- function(result){if(is.null(result)||!file.exists(result$table))return(data.frame());tryCatch(read.csv(result$table,stringsAsFactors=FALSE,check.names=FALSE),error=function(e)data.frame())}
+normalize_fitness_result_columns <- function(result) {
+  if(!is.data.frame(result))return(list(data=data.frame(),available=character(),missing_optional=character(),warnings="Fitness result is not a data frame."))
+  aliases<-list(feature_id=c("feature_id","gene_id","standard_name","gene","id"),gene=c("standard_name","gene","common_name"),fitness_call=c("final_call","fitness_call","call","status"),mean_log2fc=c("mean_log2FC","mean_log2_fold_change","mean_log2fc"),min_z=c("min_z"),max_z=c("max_z","max_abs_z","mean_z"),comparisons_depleted=c("n_depleted_pairs","comparisons_depleted"),comparisons_enriched=c("n_enriched_pairs","comparisons_enriched"),classifier_label=c("classifier_label","classifier_prediction","classifier_call"))
+  out<-result
+  for(target in names(aliases)){source<-intersect(aliases[[target]],names(result));if(length(source))out[[target]]<-result[[source[[1]]]]}
+  available<-intersect(names(aliases),names(out));missing<-setdiff(names(aliases),available);warnings<-if(!length(available))"Fitness result does not contain recognized display columns."else character()
+  list(data=out,available=available,missing_optional=missing,warnings=warnings)
+}
+fitness_call_column <- function(data){hit<-intersect(c("final_call","fitness_call","call","status"),names(data));if(length(hit))hit[[1]]else""}
+fitness_call_counts <- function(data){column<-fitness_call_column(data);known<-c("none","single_pool_depleted","single_pool_enriched","mixed","consistently_depleted","consistently_enriched");values<-if(nzchar(column))as.character(data[[column]])else character();setNames(vapply(known,function(x)sum(values==x,na.rm=TRUE),0L),known)}
+filter_fitness_results <- function(data,call="All",search=""){if(!nrow(data))return(data);keep<-rep(TRUE,nrow(data));column<-fitness_call_column(data);if(call!="All"&&nzchar(column))keep<-keep&data[[column]]==call;if(nzchar(trimws(search))){fields<-intersect(c("feature_id","standard_name","common_name","gene","gene_id"),names(data));if(length(fields))keep<-keep&Reduce(`|`,lapply(data[fields],function(x)grepl(search,as.character(x),ignore.case=TRUE)))};data[keep,,drop=FALSE]}
+fitness_result_table_data <- function(data){normalized<-normalize_fitness_result_columns(data);wanted<-c("feature_id","gene","fitness_call","mean_log2fc","min_z","max_z","comparisons_depleted","comparisons_enriched","classifier_label");visible<-intersect(wanted,names(normalized$data));if(!length(visible))return(data.frame());x<-normalized$data[,visible,drop=FALSE];labels<-c(feature_id="Feature ID",gene="Gene",fitness_call="Fitness call",mean_log2fc="Mean log2 fold change",min_z="Minimum z-score",max_z="Maximum z-score",comparisons_depleted="Comparisons depleted",comparisons_enriched="Comparisons enriched",classifier_label="Classifier label");names(x)<-unname(labels[names(x)]);x}
+fitness_smoke_project <- function(project) grepl("smoke|test",project$project_id,ignore.case=TRUE)||((project$project_type%||%"")%in%c("test","temporary","demo"))
+fitness_result_display_name <- function(result) {
+  if (is.null(result)) return("Fitness result")
+  if (isTRUE(result$classifier_annotation))
+    "Classifier-annotated fitness result" else "Fitness result"
+}
+fitness_job_result_state <- function(status,cache_reused=FALSE) {
+  if(identical(status,"dry_run_success"))return("preview_complete")
+  if(identical(status,"failed"))return("failed_result")
+  if(cache_reused)return("matching_cached_result")
+  if(identical(status,"success"))return("matching_completed_result")
+  status%||%"no_result"
+}
+fitness_job_status_message <- function(status) switch(status,queued="Fitness analysis queued",starting="Fitness analysis queued",running="Fitness analysis running",dry_run_success="Preview complete",preview_success="Preview complete",cached="Cached result reused",cached_success="Cached result reused",success="Fitness analysis complete",failed="Fitness analysis failed",cancelled="Fitness analysis cancelled",stale="Fitness analysis process ended unexpectedly","Fitness analysis status unavailable")
+validate_fitness_success <- function(status,result_path) {
+  if(!status%in%c("success","cached","cached_success"))return(list(valid=FALSE,message=fitness_job_status_message(status)))
+  if(!nzchar(result_path%||%"")||!file.exists(result_path))return(list(valid=FALSE,message=paste("Expected fitness result is missing:",result_path%||%"treated_vs_parent_results.csv")))
+  data<-tryCatch(read.csv(result_path,stringsAsFactors=FALSE,check.names=FALSE),error=function(e)e);if(inherits(data,"error"))return(list(valid=FALSE,message=paste("Fitness result is unreadable:",conditionMessage(data))))
+  normalized<-normalize_fitness_result_columns(data)
+  if(!"feature_id"%in%normalized$available)return(list(valid=FALSE,message="Fitness result is missing a feature-identifying column."))
+  if(!"fitness_call"%in%normalized$available)return(list(valid=FALSE,message="Fitness result is missing a fitness-call/status column."))
+  list(valid=TRUE,message=if(status%in%c("cached","cached_success"))"Cached result reused"else"Fitness analysis complete",feature_count=nrow(data),warnings=normalized$warnings)
+}
+fitness_download_table <- function(data,selected_calls=NULL,requested_columns=NULL) {
+  if(!is.data.frame(data))data<-data.frame()
+  out<-data;call_column<-fitness_call_column(out);calls<-unname(as.character(selected_calls%||%character()));calls<-calls[!is.na(calls)&nzchar(calls)&calls!="All"]
+  if(length(calls)&&nzchar(call_column))out<-out[!is.na(out[[call_column]])&out[[call_column]]%in%calls,,drop=FALSE]
+  if(!is.null(requested_columns)){visible<-intersect(as.character(requested_columns),names(out));out<-out[,visible,drop=FALSE]}
+  out
+}

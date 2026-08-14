@@ -1,0 +1,115 @@
+{
+  "project_id": "H2O2_screen_v1",
+  "species": "glabrata",
+  "analysis_id": "H2O2_vs_parent",
+  "input_mode": "raw-summary",
+  "comparison_design": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/config/comparison_design.csv",
+  "comparison_design_sha256": "a31f6add192c83dd77aa64cdf6eb8d9eaef3bc93a0a6e7aaa635d1978ef54637",
+  "included_comparisons": [
+    {
+      "comparison_id": "yH298_pool1_treated_vs_parent",
+      "pair_id": "yH298_pool1",
+      "parent_sample": "yH298-parent-pool1",
+      "treated_sample": "yH298-H2O2-treated-facs-pool1",
+      "background": "yH298",
+      "pool": "1",
+      "parent_condition": "parent",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": ""
+    },
+    {
+      "comparison_id": "yH298_pool2_treated_vs_parent",
+      "pair_id": "yH298_pool2",
+      "parent_sample": "yH298-parent-pool2",
+      "treated_sample": "yH298-H2O2-treated-facs-pool2",
+      "background": "yH298",
+      "pool": "2",
+      "parent_condition": "parent",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": ""
+    },
+    {
+      "comparison_id": "yH299_pool3_treated_vs_parent",
+      "pair_id": "yH299_pool3",
+      "parent_sample": "yH299-parent-pool3",
+      "treated_sample": "yH299-H2O2-treated-facs-pool3",
+      "background": "yH299",
+      "pool": "3",
+      "parent_condition": "parent",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": ""
+    },
+    {
+      "comparison_id": "yH299_pool4_treated_vs_parent",
+      "pair_id": "yH299_pool4",
+      "parent_sample": "yH299-parent-pool4",
+      "treated_sample": "yH299-H2O2-treated-facs-pool4",
+      "background": "yH299",
+      "pool": "4",
+      "parent_condition": "parent",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": ""
+    }
+  ],
+  "parent_samples": [
+    "yH298-parent-pool1",
+    "yH298-parent-pool2",
+    "yH299-parent-pool3",
+    "yH299-parent-pool4"
+  ],
+  "treated_samples": [
+    "yH298-H2O2-treated-facs-pool1",
+    "yH298-H2O2-treated-facs-pool2",
+    "yH299-H2O2-treated-facs-pool3",
+    "yH299-H2O2-treated-facs-pool4"
+  ],
+  "raw_summary_input_files": {
+    "yH298-H2O2-treated-facs-pool1": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1.feature_table.RDF_1.csv",
+    "yH298-H2O2-treated-facs-pool2": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2.feature_table.RDF_1.csv",
+    "yH298-parent-pool1": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-parent-pool1/yH298-parent-pool1.feature_table.RDF_1.csv",
+    "yH298-parent-pool2": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-parent-pool2/yH298-parent-pool2.feature_table.RDF_1.csv",
+    "yH299-H2O2-treated-facs-pool3": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-H2O2-treated-facs-pool3/yH299-H2O2-treated-facs-pool3.feature_table.RDF_1.csv",
+    "yH299-H2O2-treated-facs-pool4": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-H2O2-treated-facs-pool4/yH299-H2O2-treated-facs-pool4.feature_table.RDF_1.csv",
+    "yH299-parent-pool3": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-parent-pool3/yH299-parent-pool3.feature_table.RDF_1.csv",
+    "yH299-parent-pool4": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-parent-pool4/yH299-parent-pool4.feature_table.RDF_1.csv"
+  },
+  "input_file_sha256": {
+    "yH298-H2O2-treated-facs-pool1": "0100edf074bf4c1ac8da470abdd2cb596a7293bf2e761f3d0f525e2d7f108b1a",
+    "yH298-H2O2-treated-facs-pool2": "867d5ac6a355238369c052340743d613aa3db9337c679e3a46d23d61bf5bac17",
+    "yH298-parent-pool1": "a715ef0cf7541142779f4305fc158ba2daf804fe6f9069982592a6664e042c74",
+    "yH298-parent-pool2": "56b8d927ccba0fc2564059706137224207cc847320470cff55be357dcd05468f",
+    "yH299-H2O2-treated-facs-pool3": "12909c44db6ed74572cea646eaa72d593e0563eaaf21665de918ed83b558704b",
+    "yH299-H2O2-treated-facs-pool4": "31ee2753619d8aad33cbf8cccd1509fec9b67824245168add883f93fe4b1c744",
+    "yH299-parent-pool3": "036a299df732384737fc3218500783f2ab39d23161ae384b97fef29f9ea8ccd3",
+    "yH299-parent-pool4": "27a695a377a3fa42a249b87f6da15530d7c9e5f4fd9c5c8b0aefe62713ee0deb"
+  },
+  "R_script": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/scripts/ytab_treated_vs_parent_screen.R",
+  "R_script_sha256": "ad139361fd5c5a7510fd46c83ce0aa5357ae9b4233a5faa87b967c8820f0b1aa",
+  "R_version": "R version 4.6.1 (2026-06-24)",
+  "relevant_R_package_versions": {
+    "tidyverse": "2.0.0",
+    "slider": "0.3.3",
+    "minpack_lm": "1.2.4",
+    "ggrepel": "0.9.8"
+  },
+  "cpm_normalization_detected": true,
+  "cpm_detection_evidence": [
+    "reads / total_feature_reads * 1e6"
+  ],
+  "normalization_method": "counts per million (CPM)",
+  "analysis_method": "background-specific parent-parent local noise model and z-score calls",
+  "pseudocount": "0.5",
+  "significance_thresholds": {
+    "z_quantile": "0.99"
+  },
+  "fold_change_thresholds": {},
+  "multiple_testing_method": null,
+  "classifier_annotation_used": false,
+  "classifier_prediction_table": null,
+  "warnings": [],
+  "timestamp": "2026-08-05T16:59:38.215604+00:00"
+}

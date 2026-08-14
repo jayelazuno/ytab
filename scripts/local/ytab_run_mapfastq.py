@@ -26,6 +26,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--keep-going", action="store_true")
+    parser.add_argument("--job-id")
+    parser.add_argument("--progress-file", type=Path)
     return parser.parse_args()
 
 
@@ -45,6 +47,7 @@ def main() -> int:
         summary = run_mapfastq_project(
             args.project_config, samples=selected, threads=args.threads,
             force=args.force, dry_run=args.dry_run, keep_going=args.keep_going,
+            job_id=args.job_id, progress_file=args.progress_file,
         )
     except (FileNotFoundError, OSError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

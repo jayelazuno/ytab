@@ -1,0 +1,10 @@
+#!/usr/bin/env Rscript
+args<-commandArgs(trailingOnly=TRUE);stopifnot(length(args)==1L)
+all<-commandArgs(trailingOnly=FALSE);self<-normalizePath(sub("^--file=","",grep("^--file=",all,value=TRUE)[[1L]]),winslash="/");root<-normalizePath(file.path(dirname(self),"../.."),winslash="/")
+library(shiny);`%||%`<-function(left,right)if(is.null(left)||!length(left))right else left
+source(file.path(root,"app/shiny/R/process_helpers.R"));source(file.path(root,"app/shiny/R/job_manager.R"));source(file.path(root,"app/shiny/R/job_progress.R"))
+stopifnot(reconcile_job_status("running","success",TRUE)=="success",reconcile_job_status("running","failed",FALSE)=="failed",reconcile_job_status("running","",FALSE,FALSE,FALSE,TRUE)=="stale",reconcile_job_status("running","",FALSE,TRUE)=="success")
+stopifnot(!essentiality_job_matches(list(stage="treated_vs_parent"),"classifier"),!essentiality_job_matches(list(stage="classifier"),"treated_vs_parent"))
+tmp<-file.path(tempdir(),"ytab-reconciliation");config<-file.path(tmp,"project","config","project.yaml");dir.create(dirname(config),recursive=TRUE,showWarnings=FALSE);writeLines("project_id: reconcile",config);progress<-file.path(tmp,"project","manifests","jobs","success.progress.json");atomic_json_write(progress,list(status="success",updated_at=format(Sys.time(),tz="UTC",usetz=TRUE)));current<-file.path(tmp,"project","manifests","orchestrator","current_job.json");atomic_json_write(current,list(job_id="old",stage="summary_combined",status="running",active=TRUE,pid=99999999L,project_config=config,progress_file=progress,selected_items=list(),display_command=""))
+shiny::testServer(function(input,output,session){manager<-new_job_manager();session$userData$manager<-manager},{manager<-session$userData$manager;stopifnot(manager$recover_project(config),!manager$job_is_running(),manager$current_job()$status=="success");history<-read_json_safely(current);stopifnot(file.exists(current),identical(history$active,FALSE),history$status=="success")})
+cat("PASS\n")

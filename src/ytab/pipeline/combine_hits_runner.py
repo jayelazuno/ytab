@@ -73,9 +73,13 @@ def load_project_for_combine_hits(project_config: Path) -> dict:
 def get_parent_samples(config: dict, samples: list[str] | None = None) -> list[dict]:
     selected = get_normalization_samples(config, "parents", samples)
     if samples is not None:
-        non_parents = [str(row["sample"]) for row in selected if str(row.get("condition") or row.get("guessed_condition") or "").lower() != "parent" and "parent" not in str(row["sample"]).lower()]
-        if non_parents:
-            raise ValueError("Explicit combine samples must be parent samples: " + ", ".join(non_parents))
+        treated = [
+            str(row["sample"]) for row in selected
+            if str(row.get("condition") or row.get("guessed_condition") or row.get("treatment") or "").strip().lower()
+            in {"treated", "treatment"}
+        ]
+        if treated:
+            raise ValueError("Explicit combine samples cannot include treated libraries: " + ", ".join(treated))
     return selected
 
 
@@ -263,6 +267,7 @@ def run_combine_hits_project(
     manifest["detected_outputs"] = sorted(str(path) for path in paths["output"].glob("*") if path.is_file()) if paths["output"].is_dir() else []
     if paths["combined"].is_file():
         manifest.update(collect_combined_hits_metadata(paths["combined"]))
-    _write_json(paths["manifest"], manifest)
-    _write_status(_paths(config)["status"], manifest)
+    if not dry_run:
+        _write_json(paths["manifest"], manifest)
+        _write_status(_paths(config)["status"], manifest)
     return {**manifest, "manifest_path": str(paths["manifest"]), "metadata_path": str(paths["metadata"]), "dry_run": dry_run}

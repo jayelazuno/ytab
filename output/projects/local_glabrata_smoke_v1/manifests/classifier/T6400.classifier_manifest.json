@@ -1,0 +1,109 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "species": "glabrata",
+  "target": 6400.0,
+  "target_tag": "T6400",
+  "target_resolution_source": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/sample_normalization/normalization_feature_recommendation.json",
+  "input_combined_feature_table": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/summary_combined/T6400/combined_feature_table.T6400.txt",
+  "input_sha256": "86bc47bc8ac85309d2ddbebdc6528c425c6e406047459ffe342b44a7fd3b94fe",
+  "input_feature_count": 5234,
+  "classifier_script": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/essentiality/Classifier.py",
+  "classifier_script_sha256": "758627daa44e4d15ec930585c0ee05e0c6dae6ec52b1a0e70016454914c88764",
+  "classifier_runner": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/pipeline/classifier_runner.py",
+  "classifier_runner_sha256": "aa1ddcf501fda4c63f7e344c7a8d628e6d01f629e88456ecd14717e062a18d1d",
+  "classifier_resources": {
+    "orthology_file": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt",
+        "sha256": "2a869b00f071b3d9659cfd64c5ba0ec5cee0b2a8b1581218bb970ad71b338840"
+      }
+    ],
+    "kornmann_wig_files": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/Kornmann/07 - WildType1.wig",
+        "sha256": "78decdbafd3bd01a9e94a74cfc0ec76d1a49d45c40abcbde576ac2a1034305d3"
+      },
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/Kornmann/08 - WildType2.wig",
+        "sha256": "c752dcefe635fc6a7ed358f65821990cdbb4e99053d310f2ed768a6c79f34920"
+      }
+    ],
+    "cerevisiae_feature_table": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/cerevisiae/SGD_features.tab",
+        "sha256": "ee5017b6e5a93c01ee245eae7c590e6fe194a3791e763b3651be977572df91e3"
+      }
+    ],
+    "cerevisiae_viable_annotations": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/cerevisiae/cerevisiae_viable_annotations.txt",
+        "sha256": "dd7fc5147902419e757463d2d61da89041788ae66a8b1f187812f7ea6ddac9bc"
+      }
+    ],
+    "cerevisiae_inviable_annotations": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/cerevisiae/cerevisiae_inviable_annotations.txt",
+        "sha256": "b03112f718254ee49059645b95ca6e86c2dbc6a913791088d203f2889869b8ad"
+      }
+    ],
+    "cerevisiae_paralogs": [
+      {
+        "path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/cerevisiae/hasParalogs_sc.txt",
+        "sha256": "c134b0a48935b72ee8b4bc29cf8efc0d336c89b73ed6092929875326dc621010"
+      }
+    ]
+  },
+  "output_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400",
+  "stable_prediction_table": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/essentiality_predictions.T6400.csv",
+  "stable_prediction_sha256": "4ae47c5807e6152eaf319f8f52cc0239531be0ff345d38dc78b67fa088455489",
+  "detected_outputs": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/classification - Scer training - filtered (table mode)/tables.xlsx",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/classification - Scer training - filtered (table mode)/train_AUC.RF-G4.png",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/combined_feature_table.T6400.txt.predictions.csv",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/combined_glabrata_RF-G4.tsv"
+  ],
+  "classifier_summary_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/classifier_summary.T6400.csv",
+  "run_metadata_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/classifier_run_metadata.T6400.json",
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/logs/classifier/T6400.log",
+  "seed": 0,
+  "scientific_parameters": {
+    "mode": "scer-train-gla-classify",
+    "target_fpr": 0.1,
+    "combine": true,
+    "deterministic_ordering": true
+  },
+  "python_version": "3.14.6",
+  "numpy_version": "2.5.1",
+  "pandas_version": "3.0.3",
+  "scikit_learn_version": "1.9.0",
+  "status": "success",
+  "start_time": "2026-07-28T19:25:59.377540+00:00",
+  "end_time": "2026-07-28T19:26:38.945628+00:00",
+  "elapsed_seconds": 42.536,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/src/ytab/essentiality/Classifier.py",
+    "--mode",
+    "scer-train-gla-classify",
+    "--gla-feature-table",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/summary_combined/T6400/combined_feature_table.T6400.txt",
+    "--out-dir",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400",
+    "--threads",
+    "2",
+    "--target-fpr",
+    "0.10",
+    "--orthology-file",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt",
+    "--combine",
+    "--overwrite"
+  ],
+  "warnings": [],
+  "error_message": null,
+  "output_prediction_count": 5234,
+  "class_counts": {
+    "Yes": 5187,
+    "No": 47
+  },
+  "excluded_feature_count": 0
+}

@@ -1,3 +1,0 @@
-yH-parent-combined-T060
-Pearson: PearsonRResult(statistic=np.float64(0.827799782519369), pvalue=np.float64(0.0))
-Spearman: SignificanceResult(statistic=np.float64(0.9718832243929569), pvalue=np.float64(0.0))

@@ -1,0 +1,30 @@
+{
+  "import_timestamp": "2026-08-04T22:56:38Z",
+  "rnacross_source": "RNAcross reference clone",
+  "out_dir": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/comparative",
+  "resources": [
+    {
+      "source_file": "features/gene_lookup_table/gene_lookup.csv",
+      "output_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/comparative/orthology/gene_lookup.csv",
+      "row_count": 22022,
+      "column_names": ["gene_id", "species", "expression_id", "id_type", "source_info", "gene_name", "hog_id", "og_id"],
+      "warnings": []
+    },
+    {
+      "source_file": "features/orthology/orthogroups.rds",
+      "output_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/comparative/orthology/orthogroups_long.csv",
+      "row_count": 21449,
+      "column_names": ["orthogroup_id", "species", "gene_id", "gene_name", "source_column"],
+      "warnings": []
+    },
+    {
+      "source_file": "features/ID_maps/qng_gwk_cagl_threeway_map_complete.csv",
+      "output_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/resources/comparative/orthology/qng_gwk_cagl_threeway_map_complete.csv",
+      "row_count": 5220,
+      "column_names": ["gwk60_id", "qng_id", "cagl_id", "gene_name"],
+      "warnings": []
+    }
+  ],
+  "warnings": [],
+  "annotations_inspected": ["features/Annotations/annotations_rds/ca_annotations.rds", "features/Annotations/annotations_rds/cg_annotations.rds", "features/Annotations/annotations_rds/kl_annotations.rds", "features/Annotations/annotations_rds/sc_annotations.rds", "features/Annotations/gff3/C_albicans_SC5314_version_A21-s02-m09-r10_features.gff", "features/Annotations/gff3/C_glabrata_CBS138_current_chromosomal_feature.tab", "features/Annotations/gff3/NRRL_Y1140_patched_fixed.gff", "features/Annotations/gff3/Saccharomyces_cerevisiae.R64-1-1.60.gff3"]
+}

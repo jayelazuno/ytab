@@ -1,0 +1,22 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "profile": "all",
+  "current_stage": null,
+  "command": [
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/.venv/bin/python",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/scripts/local/ytab_run_treated_vs_parent.py",
+    "--project-config",
+    "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/config/project.yaml",
+    "--analysis-id",
+    "H2O2_vs_parent",
+    "--input-mode",
+    "raw-summary",
+    "--keep-going"
+  ],
+  "pid": 56396,
+  "status": "success",
+  "start_time": "2026-07-20T00:58:15.127670+00:00",
+  "last_update": "2026-07-20T00:58:15.676195+00:00",
+  "cancel_requested": false,
+  "message": "Pipeline run completed."
+}

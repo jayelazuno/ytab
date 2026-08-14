@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "job_id": "summary_combined_20260805T165747Z_8f28a6",
+  "project_id": "H2O2_screen_v1",
+  "stage": "summary_combined",
+  "profile": null,
+  "status": "success",
+  "command": [],
+  "selected_items": [
+    "T102400"
+  ],
+  "total_items": 1,
+  "processed_items": 1,
+  "successful_items": 1,
+  "skipped_items": 0,
+  "failed_items": 0,
+  "remaining_items": 0,
+  "current_item": null,
+  "current_item_index": 1,
+  "current_item_started_at": null,
+  "current_phase": "complete",
+  "job_started_at": "2026-08-05T16:57:47.675191+00:00",
+  "updated_at": "2026-08-05T16:58:27.084088+00:00",
+  "job_elapsed_seconds": 39.4,
+  "current_item_elapsed_seconds": 0.0,
+  "progress_fraction": 1.0,
+  "progress_percent": 100.0,
+  "eta_seconds": 0.0,
+  "estimated_completion_time": "2026-08-05T16:58:27.084088+00:00",
+  "eta_method": "completed items in current run",
+  "eta_confidence": "low",
+  "message": "Combined SummaryTable complete",
+  "cancel_requested": false,
+  "pid": 62467,
+  "items": [
+    {
+      "item": "T102400",
+      "input_file": "",
+      "input_size_bytes": 0,
+      "status": "success",
+      "started_at": "2026-08-05T16:57:47.791761+00:00",
+      "finished_at": "2026-08-05T16:58:26.990405+00:00",
+      "elapsed_seconds": 39.199,
+      "output_files": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary_combined/T102400/combined_feature_table.T102400.txt"
+      ],
+      "message": "Combined parent feature table complete",
+      "error_message": ""
+    }
+  ],
+  "dry_run": false,
+  "execution_mode": "run",
+  "target": 102400.0,
+  "target_tag": "T102400"
+}

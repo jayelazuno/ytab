@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "job_id": "classifier_20260728T183924Z_ec361c",
+  "project_id": "local_glabrata_smoke_v1",
+  "stage": "classifier",
+  "profile": null,
+  "status": "success",
+  "command": [],
+  "selected_items": [
+    "T6400"
+  ],
+  "total_items": 1,
+  "processed_items": 1,
+  "successful_items": 0,
+  "skipped_items": 1,
+  "failed_items": 0,
+  "remaining_items": 0,
+  "current_item": null,
+  "current_item_index": 1,
+  "current_item_started_at": null,
+  "current_phase": "complete",
+  "job_started_at": "2026-07-28T18:39:24.768330+00:00",
+  "updated_at": "2026-07-28T18:39:30.443459+00:00",
+  "job_elapsed_seconds": 5.7,
+  "current_item_elapsed_seconds": 0.0,
+  "progress_fraction": 1.0,
+  "progress_percent": 100.0,
+  "eta_seconds": null,
+  "estimated_completion_time": null,
+  "eta_method": "completed items in current run",
+  "eta_confidence": "unavailable",
+  "message": "Essentiality Classifier complete",
+  "cancel_requested": false,
+  "pid": 8040,
+  "items": [
+    {
+      "item": "T6400",
+      "input_file": "",
+      "input_size_bytes": 0,
+      "status": "skipped",
+      "started_at": "2026-07-28T18:39:25.076211+00:00",
+      "finished_at": "2026-07-28T18:39:30.368293+00:00",
+      "elapsed_seconds": 5.292,
+      "output_files": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/classifier/T6400/essentiality_predictions.T6400.csv"
+      ],
+      "message": "Cached predictions reused.",
+      "error_message": ""
+    }
+  ],
+  "dry_run": false,
+  "execution_mode": "run",
+  "target": 6400.0,
+  "target_tag": "T6400",
+  "seed": 0
+}

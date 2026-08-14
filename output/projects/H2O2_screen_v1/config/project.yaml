@@ -1,0 +1,164 @@
+project_id: H2O2_screen_v1
+display_name: H2O2_screen_v1
+project_type: release
+show_in_launcher: true
+repo_root: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab
+start_stage: create_hit_file
+entry_mode: import_existing_hit_files
+fastq_dir: ''
+hit_file_import_dir: output/projects/H2O2_screen_v1/create_hit_file
+output_project_dir: output/projects/H2O2_screen_v1
+output_export_dir: output/exports/H2O2_screen_v1
+species: glabrata
+threads: 8
+reference:
+  species: glabrata
+  species_dir: resources/species/glabrata
+  reference_dir: resources/species/glabrata/reference_genome
+  fasta: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna
+  feature_table: resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab
+  gff: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff
+  gtf: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf
+  gffutils_db: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/glabrata/reference_genome/centromeres.NCBI.bed
+  trna_bed: resources/species/glabrata/reference_genome/tRNAs.bed
+  orthology_file: resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+  warnings:
+  - Multiple feature table candidates found; selected C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab.
+  - Multiple centromere BED candidates found; selected centromeres.NCBI.bed.
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: yH298-H2O2-treated-facs-pool1
+  fastq_1: ''
+  fastq_2: ''
+  layout: imported_hit_file
+  condition: treated
+  background: yH298
+  pool: '1'
+  treatment: H2O2
+  species: glabrata
+  hit_file: output/projects/H2O2_screen_v1/create_hit_file/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1_hits.txt
+  guessed_condition: treated
+  guessed_background: yH298
+  guessed_pool: '1'
+  include: 'true'
+  import_status: imported_success
+  warnings: ''
+- sample: yH298-H2O2-treated-facs-pool2
+  fastq_1: ''
+  fastq_2: ''
+  layout: imported_hit_file
+  condition: treated
+  background: yH298
+  pool: '2'
+  treatment: H2O2
+  species: glabrata
+  hit_file: output/projects/H2O2_screen_v1/create_hit_file/yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2_hits.txt
+  guessed_condition: treated
+  guessed_background: yH298
+  guessed_pool: '2'
+  include: 'true'
+  import_status: imported_success
+  warnings: ''
+- sample: yH298-parent-pool1
+  fastq_1: ''
+  fastq_2: ''
+  layout: imported_hit_file
+  condition: parent
+  background: yH298
+  pool: '1'
+  treatment: ''
+  species: glabrata
+  hit_file: output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt
+  guessed_condition: parent
+  guessed_background: yH298
+  guessed_pool: '1'
+  include: 'true'
+  import_status: imported_success
+  warnings: ''
+- sample: yH298-parent-pool2
+  fastq_1: ''
+  fastq_2: ''
+  layout: imported_hit_file
+  condition: parent
+  background: yH298
+  pool: '2'
+  treatment: ''
+  species: glabrata
+  hit_file: output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool2/yH298-parent-pool2_hits.txt
+  guessed_condition: parent
+  guessed_background: yH298
+  guessed_pool: '2'
+  include: 'true'
+  import_status: imported_success
+  warnings: ''
+- sample: yH299-H2O2-treated-facs-pool3
+  fastq_1: ''
+  fastq_2: ''
+  layout: imported_hit_file
+  condition: treated
+  background: yH299
+  pool: '3'
+  treatment: H2O2
+  species: glabrata
+  hit_file: output/projects/H2O2_screen_v1/create_hit_file/yH299-H2O2-treated-facs-pool3/yH299-H2O2-treated-facs-pool3_hits.txt
+  guessed_condition: treated
+  guessed_background: yH299
+  guessed_pool: '3'
+  include: 'true'
+  import_status: imported_success
+  warnings: ''
+- sample: yH299-H2O2-treated-facs-pool4
+  fastq_1: ''
+  fastq_2: ''
+  layout: imported_hit_file
+  condition: treated
+  background: yH299
+  pool: '4'
+  treatment: H2O2
+  species: glabrata
+  hit_file: output/projects/H2O2_screen_v1/create_hit_file/yH299-H2O2-treated-facs-pool4/yH299-H2O2-treated-facs-pool4_hits.txt
+  guessed_condition: treated
+  guessed_background: yH299
+  guessed_pool: '4'
+  include: 'true'
+  import_status: imported_success
+  warnings: ''
+- sample: yH299-parent-pool3
+  fastq_1: ''
+  fastq_2: ''
+  layout: imported_hit_file
+  condition: parent
+  background: yH299
+  pool: '3'
+  treatment: ''
+  species: glabrata
+  hit_file: output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt
+  guessed_condition: parent
+  guessed_background: yH299
+  guessed_pool: '3'
+  include: 'true'
+  import_status: imported_success
+  warnings: ''
+- sample: yH299-parent-pool4
+  fastq_1: ''
+  fastq_2: ''
+  layout: imported_hit_file
+  condition: parent
+  background: yH299
+  pool: '4'
+  treatment: ''
+  species: glabrata
+  hit_file: output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool4/yH299-parent-pool4_hits.txt
+  guessed_condition: parent
+  guessed_background: yH299
+  guessed_pool: '4'
+  include: 'true'
+  import_status: imported_success
+  warnings: ''
+sample_sheet: output/projects/H2O2_screen_v1/config/sample_sheet.csv
+created_at: '2026-08-05T17:30:05.530781+00:00'
+ytab_version_or_git_commit_if_available: 1fd46a1

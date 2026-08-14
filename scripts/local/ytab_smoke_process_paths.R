@@ -1,0 +1,21 @@
+#!/usr/bin/env Rscript
+all_args <- commandArgs(trailingOnly=FALSE); file_arg <- grep("^--file=",all_args,value=TRUE)
+script_path <- normalizePath(sub("^--file=","",file_arg[[1]]),winslash="/",mustWork=TRUE)
+repo_root <- normalizePath(file.path(dirname(script_path),"../.."),winslash="/",mustWork=TRUE)
+`%||%` <- function(left,right) if(is.null(left)||!length(left)) right else left
+source(file.path(repo_root,"app/shiny/R/process_helpers.R"),local=TRUE)
+failures <- character(); check <- function(ok,label) if(!isTRUE(ok)) failures <<- c(failures,label)
+python <- locate_python_executable(); spaced <- file.path(tempdir(),"YTAB path test with spaces"); dir.create(spaced,showWarnings=FALSE)
+script_arg <- file.path(repo_root,"scripts","local","ytab_init_local_project.py")
+data_arg <- file.path(spaced,"data directory with spaces"); dir.create(data_arg,showWarnings=FALSE)
+args <- c("-c","import sys; print(repr(sys.argv[1:]))",script_arg,data_arg,repo_root)
+result <- run_process_sync(python,args,wd=repo_root); display <- format_command_for_display(python,args)
+check(validate_executable(python),"Python executable resolves");check(length(args)==5L,"raw argument vector retained")
+check(grepl(script_arg,result$stdout,fixed=TRUE),"script path remains one argument")
+check(grepl(data_arg,result$stdout,fixed=TRUE),"data path remains one argument")
+check(grepl(repo_root,result$stdout,fixed=TRUE),"repository path remains one argument")
+check(result$status==0L,"processx invokes Python");check(grepl(shQuote(repo_root),display,fixed=TRUE),"display formatting quotes paths")
+check(!any(args%in%c("2>&1",">","|","&&",";")),"no shell operators in arguments")
+check(identical(git_commit_or_unavailable(spaced),"unavailable"),"Git failure is nonfatal")
+if(length(failures)){cat("FAIL\n",paste("-",failures,collapse="\n"),"\n",sep="");quit(status=1L)}
+cat("PASS\n")

@@ -19,6 +19,7 @@ from ytab.pipeline.summary_normalized_runner import (
     resolve_normalization_targets,
     run_summary_normalized_project,
 )
+from ytab.pipeline.progress_tracker import ProgressTracker, make_job_id
 
 
 def retention(value: str) -> float:
@@ -42,12 +43,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--keep-going", action="store_true")
     parser.add_argument("--min-feature-retention", type=retention, default=0.95)
+    parser.add_argument("--job-id")
+    parser.add_argument("--progress-file", type=Path)
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     samples = [part.strip() for part in args.samples.split(",") if part.strip()] if args.samples else None
+    tracker = None
     try:
         config = load_project_for_summary_normalized(args.project_config)
         selected = get_summary_normalized_samples(config, args.sample_mode, samples)
@@ -62,12 +66,28 @@ def main() -> int:
         for target in target_infos:
             for sample in selected:
                 print(f"  {find_normalized_hits_file(config, target['target_tag'], sample)}")
+        items = [f"{target['target_tag']} × {sample['sample']}"
+                 for target in target_infos for sample in selected]
+        job_id = args.job_id or make_job_id("summary_normalized")
+        progress_file = args.progress_file or args.project_config.resolve().parents[1] / "manifests" / "jobs" / f"{job_id}.progress.json"
+        tracker = ProgressTracker.create(progress_file, job_id, str(config.get("project_id")),
+                                         "summary_normalized", ["feature-level target evaluation"])
+        tracker.state.update(dry_run=args.dry_run,
+                             execution_mode="preview" if args.dry_run else "run",
+                             target_parent_items=items, target_count=len(target_infos),
+                             parent_count=len(selected))
+        tracker.start("Validating normalized parent hit files")
+        tracker.start_item("feature-level target evaluation", 1, "validating normalized parent hit files")
+        tracker.phase("running normalized SummaryTable", "Evaluating target × parent SummaryTable inputs")
         summary = run_summary_normalized_project(
             args.project_config, targets=args.targets, sample_mode=args.sample_mode,
             samples=samples, threads=args.threads, force=args.force, dry_run=args.dry_run,
             keep_going=args.keep_going, min_feature_retention=args.min_feature_retention,
         )
     except (FileNotFoundError, OSError, ValueError, json.JSONDecodeError) as exc:
+        if tracker is not None:
+            tracker.finish_item("feature-level target evaluation", "failed", error_message=str(exc))
+            tracker.finalize("failed", str(exc))
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
     print(f"Output normalized summary directory: {summary['output_dir']}")
@@ -87,6 +107,19 @@ def main() -> int:
     print(
         f"Summary: success={summary['success']} failed={summary['failed']} skipped={summary['skipped']}"
     )
+    final = "dry_run_success" if args.dry_run else "failed" if summary["failed"] else "success"
+    item_status = "failed" if summary["failed"] else "skipped" if summary["success"] == 0 else "success"
+    tracker.phase("collecting retention outputs", "Loading stored site- and feature-retention tables")
+    tracker.finish_item("feature-level target evaluation", item_status,
+                        [path for result in summary["results"] for path in result["feature_tables"]],
+                        "Preview complete; SummaryTable was not executed." if args.dry_run else
+                        "Feature-level target evaluation complete")
+    if not args.dry_run and item_status == "skipped":
+        final = "cached"
+    tracker.finalize(final, "Preview complete" if args.dry_run else
+                     "Cached target evaluation reused" if final == "cached" else
+                     "Normalized SummaryTable complete" if not summary["failed"] else
+                     "Normalized SummaryTable failed")
     return 0 if args.dry_run or summary["failed"] == 0 else 1
 
 

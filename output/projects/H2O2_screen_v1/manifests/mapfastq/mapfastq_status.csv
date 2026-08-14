@@ -1,0 +1,9 @@
+sample,status,layout,fastq_1,fastq_2,output_dir,log_file,elapsed_seconds,message
+yH298-H2O2-treated-facs-pool1,imported_or_not_required,imported_hit_file,,,,,0,Project starts from existing CreateHitFile outputs; MapFastq is not required.
+yH298-H2O2-treated-facs-pool2,imported_or_not_required,imported_hit_file,,,,,0,Project starts from existing CreateHitFile outputs; MapFastq is not required.
+yH298-parent-pool1,imported_or_not_required,imported_hit_file,,,,,0,Project starts from existing CreateHitFile outputs; MapFastq is not required.
+yH298-parent-pool2,imported_or_not_required,imported_hit_file,,,,,0,Project starts from existing CreateHitFile outputs; MapFastq is not required.
+yH299-H2O2-treated-facs-pool3,imported_or_not_required,imported_hit_file,,,,,0,Project starts from existing CreateHitFile outputs; MapFastq is not required.
+yH299-H2O2-treated-facs-pool4,imported_or_not_required,imported_hit_file,,,,,0,Project starts from existing CreateHitFile outputs; MapFastq is not required.
+yH299-parent-pool3,imported_or_not_required,imported_hit_file,,,,,0,Project starts from existing CreateHitFile outputs; MapFastq is not required.
+yH299-parent-pool4,imported_or_not_required,imported_hit_file,,,,,0,Project starts from existing CreateHitFile outputs; MapFastq is not required.

@@ -1,0 +1,24 @@
+=== Trimming step skipped ===
+
+
+=== Sequence alignment ===
+[WARNING] Failed to launch x86-64-v3 version, staying with default
+[WARNING] Failed to launch x86-64-v3 version, staying with default
+10000 reads; of these:
+  10000 (100.00%) were unpaired; of these:
+    1223 (12.23%) aligned 0 times
+    8335 (83.35%) aligned exactly 1 time
+    442 (4.42%) aligned >1 times
+87.77% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 10000
+primary_records: 10000
+primary_mapped: 8777
+primary_unmapped: 1223
+percent_mapped: 87.77
+mapq_ge_threshold: 8251
+percent_mapq_ge_threshold: 94.007
+avg_mapq_mapped_primary: 39.29
+mapping_stats_csv: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/mapfastq/yH298-parent-pool2/yH298-parent-pool2.mapping_stats.csv

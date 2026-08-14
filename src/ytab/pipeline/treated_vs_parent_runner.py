@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .mapfastq_runner import load_project_for_mapping
+from .progress_tracker import ProgressTracker, make_job_id
 
 DESIGN_COLUMNS = ["comparison_id", "pair_id", "parent_sample", "treated_sample",
                   "background", "pool", "parent_condition", "treated_condition",
@@ -29,6 +30,8 @@ INPUT_MODE_ERROR = ("Treated-versus-parent analysis supports raw per-sample Summ
 CPM_ERROR = ("CPM normalization could not be confirmed in "
              "scripts/ytab_treated_vs_parent_screen.R. Step 11 requires the established "
              "raw-summary to CPM workflow. Review the R script before continuing.")
+FITNESS_FEATURE_COLUMNS = {"feature_id", "gene_id", "standard_name", "gene", "id"}
+FITNESS_CALL_COLUMNS = {"final_call", "fitness_call", "call", "status"}
 
 
 def _now():
@@ -45,6 +48,10 @@ def _sha256(path: Path):
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _canonical_sha256(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
 
 
 def _resolve(value, root: Path):
@@ -172,6 +179,7 @@ def validate_comparison_design(config: dict, design_rows: list[dict]) -> dict:
         cid, pid = row.get("comparison_id", ""), row.get("pair_id", "")
         parent, treated = row.get("parent_sample", ""), row.get("treated_sample", "")
         if not cid or cid in seen_comparisons: issue(row, "duplicate_comparison_id", "Comparison ID is empty or duplicated.")
+        elif not re.fullmatch(r"[A-Za-z0-9_-]+", cid): issue(row, "invalid_comparison_id", "Comparison ID may contain only letters, numbers, hyphens, and underscores.")
         if not pid or pid in seen_pairs: issue(row, "duplicate_pair_id", "Pair ID is empty or duplicated.")
         seen_comparisons.add(cid); seen_pairs.add(pid)
         for role, sample in (("parent", parent), ("treated", treated)):
@@ -180,6 +188,16 @@ def validate_comparison_design(config: dict, design_rows: list[dict]) -> dict:
         if parent and parent == treated: issue(row, "same_sample", "Parent and treated samples are identical.")
         if not row.get("background"): issue(row, "missing_background", "Background is missing.")
         if not row.get("pool"): issue(row, "missing_pool", "Pool is missing.")
+        for role, sample, expected in (("parent",parent,"parent"),("treated",treated,"treated")):
+            if sample in samples:
+                sample_row=samples[sample];condition=_condition(sample_row)
+                if condition != expected: issue(row,"unsupported_condition_metadata",f"{sample} is not identified as {expected} by project metadata.")
+                for field in ("background","pool"):
+                    actual=_metadata(sample_row,field);declared=str(row.get(field) or "")
+                    if actual and declared and actual.lower()!=declared.lower(): issue(row,f"{field}_mismatch",f"{sample} has {field} {actual}, not {declared}.")
+                try: detect_raw_summary_feature_table(config,sample)
+                except FileNotFoundError as exc: issue(row,"missing_raw_summary",str(exc))
+                except ValueError as exc: issue(row,"ambiguous_raw_summary",str(exc))
         parent_use[parent] = parent_use.get(parent, 0) + 1; treated_use[treated] = treated_use.get(treated, 0) + 1
     for sample, count in parent_use.items():
         if sample and count > 1: issue({}, "parent_reused", f"Parent sample {sample} occurs in {count} included pairs.")
@@ -248,11 +266,79 @@ def verify_cpm_normalization(script_inspection: dict) -> dict:
 
 def resolve_treated_vs_parent_inputs(config: dict, comparisons: list[dict], input_mode: str = "auto") -> dict:
     if input_mode not in {"auto", "raw-summary"}: raise ValueError(INPUT_MODE_ERROR)
-    all_rows = load_comparison_design(_paths(config)["design"])
-    samples = sorted({r[k] for r in all_rows if _bool(r.get("include", True)) for k in ("parent_sample", "treated_sample") if r.get(k)})
+    samples = sorted({r[k] for r in comparisons for k in ("parent_sample", "treated_sample") if r.get(k)})
     files = {sample: detect_raw_summary_feature_table(config, sample) for sample in samples}
     return {"requested_input_mode": input_mode, "input_mode": "raw-summary", "sample_files": files,
             "selected_comparisons": comparisons}
+
+
+def build_fitness_cache_context(config, analysis_id, comparisons, resolved_inputs, script_inspection,
+                                classifier_annotation=None, scientific_parameters=None):
+    selected = sorted((dict(row) for row in comparisons), key=lambda row: row["comparison_id"])
+    ids = [row["comparison_id"] for row in selected]
+    inputs = {str(path): _sha256(Path(path)) for path in sorted(resolved_inputs["sample_files"].values(), key=str)}
+    design = _paths(config)["design"]; script = Path(script_inspection["script"]); runner = Path(__file__)
+    classifier_path = Path(classifier_annotation["prediction_table"]) if classifier_annotation else None
+    parameters = {"input_mode":"raw-summary", "normalization":"CPM inside R",
+                  "pseudocount":script_inspection.get("pseudocount"),
+                  "z_threshold_quantile":(script_inspection.get("significance_thresholds") or {}).get("z_quantile"),
+                  "analysis_method":script_inspection.get("analysis_method"), **(scientific_parameters or {})}
+    payload = {"project_id":str(config.get("project_id")), "species":str(config.get("species")),
+               "analysis_id":_safe_id(analysis_id), "selected_comparisons_sorted":ids,
+               "comparison_definitions":selected, "comparison_set_sha256":_canonical_sha256(selected),
+               "input_summary_hashes":inputs, "design_sha256":_sha256(design),
+               "script_sha256":_sha256(script), "runner_sha256":_sha256(runner),
+               "classifier_annotation":bool(classifier_annotation),
+               "classifier_target":classifier_annotation.get("target_tag") if classifier_annotation else None,
+               "classifier_hash":_sha256(classifier_path) if classifier_path else None,
+               "scientific_parameters":parameters}
+    payload["cache_signature"] = _canonical_sha256(payload)
+    payload["run_id"] = f"{_safe_id(analysis_id)}_{payload['cache_signature'][:8]}"
+    return payload
+
+
+def fitness_cache_reusable(manifest, context, force=False):
+    table = Path(manifest.get("stable_result_table", ""))
+    if force or manifest.get("status") not in {"success", "cached"} or manifest.get("cache_signature") != context.get("cache_signature") or not table.is_file(): return False
+    try: columns = set(_table_columns(table))
+    except (OSError, ValueError, csv.Error): return False
+    return bool(columns.intersection(FITNESS_FEATURE_COLUMNS) and
+                columns.intersection(FITNESS_CALL_COLUMNS))
+
+
+def validate_treated_vs_parent_result_schema(path: Path) -> dict:
+    columns = _table_columns(path)
+    feature = sorted(set(columns).intersection(FITNESS_FEATURE_COLUMNS))
+    calls = sorted(set(columns).intersection(FITNESS_CALL_COLUMNS))
+    if not feature:
+        raise ValueError("expected a feature identifier column but none was found")
+    if not calls:
+        raise ValueError("expected a fitness-call/status column but none was found")
+    optional = {
+        "effect_size": {"mean_log2FC", "mean_log2_fold_change", "mean_log2fc"},
+        "z_score": {"min_z", "max_z", "max_abs_z", "mean_z"},
+    }
+    missing = [label for label, aliases in optional.items() if not set(columns).intersection(aliases)]
+    warnings = [f"Optional {label.replace('_', ' ')} columns are unavailable; the corresponding display is disabled."
+                for label in missing]
+    return {"columns": columns, "feature_column": feature[0],
+            "fitness_call_column": calls[0], "warnings": warnings}
+
+
+def parsed_fitness_r_error(log_path: Path) -> str:
+    try:
+        text = Path(log_path).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        text = ""
+    missing = re.search(r"Missing required R packages:\s*([^\n]+)", text, re.I)
+    if missing:
+        packages = ", ".join(value.strip() for value in missing.group(1).split(",") if value.strip())
+        return ("Fitness analysis cannot start because required R packages are missing: "
+                f"{packages}. Update the ytab-local environment from environment.local.yml, then rerun.")
+    errors = re.findall(r"^Error(?: in [^:]+)?:\s*(.+)$", text, re.M)
+    if errors:
+        return f"Fitness analysis failed in R script: {errors[-1].strip()} See technical details."
+    return "Fitness analysis failed in R script. See technical details."
 
 
 def resolve_optional_classifier_annotation(config: dict, target: str | None = None) -> dict | None:
@@ -325,16 +411,36 @@ def create_stable_treated_vs_parent_outputs(config, analysis_id, comparisons, ou
 def annotate_treated_vs_parent_results(result_table: Path, classifier_annotation: dict) -> dict:
     results, annotations = _read_csv(result_table), _read_csv(classifier_annotation["prediction_table"])
     result_cols = list(results[0]) if results else []; annotation_cols = list(annotations[0]) if annotations else []
-    keys = [key for key in ("feature_id", "standard_name", "gene", "gene_id") if key in result_cols and key in annotation_cols]
-    if len(keys) != 1: raise ValueError("Could not identify one shared result/classifier feature identifier.")
-    key = keys[0]; lookup = {row[key]: row for row in annotations if row.get(key)}; matched = 0
-    added = [f"classifier_{name}" for name in annotation_cols if name != key]
+    normalize = lambda name: re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    result_names = {normalize(name): name for name in result_cols}
+    annotation_names = {normalize(name): name for name in annotation_cols}
+    key_aliases = ("standard_name", "feature_id", "gene_id", "gene", "common_name")
+    shared = [(result_names[name], annotation_names[name]) for name in key_aliases
+              if name in result_names and name in annotation_names]
+    if not shared:
+        raise ValueError("no common feature key was found")
+    result_key, annotation_key = shared[0]
+    lookup = {row[annotation_key]: row for row in annotations if row.get(annotation_key)}; matched = 0
+    added_sources = [name for name in annotation_cols if name != annotation_key]
+    added = [f"classifier_{name}" for name in added_sources]
+    label_source = next((name for name in annotation_cols
+                         if "ess_for_fpr" in normalize(name) or
+                         normalize(name).endswith(("classifier_label", "prediction_label", "verdict"))), None)
+    score_source = next((name for name in annotation_cols
+                         if normalize(name) in {"rf_g4", "prediction_score", "classifier_score"}), None)
+    canonical = [name for name, source in (("classifier_label", label_source),
+                                            ("classifier_score", score_source))
+                 if source and name not in result_cols]
     for row in results:
-        hit = lookup.get(row.get(key)); matched += int(hit is not None)
-        for source, dest in zip([x for x in annotation_cols if x != key], added): row[dest] = hit.get(source, "") if hit else ""
+        hit = lookup.get(row.get(result_key)); matched += int(hit is not None)
+        for source, dest in zip(added_sources, added): row[dest] = hit.get(source, "") if hit else ""
+        if "classifier_label" in canonical: row["classifier_label"] = hit.get(label_source, "") if hit else ""
+        if "classifier_score" in canonical: row["classifier_score"] = hit.get(score_source, "") if hit else ""
     with result_table.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=result_cols + added); writer.writeheader(); writer.writerows(results)
-    return {"classifier_annotation_match_count": matched, "classifier_annotation_unmatched_count": len(results)-matched, "join_key": key}
+        writer = csv.DictWriter(handle, fieldnames=result_cols + added + canonical); writer.writeheader(); writer.writerows(results)
+    return {"classifier_annotation_match_count": matched, "classifier_annotation_unmatched_count": len(results)-matched,
+            "join_key": result_key, "classifier_join_source_key": annotation_key,
+            "classifier_label_source": label_source}
 
 
 def write_treated_vs_parent_metadata(config, analysis_id, comparisons, resolved_inputs, script_inspection,
@@ -383,7 +489,8 @@ def _write_status(path, result):
 def run_treated_vs_parent_project(project_config: Path, analysis_id="treated_vs_parent_raw_cpm",
                                   comparison_design=None, comparisons=None, input_mode="auto",
                                   classifier_target=None, annotate_classifier=False, force=False,
-                                  dry_run=False, keep_going=False, extra_args=None):
+                                  dry_run=False, keep_going=False, extra_args=None,
+                                  job_id=None, progress_file=None):
     started = time.monotonic(); start_time = _now(); config = load_project_for_treated_vs_parent(project_config)
     aid = _safe_id(analysis_id); paths = _paths(config, aid)
     design = Path(comparison_design).resolve() if comparison_design else infer_comparison_design(config)
@@ -399,45 +506,68 @@ def run_treated_vs_parent_project(project_config: Path, analysis_id="treated_vs_
     if errors: raise ValueError("\n".join(errors))
     annotation = resolve_optional_classifier_annotation(config, classifier_target) if annotate_classifier else None
     command = build_treated_vs_parent_command(config, aid, selected, resolved, paths["output"], annotation, extra_args)
-    hashes = {str(p): _sha256(p) for p in resolved["sample_files"].values()}
-    cache_key = {"comparison_design_hash": _sha256(design), "input_hashes": hashes, "script_hash": _sha256(script),
-                 "analysis_parameters": {"input_mode":"raw-summary", "command":command[1:]},
-                 "classifier_annotation": str(annotation["prediction_table"]) if annotation else None}
+    cache_key = build_fitness_cache_context(config, aid, selected, resolved, inspection, annotation)
+    job_id=job_id or make_job_id("fitness_analysis");progress_file=Path(progress_file) if progress_file else paths["project"]/"manifests"/"jobs"/f"{job_id}.progress.json"
+    selected_ids=[row["comparison_id"] for row in selected];tracker=ProgressTracker.create(progress_file,job_id,str(config.get("project_id")),"Fitness Analysis",[aid],command=command);tracker.state.update(dry_run=dry_run,execution_mode="preview" if dry_run else "run",analysis_id=aid,comparison_count=len(selected),selected_comparisons=selected_ids,selected_comparison_count=len(selected),comparison_set_label="All valid comparisons" if len(selected)==len(get_included_comparisons(rows)) else"Selected subset",classifier_annotation=bool(annotation),force=force,keep_going=keep_going);tracker.start("Validating design");tracker.start_item(aid,1,"validating design")
     if not force and paths["manifest"].is_file() and paths["stable"].is_file():
         old=json.loads(paths["manifest"].read_text(encoding="utf-8"))
-        if old.get("status") == "success" and all(old.get(k)==v for k,v in cache_key.items()):
-            return {**old, "status":"skipped", "command_run":command, "resolved_inputs":resolved,
-                    "script_inspection":inspection, "manifest_file":str(paths["manifest"])}
-    paths["output"].mkdir(parents=True, exist_ok=True); paths["log"].parent.mkdir(parents=True, exist_ok=True); paths["manifest"].parent.mkdir(parents=True, exist_ok=True)
+        if fitness_cache_reusable(old,cache_key,force):
+            tracker.finish_item(aid,"skipped",[str(paths["stable"])],"Cached result reused");tracker.finalize("success","Cached result reused")
+            return {**old, "status":"cached", "cached_from":str(paths["manifest"]), "command_run":command, "resolved_inputs":resolved,
+                    "script_inspection":inspection, "manifest_file":str(paths["manifest"]),"progress_file":str(progress_file)}
     manifest={"project_id":config.get("project_id"), "species":config.get("species"), "analysis_id":aid,
               "input_mode":"raw-summary", "comparison_design_file":str(design), "selected_comparisons":selected,
               "parent_samples":sorted({r["parent_sample"] for r in selected}), "treated_samples":sorted({r["treated_sample"] for r in selected}),
               "input_files":{k:str(v) for k,v in resolved["sample_files"].items()}, "output_dir":str(paths["output"]),
               "stable_result_table":str(paths["stable"]), "comparison_summary_file":str(paths["summary"]),
               "run_metadata_file":str(paths["metadata"]), "log_file":str(paths["log"]), "status":"failed",
-              "start_time":start_time, "command_run":command, "warnings":[], **cache_key}
+              "start_time":start_time, "command_run":command, "warnings":[], "cached_from":None,
+              "normalization":"CPM", "scientific_parameters":cache_key["scientific_parameters"], **cache_key}
     try:
         if dry_run:
             manifest["status"]="dry-run"; manifest["detected_outputs"]=[]
         else:
+            paths["output"].mkdir(parents=True, exist_ok=True); paths["log"].parent.mkdir(parents=True, exist_ok=True); paths["manifest"].parent.mkdir(parents=True, exist_ok=True)
+            tracker.phase("loading raw summaries","Loading raw SummaryTable inputs");tracker.phase("calculating CPM","Running validated raw-summary CPM analysis")
             with paths["log"].open("w", encoding="utf-8") as log:
                 completed=subprocess.run(command, cwd=config["_repo_root"], stdout=log, stderr=subprocess.STDOUT, text=True)
-            if completed.returncode: raise RuntimeError(f"R analysis exited with status {completed.returncode}; see {paths['log']}")
+            if completed.returncode: raise RuntimeError(parsed_fitness_r_error(paths["log"]))
             outputs=detect_treated_vs_parent_outputs(paths["output"])
-            stable=create_stable_treated_vs_parent_outputs(config, aid, selected, outputs)
-            annotation_counts=annotate_treated_vs_parent_results(paths["stable"], annotation) if annotation else {}
+            try:
+                stable=create_stable_treated_vs_parent_outputs(config, aid, selected, outputs)
+                schema=validate_treated_vs_parent_result_schema(paths["stable"])
+                manifest["warnings"].extend(schema["warnings"])
+                manifest["result_schema"] = schema
+            except (OSError, ValueError, csv.Error) as exc:
+                raise RuntimeError(f"Fitness analysis failed during result validation: {exc}") from exc
+            tracker.phase("assigning fitness calls","Collecting established fitness calls")
+            try:
+                annotation_counts=annotate_treated_vs_parent_results(paths["stable"], annotation) if annotation else {}
+            except (OSError, ValueError, csv.Error) as exc:
+                raise RuntimeError(f"Fitness analysis failed during classifier annotation: {exc}") from exc
+            if annotation: tracker.phase("applying classifier annotation","Adding optional classifier labels")
             write_treated_vs_parent_metadata(config, aid, selected, resolved, inspection, outputs, annotation)
+            runtime=_r_environment(outputs)
+            tracker.phase("exporting results","Writing stable and run-specific outputs")
             paths["export"].mkdir(parents=True, exist_ok=True)
             for item in (paths["stable"], paths["summary"], paths["metadata"]): shutil.copy2(item, paths["export"] / item.name)
-            manifest.update(status="success", detected_outputs=[str(p) for p in outputs], **stable, **annotation_counts)
+            manifest.update(status="success", detected_outputs=[str(p) for p in outputs], R_version=runtime.get("R_version"), relevant_R_package_versions=runtime.get("packages",{}), **stable, **annotation_counts)
     except Exception as exc:
         manifest["error_message"]=str(exc)
     manifest["end_time"]=_now(); manifest["elapsed_seconds"]=round(time.monotonic()-started,3)
-    paths["manifest"].write_text(json.dumps(manifest,indent=2,default=str)+"\n",encoding="utf-8")
+    if not dry_run:
+        paths["manifest"].write_text(json.dumps(manifest,indent=2,default=str)+"\n",encoding="utf-8")
+        run_manifest=paths["project"]/"manifests"/"treated_vs_parent"/aid/"runs"/cache_key["run_id"]/"manifest.json";run_manifest.parent.mkdir(parents=True,exist_ok=True);run_manifest.write_text(json.dumps(manifest,indent=2,default=str)+"\n",encoding="utf-8")
+        if manifest["status"] == "success":
+            run_dir=paths["output"]/"runs"/cache_key["run_id"];run_dir.mkdir(parents=True,exist_ok=True)
+            for item in (paths["stable"],paths["summary"],paths["metadata"]): shutil.copy2(item,run_dir/item.name)
+            export_run=paths["export"]/cache_key["run_id"];export_run.mkdir(parents=True,exist_ok=True)
+            for item in (paths["stable"],paths["summary"],paths["metadata"]): shutil.copy2(item,export_run/item.name)
     status={"analysis_id":aid,"status":manifest["status"],"input_mode":"raw-summary","comparison_count":len(selected),
             "parent_samples":";".join(manifest["parent_samples"]),"treated_samples":";".join(manifest["treated_samples"]),
             "stable_result_table":str(paths["stable"]),"output_dir":str(paths["output"]),"log_file":str(paths["log"]),
             "elapsed_seconds":manifest["elapsed_seconds"],"message":manifest.get("error_message","")}
-    _write_status(paths["status"],status)
+    if not dry_run:_write_status(paths["status"],status)
+    final="failed" if manifest["status"]=="failed" else "dry_run_success" if dry_run else "success";message="Fitness analysis failed" if final=="failed" else "Preview complete" if dry_run else "Fitness analysis complete";tracker.finish_item(aid,"failed" if final=="failed" else"success",manifest.get("detected_outputs",[]),message,manifest.get("error_message", ""));tracker.finalize(final,message)
     manifest.update(resolved_inputs=resolved,script_inspection=inspection,comparison_design_file=str(design),manifest_file=str(paths["manifest"]))
     return manifest

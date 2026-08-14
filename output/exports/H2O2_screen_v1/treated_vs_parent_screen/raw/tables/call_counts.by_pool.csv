@@ -1,0 +1,13 @@
+background,pool,contrast,call,n
+H298,1,pool1_H2O2_vs_parent,depleted,213
+H298,1,pool1_H2O2_vs_parent,none,4932
+H298,1,pool1_H2O2_vs_parent,enriched,89
+H298,2,pool2_H2O2_vs_parent,depleted,260
+H298,2,pool2_H2O2_vs_parent,none,4935
+H298,2,pool2_H2O2_vs_parent,enriched,39
+H299,3,pool3_H2O2_vs_parent,depleted,3
+H299,3,pool3_H2O2_vs_parent,none,5224
+H299,3,pool3_H2O2_vs_parent,enriched,7
+H299,4,pool4_H2O2_vs_parent,depleted,39
+H299,4,pool4_H2O2_vs_parent,none,5177
+H299,4,pool4_H2O2_vs_parent,enriched,18

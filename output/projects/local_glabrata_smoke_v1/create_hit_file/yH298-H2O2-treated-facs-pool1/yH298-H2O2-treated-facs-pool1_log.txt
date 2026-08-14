@@ -1,0 +1,9 @@
+
+=== Finding hits ===
+8039 reads found of map quality >= 20; in these:
+  6002 hits were found; of these:
+    6002 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1.insertions.bedgraph
+    /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/create_hit_file/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1.insertions.wig
+    (bigwig not written: bedGraphToBigWig not found on PATH)

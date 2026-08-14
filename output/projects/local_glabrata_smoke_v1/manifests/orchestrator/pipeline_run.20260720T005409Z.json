@@ -1,0 +1,92 @@
+{
+  "project_id": "local_glabrata_smoke_v1",
+  "species": "glabrata",
+  "profile": "core",
+  "target": "recommended",
+  "analysis_id": "treated_vs_parent_raw_cpm",
+  "threads": 2,
+  "status": "dry-run",
+  "plan_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/manifests/orchestrator/pipeline_plan.json",
+  "log_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/logs/orchestrator/pipeline_run.20260720T005409Z.log",
+  "results": [
+    {
+      "stage": "reference",
+      "status": "dry-run",
+      "command": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/.venv/bin/python",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/scripts/local/ytab_prepare_reference.py",
+        "--species",
+        "glabrata",
+        "--threads",
+        "2",
+        "--repo-root",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab"
+      ],
+      "returncode": 0
+    },
+    {
+      "stage": "mapfastq",
+      "status": "success",
+      "command": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/.venv/bin/python",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/scripts/local/ytab_run_mapfastq.py",
+        "--project-config",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/config/project.yaml",
+        "--threads",
+        "2",
+        "--dry-run"
+      ],
+      "returncode": 0,
+      "output": null
+    },
+    {
+      "stage": "create_hit_file",
+      "status": "success",
+      "command": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/.venv/bin/python",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/scripts/local/ytab_run_create_hit_file.py",
+        "--project-config",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/config/project.yaml",
+        "--threads",
+        "2",
+        "--dry-run"
+      ],
+      "returncode": 0,
+      "output": null
+    },
+    {
+      "stage": "summary",
+      "status": "success",
+      "command": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/.venv/bin/python",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/scripts/local/ytab_run_summary_table.py",
+        "--project-config",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/config/project.yaml",
+        "--threads",
+        "2",
+        "--dry-run"
+      ],
+      "returncode": 0,
+      "output": null
+    },
+    {
+      "stage": "library_diagnostics",
+      "status": "success",
+      "command": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/.venv/bin/python",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/scripts/local/ytab_run_library_diagnostics.py",
+        "--project-config",
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/local_glabrata_smoke_v1/config/project.yaml",
+        "--threads",
+        "2",
+        "--dry-run"
+      ],
+      "returncode": 0,
+      "output": null
+    }
+  ],
+  "warnings": [],
+  "start_time": "2026-07-20T00:54:34.938281+00:00",
+  "end_time": "2026-07-20T00:54:45.407193+00:00",
+  "elapsed_seconds": 35.561
+}

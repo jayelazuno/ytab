@@ -18,6 +18,7 @@ from ytab.pipeline.normalization_runner import (
     parse_targets,
     run_normalization_project,
 )
+from ytab.pipeline.progress_tracker import ProgressTracker, make_job_id
 
 
 def positive(value: str) -> float:
@@ -51,12 +52,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--auto-min-target", type=positive)
     parser.add_argument("--auto-max-target", type=positive)
     parser.add_argument("--auto-step", type=positive, default=5.0)
+    parser.add_argument("--job-id")
+    parser.add_argument("--progress-file", type=Path)
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     samples = [part.strip() for part in args.samples.split(",") if part.strip()] if args.samples else None
+    tracker = None
     try:
         parsed = parse_targets(args.targets)
         config = load_project_for_normalization(args.project_config)
@@ -79,6 +83,19 @@ def main() -> int:
         for sample in selected:
             name = str(sample["sample"])
             print(f"  {Path(config['output_project_dir']) / 'create_hit_file' / name / f'{name}_hits.txt'}")
+        job_id = args.job_id or make_job_id("sample_normalization")
+        progress_file = args.progress_file or args.project_config.resolve().parents[1] / "manifests" / "jobs" / f"{job_id}.progress.json"
+        tracker = ProgressTracker.create(progress_file, job_id, str(config.get("project_id")),
+                                         "sample_normalization", ["normalization sweep"])
+        tracker.state.update(dry_run=args.dry_run,
+                             execution_mode="preview" if args.dry_run else "run",
+                             parent_samples=[str(row["sample"]) for row in selected],
+                             parent_count=len(selected),
+                             target_mode="auto" if parsed == "auto" else "manual",
+                             target_count=None if parsed == "auto" else len(parsed))
+        tracker.start("Validating parent hit files")
+        tracker.start_item("normalization sweep", 1, "validating parent hit files")
+        tracker.phase("running MidLC normalization", "Running the validated parent-only normalization stage")
         summary = run_normalization_project(
             args.project_config, targets=args.targets, sample_mode=args.sample_mode,
             samples=samples, threads=args.threads, force=args.force, dry_run=args.dry_run,
@@ -87,6 +104,9 @@ def main() -> int:
             auto_step=args.auto_step,
         )
     except (FileNotFoundError, OSError, ValueError) as exc:
+        if tracker is not None:
+            tracker.finish_item("normalization sweep", "failed", error_message=str(exc))
+            tracker.finalize("failed", str(exc))
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
     print(f"Output normalization directory: {summary['output_dir']}")
@@ -105,6 +125,22 @@ def main() -> int:
         )
         print(f"Recommendation: {recommendation['recommendation_path']}")
     print(f"Comparison table: {summary['comparison_path'] or 'not available (dry run or no outputs)'}")
+    final = "dry_run_success" if args.dry_run else "failed" if summary["failed"] else "success"
+    item_status = "failed" if summary["failed"] else "skipped" if all(
+        result["status"] == "skipped" for result in summary["results"]
+    ) else "success"
+    tracker.phase("collecting normalization outputs", "Collecting normalized hit files and recommendations")
+    tracker.finish_item("normalization sweep", item_status,
+                        [path for result in summary["results"] for path in result["normalized_hit_files"]],
+                        "Preview complete; normalization was not executed." if args.dry_run else
+                        "Normalization cache reused." if item_status == "skipped" else
+                        "Parent MidLC normalization complete")
+    if not args.dry_run and item_status == "skipped":
+        final = "cached"
+    tracker.finalize(final, "Preview complete" if args.dry_run else
+                     "Cached normalization reused" if final == "cached" else
+                     "Parent MidLC normalization complete" if not summary["failed"] else
+                     "Parent MidLC normalization failed")
     return 0 if args.dry_run or summary["failed"] == 0 else 1
 
 

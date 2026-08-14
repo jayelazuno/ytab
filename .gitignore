@@ -1,5 +1,7 @@
-# OS / editor
+# OS
+docs/codex/
 .DS_Store
+**/.DS_Store
 *.swp
 *.swo
 .vscode/
@@ -72,57 +74,27 @@ resources/species/**/interproscan6/*.jsonl
 resources/species/**/interproscan6/*.tsv
 resources/species/**/interproscan6/*.xml
 
-# Outputs / large bioinformatics files
-# Outputs / generated project metadata
-# # Ignore output by default, then selectively track app/project metadata.
-# output/**
-
-# # Keep output roots visible to Git
+# Outputs / generated project artifacts
+# Ignore generated project/export outputs by default. Curated hosted deployment
+# bundles can be explicitly unignored by path later when they are intentionally
+# prepared for release.
+output/**
 !output/
 !output/projects/
-!output/projects/**/
 !output/exports/
-!output/exports/**/
+!output/**/.gitkeep
 
-# # Track small metadata / app-facing tables / QC summaries / plots / browser tracks
-!output/projects/**/*.csv
-!output/projects/**/*.tsv
-!output/projects/**/*.txt
-!output/projects/**/*.json
-!output/projects/**/*.yaml
-!output/projects/**/*.yml
-!output/projects/**/*.bed
-!output/projects/**/*.bedgraph
-!output/projects/**/*.wig
-!output/projects/**/*.bw
-!output/projects/**/*.bigwig
-!output/projects/**/*.png
-!output/projects/**/*.svg
-
-!output/exports/**/*.csv
-!output/exports/**/*.tsv
-!output/exports/**/*.txt
-!output/exports/**/*.json
-!output/exports/**/*.yaml
-!output/exports/**/*.yml
-!output/exports/**/*.bed
-!output/exports/**/*.bedgraph
-!output/exports/**/*.wig
-!output/exports/**/*.bw
-!output/exports/**/*.bigwig
-!output/exports/**/*.png
-!output/exports/**/*.svg
-
-# # Optional: ignore other heavy intermediates if needed later
-output/**/*.sorted
-output/**/*.tmp
-output/**/*.log
-
-## keep output/ trackable
-#output/**
-#!output/exports/
-!output/exports/smoke_test_v1/
-!output/exports/smoke_test_v1/**
+# App-development/demo projects intentionally committed for local collaboration.
+# Keep these available after clone so collaborators can open the Shiny app with
+# real project state without regenerating the full pipeline.
+!output/projects/H2O2_screen_v1/
+!output/projects/H2O2_screen_v1/**
+!output/projects/local_glabrata_smoke_v1/
+!output/projects/local_glabrata_smoke_v1/**
+!output/exports/H2O2_screen_v1/
+!output/exports/H2O2_screen_v1/**
+!output/exports/local_glabrata_smoke_v1/
+!output/exports/local_glabrata_smoke_v1/**
 
 # # ignore heavy sequencing / alignment files
 output/**/*.fastq
@@ -139,11 +111,21 @@ output/**/*.sorted
 output/**/*.tmp
 output/**/*.log
 
-# pipeline log files 
+# Keep OS metadata ignored even inside explicitly unignored project/export trees.
+.DS_Store
+**/.DS_Store
+
+# pipeline log files
 pipeline/**/*.log
 
 # Containers / temp
 tmp/
 .cache/
 
+# notes
+codex/
 
+# Generated local YTAB projects and exports
+#output/projects/
+#output/exports/
+#resources/species/*/reference_genome/reference_prepare_manifest.json

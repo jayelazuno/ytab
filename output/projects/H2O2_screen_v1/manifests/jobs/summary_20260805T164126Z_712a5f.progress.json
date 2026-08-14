@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "job_id": "summary_20260805T164126Z_712a5f",
+  "project_id": "H2O2_screen_v1",
+  "stage": "summary",
+  "profile": null,
+  "status": "running",
+  "command": [],
+  "selected_items": [
+    "yH298-H2O2-treated-facs-pool1",
+    "yH298-H2O2-treated-facs-pool2",
+    "yH298-parent-pool1",
+    "yH298-parent-pool2",
+    "yH299-H2O2-treated-facs-pool3",
+    "yH299-H2O2-treated-facs-pool4",
+    "yH299-parent-pool3",
+    "yH299-parent-pool4"
+  ],
+  "total_items": 8,
+  "processed_items": 6,
+  "successful_items": 6,
+  "skipped_items": 0,
+  "failed_items": 0,
+  "remaining_items": 2,
+  "current_item": "yH299-parent-pool3",
+  "current_item_index": 7,
+  "current_item_started_at": "2026-08-05T16:45:12.234489+00:00",
+  "current_phase": "feature summarization",
+  "job_started_at": "2026-08-05T16:41:26.661763+00:00",
+  "updated_at": "2026-08-05T16:45:12.619185+00:00",
+  "job_elapsed_seconds": 226.0,
+  "current_item_elapsed_seconds": 0.4,
+  "progress_fraction": 0.75,
+  "progress_percent": 75.0,
+  "eta_seconds": 51.5,
+  "estimated_completion_time": "2026-08-05T16:46:04.119185+00:00",
+  "eta_method": "completed items in current run",
+  "eta_confidence": "high",
+  "message": "SummaryTable running",
+  "cancel_requested": false,
+  "pid": 62275,
+  "items": [
+    {
+      "item": "yH298-H2O2-treated-facs-pool1",
+      "input_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1_hits.txt",
+      "input_size_bytes": 4992984,
+      "status": "success",
+      "started_at": "2026-08-05T16:41:26.777374+00:00",
+      "finished_at": "2026-08-05T16:42:08.126688+00:00",
+      "elapsed_seconds": 41.349,
+      "output_files": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1.feature_table.RDF_1.csv"
+      ],
+      "message": "",
+      "error_message": ""
+    },
+    {
+      "item": "yH298-H2O2-treated-facs-pool2",
+      "input_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2_hits.txt",
+      "input_size_bytes": 5054534,
+      "status": "success",
+      "started_at": "2026-08-05T16:42:08.185432+00:00",
+      "finished_at": "2026-08-05T16:42:45.868159+00:00",
+      "elapsed_seconds": 37.683,
+      "output_files": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-H2O2-treated-facs-pool2/yH298-H2O2-treated-facs-pool2.feature_table.RDF_1.csv"
+      ],
+      "message": "",
+      "error_message": ""
+    },
+    {
+      "item": "yH298-parent-pool1",
+      "input_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt",
+      "input_size_bytes": 7414460,
+      "status": "success",
+      "started_at": "2026-08-05T16:42:45.963723+00:00",
+      "finished_at": "2026-08-05T16:43:21.992350+00:00",
+      "elapsed_seconds": 36.029,
+      "output_files": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-parent-pool1/yH298-parent-pool1.feature_table.RDF_1.csv"
+      ],
+      "message": "",
+      "error_message": ""
+    },
+    {
+      "item": "yH298-parent-pool2",
+      "input_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool2/yH298-parent-pool2_hits.txt",
+      "input_size_bytes": 10642109,
+      "status": "success",
+      "started_at": "2026-08-05T16:43:22.048964+00:00",
+      "finished_at": "2026-08-05T16:43:59.413009+00:00",
+      "elapsed_seconds": 37.364,
+      "output_files": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH298-parent-pool2/yH298-parent-pool2.feature_table.RDF_1.csv"
+      ],
+      "message": "",
+      "error_message": ""
+    },
+    {
+      "item": "yH299-H2O2-treated-facs-pool3",
+      "input_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-H2O2-treated-facs-pool3/yH299-H2O2-treated-facs-pool3_hits.txt",
+      "input_size_bytes": 6996764,
+      "status": "success",
+      "started_at": "2026-08-05T16:43:59.966336+00:00",
+      "finished_at": "2026-08-05T16:44:36.657071+00:00",
+      "elapsed_seconds": 36.691,
+      "output_files": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-H2O2-treated-facs-pool3/yH299-H2O2-treated-facs-pool3.feature_table.RDF_1.csv"
+      ],
+      "message": "",
+      "error_message": ""
+    },
+    {
+      "item": "yH299-H2O2-treated-facs-pool4",
+      "input_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-H2O2-treated-facs-pool4/yH299-H2O2-treated-facs-pool4_hits.txt",
+      "input_size_bytes": 3564876,
+      "status": "success",
+      "started_at": "2026-08-05T16:44:36.951970+00:00",
+      "finished_at": "2026-08-05T16:45:11.724724+00:00",
+      "elapsed_seconds": 34.773,
+      "output_files": [
+        "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/summary/yH299-H2O2-treated-facs-pool4/yH299-H2O2-treated-facs-pool4.feature_table.RDF_1.csv"
+      ],
+      "message": "",
+      "error_message": ""
+    },
+    {
+      "item": "yH299-parent-pool3",
+      "input_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt",
+      "input_size_bytes": 5101715,
+      "status": "running",
+      "started_at": "2026-08-05T16:45:12.234489+00:00",
+      "finished_at": null,
+      "elapsed_seconds": 0.0,
+      "output_files": [],
+      "message": "Running",
+      "error_message": ""
+    },
+    {
+      "item": "yH299-parent-pool4",
+      "input_file": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool4/yH299-parent-pool4_hits.txt",
+      "input_size_bytes": 3068289,
+      "status": "queued",
+      "started_at": null,
+      "finished_at": null,
+      "elapsed_seconds": 0.0,
+      "output_files": [],
+      "message": "",
+      "error_message": ""
+    }
+  ],
+  "dry_run": false
+}
