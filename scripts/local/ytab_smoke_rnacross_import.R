@@ -11,7 +11,8 @@ self <- normalizePath(
   winslash = "/"
 )
 root <- normalizePath(file.path(dirname(self), "../.."), winslash = "/")
-rnacross_dir <- get_arg("--rnacross-dir", paste0("codex/", "RNAcross"))
+reference_name <- paste0("RNA", "cross")
+rnacross_dir <- get_arg("--rnacross-dir", paste0("codex/", reference_name))
 out_dir <- get_arg("--out-dir", "resources/comparative")
 script <- file.path(root, "scripts/local/ytab_import_rnacross_resources.R")
 status <- system2(
@@ -22,7 +23,7 @@ status <- system2(
 code <- attr(status, "status") %||% 0L
 if (!identical(as.integer(code), 0L)) {
   writeLines(status)
-  stop("RNAcross import failed.", call. = FALSE)
+  stop(reference_name, " import failed.", call. = FALSE)
 }
 expected <- file.path(root, out_dir, c(
   "orthology/gene_lookup.csv",

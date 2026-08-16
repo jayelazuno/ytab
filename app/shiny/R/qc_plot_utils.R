@@ -37,15 +37,40 @@ qc_plot_card <- function(title, output_id, height = "300px") {
   tags$article(class = "ytab-plot-card", tags$h4(title), plotOutput(output_id, height = height))
 }
 
+qc_plot_text_scale <- function() {
+  switch(getOption("ytab.plot.text_size", "medium"),
+         small = 0.9, large = 1.18, 1)
+}
+
+qc_plot_label_las <- function(default = 2L) {
+  angle <- as.character(getOption("ytab.plot.label_angle", "90"))
+  if (identical(angle, "0")) return(1L)
+  if (identical(angle, "90")) return(2L)
+  default
+}
+
+qc_plot_bar_horizontal <- function(labels = character()) {
+  mode <- as.character(getOption("ytab.plot.bar_orientation", "auto"))
+  if (identical(mode, "horizontal")) return(TRUE)
+  if (identical(mode, "vertical")) return(FALSE)
+  if (!length(labels)) return(FALSE)
+  max(nchar(as.character(labels)), na.rm = TRUE) >= 18L
+}
+
+qc_plot_show_value_labels <- function() {
+  isTRUE(getOption("ytab.plot.show_value_labels", TRUE))
+}
+
 qc_plot_par <- function(mar = c(5, 5, 3, 1), ...) {
+  scale <- qc_plot_text_scale()
   par(
     mar = mar,
     font.axis = 2,
     font.lab = 2,
     font.main = 2,
-    cex.axis = 1.2,
-    cex.lab = 1.25,
-    cex.main = 1.25,
+    cex.axis = 1.2 * scale,
+    cex.lab = 1.25 * scale,
+    cex.main = 1.25 * scale,
     lwd = 1.35,
     ...
   )

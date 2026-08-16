@@ -59,8 +59,11 @@ fitness_combined_ma_plot_card <- function(result, project) {
     return(tags$p(class = "text-muted", "The combined treated-versus-parent MA plot is not available for this selected fitness result."))
   }
   tags$article(
-    class = "ytab-plot-card",
-    tags$h4("Combined treated-versus-parent MA plot"),
+    class = "ytab-static-image-card ytab-release-card",
+    tags$div(class = "ytab-plot-card-header",
+             tags$div(tags$h4("Generated: Combined treated-versus-parent MA plot"),
+                      tags$span(class = "ytab-status-badge", "Static generated image")),
+             tags$a(class = "btn btn-secondary btn-sm", href = served_url, target = "_blank", "Open original")),
     tags$div(
       class = "ytab-diagnostic-preview",
       tags$img(src = served_url, alt = basename(path), loading = "lazy",
@@ -80,8 +83,11 @@ fitness_condition_control_plot_card <- function(result, project) {
     return(tags$p(class = "text-muted", "The condition-versus-control log-log scatter plot is not available for this selected fitness result."))
   }
   tags$article(
-    class = "ytab-plot-card",
-    tags$h4("Condition-versus-control log-log scatter"),
+    class = "ytab-static-image-card ytab-release-card",
+    tags$div(class = "ytab-plot-card-header",
+             tags$div(tags$h4("Generated: Condition-versus-control log-log scatter"),
+                      tags$span(class = "ytab-status-badge", "Static generated image")),
+             tags$a(class = "btn btn-secondary btn-sm", href = served_url, target = "_blank", "Open original")),
     tags$div(
       class = "ytab-diagnostic-preview",
       tags$img(src = served_url, alt = basename(path), loading = "lazy",
@@ -97,12 +103,15 @@ fitness_generated_plot_cards <- function(project) {
   plots <- plots[order(plots$filename), , drop = FALSE]
   tags$div(class = "ytab-plot-grid", lapply(seq_len(nrow(plots)), function(i) {
     tags$article(
-      class = "ytab-plot-card",
+      class = "ytab-static-image-card ytab-release-card",
       title = plots$filename[[i]],
-      tags$h4(plots$title[[i]]),
+      tags$div(class = "ytab-plot-card-header",
+               tags$div(tags$h4(paste("Generated:", plots$title[[i]])),
+                        tags$span(class = "ytab-status-badge", "Static generated image")),
+               tags$a(class = "btn btn-secondary btn-sm", href = plots$served_url[[i]], target = "_blank", "Open original")),
       tags$div(class = "ytab-diagnostic-preview",
         tags$img(src = plots$served_url[[i]], alt = plots$filename[[i]],
-                 loading = "lazy", style = "width:100%;height:180px;object-fit:contain")
+                 loading = "lazy", style = "width:100%;max-height:520px;object-fit:contain")
       ),
       tags$details(tags$summary("Show filename"), tags$code(plots$filename[[i]]))
     )

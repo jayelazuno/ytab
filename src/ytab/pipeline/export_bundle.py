@@ -25,7 +25,7 @@ def plan_export(project_config:Path,include_logs=False,include_browser_tracks=Fa
    if low.endswith((".bed",".bedgraph",".wig",".bw",".bigwig")) and not include_browser_tracks: continue
    if any(token in low for token in ("feature_table","long.raw","feature_reads_cpm","_analysis.csv")): continue
    stable=low.endswith((".csv",".tsv",".json",".yaml",".yml",".png",".svg",".html",".txt"))
-   wanted=(low.startswith(("essentiality_predictions.","classifier_summary.","classifier_run_metadata.","treated_vs_parent_results","treated_vs_parent_comparison_summary","treated_vs_parent_run_metadata","normalization_","library_diagnostics","summary_stats","stats.csv","ytab_project_summary")) or low.endswith((".png",".svg")))
+   wanted=(low.startswith(("essentiality_predictions.","classifier_summary.","classifier_run_metadata.","treated_vs_parent_results","treated_vs_parent_comparison_summary","treated_vs_parent_run_metadata","normalization_","library_diagnostics","summary_stats","stats.csv","ytab_project_summary")) or "gene_domain_explorer" in parts or low.endswith((".png",".svg")))
    if stable and wanted: files.append(p)
  root=c["root"].resolve(); unique=[]; seen=set()
  for p in files:

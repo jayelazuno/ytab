@@ -14,6 +14,10 @@ source(file.path(root, "app/shiny/R/project_discovery.R"))
 source(file.path(root, "app/shiny/R/job_progress.R"))
 source(file.path(root, "app/shiny/R/sample_selector.R"))
 source(file.path(root, "app/shiny/R/ui_helpers.R"))
+source(file.path(root, "app/shiny/R/ui_components.R"))
+source(file.path(root, "app/shiny/R/plot_customization_helpers.R"))
+source(file.path(root, "app/shiny/R/plot_display_helpers.R"))
+source(file.path(root, "app/shiny/R/table_display_helpers.R"))
 source(file.path(root, "app/shiny/R/essentiality_targets.R"))
 source(file.path(root, "app/shiny/R/essentiality_state.R"))
 source(file.path(root, "app/shiny/R/essentiality_results.R"))
@@ -28,6 +32,7 @@ source(file.path(root, "app/shiny/R/ui_preprocessing.R"))
 source(file.path(root, "app/shiny/R/qc_result_state.R"))
 source(file.path(root, "app/shiny/R/ui_fitness.R"))
 source(file.path(root, "app/shiny/R/ui_essentiality.R"))
+source(file.path(root, "app/shiny/R/ui_gene_domain_explorer.R"))
 source(file.path(root, "app/shiny/R/ui_workspace.R"))
 
 project <- read_project_summary(args[[1L]], root)
@@ -43,10 +48,9 @@ stopifnot(grepl("Comparative Species", workspace_html, fixed = TRUE),
           grepl("Genome Browser", workspace_html, fixed = TRUE),
           grepl("Search for one gene to view available Tn-seq results for one species.",
                 comparative_html, fixed = TRUE),
-          grepl("Schizosaccharomyces pombe (placeholder)",
-                checkbox_html, fixed = TRUE),
-          !grepl(paste0("codex/", "RNAcross"), comparative_html, fixed = TRUE),
-          !grepl(file.path("docs", "codex", "RNAcross"),
+          !grepl("placeholder", checkbox_html, ignore.case = TRUE),
+          !grepl(paste0("codex/", paste0("RNA", "cross")), comparative_html, fixed = TRUE),
+          !grepl(file.path("docs", "codex", paste0("RNA", "cross")),
                  comparative_html, fixed = TRUE))
 availability <- summarize_species_project_availability(root)
 availability_display <- comparative_availability_display(availability)

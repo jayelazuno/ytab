@@ -255,18 +255,29 @@ essentiality_results_ui <- function() {
              "Search classifier predictions for the selected normalization target."),
       uiOutput("essentiality_smoke_warning"),
       uiOutput("classifier_results_empty"),
-      uiOutput("classifier_result_selector"),
-      uiOutput("classifier_result_state"),
-      uiOutput("essentiality_visualization_selector"),
-      uiOutput("essentiality_selected_visualization"),
-      tags$details(class="ytab-more-options",tags$summary("Result summary"),
-        uiOutput("classifier_summary_cards")),
-      tags$details(class="ytab-more-options",tags$summary("Tables / downloads"),
-        essentiality_results_predictions_ui(),
-        uiOutput("essentiality_download_cards")),
-      tags$details(class="ytab-more-options",tags$summary("Target provenance"),
-        uiOutput("classifier_provenance"),
-        essentiality_technical_details("classifier_results_technical"))
+      ytab_two_column_layout(
+        controls = ytab_control_panel(
+          "Classifier display",
+          uiOutput("classifier_result_selector"),
+          uiOutput("classifier_result_state"),
+          uiOutput("essentiality_visualization_selector"),
+          ytab_plot_customization_controls("essentiality", include_bars = TRUE,
+                                           include_heatmap = TRUE,
+                                           default_height = "medium"),
+          tags$details(class="ytab-more-options",tags$summary("Result summary"),
+            uiOutput("classifier_summary_cards")),
+          tags$details(class="ytab-more-options",tags$summary("Target provenance"),
+            uiOutput("classifier_provenance"),
+            essentiality_technical_details("classifier_results_technical"))
+        ),
+        main = tagList(
+          ytab_plot_card("Classifier visualization", uiOutput("essentiality_selected_visualization"),
+                         description = "App-rendered plots use classifier result tables; generated classifier images are shown as static provenance images."),
+          tags$details(class="ytab-more-options",tags$summary("Tables / downloads"),
+            essentiality_results_predictions_ui(),
+            uiOutput("essentiality_download_cards"))
+        )
+      )
     )
   )
 }

@@ -5,11 +5,11 @@ comparative_metric_choices <- c(
 )
 
 comparative_controls_card <- function(title, ...) {
-  tags$aside(class = "ytab-comparative-controls", panel_card(title, ...))
+  tags$aside(class = "ytab-comparative-controls ytab-control-panel", panel_card(title, ...))
 }
 
 comparative_result_card <- function(title, ...) {
-  tags$section(class = "ytab-comparative-results", panel_card(title, ...))
+  tags$section(class = "ytab-comparative-results ytab-release-card", panel_card(title, ...))
 }
 
 comparative_layout <- function(controls, results) {
@@ -46,12 +46,7 @@ comparative_single_species_ui <- function() {
 comparative_species_checkbox_ui <- function() {
   tagList(
     checkboxGroupInput("comparative_species_set", "Species",
-                       choices = character(), selected = character()),
-    tags$label(
-      class = "text-muted",
-      tags$input(type = "checkbox", disabled = "disabled"),
-      " Schizosaccharomyces pombe (placeholder)"
-    )
+                       choices = character(), selected = character())
   )
 }
 

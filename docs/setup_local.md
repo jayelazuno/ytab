@@ -199,6 +199,36 @@ LibraryDiagnostics runs once across the selected hit files. Inputs come from `ou
 
 This step produces raw library QC only. It does not normalize hit files or run downstream analysis.
 
+## Gene & Domain Insertion Explorer
+
+The Shiny app has a **Gene & Domain Insertion Explorer** tab for plotting
+existing insertion hits across a queried gene. Search by gene name, systematic
+name, locus tag, gene ID, or any alias available in the current project
+annotation. Select one, multiple, or all available insertion tracks from raw
+CreateHitFile outputs or from the combined parent hit file when present.
+
+Domains are shown only when real domain annotations exist in the YTAB reference
+resources. If no domain annotation is available for the selected gene, the gene
+model and insertion tracks still plot and the app reports that no domain
+annotation is available.
+
+The CLI wrapper can also generate the same outputs:
+
+```bash
+python scripts/local/ytab_draw_gene_domain_insertions.py \
+  --project-config output/projects/<PROJECT_ID>/config/project.yaml \
+  --gene <GENE_OR_SYSTEMATIC_NAME> \
+  --track-source raw \
+  --samples all \
+  --flank-bp 1000
+```
+
+Generated PNG figures, insertion tables, and manifests are saved under:
+
+```text
+output/projects/<PROJECT_ID>/gene_domain_explorer/
+```
+
 ## Explore MidLC normalization
 
 Activate the environment and inspect the adaptive parent-only normalization command:

@@ -1,0 +1,7 @@
+sample,track_name,track_source,chromosome,position,read_count,strand,source_file
+yH298-H2O2-treated-facs-pool1,yH298-H2O2-treated-facs-pool1,raw,CP048230.1,29242,302,W,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-H2O2-treated-facs-pool1/yH298-H2O2-treated-facs-pool1_hits.txt
+yH298-parent-pool1,yH298-parent-pool1,raw,CP048230.1,26244,159,C,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool1/yH298-parent-pool1_hits.txt
+yH298-parent-pool2,yH298-parent-pool2,raw,CP048230.1,26244,55,C,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool2/yH298-parent-pool2_hits.txt
+yH299-H2O2-treated-facs-pool4,yH299-H2O2-treated-facs-pool4,raw,CP048230.1,29242,1026,W,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-H2O2-treated-facs-pool4/yH299-H2O2-treated-facs-pool4_hits.txt
+yH299-parent-pool3,yH299-parent-pool3,raw,CP048230.1,25975,51,C,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt
+yH299-parent-pool3,yH299-parent-pool3,raw,CP048230.1,27213,254,C,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt

@@ -1,0 +1,287 @@
+.ytab-release-header,
+.ytab-section-header,
+.ytab-release-card,
+.ytab-control-panel,
+.ytab-card {
+  border-radius: 14px;
+}
+
+.ytab-release-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #f8fafc, #eef6ff);
+  border: 1px solid #dbe7f3;
+}
+
+.ytab-workspace-header.ytab-release-header {
+  color: #102033;
+  background: linear-gradient(135deg, #ffffff, #e9f3fb);
+  border-bottom: 1px solid #cbdbea;
+}
+
+.ytab-workspace-header.ytab-release-header .ytab-project-badge span,
+.ytab-workspace-header.ytab-release-header .ytab-project-badge b {
+  color: #102033;
+}
+
+.ytab-workspace-header.ytab-release-header .ytab-project-badge > div {
+  background: #ffffff;
+  border: 1px solid #cbdbea;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+}
+
+.ytab-workspace-header.ytab-release-header .btn {
+  color: #102033;
+  background: #ffffff;
+  border-color: #9fb8cc;
+}
+
+.ytab-release-header h2,
+.ytab-section-header h3,
+.ytab-plot-card h4,
+.ytab-table-card h4,
+.ytab-result-card h4 {
+  margin-top: 0;
+  font-weight: 700;
+  color: #102033;
+}
+
+.ytab-release-subtitle,
+.ytab-section-header p,
+.ytab-display-only-note {
+  color: #5f6b7a;
+  margin-bottom: 0;
+}
+
+.ytab-release-card,
+.ytab-control-panel,
+.ytab-plot-card,
+.ytab-static-image-card,
+.ytab-table-card,
+.ytab-download-card {
+  background: #ffffff;
+  border: 1px solid #e4eaf0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ytab-control-panel {
+  position: sticky;
+  top: 0.75rem;
+}
+
+.ytab-two-column-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, var(--ytab-controls-width, 320px)) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.ytab-two-column-controls {
+  min-width: 0;
+}
+
+.ytab-two-column-main {
+  min-width: 0;
+}
+
+.ytab-plot-card-header,
+.ytab-table-card-header,
+.ytab-result-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.ytab-plot-card-body {
+  min-height: 260px;
+}
+
+.ytab-static-image,
+.ytab-diagnostic-preview {
+  width: 100%;
+  text-align: center;
+  overflow: auto;
+}
+
+.ytab-plot-frame {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+.ytab-plot-width-standard {
+  max-width: 960px;
+}
+
+.ytab-plot-width-wide {
+  max-width: 1240px;
+}
+
+.ytab-plot-width-full {
+  max-width: none;
+}
+
+.ytab-plot-frame-app-rendered {
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.ytab-static-image img,
+.ytab-diagnostic-preview img,
+.ytab-plot-card img,
+.ytab-static-image-card img {
+  max-width: 100%;
+  height: auto !important;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.ytab-control-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem 1rem;
+  align-items: end;
+  margin-top: 0.75rem;
+}
+
+.ytab-plot-controls {
+  padding: 0.75rem;
+  margin: 0.75rem 0 1rem;
+  border: 1px solid #e4eaf0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.ytab-plot-controls summary,
+.ytab-release-details summary,
+.ytab-more-options summary,
+.ytab-technical-details summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: #26364a;
+}
+
+.ytab-status-badge,
+.ytab-result-badge,
+.ytab-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 650;
+  background: #eef2f7;
+  color: #334155;
+}
+
+.ytab-status-success,
+.ytab-result-matching .ytab-result-badge {
+  background: #e8f7ee;
+  color: #166534;
+}
+
+.ytab-status-warning,
+.ytab-warning-banner {
+  background: #fff7ed;
+  color: #9a3412;
+  border-color: #fed7aa;
+}
+
+.ytab-warning-banner {
+  padding: 0.8rem 1rem;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.ytab-metric-card {
+  border: 1px solid #e4eaf0;
+  border-radius: 12px;
+  padding: 0.85rem;
+  background: #f8fafc;
+}
+
+.ytab-metric-label,
+.ytab-metric-caption {
+  display: block;
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.ytab-metric-value {
+  display: block;
+  font-size: 1.45rem;
+  color: #0f172a;
+}
+
+.ytab-empty-state {
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 1rem;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.ytab-generated-file-gallery,
+.ytab-plot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1rem;
+}
+
+.ytab-diagnostic-gallery-grid {
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+
+.ytab-diagnostic-gallery-grid .ytab-static-image-card {
+  min-height: 430px;
+}
+
+.ytab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dataTables_wrapper {
+  font-size: 0.92rem;
+}
+
+details.ytab-technical-details,
+details.ytab-more-options,
+details.ytab-release-details {
+  margin-top: 1rem;
+  background: #fbfdff;
+  border: 1px solid #e5edf5;
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .ytab-release-header,
+  .ytab-plot-card-header,
+  .ytab-table-card-header,
+  .ytab-result-heading {
+    display: block;
+  }
+
+  .ytab-control-panel {
+    position: static;
+  }
+
+  .ytab-two-column-layout {
+    display: block;
+  }
+}

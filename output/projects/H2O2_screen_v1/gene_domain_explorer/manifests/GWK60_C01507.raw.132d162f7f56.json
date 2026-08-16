@@ -1,0 +1,32 @@
+{
+  "project_id": "H2O2_screen_v1",
+  "project_config": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/config/project.yaml",
+  "species": "glabrata",
+  "query": "GWK60_C01507",
+  "resolved_gene_id": "GWK60_C01507",
+  "resolved_gene_name": "MFA2",
+  "chromosome": "CP048232.1",
+  "start": 197654,
+  "end": 197758,
+  "flank_bp": 1000,
+  "track_source": "raw",
+  "selected_samples": [
+    "yH298-H2O2-treated-facs-pool1",
+    "yH298-H2O2-treated-facs-pool2",
+    "yH298-parent-pool1"
+  ],
+  "domain_source": "",
+  "domains_available": false,
+  "figure_path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/gene_domain_explorer/figures/GWK60_C01507.raw.132d162f7f56.png",
+  "table_path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/gene_domain_explorer/tables/GWK60_C01507.raw.132d162f7f56.insertions.csv",
+  "manifest_path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/gene_domain_explorer/manifests/GWK60_C01507.raw.132d162f7f56.json",
+  "timestamp": "2026-08-15T01:54:42.042001+00:00",
+  "status": "success",
+  "domain_message": "No domain annotation available for this gene.",
+  "track_count": 3,
+  "insertion_count": 9,
+  "width_px": 1800,
+  "dpi": 150,
+  "label_mode": "full",
+  "show_site_counts": true
+}

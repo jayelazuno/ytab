@@ -24,13 +24,15 @@ essentiality_generated_plot_cards <- function(project) {
   plots <- plots[order(plots$target, plots$filename), , drop = FALSE]
   tags$div(class = "ytab-plot-grid", lapply(seq_len(nrow(plots)), function(i) {
     tags$article(
-      class = "ytab-plot-card",
+      class = "ytab-plot-card ytab-release-card",
       title = plots$filename[[i]],
-      tags$h4(plots$title[[i]]),
+      tags$div(class = "ytab-plot-card-header",
+               tags$h4(paste("Generated:", plots$title[[i]])),
+               tags$span(class = "ytab-status-badge", "Static generated image")),
       tags$p(class = "text-muted", paste("Target:", plots$target[[i]])),
       tags$div(class = "ytab-diagnostic-preview",
         tags$img(src = plots$served_url[[i]], alt = plots$filename[[i]],
-                 loading = "lazy", style = "width:100%;height:180px;object-fit:contain")
+                 loading = "lazy", style = "width:100%;max-height:520px;object-fit:contain")
       ),
       tags$details(tags$summary("Show filename"), tags$code(plots$filename[[i]]))
     )

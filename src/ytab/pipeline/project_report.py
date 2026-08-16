@@ -41,6 +41,6 @@ def _git(root):
     except Exception:return "unavailable"
 def _links(c,base):
     candidates=[]
-    for pattern in ("classifier/*/essentiality_predictions.*.csv","classifier/*/classifier_summary.*.csv","treated_vs_parent/*/treated_vs_parent_results.csv","treated_vs_parent/*/treated_vs_parent_comparison_summary.csv","sample_normalization/normalization*recommendation*.csv"):
+    for pattern in ("classifier/*/essentiality_predictions.*.csv","classifier/*/classifier_summary.*.csv","treated_vs_parent/*/treated_vs_parent_results.csv","treated_vs_parent/*/treated_vs_parent_comparison_summary.csv","sample_normalization/normalization*recommendation*.csv","gene_domain_explorer/figures/*.png","gene_domain_explorer/tables/*.csv","gene_domain_explorer/manifests/*.json"):
         candidates.extend(c["project"].glob(pattern))
     return "<ul>"+"".join(f"<li><code>{html.escape(str(p))}</code></li>" for p in sorted(candidates))+"</ul>"

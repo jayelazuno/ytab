@@ -126,15 +126,18 @@ qc_library_plot_inventory <- function(project, plot_types = c("Centromere bias",
 qc_library_plot_gallery <- function(project, plot_types = c("Centromere bias", "Feature metaplots")) {
   plots <- qc_library_plot_inventory(project, plot_types)
   if (!nrow(plots)) return(tags$p(class = "text-muted", "No Library Diagnostics plot files are available for this view."))
-  tags$div(class = "ytab-plot-grid", lapply(seq_len(min(nrow(plots), 12L)), function(i) {
+  tags$div(class = "ytab-plot-grid ytab-diagnostic-gallery-grid", lapply(seq_len(min(nrow(plots), 12L)), function(i) {
     tags$article(
-      class = "ytab-plot-card",
+      class = "ytab-static-image-card ytab-release-card",
       title = plots$filename[[i]],
-      tags$h4(plots$plot_type[[i]]),
+      tags$div(class = "ytab-plot-card-header",
+               tags$div(tags$h4(plots$plot_type[[i]]),
+                        tags$span(class = "ytab-status-badge", "Static generated image")),
+               tags$a(class = "btn btn-secondary btn-sm", href = plots$served_url[[i]], target = "_blank", "Open original")),
       tags$p(class = "ytab-plot-sample", plots$sample[[i]]),
       tags$div(class = "ytab-diagnostic-preview",
         tags$img(src = plots$served_url[[i]], alt = plots$filename[[i]],
-                 loading = "lazy", style = "width:100%;height:170px;object-fit:contain")
+                 loading = "lazy", style = "width:100%;max-height:320px;object-fit:contain")
       ),
       tags$details(tags$summary("Show filename"), tags$code(plots$filename[[i]]))
     )
@@ -145,9 +148,12 @@ qc_library_single_plot_card <- function(plots, index) {
   if (!nrow(plots) || is.na(index) || index < 1L || index > nrow(plots))
     return(tags$p(class = "text-muted", "Selected diagnostic plot is unavailable."))
   tags$article(
-    class = "ytab-plot-card",
+    class = "ytab-static-image-card ytab-release-card",
     title = plots$filename[[index]],
-    tags$h4(plots$plot_type[[index]]),
+    tags$div(class = "ytab-plot-card-header",
+             tags$div(tags$h4(plots$plot_type[[index]]),
+                      tags$span(class = "ytab-status-badge", "Static generated image")),
+             tags$a(class = "btn btn-secondary btn-sm", href = plots$served_url[[index]], target = "_blank", "Open original")),
     tags$p(class = "ytab-plot-sample", plots$sample[[index]]),
     tags$div(class = "ytab-diagnostic-preview",
       tags$img(src = plots$served_url[[index]], alt = plots$filename[[index]],

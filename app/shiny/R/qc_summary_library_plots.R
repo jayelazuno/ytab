@@ -26,28 +26,34 @@ plot_qc_summary_metric <- function(project, metric = "complexity") {
   data <- qc_summary_stats_plot_data(project)
   if (!nrow(data)) return(qc_plot_empty("SummaryTable statistics are not available."))
   labels <- as.character(data$sample)
-  old <- qc_plot_par(mar = c(10, 5, 3, 1))
+  horizontal <- qc_plot_bar_horizontal(labels)
+  old <- qc_plot_par(mar = if (horizontal) c(5, 12, 3, 1) else c(10, 5, 3, 1))
   on.exit(par(old), add = TRUE)
 
   if (identical(metric, "features")) {
-    barplot(data$percent_features_hit, names.arg = labels, las = 2,
+    barplot(data$percent_features_hit, names.arg = labels, las = if (horizontal) 1 else qc_plot_label_las(2), horiz = horizontal,
             col = qc_plot_fill, border = qc_plot_border, lwd = qc_plot_lwd,
-            ylab = "% features hit", main = "Genomic features hit")
+            xlab = if (horizontal) "% features hit" else "",
+            ylab = if (horizontal) "" else "% features hit", main = "Genomic features hit")
   } else if (identical(metric, "reads_per_hit")) {
-    barplot(log10(pmax(data$mean_reads_per_hit, 1)), names.arg = labels, las = 2,
+    barplot(log10(pmax(data$mean_reads_per_hit, 1)), names.arg = labels, las = if (horizontal) 1 else qc_plot_label_las(2), horiz = horizontal,
             col = qc_plot_fill, border = qc_plot_border, lwd = qc_plot_lwd,
-            ylab = "Mean reads per hit (log10)", main = "Reads per insertion site")
+            xlab = if (horizontal) "Mean reads per hit (log10)" else "",
+            ylab = if (horizontal) "" else "Mean reads per hit (log10)", main = "Reads per insertion site")
   } else if (identical(metric, "feature_intergenic")) {
     values <- rbind(data$percent_hits_in_features, data$percent_intergenic_hits)
-    barplot(values, names.arg = labels, las = 2, col = c(qc_plot_fill, qc_plot_fill_light),
-            border = qc_plot_border, lwd = qc_plot_lwd, ylab = "Percent of hits",
+    barplot(values, names.arg = labels, las = if (horizontal) 1 else qc_plot_label_las(2), horiz = horizontal, col = c(qc_plot_fill, qc_plot_fill_light),
+            border = qc_plot_border, lwd = qc_plot_lwd,
+            xlab = if (horizontal) "Percent of hits" else "",
+            ylab = if (horizontal) "" else "Percent of hits",
             main = "Feature vs intergenic insertions")
     legend("topright", legend = c("Features", "Intergenic"),
            fill = c(qc_plot_fill, qc_plot_fill_light), bty = "n", text.font = 2, cex = 1)
   } else {
-    barplot(data$total_hits, names.arg = labels, las = 2,
+    barplot(data$total_hits, names.arg = labels, las = if (horizontal) 1 else qc_plot_label_las(2), horiz = horizontal,
             col = qc_plot_fill, border = qc_plot_border, lwd = qc_plot_lwd,
-            ylab = "Total unique insertion sites", main = "Library complexity")
+            xlab = if (horizontal) "Total unique insertion sites" else "",
+            ylab = if (horizontal) "" else "Total unique insertion sites", main = "Library complexity")
   }
 }
 
@@ -96,16 +102,18 @@ plot_qc_summary_combined_features_hit <- function(project) {
   labels <- c(parent = "Parents combined", `H2O2-treated-facs` = "H2O2-treated combined")
   names <- unname(labels[as.character(data$condition)])
   values <- data$percent_features_hit
-  old <- qc_plot_par(mar = c(7, 5, 3, 1))
+  horizontal <- qc_plot_bar_horizontal(names)
+  old <- qc_plot_par(mar = if (horizontal) c(5, 12, 3, 1) else c(7, 5, 3, 1))
   on.exit(par(old), add = TRUE)
-  ypos <- barplot(values, names.arg = names, las = 2, ylim = c(0, max(100, values, na.rm = TRUE)),
+  ypos <- barplot(values, names.arg = names, las = if (horizontal) 1 else qc_plot_label_las(2), horiz = horizontal, ylim = if (horizontal) NULL else c(0, max(100, values, na.rm = TRUE)),
                   col = qc_plot_fill, border = qc_plot_border, lwd = qc_plot_lwd,
-                  ylab = "% features hit", main = "Combined features hit by condition")
-  text(ypos, values, labels = sprintf("%s / %s\n%.1f%%",
+                  xlab = if (horizontal) "% features hit" else "",
+                  ylab = if (horizontal) "" else "% features hit", main = "Combined features hit by condition")
+  if (qc_plot_show_value_labels()) text(if (horizontal) values else ypos, if (horizontal) ypos else values, labels = sprintf("%s / %s\n%.1f%%",
                                       format(data$features_hit, big.mark = ","),
                                       format(data$total_features, big.mark = ","),
                                       data$percent_features_hit),
-       pos = 3, font = 2, cex = 0.95)
+       pos = if (horizontal) 4 else 3, font = 2, cex = 0.95 * qc_plot_text_scale())
 }
 
 qc_summary_binned_plot_data <- function(project) {
@@ -130,7 +138,7 @@ plot_qc_summary_genome_bins <- function(project) {
   data$chrom <- factor(data$chrom, levels = unique(data$chrom))
   old <- qc_plot_par(mar = c(8, 5, 3, 1))
   on.exit(par(old), add = TRUE)
-  boxplot(log10(data$mean_bin_signal + 1) ~ data$chrom, las = 2,
+  boxplot(log10(data$mean_bin_signal + 1) ~ data$chrom, las = qc_plot_label_las(2),
           col = qc_plot_fill, border = qc_plot_border, lwd = qc_plot_lwd,
           ylab = "log10(mean binned signal + 1)",
           main = "Genome-wide binned insertion signal")

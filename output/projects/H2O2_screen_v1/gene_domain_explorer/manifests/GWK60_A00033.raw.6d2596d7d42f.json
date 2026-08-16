@@ -1,0 +1,26 @@
+{
+  "project_id": "H2O2_screen_v1",
+  "project_config": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/config/project.yaml",
+  "species": "glabrata",
+  "query": "GWK60_A00033",
+  "resolved_gene_id": "GWK60_A00033",
+  "resolved_gene_name": "EPA24",
+  "chromosome": "CP048230.1",
+  "start": 26433,
+  "end": 28541,
+  "flank_bp": 1000,
+  "track_source": "raw",
+  "selected_samples": [
+    "all"
+  ],
+  "domain_source": "",
+  "domains_available": false,
+  "figure_path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/gene_domain_explorer/figures/GWK60_A00033.raw.6d2596d7d42f.png",
+  "table_path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/gene_domain_explorer/tables/GWK60_A00033.raw.6d2596d7d42f.insertions.csv",
+  "manifest_path": "/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/gene_domain_explorer/manifests/GWK60_A00033.raw.6d2596d7d42f.json",
+  "timestamp": "2026-08-15T01:25:02.609238+00:00",
+  "status": "success",
+  "domain_message": "No domain annotation available for this gene.",
+  "track_count": 8,
+  "insertion_count": 6
+}

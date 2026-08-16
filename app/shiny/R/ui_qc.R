@@ -113,8 +113,113 @@ filter_diagnostic_inventory <- function(data,sample="All",plot_type="All",sample
 }
 paginate_diagnostic_inventory <- function(data,page=1L,page_size=8L) {pages<-max(1L,ceiling(nrow(data)/page_size));page<-max(1L,min(as.integer(page),pages));start<-(page-1L)*page_size+1L;rows<-if(nrow(data)&&start<=nrow(data))seq.int(start,min(start+page_size-1L,nrow(data)))else integer();list(data=data[rows,,drop=FALSE],page=page,pages=pages,total=nrow(data))}
 
-qc_mapping_ui <- function() panel_card("Mapping QC",uiOutput("mapping_qc_readiness"),selectInput("mapping_qc_plot_choice","Visualization",choices=c("Mapping summary"="mapping_summary")),uiOutput("mapping_qc_selected_plot"),tags$details(class="ytab-more-options",tags$summary("Tables / downloads"),tags$div(class="ytab-actions",downloadButton("download_mapping_qc_table","Download mapping summary"),downloadButton("download_mapping_qc_details","Download file details")),DT::DTOutput("mapping_qc_table"),tags$details(tags$summary("File details"),DT::DTOutput("mapping_qc_details"))))
-qc_summary_ui <- function() panel_card("Summary QC",uiOutput("summary_qc_readiness"),selectInput("summary_qc_plot_choice","Visualization",choices=c("Library complexity"="complexity","Features hit"="features","Combined features hit"="combined_features","Reads per insertion site"="reads_per_hit","Feature vs intergenic hits"="feature_intergenic","Genome-wide binned signal"="genome_bins","Library concordance"="pairwise")),uiOutput("summary_qc_selected_plot"),tags$details(class="ytab-more-options",tags$summary("Tables / downloads"),uiOutput("summary_qc_cards"),tags$div(class="ytab-actions",downloadButton("download_summary_qc_table","Download summary table"),downloadButton("download_summary_qc_details","Download detailed metrics")),DT::DTOutput("summary_qc_table"),tags$details(tags$summary("Detailed metrics"),DT::DTOutput("summary_qc_details"))))
-qc_library_diagnostics_ui <- function() panel_card("Library Diagnostics",tags$section(class="ytab-qc-section",tags$h4("1. Select samples"),uiOutput("library_diagnostics_readiness"),uiOutput("qc_current_selection"),selectizeInput("qc_samples","Samples to diagnose",choices=character(),multiple=TRUE,options=list(placeholder="Select samples…")),uiOutput("qc_sample_presets"),uiOutput("qc_selection_message"),tags$details(tags$summary("Review eligible samples"),DT::DTOutput("qc_sample_preview"))),tags$section(class="ytab-qc-section",tags$h4("2. Configure and run"),radioButtons("library_diagnostics_mode","Execution mode",choices=list("Preview command"="preview","Run diagnostics"="run"),selected="preview",inline=TRUE),uiOutput("qc_execution_summary"),uiOutput("library_diagnostics_cache_ui"),uiOutput("library_diagnostics_action")),tags$section(class="ytab-qc-section",tags$h4("3. Results"),job_progress_ui("library_diagnostics_job"),uiOutput("library_diagnostics_result"),selectInput("library_diagnostics_plot_choice","Visualization",choices=c("MidLC saturation"="midlc","Jackpots and library depth"="jackpot","Centromere bias plots"="centromere","Feature metaplots"="metaplots","Sequence-bias plots"="sequence_bias")),uiOutput("library_diagnostics_selected_plot"),tags$details(class="ytab-technical-details",tags$summary("Technical details"),tags$div(class="ytab-technical-console",verbatimTextOutput("library_diagnostics_technical")))))
+qc_mapping_ui <- function() panel_card(
+  "Mapping QC",
+  ytab_two_column_layout(
+    controls = ytab_control_panel(
+      "Mapping display",
+      uiOutput("mapping_qc_readiness"),
+      selectInput("mapping_qc_plot_choice", "Visualization",
+                  choices = c("Mapping summary" = "mapping_summary")),
+      ytab_plot_customization_controls("mapping_qc", include_bars = TRUE,
+                                       default_height = "medium"),
+      tags$details(
+        class = "ytab-more-options",
+        tags$summary("Tables / downloads"),
+        tags$div(class = "ytab-actions",
+                 downloadButton("download_mapping_qc_table", "Download mapping summary"),
+                 downloadButton("download_mapping_qc_details", "Download file details")),
+        DT::DTOutput("mapping_qc_table"),
+        tags$details(tags$summary("File details"), DT::DTOutput("mapping_qc_details"))
+      )
+    ),
+    main = ytab_plot_card("App-rendered: Mapping summary", uiOutput("mapping_qc_selected_plot"),
+                          description = "Rendered from existing mapping statistics tables.")
+  )
+)
+
+qc_summary_ui <- function() panel_card(
+  "Summary QC",
+  ytab_two_column_layout(
+    controls = ytab_control_panel(
+      "Summary display",
+      uiOutput("summary_qc_readiness"),
+      selectInput(
+        "summary_qc_plot_choice", "Visualization",
+        choices = c("Library complexity" = "complexity",
+                    "Features hit" = "features",
+                    "Combined features hit" = "combined_features",
+                    "Reads per insertion site" = "reads_per_hit",
+                    "Feature vs intergenic hits" = "feature_intergenic",
+                    "Genome-wide binned signal" = "genome_bins",
+                    "Library concordance" = "pairwise")
+      ),
+      ytab_plot_customization_controls("summary_qc", include_bars = TRUE,
+                                       default_height = "medium"),
+      tags$details(
+        class = "ytab-more-options",
+        tags$summary("Tables / downloads"),
+        uiOutput("summary_qc_cards"),
+        tags$div(class = "ytab-actions",
+                 downloadButton("download_summary_qc_table", "Download summary table"),
+                 downloadButton("download_summary_qc_details", "Download detailed metrics")),
+        DT::DTOutput("summary_qc_table"),
+        tags$details(tags$summary("Detailed metrics"), DT::DTOutput("summary_qc_details"))
+      )
+    ),
+    main = ytab_plot_card("App-rendered: Summary QC", uiOutput("summary_qc_selected_plot"),
+                          description = "Rendered from existing SummaryTable outputs.")
+  )
+)
+
+qc_library_diagnostics_ui <- function() panel_card(
+  "Library Diagnostics",
+  tags$section(
+    class = "ytab-qc-section",
+    tags$h4("1. Select samples"),
+    uiOutput("library_diagnostics_readiness"),
+    uiOutput("qc_current_selection"),
+    selectizeInput("qc_samples", "Samples to diagnose", choices = character(),
+                   multiple = TRUE, options = list(placeholder = "Select samples…")),
+    uiOutput("qc_sample_presets"),
+    uiOutput("qc_selection_message"),
+    tags$details(tags$summary("Review eligible samples"), DT::DTOutput("qc_sample_preview"))
+  ),
+  tags$section(
+    class = "ytab-qc-section",
+    tags$h4("2. Configure and run"),
+    radioButtons("library_diagnostics_mode", "Execution mode",
+                 choices = list("Preview command" = "preview", "Run diagnostics" = "run"),
+                 selected = "preview", inline = TRUE),
+    uiOutput("qc_execution_summary"),
+    uiOutput("library_diagnostics_cache_ui"),
+    uiOutput("library_diagnostics_action")
+  ),
+  tags$section(
+    class = "ytab-qc-section",
+    tags$h4("3. Results"),
+    ytab_two_column_layout(
+      controls = ytab_control_panel(
+        "Diagnostics display",
+        job_progress_ui("library_diagnostics_job"),
+        uiOutput("library_diagnostics_result"),
+        selectInput("library_diagnostics_plot_choice", "Visualization",
+                    choices = c("App-rendered: MidLC saturation" = "midlc",
+                                "App-rendered: Jackpots and library depth" = "jackpot",
+                                "Generated: Centromere bias plots" = "centromere",
+                                "Generated: Feature metaplots" = "metaplots",
+                                "App-rendered: Sequence-bias plots" = "sequence_bias")),
+        ytab_plot_customization_controls("library_diagnostics", include_heatmap = TRUE,
+                                         default_height = "medium"),
+        tags$details(class = "ytab-technical-details", tags$summary("Technical details"),
+                     tags$div(class = "ytab-technical-console",
+                              verbatimTextOutput("library_diagnostics_technical")))
+      ),
+      main = ytab_plot_card("Selected diagnostics visualization",
+                            uiOutput("library_diagnostics_selected_plot"),
+                            description = "App-rendered diagnostics use result tables; generated PNGs remain static provenance images.")
+    )
+  )
+)
 qc_files_ui <- function() panel_card("Diagnostic Files",radioButtons("diagnostic_view_mode","View",choices=list("File table"="table","Plot gallery"="gallery"),selected="gallery",inline=TRUE),actionButton("refresh_diagnostic_files","Refresh diagnostic files",class="btn-secondary"),uiOutput("diagnostic_result_selector"),uiOutput("diagnostic_file_filters"),uiOutput("diagnostic_files_empty"),conditionalPanel("input.diagnostic_view_mode == 'table'",DT::DTOutput("diagnostic_files_table")),conditionalPanel("input.diagnostic_view_mode == 'gallery'",uiOutput("diagnostic_plot_cards"),uiOutput("diagnostic_gallery_pagination")))
 quality_control_ui <- function() navset_tab(id="qc_tabs",nav_panel("Mapping QC",value="mapping_qc",qc_mapping_ui()),nav_panel("Summary QC",value="summary_qc",qc_summary_ui()),nav_panel("Library Diagnostics",value="library_diagnostics",qc_library_diagnostics_ui()),nav_panel("Diagnostic Files",value="diagnostic_files",qc_files_ui()))

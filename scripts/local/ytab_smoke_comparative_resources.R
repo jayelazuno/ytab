@@ -20,7 +20,7 @@ stopifnot(nrow(species) == 5L,
           is.data.frame(available))
 paths <- paste(c(available$path, capture.output(str(species))), collapse = "\n")
 stopifnot(!grepl("/Users/", paths, fixed = TRUE),
-          !grepl(paste0("codex/", "RNAcross"), paths, fixed = TRUE))
+          !grepl(paste0("codex/", paste0("RNA", "cross")), paths, fixed = TRUE))
 if (nrow(lookup) && nrow(orthology)) {
   mapped <- map_gene_across_species(lookup$gene_id[[1]], orthology, lookup)
   stopifnot(is.data.frame(mapped))

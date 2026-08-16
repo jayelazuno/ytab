@@ -1,6 +1,9 @@
 workspace_ui <- function(detected_cpu) {
   tags$div(class="ytab-workspace",
-    tags$header(class="ytab-workspace-header", tags$div(tags$b("YTAB"), tags$span("Yeast Transposon Analysis Browser")), project_badge(), actionButton("switch_project", "Switch project")),
+    tags$header(class="ytab-workspace-header ytab-release-header",
+      tags$div(tags$h2("YTAB"), tags$p(class="ytab-release-subtitle","Yeast Transposon Analysis Browser")),
+      project_badge(),
+      actionButton("switch_project", "Switch project")),
     job_progress_ui("global_job",compact=TRUE),
     navbarPage(id="workspace_tabs", title=NULL, collapsible=TRUE, inverse=TRUE,
       tabPanel("Overview",value="overview", panel_card("Project overview", uiOutput("overview_ui"), tags$div(class="ytab-actions", actionButton("overview_continue", "Continue preprocessing", class="btn-primary"), actionButton("refresh_project_status", "Refresh status")), tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("project_status_text")))),
@@ -17,9 +20,16 @@ workspace_ui <- function(detected_cpu) {
       tabPanel("Quality Control",value="quality_control",quality_control_ui()),
       tabPanel("Essentiality",value="essentiality", essentiality_ui()),
       tabPanel("Fitness Screen",value="fitness",fitness_ui()),
+      tabPanel("Gene & Domain Insertion Explorer",value="gene_domain_explorer",gene_domain_explorer_ui()),
       tabPanel("Comparative Species",value="comparative_species",comparative_ui()),
       tabPanel("Genome Browser",value="genome_browser", panel_card("Genome Browser", "Genome-browser integration will use existing WIG/bedGraph tracks in a later step.")),
-      tabPanel("Results & Exports",value="results_exports", panel_card("Reports and exports",uiOutput("results_readiness"),actionButton("build_project_report","Build project summary report"),actionButton("build_export_bundle","Create compact export bundle"),actionButton("refresh_exports","Refresh exports"),tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("exports_text")))),
+      tabPanel("Results & Exports",value="results_exports", panel_card("Reports and exports",
+        ytab_two_column_layout(
+          controls=ytab_control_panel("Export actions",
+            uiOutput("results_readiness"),
+            tags$div(class="ytab-actions",actionButton("build_project_report","Build project summary report"),actionButton("build_export_bundle","Create compact export bundle"),actionButton("refresh_exports","Refresh exports")),
+            tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("exports_text"))),
+          main=tagList(ytab_section_header("Results browser","Files are grouped by display purpose. Long paths are hidden by default."),DT::DTOutput("results_exports_table"),tags$details(class="ytab-more-options",tags$summary("Show project/export roots"),uiOutput("results_exports_roots")))))),
       tabPanel("Logs & Provenance",value="logs_provenance",panel_card("Logs and provenance",uiOutput("provenance_ui"),uiOutput("last_job_summary"),verbatimTextOutput("pipeline_job_text_logs"))),
       tabPanel("Help",value="help",panel_card("Quick start",uiOutput("help_ui"),low_memory_note()))))
 }

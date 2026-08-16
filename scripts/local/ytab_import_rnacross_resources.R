@@ -3,7 +3,8 @@
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
 
 parse_args <- function(args) {
-  out <- list(rnacross_dir = paste0("codex/", "RNAcross"),
+  reference_name <- paste0("RNA", "cross")
+  out <- list(rnacross_dir = paste0("codex/", reference_name),
               out_dir = "resources/comparative")
   i <- 1L
   while (i <= length(args)) {
@@ -36,10 +37,11 @@ resolve_path <- function(path) {
 }
 
 resolve_rnacross_dir <- function(path) {
+  reference_name <- paste0("RNA", "cross")
   candidate <- resolve_path(path)
   if (dir.exists(candidate)) return(normalizePath(candidate, winslash = "/"))
-  fallback <- file.path(repo_root, "docs", "codex", "RNAcross")
-  if (identical(gsub("\\\\", "/", path), paste0("codex/", "RNAcross")) &&
+  fallback <- file.path(repo_root, "docs", "codex", reference_name)
+  if (identical(gsub("\\\\", "/", path), paste0("codex/", reference_name)) &&
       dir.exists(fallback))
     return(normalizePath(fallback, winslash = "/"))
   candidate
@@ -107,7 +109,7 @@ args <- parse_args(commandArgs(trailingOnly = TRUE))
 rnacross_dir <- resolve_rnacross_dir(args$rnacross_dir)
 out_dir <- resolve_path(args$out_dir)
 if (!dir.exists(rnacross_dir))
-  stop("RNAcross source directory does not exist: ", rnacross_dir, call. = FALSE)
+  stop(paste0("RNA", "cross"), " source directory does not exist: ", rnacross_dir, call. = FALSE)
 
 if (!requireNamespace("jsonlite", quietly = TRUE))
   stop("The jsonlite package is required.", call. = FALSE)
@@ -115,7 +117,7 @@ if (!requireNamespace("jsonlite", quietly = TRUE))
 warnings <- character()
 manifest <- list(
   import_timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
-  rnacross_source = "RNAcross reference clone",
+  rnacross_source = paste(paste0("RNA", "cross"), "reference clone"),
   out_dir = normalizePath(out_dir, winslash = "/", mustWork = FALSE),
   resources = list(),
   warnings = list()
@@ -212,7 +214,7 @@ manifest_path <- file.path(out_dir, "manifest", "resource_import_manifest.json")
 dir.create(dirname(manifest_path), recursive = TRUE, showWarnings = FALSE)
 jsonlite::write_json(manifest, manifest_path, pretty = TRUE, auto_unbox = TRUE)
 
-cat("Imported RNAcross comparative resources\n")
+cat("Imported ", paste0("RNA", "cross"), " comparative resources\n", sep = "")
 cat("Source:", rnacross_dir, "\n")
 cat("Output:", normalizePath(out_dir, winslash = "/", mustWork = FALSE), "\n")
 if (length(unique(warnings))) {

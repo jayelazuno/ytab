@@ -124,6 +124,8 @@ tmp/
 
 # notes
 codex/
+codex/ui_references/
+codex/ui_references/**
 
 # Generated local YTAB projects and exports
 #output/projects/

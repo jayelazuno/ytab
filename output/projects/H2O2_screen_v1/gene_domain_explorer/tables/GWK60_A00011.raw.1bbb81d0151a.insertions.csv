@@ -1,0 +1,3 @@
+sample,track_name,track_source,chromosome,position,read_count,strand,source_file,displayed_region_start,displayed_region_end,gene_start,gene_end,in_display_region,in_gene,region_class
+yH298-parent-pool2,yH298-parent-pool2,raw,CP048230.1,2682,44,W,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH298-parent-pool2/yH298-parent-pool2_hits.txt,2287,17984,3287,16984,True,False,left_flank
+yH299-parent-pool3,yH299-parent-pool3,raw,CP048230.1,2656,1100,W,/Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab/output/projects/H2O2_screen_v1/create_hit_file/yH299-parent-pool3/yH299-parent-pool3_hits.txt,2287,17984,3287,16984,True,False,left_flank

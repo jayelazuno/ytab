@@ -15,3 +15,21 @@ cache-aware resumption.
 Launch with `./scripts/local/ytab_launch_app.sh`. The app begins on the YTAB landing page, where users can initialize a project from a local FASTQ directory or open any project discovered under `output/projects/*/config/project.yaml`. A launcher-provided `--project-config` is preselected but never starts a stage automatically.
 
 Projects without a completed raw SummaryTable enter Preprocessing; analysis-ready projects enter Overview. FASTQ data is referenced in place rather than uploaded. On low-memory systems, use two threads and consider completing the core profile in the terminal before launching the app.
+
+## Gene & Domain Insertion Explorer
+
+The app includes a **Gene & Domain Insertion Explorer** tab for analysis-ready
+projects with existing hit files. Search by gene name, systematic name, locus
+tag, gene ID, or any alias available in the project reference annotation. After
+resolving a gene, choose raw CreateHitFile tracks, a combined parent hit file
+when available, or all available tracks to plot insertion positions across the
+gene plus the selected flank.
+
+Domain annotations are drawn only when real domain data are available in the
+YTAB reference resources. Genes without domain annotation still plot
+successfully and show a no-domain message. Generated PNG figures, insertion
+tables, and manifests are saved under:
+
+```text
+output/projects/<PROJECT_ID>/gene_domain_explorer/
+```

@@ -493,7 +493,12 @@ essentiality_server <- function(input, output, session, active, active_project_p
     output_id <- switch(choice, site = "normalization_site_retention_plot",
                         feature = "normalization_feature_retention_plot",
                         "normalization_combined_retention_plot")
-    plotOutput(output_id, height = "320px")
+    ytab_plot_frame(
+      plotOutput(output_id, width = "100%",
+                 height = ytab_plot_height_px(input$essentiality_plot_height %||% "medium")),
+      input$essentiality_plot_width %||% "standard",
+      "app-rendered"
+    )
   })
 
   output$normalization_recommendation_card <- renderUI({
@@ -1113,24 +1118,29 @@ essentiality_server <- function(input, output, session, active, active_project_p
   })
   output$essentiality_selected_visualization <- renderUI({
     choice <- input$essentiality_visualization_choice %||% "label"
+    plot_height <- ytab_plot_height_px(input$essentiality_plot_height %||% "medium")
     if (startsWith(choice, "generated:")) {
       plots <- essentiality_generated_plot_inventory(active())
       index <- suppressWarnings(as.integer(sub("^generated:", "", choice)))
       if (is.na(index) || index < 1L || index > nrow(plots))
         return(tags$p(class = "text-muted", "Selected classifier plot is unavailable."))
       return(tags$article(
-        class = "ytab-plot-card",
-        tags$h4(paste(plots$target[[index]], plots$title[[index]])),
+        class = "ytab-static-image-card ytab-release-card",
+        tags$div(class = "ytab-plot-card-header",
+          tags$h4(paste("Generated:", plots$target[[index]], plots$title[[index]])),
+          tags$span(class = "ytab-status-badge", "Static generated image")),
         tags$div(class = "ytab-diagnostic-preview",
           tags$img(src = plots$served_url[[index]], alt = plots$filename[[index]],
-                   loading = "lazy", style = "width:100%;max-height:560px;object-fit:contain")
+                   loading = "lazy", style = paste0("width:100%;max-height:", plot_height, ";object-fit:contain"))
         ),
         tags$details(tags$summary("Show filename"), tags$code(plots$filename[[index]]))
       ))
     }
     output_id <- switch(choice, score = "classifier_score_plot",
                         metric = "classifier_metric_plot", "classifier_visual_label_plot")
-    plotOutput(output_id, height = "360px")
+    ytab_plot_frame(plotOutput(output_id, width = "100%", height = plot_height),
+                    input$essentiality_plot_width %||% "standard",
+                    "app-rendered")
   })
   result_data <- reactive({
     result <- current_result()
@@ -1189,20 +1199,23 @@ essentiality_server <- function(input, output, session, active, active_project_p
     if (!length(counts)) {
       qc_plot_empty("No classifier label column is available.")
     } else {
-      old <- qc_plot_par(mar = c(5, 5, 3, 1))
+      horizontal <- qc_plot_bar_horizontal(names(counts))
+      old <- qc_plot_par(mar = if (horizontal) c(5, 12, 3, 1) else c(7, 5, 3, 1))
       on.exit(par(old), add = TRUE)
-      barplot(counts, col = qc_plot_fill, border = qc_plot_border, lwd = qc_plot_lwd,
-              ylab = "Features", main = "Prediction-label distribution")
+      barplot(counts, horiz = horizontal, las = if (horizontal) 1 else qc_plot_label_las(2),
+              col = qc_plot_fill, border = qc_plot_border, lwd = qc_plot_lwd,
+              xlab = if (horizontal) "Features" else "",
+              ylab = if (horizontal) "" else "Features", main = "Prediction-label distribution")
     }
   }
   output$classifier_label_plot <- renderPlot({
     req(identical(results_view(), "overview"))
-    classifier_label_plot()
+    ytab_with_plot_display_options(input, "essentiality", classifier_label_plot())
   })
   output$classifier_visual_label_plot <- renderPlot({
-    classifier_label_plot()
+    ytab_with_plot_display_options(input, "essentiality", classifier_label_plot())
   })
-  output$classifier_score_plot <- renderPlot({
+  output$classifier_score_plot <- renderPlot(ytab_with_plot_display_options(input, "essentiality", {
     data <- result_data()
     columns <- essentiality_prediction_columns(data)
     if (!nrow(data) || !nzchar(columns$score)) {
@@ -1219,8 +1232,8 @@ essentiality_server <- function(input, output, session, active, active_project_p
       hist(values, col = qc_plot_fill, border = qc_plot_border, lwd = qc_plot_lwd,
            xlab = columns$score, main = "Score distribution")
     }
-  })
-  output$classifier_metric_plot <- renderPlot({
+  }))
+  output$classifier_metric_plot <- renderPlot(ytab_with_plot_display_options(input, "essentiality", {
     data <- result_data()
     columns <- essentiality_prediction_columns(data)
     if (!nrow(data) || !nzchar(columns$metric) || !nzchar(columns$label)) {
@@ -1239,7 +1252,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
               lwd = qc_plot_lwd, xlab = "Classifier label", ylab = columns$metric,
               main = "Feature metric versus prediction")
     }
-  })
+  }))
   output$classifier_provenance <- renderUI({
     result <- current_result()
     if (is.null(result)) return(NULL)
