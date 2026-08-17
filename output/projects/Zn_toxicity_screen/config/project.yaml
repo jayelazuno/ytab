@@ -1,0 +1,232 @@
+project_id: Zn_toxicity_screen
+display_name: Zn_toxicity_screen
+project_title: Zinc Toxicity Screen
+species: glabrata
+read_layout: paired_end
+sequencing_run: He_26110
+start_stage: fastq
+entry_mode: hpc_fastq
+hpc_project: true
+release_project: false
+public_pilot_project: false
+software_validation_project: false
+smoke_test_project: false
+analysis_profile: all
+repo_root: ../../..
+fastq_dir: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110
+scratch_fastq_dir: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110
+scratch_work_dir: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen
+output_project_dir: output/projects/Zn_toxicity_screen
+output_export_dir: output/exports/Zn_toxicity_screen
+sample_sheet: output/projects/Zn_toxicity_screen/config/sample_sheet.csv
+hpc_sample_manifest: output/projects/Zn_toxicity_screen/config/hpc_sample_manifest.csv
+comparison_design: output/projects/Zn_toxicity_screen/config/comparison_design.csv
+classifier_input_role: mock_controls_only
+fitness_design: Zn_treated_vs_mock
+treatment_label: 1.5 mM Zn
+comparison_label: 1.5 mM Zn-treated vs mock
+threads: 8
+reference:
+  species: glabrata
+  species_dir: resources/species/glabrata
+  reference_dir: resources/species/glabrata/reference_genome
+  fasta: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna
+  feature_table: resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab
+  gff: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff
+  gtf: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf
+  gffutils_db: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/glabrata/reference_genome/centromeres.NCBI.bed
+  trna_bed: resources/species/glabrata/reference_genome/tRNAs.bed
+  orthology_file: resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+  warnings:
+  - Multiple feature table candidates found; selected C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab.
+  - Multiple centromere BED candidates found; selected centromeres.NCBI.bed.
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: yH298-parent-pool1-1_5mM-Zn-treated
+  fastq_1: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH298-parent-pool1-1_5mM-Zn-treated_R1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH298-parent-pool1-1_5mM-Zn-treated_R2.fastq.gz
+  layout: paired
+  condition: Zn-treated
+  condition_label: 1.5 mM Zn-treated
+  background: yH298
+  pool: '1'
+  pool_id: '1'
+  replicate_id: '1'
+  treatment: 1_5mM-Zn
+  treatment_label: 1.5 mM Zn
+  control_or_treated: treated
+  library_role: treated
+  classifier_role: exclude
+  fitness_role: treated
+  species: glabrata
+  hit_file: output/projects/Zn_toxicity_screen/create_hit_file/yH298-parent-pool1-1_5mM-Zn-treated/yH298-parent-pool1-1_5mM-Zn-treated_hits.txt
+  guessed_condition: treated
+  guessed_background: yH298
+  guessed_pool: '1'
+  include: 'true'
+  warnings: ''
+- sample: yH298-parent-pool1-mock
+  fastq_1: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH298-parent-pool1-mock_R1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH298-parent-pool1-mock_R2.fastq.gz
+  layout: paired
+  condition: mock
+  condition_label: mock
+  background: yH298
+  pool: '1'
+  pool_id: '1'
+  replicate_id: '1'
+  treatment: mock
+  treatment_label: mock
+  control_or_treated: control
+  library_role: control
+  classifier_role: classifier_control
+  fitness_role: control
+  species: glabrata
+  hit_file: output/projects/Zn_toxicity_screen/create_hit_file/yH298-parent-pool1-mock/yH298-parent-pool1-mock_hits.txt
+  guessed_condition: parent
+  guessed_background: yH298
+  guessed_pool: '1'
+  include: 'true'
+  warnings: ''
+- sample: yH298-parent-pool2-1_5mM-Zn-treated
+  fastq_1: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH298-parent-pool2-1_5mM-Zn-treated_R1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH298-parent-pool2-1_5mM-Zn-treated_R2.fastq.gz
+  layout: paired
+  condition: Zn-treated
+  condition_label: 1.5 mM Zn-treated
+  background: yH298
+  pool: '2'
+  pool_id: '2'
+  replicate_id: '2'
+  treatment: 1_5mM-Zn
+  treatment_label: 1.5 mM Zn
+  control_or_treated: treated
+  library_role: treated
+  classifier_role: exclude
+  fitness_role: treated
+  species: glabrata
+  hit_file: output/projects/Zn_toxicity_screen/create_hit_file/yH298-parent-pool2-1_5mM-Zn-treated/yH298-parent-pool2-1_5mM-Zn-treated_hits.txt
+  guessed_condition: treated
+  guessed_background: yH298
+  guessed_pool: '2'
+  include: 'true'
+  warnings: ''
+- sample: yH298-parent-pool2-mock
+  fastq_1: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH298-parent-pool2-mock_R1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH298-parent-pool2-mock_R2.fastq.gz
+  layout: paired
+  condition: mock
+  condition_label: mock
+  background: yH298
+  pool: '2'
+  pool_id: '2'
+  replicate_id: '2'
+  treatment: mock
+  treatment_label: mock
+  control_or_treated: control
+  library_role: control
+  classifier_role: classifier_control
+  fitness_role: control
+  species: glabrata
+  hit_file: output/projects/Zn_toxicity_screen/create_hit_file/yH298-parent-pool2-mock/yH298-parent-pool2-mock_hits.txt
+  guessed_condition: parent
+  guessed_background: yH298
+  guessed_pool: '2'
+  include: 'true'
+  warnings: ''
+- sample: yH299-parent-pool3-1_5mM-Zn-treated
+  fastq_1: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH299-parent-pool3-1_5mM-Zn-treated_R1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH299-parent-pool3-1_5mM-Zn-treated_R2.fastq.gz
+  layout: paired
+  condition: Zn-treated
+  condition_label: 1.5 mM Zn-treated
+  background: yH299
+  pool: '3'
+  pool_id: '3'
+  replicate_id: '3'
+  treatment: 1_5mM-Zn
+  treatment_label: 1.5 mM Zn
+  control_or_treated: treated
+  library_role: treated
+  classifier_role: exclude
+  fitness_role: treated
+  species: glabrata
+  hit_file: output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool3-1_5mM-Zn-treated/yH299-parent-pool3-1_5mM-Zn-treated_hits.txt
+  guessed_condition: treated
+  guessed_background: yH299
+  guessed_pool: '3'
+  include: 'true'
+  warnings: ''
+- sample: yH299-parent-pool3-mock
+  fastq_1: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH299-parent-pool3-mock_R1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH299-parent-pool3-mock_R2.fastq.gz
+  layout: paired
+  condition: mock
+  condition_label: mock
+  background: yH299
+  pool: '3'
+  pool_id: '3'
+  replicate_id: '3'
+  treatment: mock
+  treatment_label: mock
+  control_or_treated: control
+  library_role: control
+  classifier_role: classifier_control
+  fitness_role: control
+  species: glabrata
+  hit_file: output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool3-mock/yH299-parent-pool3-mock_hits.txt
+  guessed_condition: parent
+  guessed_background: yH299
+  guessed_pool: '3'
+  include: 'true'
+  warnings: ''
+- sample: yH299-parent-pool4-1_5mM-Zn-treated
+  fastq_1: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH299-parent-pool4-1_5mM-Zn-treated_R1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH299-parent-pool4-1_5mM-Zn-treated_R2.fastq.gz
+  layout: paired
+  condition: Zn-treated
+  condition_label: 1.5 mM Zn-treated
+  background: yH299
+  pool: '4'
+  pool_id: '4'
+  replicate_id: '4'
+  treatment: 1_5mM-Zn
+  treatment_label: 1.5 mM Zn
+  control_or_treated: treated
+  library_role: treated
+  classifier_role: exclude
+  fitness_role: treated
+  species: glabrata
+  hit_file: output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated_hits.txt
+  guessed_condition: treated
+  guessed_background: yH299
+  guessed_pool: '4'
+  include: 'true'
+  warnings: ''
+- sample: yH299-parent-pool4-mock
+  fastq_1: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH299-parent-pool4-mock_R1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/He_26110/yH299-parent-pool4-mock_R2.fastq.gz
+  layout: paired
+  condition: mock
+  condition_label: mock
+  background: yH299
+  pool: '4'
+  pool_id: '4'
+  replicate_id: '4'
+  treatment: mock
+  treatment_label: mock
+  control_or_treated: control
+  library_role: control
+  classifier_role: classifier_control
+  fitness_role: control
+  species: glabrata
+  hit_file: output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-mock/yH299-parent-pool4-mock_hits.txt
+  guessed_condition: parent
+  guessed_background: yH299
+  guessed_pool: '4'
+  include: 'true'
+  warnings: ''

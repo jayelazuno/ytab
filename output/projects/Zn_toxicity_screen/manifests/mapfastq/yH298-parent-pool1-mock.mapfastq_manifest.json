@@ -1,0 +1,9 @@
+{
+  "sample": "yH298-parent-pool1-mock",
+  "stage": "mapfastq",
+  "status": "success",
+  "output_dir": "/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/mapfastq/yH298-parent-pool1-mock",
+  "log_file": "/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/logs/01_mapfastq_array.2.log",
+  "message": "Mapped paired-end FASTQs on HPC; BAM retained on scratch: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/bam/yH298-parent-pool1-mock/yH298-parent-pool1-mock.sorted.bam",
+  "last_updated": "2026-08-17T19:52:59.374579+00:00"
+}

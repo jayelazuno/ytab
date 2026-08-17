@@ -1,0 +1,1 @@
+/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/bam/yH298-parent-pool2-mock/yH298-parent-pool2-mock.sorted.bam

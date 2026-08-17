@@ -1,0 +1,9 @@
+{
+  "sample": "yH298-parent-pool2-1_5mM-Zn-treated",
+  "stage": "create_hit_file",
+  "status": "success",
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH298-parent-pool2-1_5mM-Zn-treated",
+  "log_file": "/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/logs/02_create_hit_file_array.3.log",
+  "message": "CreateHitFile completed from scratch BAM; processed hit output is app-facing.",
+  "last_updated": "2026-08-17T21:31:37.910960+00:00"
+}

@@ -1,0 +1,9 @@
+
+=== Finding hits ===
+83697096 reads found of map quality >= 20; in these:
+  65078 hits were found; of these:
+    65078 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH298-parent-pool2-1_5mM-Zn-treated/yH298-parent-pool2-1_5mM-Zn-treated.insertions.bedgraph
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH298-parent-pool2-1_5mM-Zn-treated/yH298-parent-pool2-1_5mM-Zn-treated.insertions.wig
+    (bigwig not written: Error - overlapping regions in bedGraph line 120 of /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH298-parent-pool2-1_5mM-Zn-treated/yH298-parent-pool2-1_5mM-Zn-treated.insertions.bedgraph)
