@@ -122,7 +122,10 @@ qc_mapping_ui <- function() panel_card(
       selectInput("mapping_qc_plot_choice", "Visualization",
                   choices = c("Mapping summary" = "mapping_summary")),
       ytab_plot_customization_controls("mapping_qc", include_bars = TRUE,
-                                       default_height = "medium"),
+                                       default_height = "medium",
+                                       default_width = "wide",
+                                       default_bar_orientation = "horizontal",
+                                       default_show_value_labels = FALSE),
       tags$details(
         class = "ytab-more-options",
         tags$summary("Tables / downloads"),
@@ -133,8 +136,18 @@ qc_mapping_ui <- function() panel_card(
         tags$details(tags$summary("File details"), DT::DTOutput("mapping_qc_details"))
       )
     ),
-    main = ytab_plot_card("App-rendered: Mapping summary", uiOutput("mapping_qc_selected_plot"),
-                          description = "Rendered from existing mapping statistics tables.")
+    main = ytab_plot_card(
+      "Mapping summary",
+      tagList(
+        tags$div(class = "ytab-result-heading",
+                 tags$span(class = "ytab-status-badge", "Live plot")),
+        uiOutput("mapping_qc_selected_plot"),
+        tags$details(class = "ytab-more-options",
+                     tags$summary("Plot provenance"),
+                     tags$p(class = "text-muted",
+                            "Rendered from existing mapping statistics tables."))
+      )
+    )
   )
 )
 

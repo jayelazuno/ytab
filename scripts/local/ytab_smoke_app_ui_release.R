@@ -85,6 +85,20 @@ for (tab in c("Quality Control", "Essentiality", "Fitness Screen",
 }
 
 must_contain("app/shiny/R/ui_qc.R", "summary_qc_plot_choice", "Summary QC plot selector")
+must_contain("app/shiny/R/ui_qc.R", "mapping_qc_plot_choice", "Mapping QC plot selector")
+must_contain("app/shiny/R/ui_qc.R", "ytab_plot_customization_controls\\(\"mapping_qc\"", "Mapping QC display controls")
+must_contain("app/shiny/R/ui_qc.R", "default_bar_orientation = \"horizontal\"", "Mapping QC horizontal default")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_display_labels", "Mapping QC label mode wiring")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_grid_enabled", "Mapping QC grid wiring")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_show_value_labels", "Mapping QC value-label wiring")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_label_angle", "Mapping QC label-angle wiring")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_bar_horizontal", "Mapping QC orientation wiring")
+must_not_contain(file.path(repo_root, "app/shiny/R/ui_qc.R"),
+                 "App-rendered: Mapping summary",
+                 "dominant app-rendered Mapping QC title")
+must_not_contain(file.path(repo_root, "app/shiny/R/qc_mapping_stats_plot.R"),
+                 "abbreviate\\(|strtrim\\(",
+                 "Mapping QC silent label truncation")
 must_contain("app/shiny/R/ui_qc.R", "ytab_plot_customization_controls\\(\"summary_qc\"", "Summary QC display controls")
 must_contain("app/shiny/R/ui_qc.R", "ytab_two_column_layout", "Summary QC two-column layout")
 must_contain("app/shiny/R/ui_essentiality.R", "ytab_two_column_layout", "Essentiality two-column layout")

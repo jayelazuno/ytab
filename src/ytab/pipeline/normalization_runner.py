@@ -79,10 +79,27 @@ def load_project_for_normalization(project_config: Path) -> dict:
 
 
 def _condition(sample: dict) -> str:
+    role_values = {
+        str(sample.get("classifier_role") or "").strip().lower(),
+        str(sample.get("library_role") or "").strip().lower(),
+        str(sample.get("control_or_treated") or "").strip().lower(),
+        str(sample.get("fitness_role") or "").strip().lower(),
+    }
+    if role_values.intersection({"classifier_control", "parent", "control"}):
+        return "parent"
+    if role_values.intersection({"exclude", "treated", "treatment"}):
+        return "treated"
     value = str(sample.get("condition") or sample.get("guessed_condition") or "").strip().lower()
-    if value:
-        return value
-    return "parent" if "parent" in str(sample.get("sample") or "").lower() else "unknown"
+    if value in {"parent", "mock", "control", "untreated"}:
+        return "parent"
+    if value in {"treated", "treatment"} or "treated" in value:
+        return "treated"
+    name = str(sample.get("sample") or "").lower()
+    if "treated" in name:
+        return "treated"
+    if "mock" in name or "parent" in name:
+        return "parent"
+    return "unknown"
 
 
 def get_normalization_samples(
@@ -104,7 +121,7 @@ def get_normalization_samples(
     elif sample_mode == "treated":
         selected = [row for row in included if _condition(row) == "treated"]
     else:
-        selected = [row for row in included if _condition(row) == "parent" or "parent" in str(row.get("sample") or "").lower()]
+        selected = [row for row in included if _condition(row) == "parent"]
     if not selected:
         raise ValueError(f"No included samples matched sample mode: {sample_mode}")
     return [dict(row) for row in selected]

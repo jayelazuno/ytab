@@ -1,0 +1,38 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Zn_Finalize
+#$ -q UI
+#$ -pe smp 2
+#$ -j y
+#$ -o /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/logs/07_report_export_finalize.log
+
+set -euo pipefail
+PROJECT_ID="${PROJECT_ID:-Zn_toxicity_screen}"
+REPO_ROOT="${REPO_ROOT:-/Users/jayelazuno/workspace/ytab}"
+PROJECT_CONFIG="${PROJECT_CONFIG:-$REPO_ROOT/output/projects/$PROJECT_ID/config/project.yaml}"
+PYTHON="${PYTHON:-python}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-ytab-local}"
+
+[[ "$PROJECT_ID" == "Zn_toxicity_screen" ]] || { echo "ERROR: bad PROJECT_ID=$PROJECT_ID" >&2; exit 2; }
+if [[ "${YTAB_SKIP_CONDA:-0}" != "1" ]]; then
+  if command -v conda >/dev/null 2>&1; then eval "$(conda shell.bash hook)"; else source "${CONDA_SH:-/old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh}"; fi
+  conda activate "$YTAB_CONDA_ENV"
+fi
+export PYTHONPATH="$REPO_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+
+"$PYTHON" "$REPO_ROOT/scripts/local/ytab_project_status.py" --project-config "$PROJECT_CONFIG" --refresh
+"$PYTHON" "$REPO_ROOT/scripts/local/ytab_build_project_report.py" \
+  --project-config "$PROJECT_CONFIG" \
+  --output "$REPO_ROOT/output/exports/$PROJECT_ID/report/ytab_project_summary.html" \
+  --force
+"$PYTHON" "$REPO_ROOT/scripts/local/ytab_export_project.py" \
+  --project-config "$PROJECT_CONFIG" \
+  --output "$REPO_ROOT/output/exports/$PROJECT_ID/bundles/${PROJECT_ID}.tar.gz" \
+  --include-logs \
+  --include-browser-tracks \
+  --include-hit-files \
+  --force
+
+echo "Final project status:"
+"$PYTHON" "$REPO_ROOT/scripts/local/ytab_project_status.py" --project-config "$PROJECT_CONFIG" --show-next

@@ -1,0 +1,35 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Zn_Fitness
+#$ -q UI
+#$ -pe smp 8
+#$ -j y
+#$ -o /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/logs/06_fitness_zn_vs_mock.log
+
+set -euo pipefail
+PROJECT_ID="${PROJECT_ID:-Zn_toxicity_screen}"
+REPO_ROOT="${REPO_ROOT:-/Users/jayelazuno/workspace/ytab}"
+PROJECT_CONFIG="${PROJECT_CONFIG:-$REPO_ROOT/output/projects/$PROJECT_ID/config/project.yaml}"
+COMPARISON_DESIGN="${COMPARISON_DESIGN:-$REPO_ROOT/output/projects/$PROJECT_ID/config/comparison_design.csv}"
+PYTHON="${PYTHON:-python}"
+FORCE="${FORCE:-0}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-ytab-local}"
+
+[[ "$PROJECT_ID" == "Zn_toxicity_screen" ]] || { echo "ERROR: bad PROJECT_ID=$PROJECT_ID" >&2; exit 2; }
+if [[ "${YTAB_SKIP_CONDA:-0}" != "1" ]]; then
+  if command -v conda >/dev/null 2>&1; then eval "$(conda shell.bash hook)"; else source "${CONDA_SH:-/old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh}"; fi
+  conda activate "$YTAB_CONDA_ENV"
+fi
+export PYTHONPATH="$REPO_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+force_arg=()
+[[ "$FORCE" == "1" ]] && force_arg=(--force)
+
+echo "Fitness branch uses raw per-sample SummaryTable outputs and compares 1.5 mM Zn-treated samples against matched mock controls."
+"$PYTHON" "$REPO_ROOT/scripts/local/ytab_run_treated_vs_parent.py" \
+  --project-config "$PROJECT_CONFIG" \
+  --analysis-id Zn_1_5mM_vs_mock \
+  --comparison-design "$COMPARISON_DESIGN" \
+  --input-mode raw-summary \
+  --keep-going \
+  "${force_arg[@]}"

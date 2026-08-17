@@ -1,0 +1,132 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Zn_MapFastq
+#$ -q UI
+#$ -pe smp 8
+#$ -t 1-8
+#$ -j y
+#$ -o /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/logs/01_mapfastq_array.$TASK_ID.log
+
+set -euo pipefail
+
+PROJECT_ID="${PROJECT_ID:-Zn_toxicity_screen}"
+REPO_ROOT="${REPO_ROOT:-/Users/jayelazuno/workspace/ytab}"
+PROJECT_CONFIG="${PROJECT_CONFIG:-$REPO_ROOT/output/projects/$PROJECT_ID/config/project.yaml}"
+MANIFEST="${MANIFEST:-$REPO_ROOT/output/projects/$PROJECT_ID/config/hpc_sample_manifest.csv}"
+PROJECT_DIR="$REPO_ROOT/output/projects/$PROJECT_ID"
+PYTHON="${PYTHON:-python}"
+THREADS="${THREADS:-${NSLOTS:-8}}"
+FORCE="${FORCE:-0}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-ytab-local}"
+
+if [[ "$PROJECT_ID" != "Zn_toxicity_screen" ]]; then
+  echo "ERROR: PROJECT_ID must be Zn_toxicity_screen, got $PROJECT_ID" >&2
+  exit 2
+fi
+if [[ -z "${SGE_TASK_ID:-}" ]]; then
+  echo "ERROR: SGE_TASK_ID is missing; this script must run as an SGE array task." >&2
+  exit 2
+fi
+
+activate_env() {
+  if [[ "${YTAB_SKIP_CONDA:-0}" == "1" ]]; then return 0; fi
+  if command -v conda >/dev/null 2>&1; then
+    eval "$(conda shell.bash hook)"
+  else
+    for conda_sh in "${CONDA_SH:-}" \
+      /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh \
+      /Users/jayelazuno/miniforge3/etc/profile.d/conda.sh; do
+      if [[ -n "$conda_sh" && -s "$conda_sh" ]]; then
+        # shellcheck disable=SC1090
+        source "$conda_sh"
+        break
+      fi
+    done
+  fi
+  conda activate "$YTAB_CONDA_ENV"
+}
+
+activate_env
+export PYTHONPATH="$REPO_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+eval "$("$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_manifest_row.py" --manifest "$MANIFEST" --task-id "$SGE_TASK_ID" --format shell)"
+
+if [[ ! -s "$YTAB_R1_FASTQ" || ! -s "$YTAB_R2_FASTQ" ]]; then
+  echo "ERROR: paired FASTQs missing for $YTAB_SAMPLE" >&2
+  echo "R1=$YTAB_R1_FASTQ" >&2
+  echo "R2=$YTAB_R2_FASTQ" >&2
+  exit 2
+fi
+
+BT2_INDEX="$("$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_config_value.py" --project-config "$PROJECT_CONFIG" --key reference.bowtie2_index_prefix --resolve-repo)"
+if [[ ! -s "${BT2_INDEX}.1.bt2" && ! -s "${BT2_INDEX}.1.bt2l" ]]; then
+  echo "ERROR: Bowtie2 index prefix is not complete or not visible: $BT2_INDEX" >&2
+  exit 2
+fi
+
+mkdir -p "$YTAB_SCRATCH_MAPFASTQ_DIR" "$YTAB_SCRATCH_BAM_DIR" "$YTAB_SCRATCH_TMP_DIR" "$PROJECT_DIR/mapfastq/$YTAB_SAMPLE" "$PROJECT_DIR/logs/mapfastq"
+
+expected_bam="$YTAB_SCRATCH_BAM_DIR/$YTAB_SAMPLE.sorted.bam"
+expected_bai="$expected_bam.bai"
+stats="$YTAB_SCRATCH_MAPFASTQ_DIR/$YTAB_SAMPLE.mapping_stats.csv"
+start=$(date +%s)
+
+echo "Project: $PROJECT_ID"
+echo "Sample: $YTAB_SAMPLE"
+echo "Paired-end handling: passing R1/R2 to MapFastq as --r1/--r2; MapFastq uses Bowtie2 -1/-2 and junction-mate R1 by default."
+echo "R1: $YTAB_R1_FASTQ"
+echo "R2: $YTAB_R2_FASTQ"
+echo "MapFastq scratch dir: $YTAB_SCRATCH_MAPFASTQ_DIR"
+echo "Scratch BAM dir: $YTAB_SCRATCH_BAM_DIR"
+
+if [[ "$FORCE" != "1" && -s "$expected_bam" && -s "$stats" ]]; then
+  echo "[SKIP] Existing scratch mapping outputs found for $YTAB_SAMPLE"
+else
+  "$PYTHON" "$REPO_ROOT/src/ytab/mapping/MapFastq.py" \
+    --r1 "$YTAB_R1_FASTQ" \
+    --r2 "$YTAB_R2_FASTQ" \
+    --out-dir "$YTAB_SCRATCH_MAPFASTQ_DIR" \
+    --bt2-index "$BT2_INDEX" \
+    --threads "$THREADS" \
+    --sample-name "$YTAB_SAMPLE"
+
+  map_bam="$YTAB_SCRATCH_MAPFASTQ_DIR/$YTAB_SAMPLE.sorted.bam"
+  if [[ ! -s "$map_bam" ]]; then
+    echo "ERROR: MapFastq did not produce expected BAM: $map_bam" >&2
+    exit 1
+  fi
+  mv -f "$map_bam" "$expected_bam"
+  if [[ -s "$map_bam.bai" ]]; then
+    mv -f "$map_bam.bai" "$expected_bai"
+  elif [[ -s "${map_bam%.bam}.bai" ]]; then
+    mv -f "${map_bam%.bam}.bai" "$expected_bai"
+  fi
+fi
+
+if [[ ! -s "$expected_bam" ]]; then
+  echo "ERROR: expected scratch BAM missing: $expected_bam" >&2
+  exit 1
+fi
+if [[ ! -s "$stats" ]]; then
+  echo "ERROR: expected mapping stats missing: $stats" >&2
+  exit 1
+fi
+
+cp -f "$stats" "$PROJECT_DIR/mapfastq/$YTAB_SAMPLE/$YTAB_SAMPLE.mapping_stats.csv"
+printf '%s\n' "$expected_bam" > "$PROJECT_DIR/mapfastq/$YTAB_SAMPLE/scratch_bam_path.txt"
+end=$(date +%s)
+
+"$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_write_sample_status.py" \
+  --stage mapfastq \
+  --project-dir "$PROJECT_DIR" \
+  --sample "$YTAB_SAMPLE" \
+  --status success \
+  --layout paired \
+  --fastq-1 "$YTAB_R1_FASTQ" \
+  --fastq-2 "$YTAB_R2_FASTQ" \
+  --output-dir "$YTAB_SCRATCH_MAPFASTQ_DIR" \
+  --log-file "${SGE_STDOUT_PATH:-}" \
+  --elapsed-seconds "$((end - start))" \
+  --message "Mapped paired-end FASTQs on HPC; BAM retained on scratch: $expected_bam"
+
+echo "Done MapFastq for $YTAB_SAMPLE"

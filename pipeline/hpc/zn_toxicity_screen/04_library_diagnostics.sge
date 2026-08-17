@@ -1,0 +1,33 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Zn_LibraryDiagnostics
+#$ -q UI
+#$ -pe smp 8
+#$ -j y
+#$ -o /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/logs/04_library_diagnostics.log
+
+set -euo pipefail
+# LibraryDiagnostics is intentionally aggregate here. The current YTAB runner
+# creates one cacheable project-level diagnostics run and stable app-facing
+# diagnostic outputs from all selected hit files.
+PROJECT_ID="${PROJECT_ID:-Zn_toxicity_screen}"
+REPO_ROOT="${REPO_ROOT:-/Users/jayelazuno/workspace/ytab}"
+PROJECT_CONFIG="${PROJECT_CONFIG:-$REPO_ROOT/output/projects/$PROJECT_ID/config/project.yaml}"
+PYTHON="${PYTHON:-python}"
+THREADS="${THREADS:-${NSLOTS:-8}}"
+FORCE="${FORCE:-0}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-ytab-local}"
+
+[[ "$PROJECT_ID" == "Zn_toxicity_screen" ]] || { echo "ERROR: bad PROJECT_ID=$PROJECT_ID" >&2; exit 2; }
+if [[ "${YTAB_SKIP_CONDA:-0}" != "1" ]]; then
+  if command -v conda >/dev/null 2>&1; then eval "$(conda shell.bash hook)"; else source "${CONDA_SH:-/old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh}"; fi
+  conda activate "$YTAB_CONDA_ENV"
+fi
+export PYTHONPATH="$REPO_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+force_arg=()
+[[ "$FORCE" == "1" ]] && force_arg=(--force)
+"$PYTHON" "$REPO_ROOT/scripts/local/ytab_run_library_diagnostics.py" \
+  --project-config "$PROJECT_CONFIG" \
+  --threads "$THREADS" \
+  "${force_arg[@]}"

@@ -90,14 +90,28 @@ def load_project_for_treated_vs_parent(project_config: Path) -> dict:
 
 
 def _condition(row):
+    role_values = {
+        str(row.get("classifier_role") or "").strip().lower(),
+        str(row.get("library_role") or "").strip().lower(),
+        str(row.get("control_or_treated") or "").strip().lower(),
+        str(row.get("fitness_role") or "").strip().lower(),
+    }
+    if role_values.intersection({"classifier_control", "parent", "control"}):
+        return "parent"
+    if role_values.intersection({"exclude", "treated", "treatment"}):
+        return "treated"
     explicit = str(row.get("condition") or "").lower()
     guessed = str(row.get("guessed_condition") or "").lower()
     treatment = str(row.get("treatment") or "").lower()
     name = str(row.get("sample") or "").lower()
-    if explicit == "parent" or guessed == "parent" or treatment == "untreated" or "parent" in name:
+    if explicit in {"parent", "mock", "control"} or guessed in {"parent", "mock", "control"} or treatment in {"untreated", "mock", "control"}:
         return "parent"
-    if explicit == "treated" or guessed == "treated" or (treatment and treatment != "untreated") or "treated" in name:
+    if explicit == "treated" or guessed == "treated" or "treated" in explicit or "treated" in guessed or (treatment and treatment not in {"untreated", "mock", "control"}):
         return "treated"
+    if "treated" in name:
+        return "treated"
+    if "mock" in name or "parent" in name:
+        return "parent"
     return ""
 
 

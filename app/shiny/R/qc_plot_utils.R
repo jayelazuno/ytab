@@ -49,6 +49,32 @@ qc_plot_label_las <- function(default = 2L) {
   default
 }
 
+qc_plot_label_angle <- function(default = 0L) {
+  angle <- suppressWarnings(as.integer(getOption("ytab.plot.label_angle", default)))
+  if (is.na(angle)) default else angle
+}
+
+qc_plot_label_mode <- function() {
+  as.character(getOption("ytab.plot.label_mode", "full"))
+}
+
+qc_plot_display_labels <- function(labels) {
+  labels <- as.character(labels)
+  mode <- qc_plot_label_mode()
+  if (identical(mode, "hide")) return(rep("", length(labels)))
+  if (!identical(mode, "compact")) return(labels)
+  compact <- labels
+  compact <- sub("^yH[0-9]+-", "", compact)
+  compact <- gsub("H2O2-treated-facs", "H2O2", compact, fixed = TRUE)
+  compact <- gsub("parent", "parent", compact, fixed = TRUE)
+  compact <- gsub("-pool", " p", compact, fixed = TRUE)
+  compact
+}
+
+qc_plot_grid_enabled <- function() {
+  identical(as.character(getOption("ytab.plot.grid", "show")), "show")
+}
+
 qc_plot_bar_horizontal <- function(labels = character()) {
   mode <- as.character(getOption("ytab.plot.bar_orientation", "auto"))
   if (identical(mode, "horizontal")) return(TRUE)

@@ -1,0 +1,138 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Zn_CreateHitFile
+#$ -q UI
+#$ -pe smp 8
+#$ -t 1-8
+#$ -j y
+#$ -o /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/logs/02_create_hit_file_array.$TASK_ID.log
+
+set -euo pipefail
+
+PROJECT_ID="${PROJECT_ID:-Zn_toxicity_screen}"
+REPO_ROOT="${REPO_ROOT:-/Users/jayelazuno/workspace/ytab}"
+PROJECT_CONFIG="${PROJECT_CONFIG:-$REPO_ROOT/output/projects/$PROJECT_ID/config/project.yaml}"
+MANIFEST="${MANIFEST:-$REPO_ROOT/output/projects/$PROJECT_ID/config/hpc_sample_manifest.csv}"
+PROJECT_DIR="$REPO_ROOT/output/projects/$PROJECT_ID"
+PYTHON="${PYTHON:-python}"
+THREADS="${THREADS:-${NSLOTS:-8}}"
+FORCE="${FORCE:-0}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-ytab-local}"
+
+if [[ "$PROJECT_ID" != "Zn_toxicity_screen" ]]; then
+  echo "ERROR: PROJECT_ID must be Zn_toxicity_screen, got $PROJECT_ID" >&2
+  exit 2
+fi
+if [[ -z "${SGE_TASK_ID:-}" ]]; then
+  echo "ERROR: SGE_TASK_ID is missing; this script must run as an SGE array task." >&2
+  exit 2
+fi
+
+activate_env() {
+  if [[ "${YTAB_SKIP_CONDA:-0}" == "1" ]]; then return 0; fi
+  if command -v conda >/dev/null 2>&1; then
+    eval "$(conda shell.bash hook)"
+  else
+    for conda_sh in "${CONDA_SH:-}" \
+      /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh \
+      /Users/jayelazuno/miniforge3/etc/profile.d/conda.sh; do
+      if [[ -n "$conda_sh" && -s "$conda_sh" ]]; then
+        # shellcheck disable=SC1090
+        source "$conda_sh"
+        break
+      fi
+    done
+  fi
+  conda activate "$YTAB_CONDA_ENV"
+}
+
+activate_env
+export PYTHONPATH="$REPO_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+eval "$("$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_manifest_row.py" --manifest "$MANIFEST" --task-id "$SGE_TASK_ID" --format shell)"
+
+bam="$YTAB_SCRATCH_BAM_DIR/$YTAB_SAMPLE.sorted.bam"
+if [[ ! -s "$bam" ]]; then
+  echo "ERROR: scratch BAM missing for $YTAB_SAMPLE: $bam" >&2
+  exit 2
+fi
+if [[ ! -s "$bam.bai" && ! -s "${bam%.bam}.bai" ]]; then
+  echo "ERROR: BAM index missing for $YTAB_SAMPLE: $bam.bai" >&2
+  exit 2
+fi
+
+fasta="$("$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_config_value.py" --project-config "$PROJECT_CONFIG" --key reference.fasta --resolve-repo)"
+gff="$("$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_config_value.py" --project-config "$PROJECT_CONFIG" --key reference.gff --resolve-repo)"
+gtf="$("$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_config_value.py" --project-config "$PROJECT_CONFIG" --key reference.gtf --resolve-repo)"
+feature_table="$("$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_config_value.py" --project-config "$PROJECT_CONFIG" --key reference.feature_table --resolve-repo)"
+
+features=""
+feature_format=""
+if [[ -s "$gff" ]]; then
+  features="$gff"; feature_format="gff"
+elif [[ -s "$gtf" ]]; then
+  features="$gtf"; feature_format="gtf"
+elif [[ -s "$feature_table" ]]; then
+  features="$feature_table"
+  if [[ "$(basename "$feature_table")" == *chromosomal_feature* ]]; then
+    feature_format="cgd_tab"
+  else
+    feature_format="ncbi_feature_table"
+  fi
+else
+  echo "ERROR: no usable feature annotation found in project config." >&2
+  exit 2
+fi
+if [[ ! -s "$fasta" ]]; then
+  echo "ERROR: reference FASTA missing: $fasta" >&2
+  exit 2
+fi
+
+out_dir="$PROJECT_DIR/create_hit_file/$YTAB_SAMPLE"
+hits="$out_dir/$YTAB_SAMPLE""_hits.txt"
+mkdir -p "$out_dir" "$PROJECT_DIR/logs/create_hit_file"
+start=$(date +%s)
+
+echo "Project: $PROJECT_ID"
+echo "Sample: $YTAB_SAMPLE"
+echo "Input BAM: $bam"
+echo "Output hit file: $hits"
+
+if [[ "$FORCE" == "1" && -e "$hits" ]]; then
+  rm -f "$hits"
+fi
+
+if [[ "$FORCE" != "1" && -s "$hits" ]]; then
+  echo "[SKIP] Existing hit file found for $YTAB_SAMPLE"
+else
+  "$PYTHON" "$REPO_ROOT/src/ytab/insertions/CreateHitFile.py" \
+    --bam "$bam" \
+    --out-dir "$out_dir" \
+    --out-prefix "$YTAB_SAMPLE" \
+    --flat-output \
+    --fasta "$fasta" \
+    --features "$features" \
+    --feature-format "$feature_format" \
+    --threads "$THREADS" \
+    --write-browser-tracks
+fi
+
+if [[ ! -s "$hits" ]]; then
+  echo "ERROR: expected hit file missing: $hits" >&2
+  exit 1
+fi
+end=$(date +%s)
+
+"$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_write_sample_status.py" \
+  --stage create_hit_file \
+  --project-dir "$PROJECT_DIR" \
+  --sample "$YTAB_SAMPLE" \
+  --status success \
+  --input-bam "$bam" \
+  --hits-file "$hits" \
+  --output-dir "$out_dir" \
+  --log-file "${SGE_STDOUT_PATH:-}" \
+  --elapsed-seconds "$((end - start))" \
+  --message "CreateHitFile completed from scratch BAM; processed hit output is app-facing."
+
+echo "Done CreateHitFile for $YTAB_SAMPLE"

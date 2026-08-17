@@ -52,12 +52,15 @@ ytab_plot_customization_controls <- function(
     include_heatmap = FALSE,
     include_labels = TRUE,
     include_grid = TRUE,
-    default_height = "medium") {
+    default_height = "medium",
+    default_width = "standard",
+    default_bar_orientation = "auto",
+    default_show_value_labels = TRUE) {
   ns_id <- function(suffix) paste0(id, "_", suffix)
   controls <- list(
     selectInput(ns_id("plot_style"), "Plot style", ytab_plot_style_choices(), selected = "clean"),
     selectInput(ns_id("plot_height"), "Plot height", ytab_plot_height_choices(), selected = default_height),
-    selectInput(ns_id("plot_width"), "Plot width", ytab_plot_width_choices(), selected = "standard"),
+    selectInput(ns_id("plot_width"), "Plot width", ytab_plot_width_choices(), selected = default_width),
     selectInput(ns_id("text_size"), "Text size", ytab_text_size_choices(), selected = "medium")
   )
   if (include_labels) {
@@ -79,9 +82,9 @@ ytab_plot_customization_controls <- function(
                                              c("Horizontal when labels are long" = "auto",
                                                "Horizontal" = "horizontal",
                                                "Vertical" = "vertical"),
-                                             selected = "auto"),
+                                             selected = default_bar_orientation),
                                   checkboxInput(ns_id("show_value_labels"),
-                                                "Show value labels", TRUE)))
+                                                "Show value labels", default_show_value_labels)))
   if (include_heatmap) {
     controls <- c(controls, list(
       selectInput(ns_id("heatmap_height"), "Heatmap height", ytab_plot_height_choices(), selected = "large"),
@@ -131,6 +134,7 @@ ytab_with_plot_display_options <- function(input, id, expr) {
   old <- options(
     ytab.plot.text_size = get("text_size", "medium"),
     ytab.plot.label_angle = get("label_angle", "0"),
+    ytab.plot.label_mode = get("label_mode", "full"),
     ytab.plot.grid = get("grid", "show"),
     ytab.plot.bar_orientation = get("bar_orientation", "auto"),
     ytab.plot.show_value_labels = isTRUE(get("show_value_labels", TRUE))
