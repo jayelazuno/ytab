@@ -82,12 +82,12 @@ gene_domain_infer_track_role <- function(sample, sample_sheet = data.frame()) {
   row <- if (is.data.frame(sample_sheet) && "sample" %in% names(sample_sheet))
     sample_sheet[as.character(sample_sheet$sample) == sample, , drop = FALSE] else data.frame()
   values <- c()
-  for (field in c("library_role", "condition", "treatment", "guessed_condition"))
+  for (field in c("library_role", "fitness_role", "control_or_treated", "condition", "treatment", "guessed_condition"))
     if (nrow(row) && field %in% names(row)) values <- c(values, as.character(row[[field]][[1]]))
   values <- values[!is.na(values)]
   text <- tolower(paste(c(values, sample), collapse = " "))
-  if (grepl("parent|control", text)) return("parent")
-  if (grepl("treated", text)) return("treated")
+  if (grepl("treated|h2o2|zn-treated|1[_ .-]?5\\s*mm|1_5mm|1\\.5mm", text)) return("treated")
+  if (grepl("mock|parent|control", text)) return("parent")
   ""
 }
 
@@ -120,18 +120,35 @@ gene_domain_order_tracks <- function(data, sample_sheet = data.frame()) {
   data
 }
 
+gene_domain_matched_pools <- function(data) {
+  if (!all(c("role", "pool") %in% names(data))) data <- gene_domain_order_tracks(data)
+  pools <- unique(as.character(data$pool[nzchar(as.character(data$pool))]))
+  pools <- pools[vapply(pools, function(pool)
+    any(data$role == "parent" & data$pool == pool) &&
+      any(data$role == "treated" & data$pool == pool), logical(1))]
+  pool_rank <- suppressWarnings(as.integer(pools))
+  pool_rank[is.na(pool_rank)] <- 9999L
+  pools[order(pool_rank, pools)]
+}
+
+gene_domain_matched_pair_rows <- function(data) {
+  if (!all(c("role", "pool") %in% names(data))) data <- gene_domain_order_tracks(data)
+  pools <- gene_domain_matched_pools(data)
+  if (!length(pools)) return(data.frame())
+  rows <- lapply(pools, function(pool) {
+    pair <- data[(data$role %in% c("parent", "treated")) & data$pool == pool, , drop = FALSE]
+    role_rank <- ifelse(pair$role == "parent", 0L, ifelse(pair$role == "treated", 1L, 2L))
+    pair[order(role_rank, pair$order_index), , drop = FALSE]
+  })
+  do.call(rbind, rows)
+}
+
 gene_domain_preset_choices <- function(data) {
   if (!all(c("role", "pool") %in% names(data))) data <- gene_domain_order_tracks(data)
   choices <- c("All tracks" = "all")
   if (any(data$role == "parent")) choices <- c(choices, "Parents only" = "parents")
   if (any(data$role == "treated")) choices <- c(choices, "Treated only" = "treated")
-  for (pool in as.character(1:4)) {
-    if (any(data$role == "parent" & data$pool == pool) &&
-        any(data$role == "treated" & data$pool == pool)) {
-      choices <- c(choices, setNames(paste0("pool", pool, "_pair"),
-                                     paste0("Parent pool ", pool, " vs treated pool ", pool)))
-    }
-  }
+  if (length(gene_domain_matched_pools(data))) choices <- c(choices, "Matched pairs" = "matched_pairs")
   c(choices, "Custom" = "custom")
 }
 
@@ -143,7 +160,8 @@ gene_domain_preset_track_rows <- function(preset, data, current_selection = char
   if (identical(preset, "all")) return(data)
   if (identical(preset, "parents")) return(data[data$role == "parent", , drop = FALSE])
   if (identical(preset, "treated")) return(data[data$role == "treated", , drop = FALSE])
-  pool <- sub("^pool([1-4])_pair$", "\\1", preset)
+  if (identical(preset, "matched_pairs")) return(gene_domain_matched_pair_rows(data))
+  pool <- sub("^pool([0-9]+)_pair$", "\\1", preset)
   if (identical(pool, preset)) return(data.frame())
   data[(data$role == "parent" & data$pool == pool) |
          (data$role == "treated" & data$pool == pool), , drop = FALSE]

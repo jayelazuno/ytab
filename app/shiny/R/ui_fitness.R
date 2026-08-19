@@ -60,6 +60,7 @@ fitness_results_ui <- function() tagList(
         "Fitness display",
         uiOutput("fitness_result_selector"),
         uiOutput("fitness_visualization_selector"),
+        uiOutput("fitness_ma_controls"),
         ytab_plot_customization_controls("fitness", include_points = TRUE,
                                          include_labels = TRUE,
                                          default_height = "large"),
@@ -69,18 +70,26 @@ fitness_results_ui <- function() tagList(
                      uiOutput("fitness_result_technical"))
       ),
       main = tagList(
-        ytab_plot_card("Fitness visualization", uiOutput("fitness_selected_visualization"),
-                       description = "App-rendered plots are live views from existing result tables. Generated PNGs are shown as static image cards."),
+        ytab_plot_card("Fitness visualization", uiOutput("fitness_selected_visualization")),
         tags$details(
           class = "ytab-more-options",
           tags$summary("Tables / downloads"),
-          tags$div(
-            class = "ytab-filter-row",
-            selectInput("fitness_call_filter", "Fitness call", choices = "All"),
-            textInput("fitness_gene_search", "Search gene or feature ID")
+          tags$h4("Selected top hits"),
+          tags$p(class = "text-muted", "Selected top hits require abs(log2FC) >= 1 and CPM/read support >= 1."),
+          textInput("fitness_gene_search", "Search gene or feature ID"),
+          uiOutput("fitness_selected_top_hits_count"),
+          uiOutput("fitness_selected_top_hits_empty"),
+          DT::DTOutput("fitness_selected_top_hits_table"),
+          tags$details(
+            tags$summary("All features / full result table"),
+            tags$div(
+              class = "ytab-filter-row",
+              selectInput("fitness_call_filter", "Full result fitness-call filter", choices = "All"),
+              textInput("fitness_full_gene_search", "Search full result gene or feature ID")
+            ),
+            uiOutput("fitness_filtered_count"),
+            DT::DTOutput("fitness_results_table")
           ),
-          uiOutput("fitness_filtered_count"),
-          DT::DTOutput("fitness_results_table"),
           tags$details(tags$summary("Comparison-level results"),
                        DT::DTOutput("fitness_comparison_results")),
           tags$div(

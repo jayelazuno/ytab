@@ -48,11 +48,12 @@ SAMPLE_SHEET_COLUMNS = [
 ]
 
 COMPARISON_COLUMNS = [
-    "comparison_id", "display_comparison", "comparison_group",
+    "comparison_id", "pair_id", "display_comparison", "comparison_group",
     "comparison_label", "control_sample", "treated_sample", "parent_sample",
+    "background",
     "treatment", "treatment_label", "treatment_concentration_mM",
-    "control_condition", "treated_condition", "pool", "pool_id",
-    "replicate_id", "original_background", "included", "status",
+    "parent_condition", "control_condition", "treated_condition", "pool", "pool_id",
+    "replicate_id", "original_background", "include", "included", "status", "notes",
 ]
 
 
@@ -220,23 +221,28 @@ def make_comparisons(rows: list[dict[str, str]]) -> list[dict[str, str]]:
             fail(f"missing matched mock/Zn-treated comparison for pool {pool_id}")
         comparisons.append({
             "comparison_id": f"Zn_1_5mM_pool{pool_id}_vs_mock",
+            "pair_id": f"Zn_1_5mM_pool{pool_id}_vs_mock",
             "display_comparison": f"1.5 mM Zn-treated pool{pool_id} vs mock pool{pool_id}",
             "comparison_group": COMPARISON_GROUP,
             "comparison_label": COMPARISON_LABEL,
             "control_sample": control["sample"],
             "treated_sample": treated["sample"],
             "parent_sample": control["sample"],
+            "background": treated["original_background"],
             "treatment": "1_5mM-Zn",
             "treatment_label": "1.5 mM Zn",
             "treatment_concentration_mM": "1.5",
+            "parent_condition": "parent",
             "control_condition": "mock",
             "treated_condition": "Zn-treated",
-            "pool": f"pool{pool_id}",
+            "pool": pool_id,
             "pool_id": pool_id,
             "replicate_id": pool_id,
             "original_background": treated["original_background"],
+            "include": "true",
             "included": "true",
             "status": "active",
+            "notes": "Mock/control sample is used as parent/control input for the existing treated-vs-parent runner.",
         })
     return comparisons
 
@@ -327,7 +333,7 @@ def main() -> int:
         "software_validation_project": False,
         "smoke_test_project": False,
         "analysis_profile": "all",
-        "repo_root": "../../..",
+        "repo_root": "../../../..",
         "fastq_dir": str(fastq_dir),
         "scratch_fastq_dir": str(fastq_dir),
         "scratch_work_dir": str(scratch),

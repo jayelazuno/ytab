@@ -41,8 +41,8 @@ ytab_plot_height_px <- function(choice, custom = NULL, default = "medium") {
 }
 
 ytab_text_size_px <- function(choice) {
-  sizes <- c(small = 11L, medium = 13L, large = 15L)
-  unname(sizes[[choice %||% "medium"]] %||% 13L)
+  sizes <- c(small = 12L, medium = 15L, large = 19L)
+  unname(sizes[[choice %||% "medium"]] %||% 15L)
 }
 
 ytab_plot_customization_controls <- function(

@@ -5,6 +5,7 @@ gene_domain_explorer_server <- function(input, output, session, active,
   selected_gene <- reactiveVal("")
   plot_state <- reactiveVal(NULL)
   track_data <- reactiveVal(data.frame())
+  custom_track_selection <- reactiveVal(character())
 
   ordered_tracks <- function(data) gene_domain_order_tracks(data, active()$samples)
   refresh_preset_choices <- function(data) {
@@ -20,13 +21,19 @@ gene_domain_explorer_server <- function(input, output, session, active,
     rows <- gene_domain_preset_track_rows(preset, data, input$gene_domain_samples %||% character())
     if (identical(preset, "custom")) {
       rows <- data
-      selected <- intersect(input$gene_domain_samples %||% character(), rows$sample)
+      prior <- custom_track_selection()
+      selected <- if (length(prior)) intersect(prior, rows$sample) else
+        intersect(input$gene_domain_samples %||% character(), rows$sample)
     } else {
       selected <- rows$sample
     }
     choices <- if (nrow(rows)) as.list(setNames(rows$sample, rows$track_name)) else list()
     updateSelectizeInput(session, "gene_domain_samples",
                          choices = choices, selected = selected, server = TRUE)
+  }
+
+  clear_generated_figure <- function() {
+    if (!is.null(plot_state())) plot_state(NULL)
   }
 
   output$gene_domain_project_indicator <- renderUI({
@@ -53,18 +60,29 @@ gene_domain_explorer_server <- function(input, output, session, active,
   observeEvent(input$gene_domain_track_source, refresh_tracks(), ignoreInit = TRUE)
   observeEvent(input$gene_domain_track_preset, {
     sync_sample_selector(input$gene_domain_track_preset %||% "all")
+    clear_generated_figure()
+  }, ignoreInit = TRUE)
+  observeEvent(input$gene_domain_samples, {
+    if (identical(input$gene_domain_track_preset %||% "all", "custom")) {
+      custom_track_selection(input$gene_domain_samples %||% character())
+    }
+    clear_generated_figure()
   }, ignoreInit = TRUE)
 
   output$gene_domain_preset_message <- renderUI({
     req(active())
     data <- ordered_tracks(track_data())
     if (!nrow(data)) return(tags$p(class = "text-muted", "No insertion tracks are available."))
-    pairs <- vapply(as.character(1:4), function(pool)
-      any(data$role == "parent" & data$pool == pool) &&
-        any(data$role == "treated" & data$pool == pool), logical(1))
-    if (!any(pairs))
+    preset <- input$gene_domain_track_preset %||% "all"
+    rows <- gene_domain_preset_track_rows(preset, data, input$gene_domain_samples %||% character())
+    if (!identical(preset, "custom") && !nrow(rows))
+      return(tags$p(class = "ytab-warning", "No tracks match this preset for the current project."))
+    if (identical(preset, "matched_pairs") && !nrow(rows))
+      return(tags$p(class = "ytab-warning", "No matched parent/treated pool pairs were detected. Use All tracks or Custom."))
+    if (!length(gene_domain_matched_pools(data)))
       tags$p(class = "text-muted", "Matched pool presets require parent/treated and pool metadata.")
-    else NULL
+    else
+      tags$p(class = "text-muted", "Choose which insertion tracks are displayed for the selected gene.")
   })
 
   observeEvent(input$gene_domain_search, {
@@ -144,6 +162,11 @@ gene_domain_explorer_server <- function(input, output, session, active,
       return()
     }
     samples <- input$gene_domain_samples %||% character()
+    if (!length(samples)) {
+      showNotification("No tracks match this preset for the current project.", type = "warning")
+      plot_state(list(status = "failure", error = "No tracks match this preset for the current project."))
+      return()
+    }
     args <- c(
       "--gene", gene_id,
       "--track-source", input$gene_domain_track_source %||% "raw",

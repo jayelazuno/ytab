@@ -35,7 +35,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--track-preset",
         default="all",
-        choices=("all", "parents", "treated", "pool1_pair", "pool2_pair", "pool3_pair", "pool4_pair", "custom"),
+        choices=("all", "parents", "treated", "matched_pairs", "pool1_pair", "pool2_pair", "pool3_pair", "pool4_pair", "custom"),
         help="Preset track selection; use custom with --samples for explicit tracks",
     )
     parser.add_argument("--samples", default="all", help="Comma-separated sample/track names, or all")

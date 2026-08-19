@@ -15,6 +15,8 @@ fail <- function(message) {
 }
 
 tryCatch(invisible(parse(file = app_file)), error = function(e) fail(conditionMessage(e)))
+`%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
+source(state_file)
 
 all_text <- paste(vapply(c(app_file, ui_file, server_file, state_file), function(path) {
   if (!file.exists(path)) fail(paste("missing file", path))
@@ -43,6 +45,42 @@ required <- c(
 missing <- required[!vapply(required, function(pattern)
   grepl(pattern, all_text, fixed = TRUE), logical(1))]
 if (length(missing)) fail(paste("missing UI controls:", paste(missing, collapse = ", ")))
+
+sample_sheet <- data.frame(
+  sample = c(
+    "parent-pool1-treated",
+    "parent-pool1-mock",
+    "parent-pool2-treated",
+    "parent-pool2-mock",
+    "unknown-track"
+  ),
+  condition = c("treated", "mock", "treated", "mock", ""),
+  treatment = c("H2O2", "mock", "1_5mM-Zn", "mock", ""),
+  pool = c("1", "1", "2", "2", ""),
+  stringsAsFactors = FALSE
+)
+tracks <- data.frame(
+  sample = sample_sheet$sample,
+  track_name = sample_sheet$sample,
+  stringsAsFactors = FALSE
+)
+ordered <- gene_domain_order_tracks(tracks, sample_sheet)
+choices <- gene_domain_preset_choices(ordered)
+if (!all(c("All tracks", "Parents only", "Treated only", "Matched pairs", "Custom") %in% names(choices)))
+  fail("track preset choices are incomplete")
+parents <- gene_domain_preset_track_rows("parents", ordered)
+treated <- gene_domain_preset_track_rows("treated", ordered)
+matched <- gene_domain_preset_track_rows("matched_pairs", ordered)
+custom <- gene_domain_preset_track_rows("custom", ordered)
+if (nrow(parents) != 2L || any(parents$role != "parent")) fail("Parents only preset did not select parent/control tracks")
+if (nrow(treated) != 2L || any(treated$role != "treated")) fail("Treated only preset did not select treated tracks")
+if (nrow(matched) != 4L || !identical(as.character(matched$role), c("parent", "treated", "parent", "treated")))
+  fail("Matched pairs preset did not return parent/treated pairs in pool order")
+if (nrow(custom) != nrow(ordered)) fail("Custom preset did not keep all tracks available for manual selection")
+if (gene_domain_infer_track_role("parent-pool1-treated", sample_sheet) != "treated")
+  fail("treated role did not override parent token in a treated sample name")
+for (pattern in c("custom_track_selection", "clear_generated_figure", "No tracks match this preset for the current project."))
+  if (!grepl(pattern, all_text, fixed = TRUE)) fail(paste("missing preset synchronization behavior:", pattern))
 
 forbidden_imports <- paste0(
   c("codex/", "from ", "import ", "from ", "import ", "from ", "import ", "from ", "import "),

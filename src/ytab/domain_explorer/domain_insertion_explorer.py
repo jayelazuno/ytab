@@ -424,16 +424,18 @@ def _sample_rows(cfg: dict[str, Any]) -> list[dict[str, Any]]:
 def _infer_track_role(row: dict[str, Any], sample: str) -> str:
     values = [
         _safe_text(row.get("library_role")),
+        _safe_text(row.get("fitness_role")),
+        _safe_text(row.get("control_or_treated")),
         _safe_text(row.get("condition")),
         _safe_text(row.get("treatment")),
         _safe_text(row.get("guessed_condition")),
         sample,
     ]
     text = " ".join(values).lower()
-    if "parent" in text or "control" in text:
-        return "parent"
-    if "treated" in text:
+    if re.search(r"treated|h2o2|zn-treated|1[_ .-]?5\s*mm|1_5mm|1\.5mm", text):
         return "treated"
+    if re.search(r"mock|parent|control", text):
+        return "parent"
     return ""
 
 
@@ -461,6 +463,42 @@ def _order_tracks_for_display(tracks: list[dict[str, Any]]) -> list[dict[str, An
     return sorted(tracks, key=lambda track: int(track.get("sample_order", 9999)))
 
 
+def _matched_pair_pools(tracks: list[dict[str, Any]]) -> list[str]:
+    pools = sorted(
+        {
+            _safe_text(track.get("pool"))
+            for track in tracks
+            if _safe_text(track.get("pool"))
+        },
+        key=lambda value: (int(value) if value.isdigit() else 9999, value),
+    )
+    return [
+        pool
+        for pool in pools
+        if any(track.get("role") == "parent" and _safe_text(track.get("pool")) == pool for track in tracks)
+        and any(track.get("role") == "treated" and _safe_text(track.get("pool")) == pool for track in tracks)
+    ]
+
+
+def _matched_pair_tracks(tracks: list[dict[str, Any]], pool: str | None = None) -> list[dict[str, Any]]:
+    pools = [pool] if pool else _matched_pair_pools(tracks)
+    selected: list[dict[str, Any]] = []
+    for current_pool in pools:
+        parents = [
+            track
+            for track in tracks
+            if track.get("role") == "parent" and _safe_text(track.get("pool")) == current_pool
+        ]
+        treated = [
+            track
+            for track in tracks
+            if track.get("role") == "treated" and _safe_text(track.get("pool")) == current_pool
+        ]
+        selected.extend(_order_tracks_for_display(parents))
+        selected.extend(_order_tracks_for_display(treated))
+    return selected
+
+
 def resolve_track_preset(
     project_config: str | Path,
     track_source: str = "raw",
@@ -471,10 +509,15 @@ def resolve_track_preset(
     preset = (track_preset or "all").lower()
     tracks = list_insertion_tracks(project_config, track_source)
     if preset == "custom":
-        selected = set(samples or [])
-        if not selected or "all" in selected:
+        selected = [sample for sample in (samples or []) if sample]
+        if not selected or "all" in {sample.lower() for sample in selected}:
             return _order_tracks_for_display(tracks)
-        selected_tracks = [t for t in tracks if t["sample"] in selected or t["track_name"] in selected]
+        selected_tracks: list[dict[str, Any]] = []
+        for sample in selected:
+            for track in tracks:
+                if track["sample"] == sample or track["track_name"] == sample:
+                    selected_tracks.append(track)
+                    break
         if not selected_tracks:
             raise ValueError("Custom track preset did not match any available tracks.")
         return selected_tracks
@@ -490,17 +533,24 @@ def resolve_track_preset(
                 "Use --samples or --track-preset custom."
             )
         return _order_tracks_for_display(selected_tracks)
-    match = re.fullmatch(r"pool([1-4])_pair", preset)
+    if preset in {"matched", "matched_pairs", "pairs"}:
+        selected_tracks = _matched_pair_tracks(raw_like)
+        if not selected_tracks:
+            raise ValueError(
+                "Could not resolve matched pairs because parent/treated pool metadata were not available for this project. "
+                "Use --samples or --track-preset custom."
+            )
+        return selected_tracks
+    match = re.fullmatch(r"pool([0-9]+)_pair", preset)
     if match:
         pool = match.group(1)
-        parents = [track for track in raw_like if track.get("role") == "parent" and track.get("pool") == pool]
-        treated = [track for track in raw_like if track.get("role") == "treated" and track.get("pool") == pool]
-        if not parents or not treated:
+        selected_tracks = _matched_pair_tracks(raw_like, pool=pool)
+        if not selected_tracks:
             raise ValueError(
                 f"Could not resolve {preset} because parent/treated pool metadata were not available for this project. "
                 "Use --samples or --track-preset custom."
             )
-        return _order_tracks_for_display(parents) + _order_tracks_for_display(treated)
+        return selected_tracks
     raise ValueError(f"Unknown track preset: {track_preset}")
 
 

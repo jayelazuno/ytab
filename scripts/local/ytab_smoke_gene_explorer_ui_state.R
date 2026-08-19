@@ -32,6 +32,7 @@ parents <- gene_domain_preset_track_rows("parents", ordered)
 treated <- gene_domain_preset_track_rows("treated", ordered)
 all_tracks <- gene_domain_preset_track_rows("all", ordered)
 pool1 <- gene_domain_preset_track_rows("pool1_pair", ordered)
+matched <- gene_domain_preset_track_rows("matched_pairs", ordered)
 
 stopifnot(
   nrow(parents) == 4L,
@@ -42,7 +43,9 @@ stopifnot(
   identical(as.character(all_tracks$sample[1:4]), as.character(parents$sample)),
   nrow(pool1) == 2L,
   identical(as.character(pool1$role), c("parent", "treated")),
-  all(c("Parents only", "Treated only", "Parent pool 1 vs treated pool 1", "Custom") %in%
+  nrow(matched) == 8L,
+  identical(as.character(matched$role), rep(c("parent", "treated"), 4L)),
+  all(c("Parents only", "Treated only", "Matched pairs", "Custom") %in%
         names(gene_domain_preset_choices(ordered)))
 )
 
@@ -66,4 +69,3 @@ stopifnot(
 )
 
 cat("PASS\n")
-

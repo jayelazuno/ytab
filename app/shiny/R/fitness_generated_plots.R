@@ -2,7 +2,12 @@ fitness_generated_plot_inventory <- function(project) {
   root <- file.path(project$project_root, "treated_vs_parent")
   files <- if (dir.exists(root)) list.files(root, pattern = "\\.png$", recursive = TRUE, full.names = TRUE) else character()
   files <- files[grepl("/plots/", files) & file.exists(files)]
-  files <- files[basename(files) != "MA_treated_vs_parent_all_pools.png"]
+  files <- files[!basename(files) %in% c(
+    "MA_treated_vs_parent_all_pools.png",
+    "MA_y_298_labeled_top_hits.png",
+    "MA_y_299_labeled_top_hits.png",
+    "top_features_log2FC_heatmap.png"
+  )]
   if (!length(files)) return(data.frame())
   project_root <- normalizePath(project$project_root, winslash = "/", mustWork = FALSE)
   data.frame(

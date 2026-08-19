@@ -37,8 +37,7 @@ ytab_static_image_output_card <- function(title, output_id, description = NULL,
       class = "ytab-plot-card-header",
       tags$div(
         tags$h4(title),
-        if (!is.null(description)) tags$p(class = "text-muted", description),
-        tags$span(class = "ytab-status-badge", "Static generated image")
+        if (!is.null(description)) tags$p(class = "text-muted", description)
       ),
       if (!is.null(downloads)) tags$div(class = "ytab-actions", downloads)
     ),
@@ -64,8 +63,7 @@ ytab_generated_file_gallery <- function(files, title_col = "title", url_col = "s
       tags$article(
         class = "ytab-static-image-card ytab-release-card",
         tags$div(class = "ytab-plot-card-header",
-                 tags$h4(title),
-                 tags$span(class = "ytab-status-badge", "Static generated image")),
+                 tags$h4(title)),
         if (nzchar(url)) ytab_static_image_ui(url, filename, "520px"),
         tags$details(tags$summary("Show filename"), tags$code(filename))
       )

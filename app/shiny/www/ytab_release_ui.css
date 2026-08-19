@@ -244,6 +244,28 @@
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
 }
 
+.ytab-diagnostic-gallery-grid.ytab-gallery-cols-2 {
+  grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+}
+
+.ytab-diagnostic-gallery-grid.ytab-gallery-cols-3 {
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+
+.ytab-diagnostic-gallery-grid.ytab-gallery-cols-4 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.ytab-static-image-mode-natural .ytab-diagnostic-preview {
+  max-width: 100%;
+  overflow: auto;
+}
+
+.ytab-stacked-plot-panels {
+  display: grid;
+  gap: 1rem;
+}
+
 .ytab-diagnostic-gallery-grid .ytab-static-image-card {
   min-height: 430px;
 }

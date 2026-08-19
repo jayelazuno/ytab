@@ -40,7 +40,7 @@ summary_qc_cards <- function(project) {
   tags$div(class="ytab-stat-grid",tags$div(tags$b(nrow(raw)),"Samples"),tags$div(tags$b(safe(num("total_hits"),median)),"Median total hits"),tags$div(tags$b(paste0(safe(num("percent_features_hit"),median,1),"%")),"Median features hit"),tags$div(tags$b(paste0(safe(num("percent_features_hit"),min,1),"%")),"Minimum features hit"),tags$div(tags$b(paste0(safe(num("percent_features_hit"),max,1),"%")),"Maximum features hit"))
 }
 
-compact_qc_table <- function(data) DT::datatable(data,rownames=FALSE,selection="none",options=list(pageLength=10,lengthMenu=c(10,25,50),autoWidth=FALSE,ordering=TRUE,searching=TRUE,scrollX=FALSE,columnDefs=list(list(className="dt-right",targets=which(vapply(data,is.numeric,FALSE))-1L),list(className="ytab-nowrap",targets=0))))
+compact_qc_table <- function(data) DT::datatable(data,rownames=FALSE,selection="none",options=list(pageLength=10,lengthMenu=c(10,25,50),autoWidth=FALSE,ordering=TRUE,searching=TRUE,scrollX=TRUE,columnDefs=list(list(className="dt-right",targets=which(vapply(data,is.numeric,FALSE))-1L),list(className="ytab-nowrap",targets=0))))
 
 qc_sample_eligibility <- function(project,status) {
   samples<-project$samples; included<-if("include"%in%names(samples))tolower(as.character(samples$include))%in%c("true","1","yes")else rep(TRUE,nrow(samples));idx<-match(samples$sample,status$sample);hit_status<-status$hit_file[idx];path<-status$hits_path[idx];valid<-included & hit_status=="success" & vapply(path,nonempty_file,FALSE)
@@ -130,6 +130,8 @@ qc_mapping_ui <- function() panel_card(
         class = "ytab-more-options",
         tags$summary("Tables / downloads"),
         tags$div(class = "ytab-actions",
+                 downloadButton("download_mapping_qc_plot", "Download plot"),
+                 downloadButton("download_mapping_qc_plotted_data", "Download plotted data"),
                  downloadButton("download_mapping_qc_table", "Download mapping summary"),
                  downloadButton("download_mapping_qc_details", "Download file details")),
         DT::DTOutput("mapping_qc_table"),
@@ -139,8 +141,6 @@ qc_mapping_ui <- function() panel_card(
     main = ytab_plot_card(
       "Mapping summary",
       tagList(
-        tags$div(class = "ytab-result-heading",
-                 tags$span(class = "ytab-status-badge", "Live plot")),
         uiOutput("mapping_qc_selected_plot"),
         tags$details(class = "ytab-more-options",
                      tags$summary("Plot provenance"),
@@ -167,21 +167,34 @@ qc_summary_ui <- function() panel_card(
                     "Genome-wide binned signal" = "genome_bins",
                     "Library concordance" = "pairwise")
       ),
+      uiOutput("summary_qc_combined_group_selector"),
       ytab_plot_customization_controls("summary_qc", include_bars = TRUE,
-                                       default_height = "medium"),
+                                       default_height = "medium",
+                                       default_bar_orientation = "horizontal",
+                                       default_show_value_labels = FALSE),
       tags$details(
         class = "ytab-more-options",
         tags$summary("Tables / downloads"),
         uiOutput("summary_qc_cards"),
         tags$div(class = "ytab-actions",
+                 downloadButton("download_summary_qc_plot", "Download plot"),
+                 downloadButton("download_summary_qc_plotted_data", "Download plotted data"),
                  downloadButton("download_summary_qc_table", "Download summary table"),
                  downloadButton("download_summary_qc_details", "Download detailed metrics")),
         DT::DTOutput("summary_qc_table"),
         tags$details(tags$summary("Detailed metrics"), DT::DTOutput("summary_qc_details"))
       )
     ),
-    main = ytab_plot_card("App-rendered: Summary QC", uiOutput("summary_qc_selected_plot"),
-                          description = "Rendered from existing SummaryTable outputs.")
+    main = ytab_plot_card(
+      "Summary QC",
+      tagList(
+        uiOutput("summary_qc_selected_plot"),
+        tags$details(class = "ytab-more-options",
+                     tags$summary("Plot provenance"),
+                     tags$p(class = "text-muted",
+                            "Rendered from existing SummaryTable outputs."))
+      )
+    )
   )
 )
 
@@ -214,25 +227,55 @@ qc_library_diagnostics_ui <- function() panel_card(
     ytab_two_column_layout(
       controls = ytab_control_panel(
         "Diagnostics display",
-        job_progress_ui("library_diagnostics_job"),
-        uiOutput("library_diagnostics_result"),
         selectInput("library_diagnostics_plot_choice", "Visualization",
-                    choices = c("App-rendered: MidLC saturation" = "midlc",
-                                "App-rendered: Jackpots and library depth" = "jackpot",
-                                "Generated: Centromere bias plots" = "centromere",
-                                "Generated: Feature metaplots" = "metaplots",
-                                "App-rendered: Sequence-bias plots" = "sequence_bias")),
-        ytab_plot_customization_controls("library_diagnostics", include_heatmap = TRUE,
-                                         default_height = "medium"),
+                    choices = c("MidLC saturation" = "midlc",
+                                "Jackpots and library depth" = "jackpot",
+                                "Centromere bias" = "centromere",
+                                "Feature metaplots" = "metaplots",
+                                "Sequence bias" = "sequence_bias")),
+        uiOutput("library_diagnostics_group_selector"),
+        uiOutput("library_diagnostics_metaplot_selector"),
+        selectInput("library_diagnostics_color_by", "Color by",
+                    choices = qc_library_color_choices(), selected = "group"),
+        ytab_plot_customization_controls("library_diagnostics", include_bars = TRUE,
+                                         include_heatmap = TRUE,
+                                         default_height = "medium",
+                                         default_bar_orientation = "horizontal",
+                                         default_show_value_labels = FALSE),
+        tags$details(
+          class = "ytab-more-options",
+          tags$summary("Downloads"),
+          tags$div(class = "ytab-actions",
+                   downloadButton("download_library_diagnostics_plot", "Download plot"),
+                   downloadButton("download_library_diagnostics_plotted_data", "Download plotted data"))
+        ),
         tags$details(class = "ytab-technical-details", tags$summary("Technical details"),
                      tags$div(class = "ytab-technical-console",
                               verbatimTextOutput("library_diagnostics_technical")))
       ),
-      main = ytab_plot_card("Selected diagnostics visualization",
-                            uiOutput("library_diagnostics_selected_plot"),
-                            description = "App-rendered diagnostics use result tables; generated PNGs remain static provenance images.")
+      main = ytab_plot_card("Library Diagnostics",
+                            uiOutput("library_diagnostics_selected_plot"))
     )
   )
 )
-qc_files_ui <- function() panel_card("Diagnostic Files",radioButtons("diagnostic_view_mode","View",choices=list("File table"="table","Plot gallery"="gallery"),selected="gallery",inline=TRUE),actionButton("refresh_diagnostic_files","Refresh diagnostic files",class="btn-secondary"),uiOutput("diagnostic_result_selector"),uiOutput("diagnostic_file_filters"),uiOutput("diagnostic_files_empty"),conditionalPanel("input.diagnostic_view_mode == 'table'",DT::DTOutput("diagnostic_files_table")),conditionalPanel("input.diagnostic_view_mode == 'gallery'",uiOutput("diagnostic_plot_cards"),uiOutput("diagnostic_gallery_pagination")))
+qc_files_ui <- function() panel_card(
+  "Diagnostic Files",
+  ytab_two_column_layout(
+    controls = ytab_control_panel(
+      "Diagnostic file display",
+      actionButton("refresh_diagnostic_files", "Refresh diagnostic files", class = "btn-secondary"),
+      uiOutput("diagnostic_result_selector"),
+      uiOutput("diagnostic_file_filters"),
+      checkboxInput("diagnostic_show_archived_static",
+                    "Show archived/static generated image files", FALSE)
+    ),
+    main = ytab_plot_card(
+      "Diagnostic files",
+      tagList(
+        uiOutput("diagnostic_files_empty"),
+        DT::DTOutput("diagnostic_files_table")
+      )
+    )
+  )
+)
 quality_control_ui <- function() navset_tab(id="qc_tabs",nav_panel("Mapping QC",value="mapping_qc",qc_mapping_ui()),nav_panel("Summary QC",value="summary_qc",qc_summary_ui()),nav_panel("Library Diagnostics",value="library_diagnostics",qc_library_diagnostics_ui()),nav_panel("Diagnostic Files",value="diagnostic_files",qc_files_ui()))

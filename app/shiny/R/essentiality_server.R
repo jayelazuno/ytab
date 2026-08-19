@@ -558,9 +558,8 @@ essentiality_server <- function(input, output, session, active, active_project_p
   output$essentiality_target_selection <- renderUI({
     data <- target_summary()
     if (!nrow(data) || !"target_tag" %in% names(data)) return(NULL)
-    tags <- unique(as.character(data$target_tag))
-    values <- vapply(tags, essentiality_tag_value, numeric(1))
-    choices <- as.list(setNames(tags, vapply(tags, function(tag)
+    target_tags <- unique(as.character(data$target_tag))
+    choices <- as.list(setNames(target_tags, vapply(target_tags, function(tag)
       format_target_label(essentiality_tag_value(tag), tag, "user"), character(1))))
     tagList(
       tags$p(if (nzchar(selected_target_tag()))
@@ -571,8 +570,8 @@ essentiality_server <- function(input, output, session, active, active_project_p
         tags$summary("Choose another target"),
         selectInput("essentiality_target_choice", "Available targets",
                     choices = choices,
-                    selected = if (selected_target_tag() %in% tags)
-                      selected_target_tag() else tags[[1]]),
+                    selected = if (selected_target_tag() %in% target_tags)
+                      selected_target_tag() else target_tags[[1]]),
         if (!selected_evaluated_passes())
           tagList(tags$div(class = "alert alert-warning",
                            "This target did not meet the configured retention criteria and may remove insertion or feature information."),

@@ -53,8 +53,19 @@ def main() -> int:
         all_tracks = explorer.resolve_track_preset(args.project_config, "raw", "all")
         parent_tracks = explorer.resolve_track_preset(args.project_config, "raw", "parents")
         treated_tracks = explorer.resolve_track_preset(args.project_config, "raw", "treated")
+        matched_tracks = explorer.resolve_track_preset(args.project_config, "raw", "matched_pairs")
         if not parent_tracks or not treated_tracks:
             raise AssertionError("parent/treated presets did not resolve")
+        if len(matched_tracks) != len(parent_tracks) + len(treated_tracks):
+            raise AssertionError("matched_pairs did not include all detected parent/treated pair tracks")
+        if any(track.get("role") not in {"parent", "treated"} for track in matched_tracks):
+            raise AssertionError("matched_pairs included a non-parent/non-treated track")
+        for i in range(0, len(matched_tracks), 2):
+            pair = matched_tracks[i : i + 2]
+            if len(pair) != 2 or [track.get("role") for track in pair] != ["parent", "treated"]:
+                raise AssertionError("matched_pairs did not order each pair as parent then treated")
+            if pair[0].get("pool") != pair[1].get("pool"):
+                raise AssertionError("matched_pairs paired tracks from different pools")
         first_treated = next((i for i, track in enumerate(all_tracks) if track.get("role") == "treated"), None)
         last_parent = max((i for i, track in enumerate(all_tracks) if track.get("role") == "parent"), default=-1)
         if first_treated is not None and last_parent >= first_treated:
@@ -62,6 +73,9 @@ def main() -> int:
         selected_tracks = [track["sample"] for track in (parent_tracks[:1] + treated_tracks[:1])]
         if len(selected_tracks) < 2:
             raise AssertionError("smoke test requires at least two preset-selected tracks")
+        custom_tracks = explorer.resolve_track_preset(args.project_config, "raw", "custom", selected_tracks)
+        if [track["sample"] for track in custom_tracks] != selected_tracks:
+            raise AssertionError("custom preset did not preserve the explicitly selected track subset")
         pool1_pair = None
         try:
             pool1_pair = explorer.resolve_track_preset(args.project_config, "raw", "pool1_pair")
@@ -72,9 +86,9 @@ def main() -> int:
         result = explorer.run_gene_domain_explorer(
             args.project_config,
             gene.gene_id,
-            samples=[track["sample"] for track in pool1_pair] if pool1_pair else selected_tracks,
+            samples=[track["sample"] for track in matched_tracks],
             track_source="raw",
-            track_preset="custom" if pool1_pair is None else "pool1_pair",
+            track_preset="matched_pairs",
             flank_bp=1000,
             width_px=1800,
             dpi=150,
@@ -95,6 +109,8 @@ def main() -> int:
             raise AssertionError(f"unexpected PNG dimensions: {width}x{height}")
         if int(manifest.get("track_count") or 0) < 2:
             raise AssertionError("multi-track plot was not generated")
+        if int(manifest.get("track_count") or 0) != len(matched_tracks):
+            raise AssertionError("generated matched-pairs plot did not use the resolved track subset")
         if manifest.get("count_definition") != "insertion sites inside gene_start..gene_end only; flank insertions are displayed but not counted":
             raise AssertionError("manifest count definition is missing or incorrect")
         with Path(manifest["table_path"]).open(newline="", encoding="utf-8") as handle:
