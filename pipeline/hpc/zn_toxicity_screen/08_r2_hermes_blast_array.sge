@@ -1,0 +1,161 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Zn_R2_Hermes_BLAST
+#$ -q UI
+#$ -pe smp 8
+#$ -j y
+#$ -o /old_Users/jayelazuno/workspace/ytab/blast/logs/08_r2_hermes_blast_array.$TASK_ID.log
+
+set -euo pipefail
+
+REPO_ROOT="${REPO_ROOT:-/old_Users/jayelazuno/workspace/ytab}"
+BLAST_ROOT="${BLAST_ROOT:-$REPO_ROOT/blast}"
+ALIGN_ROOT="${ALIGN_ROOT:-/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/blast_alignments}"
+MANIFEST="${MANIFEST:-$BLAST_ROOT/manifest/r2_fastq_manifest.tsv}"
+DB_PREFIX="${DB_PREFIX:-$BLAST_ROOT/db/hermes_cds}"
+THREADS="${THREADS:-${NSLOTS:-8}}"
+MIN_PIDENT="${MIN_PIDENT:-90}"
+MIN_ALIGN_LEN="${MIN_ALIGN_LEN:-30}"
+MAX_EVALUE="${MAX_EVALUE:-1e-10}"
+MAX_READS="${MAX_READS:-0}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-ytab-hermes-blast}"
+PYTHON="${PYTHON:-python}"
+
+if [[ -z "${SGE_TASK_ID:-}" ]]; then
+  echo "ERROR: SGE_TASK_ID is missing; this script must run as an SGE array task." >&2
+  exit 2
+fi
+
+activate_env() {
+  if [[ "${YTAB_SKIP_CONDA:-0}" == "1" ]]; then return 0; fi
+  if command -v conda >/dev/null 2>&1; then
+    eval "$(conda shell.bash hook)"
+  else
+    for conda_sh in "${CONDA_SH:-}" \
+      /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh \
+      /Users/jayelazuno/miniforge3/etc/profile.d/conda.sh; do
+      if [[ -n "$conda_sh" && -s "$conda_sh" ]]; then
+        # shellcheck disable=SC1090
+        source "$conda_sh"
+        break
+      fi
+    done
+  fi
+  conda activate "$YTAB_CONDA_ENV"
+}
+
+activate_env
+
+for tool in blastn seqkit gzip sort awk; do
+  command -v "$tool" >/dev/null 2>&1 || { echo "ERROR: missing required tool: $tool" >&2; exit 2; }
+done
+
+row_env="$(mktemp)"
+trap 'rm -f "$row_env"' EXIT
+"$PYTHON" - "$MANIFEST" "$SGE_TASK_ID" > "$row_env" <<'PY'
+import csv
+import shlex
+import sys
+manifest, task_id = sys.argv[1], int(sys.argv[2])
+with open(manifest, newline="", encoding="utf-8") as handle:
+    rows = list(csv.DictReader(handle, delimiter="\t"))
+if task_id < 1 or task_id > len(rows):
+    raise SystemExit(f"ERROR: SGE_TASK_ID {task_id} outside manifest row count {len(rows)}")
+row = rows[task_id - 1]
+keys = {
+    "SAMPLE_ID": "sample_id",
+    "R2_FASTQ": "r2_fastq",
+    "FASTQ_BASENAME": "fastq_basename",
+    "CONDITION_OR_ROLE": "condition_or_role",
+    "POOL": "pool",
+    "BACKGROUND": "background",
+    "SAMPLE_SHEET_MATCH": "sample_sheet_match",
+    "MANIFEST_NOTES": "notes",
+}
+for env_key, row_key in keys.items():
+    print(f"{env_key}={shlex.quote(row.get(row_key, ''))}")
+PY
+# shellcheck disable=SC1090
+source "$row_env"
+
+if [[ ! -s "$R2_FASTQ" ]]; then
+  echo "ERROR: R2 FASTQ is missing or empty: $R2_FASTQ" >&2
+  exit 2
+fi
+if ! compgen -G "${DB_PREFIX}.n*" >/dev/null; then
+  echo "ERROR: Hermes BLAST database not found at prefix: $DB_PREFIX" >&2
+  exit 2
+fi
+
+safe_sample="$(printf '%s' "$SAMPLE_ID" | sed 's/[^A-Za-z0-9_.-]/_/g')"
+mkdir -p \
+  "$ALIGN_ROOT/fasta_queries" \
+  "$ALIGN_ROOT/blast_outfmt6" \
+  "$ALIGN_ROOT/unique_hit_reads" \
+  "$ALIGN_ROOT/seqkit_stats" \
+  "$BLAST_ROOT/summary/per_sample"
+
+query_fa="$ALIGN_ROOT/fasta_queries/${safe_sample}.R2.fa"
+blast_raw="$ALIGN_ROOT/blast_outfmt6/${safe_sample}.R2_vs_Hermes.outfmt6.tsv"
+blast_gz="${blast_raw}.gz"
+hits_txt="$ALIGN_ROOT/unique_hit_reads/${safe_sample}.Hermes_positive_read_ids.txt"
+hits_gz="${hits_txt}.gz"
+stats_tsv="$ALIGN_ROOT/seqkit_stats/${safe_sample}.seqkit_stats.tsv"
+summary_tsv="$BLAST_ROOT/summary/per_sample/${safe_sample}.r2_hermes_blast_summary.tsv"
+
+seqkit stats -T "$R2_FASTQ" > "$stats_tsv"
+if [[ "${MAX_READS:-0}" =~ ^[0-9]+$ && "$MAX_READS" -gt 0 ]]; then
+  tmp_fastq="${query_fa}.tmp.fastq"
+  seqkit head -n "$MAX_READS" "$R2_FASTQ" -o "$tmp_fastq" >/dev/null
+  seqkit fq2fa "$tmp_fastq" > "$query_fa"
+  rm -f "$tmp_fastq"
+else
+  seqkit fq2fa "$R2_FASTQ" > "$query_fa"
+fi
+total_reads="$(grep -c '^>' "$query_fa" || true)"
+
+status="success"
+notes="$MANIFEST_NOTES"
+if [[ "$total_reads" -le 0 ]]; then
+  status="failed"
+  notes="${notes}; no reads available after FASTQ-to-FASTA conversion"
+  : > "$blast_raw"
+  : > "$hits_txt"
+else
+  blastn \
+    -query "$query_fa" \
+    -db "$DB_PREFIX" \
+    -task blastn \
+    -dust no \
+    -evalue "$MAX_EVALUE" \
+    -num_threads "$THREADS" \
+    -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen sstrand" \
+    -out "$blast_raw"
+  awk -v minp="$MIN_PIDENT" -v minlen="$MIN_ALIGN_LEN" -v maxe="$MAX_EVALUE" \
+    'BEGIN{FS=OFS="\t"} ($3+0)>=minp && ($4+0)>=minlen && ($11+0)<=maxe {print $1}' \
+    "$blast_raw" | sort -u > "$hits_txt"
+fi
+
+hermes_positive_reads="$(wc -l < "$hits_txt" | tr -d ' ')"
+percent="$(awk -v h="$hermes_positive_reads" -v t="$total_reads" 'BEGIN{if(t>0) printf "%.6f", 100*h/t; else printf "0.000000"}')"
+gzip -f "$blast_raw"
+gzip -f "$hits_txt"
+
+if [[ "${MAX_READS:-0}" =~ ^[0-9]+$ && "$MAX_READS" -gt 0 ]]; then
+  notes="${notes}; max_reads=$MAX_READS; total_r2_reads is analyzed subset count"
+fi
+
+{
+  printf 'sample_id\tr2_fastq\tfastq_basename\tcondition_or_role\tpool\tbackground\ttotal_r2_reads\thermes_positive_reads\tpercent_r2_reads_hermes_positive\tmin_pident\tmin_align_len\tmax_evalue\tblast_outfmt6_path\tunique_hit_reads_path\tseqkit_stats_path\tstatus\tnotes\n'
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    "$SAMPLE_ID" "$R2_FASTQ" "$FASTQ_BASENAME" "$CONDITION_OR_ROLE" "$POOL" "$BACKGROUND" \
+    "$total_reads" "$hermes_positive_reads" "$percent" "$MIN_PIDENT" "$MIN_ALIGN_LEN" "$MAX_EVALUE" \
+    "$blast_gz" "$hits_gz" "$stats_tsv" "$status" "$notes"
+} > "$summary_tsv"
+
+echo "Sample: $SAMPLE_ID"
+echo "R2 reads analyzed: $total_reads"
+echo "Hermes-positive reads: $hermes_positive_reads"
+echo "Percent Hermes-positive: $percent"
+echo "Summary: $summary_tsv"

@@ -1,0 +1,47 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Zn_R2_Hermes_Summary
+#$ -q UI
+#$ -pe smp 1
+#$ -j y
+#$ -o /old_Users/jayelazuno/workspace/ytab/blast/logs/09_r2_hermes_blast_summary.log
+
+set -euo pipefail
+
+REPO_ROOT="${REPO_ROOT:-/old_Users/jayelazuno/workspace/ytab}"
+BLAST_ROOT="${BLAST_ROOT:-$REPO_ROOT/blast}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-ytab-hermes-blast}"
+PYTHON="${PYTHON:-python}"
+RSCRIPT="${RSCRIPT:-Rscript}"
+
+activate_env() {
+  if [[ "${YTAB_SKIP_CONDA:-0}" == "1" ]]; then return 0; fi
+  if command -v conda >/dev/null 2>&1; then
+    eval "$(conda shell.bash hook)"
+  else
+    for conda_sh in "${CONDA_SH:-}" \
+      /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh \
+      /Users/jayelazuno/miniforge3/etc/profile.d/conda.sh; do
+      if [[ -n "$conda_sh" && -s "$conda_sh" ]]; then
+        # shellcheck disable=SC1090
+        source "$conda_sh"
+        break
+      fi
+    done
+  fi
+  conda activate "$YTAB_CONDA_ENV"
+}
+
+activate_env
+
+"$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_summarize_r2_hermes_blast.py" \
+  --per-sample-dir "$BLAST_ROOT/summary/per_sample" \
+  --summary-dir "$BLAST_ROOT/summary"
+
+"$RSCRIPT" "$REPO_ROOT/scripts/hpc/ytab_plot_r2_hermes_blast_summary.R" \
+  --summary "$BLAST_ROOT/summary/r2_hermes_blast_summary.csv" \
+  --figures-dir "$BLAST_ROOT/figures"
+
+echo "Summary outputs: $BLAST_ROOT/summary"
+echo "Figure outputs: $BLAST_ROOT/figures"

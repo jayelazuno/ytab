@@ -121,9 +121,11 @@ pipeline/**/*.log
 # Containers / temp
 tmp/
 .cache/
+blast/
 
 # notes
 codex/
+docs/codex/
 codex/ui_references/
 codex/ui_references/**
 
