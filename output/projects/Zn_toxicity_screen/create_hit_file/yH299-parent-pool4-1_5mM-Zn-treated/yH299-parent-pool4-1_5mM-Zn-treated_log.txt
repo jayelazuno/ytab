@@ -7,3 +7,21 @@
     /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.insertions.bedgraph
     /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.insertions.wig
     (bigwig not written: Error - overlapping regions in bedGraph line 195 of /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.insertions.bedgraph)
+
+=== Finding hits ===
+72881934 reads found of map quality >= 20; in these:
+  57049 hits were found; of these:
+    57049 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.insertions.bedgraph
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.insertions.wig
+    (bigwig not written: Error - overlapping regions in bedGraph line 195 of /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.insertions.bedgraph)
+
+=== Finding hits ===
+72881934 reads found of map quality >= 20; in these:
+  57049 hits were found; of these:
+    57049 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.insertions.bedgraph
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.insertions.wig
+    (bigwig not written: Error - overlapping regions in bedGraph line 195 of /old_Users/jayelazuno/workspace/ytab/output/projects/Zn_toxicity_screen/create_hit_file/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.insertions.bedgraph)

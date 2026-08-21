@@ -1,3 +1,16 @@
+
+###
+/codex/
+/blast/
+/tmp/
+/.cache/
+*.tmp
+*.bak
+*.bak_*
+*.log
+EOF
+
+
 # OS
 docs/codex/
 .DS_Store
@@ -133,3 +146,12 @@ codex/ui_references/**
 #output/projects/
 #output/exports/
 #resources/species/*/reference_genome/reference_prepare_manifest.json
+
+# Local-only R2/Hermes BLAST diagnostic scripts kept on HPC but not in repo
+/pipeline/hpc/zn_toxicity_screen/08_r2_hermes_blast_array.sge
+/pipeline/hpc/zn_toxicity_screen/09_r2_hermes_blast_summary.sge
+/scripts/hpc/ytab_make_r2_hermes_blast_manifest.py
+/scripts/hpc/ytab_plot_r2_hermes_blast_summary.R
+/scripts/hpc/ytab_summarize_r2_hermes_blast.py
+/envs/ytab-hermes-blast.yml
+/docs/codex/Hermes-cds.txt

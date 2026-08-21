@@ -136,23 +136,103 @@ def build_mapfastq_command(sample: dict, config: dict, threads: int | None = Non
     selected_threads = int(config.get("threads") if threads is None else threads)
     if selected_threads < 2:
         raise ValueError("Threads must be at least 2.")
+
     name = str(sample["sample"])
     layout = str(sample.get("layout") or "single").lower()
+
+    # Separate sequencing layout from genome-mapping strategy.
+    # Paired-end input means both FASTQs exist and are tracked.
+    # It does not automatically mean Bowtie2 paired-end genome alignment.
+    sequencing_layout = str(
+        sample.get("sequencing_layout")
+        or sample.get("read_layout")
+        or ("paired_end" if layout in {"paired", "paired_end"} else "single_end")
+    ).lower()
+
+    raw_mapping_strategy = sample.get("mapping_strategy")
+    raw_genome_mapping_mate = (
+        sample.get("genome_mapping_mate")
+        or sample.get("resolved_genome_mapping_mate")
+    )
+
+    if sequencing_layout in {"paired", "paired_end"}:
+        if raw_mapping_strategy is None or str(raw_mapping_strategy).strip() == "":
+            raise ValueError(
+                f"Paired-end sample {name} is missing mapping_strategy. "
+                "Set single_mate, paired_genome, or run an auto diagnostic first."
+            )
+
+        mapping_strategy = str(raw_mapping_strategy).lower()
+
+        if mapping_strategy == "auto":
+            raise ValueError(
+                f"Paired-end sample {name} requested mapping_strategy=auto, "
+                "but auto mate resolution is not wired into build_mapfastq_command yet."
+            )
+
+        if mapping_strategy not in {"single_mate", "paired_genome"}:
+            raise ValueError(
+                f"Unsupported mapping_strategy for {name}: {mapping_strategy}. "
+                "Use single_mate, paired_genome, or auto."
+            )
+
+        if mapping_strategy != "paired_genome":
+            if raw_genome_mapping_mate is None or str(raw_genome_mapping_mate).strip() == "":
+                raise ValueError(
+                    f"Paired-end sample {name} is missing genome_mapping_mate for single_mate mapping. "
+                    "Set R1, R2, or run an auto diagnostic first."
+                )
+
+            genome_mapping_mate = str(raw_genome_mapping_mate).upper()
+
+            if genome_mapping_mate == "AUTO":
+                raise ValueError(
+                    f"Paired-end sample {name} requested genome_mapping_mate=auto, "
+                    "but auto mate resolution is not wired into build_mapfastq_command yet."
+                )
+
+            if genome_mapping_mate not in {"R1", "R2"}:
+                raise ValueError(
+                    f"Unsupported genome_mapping_mate for {name}: {genome_mapping_mate}. "
+                    "Use R1, R2, or auto."
+                )
+        else:
+            genome_mapping_mate = "BOTH"
+
+    else:
+        mapping_strategy = str(raw_mapping_strategy or "single_mate").lower()
+        genome_mapping_mate = str(raw_genome_mapping_mate or "R1").upper()
+
     prefix = _resolve((config.get("reference") or {}).get("bowtie2_index_prefix"), root)
     output = _paths(config, name)["output"]
     script = root / "src" / "ytab" / "mapping" / "MapFastq.py"
+
     command = [
         sys.executable, str(script), "--out-dir", str(output), "--bt2-index",
         str(prefix), "--threads", str(selected_threads), "--sample-name", name,
     ]
-    fastq_1 = _resolve(sample.get("fastq_1"), root)
-    fastq_2 = _resolve(sample.get("fastq_2"), root)
-    if layout == "paired":
-        command.extend(["--r1", str(fastq_1), "--r2", str(fastq_2)])
-    else:
-        command.extend(["--input-file-name", str(fastq_1)])
-    return command
 
+    fastq_1 = _resolve(sample.get("fastq_1") or sample.get("r1_fastq"), root)
+    fastq_2 = _resolve(sample.get("fastq_2") or sample.get("r2_fastq"), root)
+
+    if sequencing_layout in {"paired", "paired_end"} and mapping_strategy == "paired_genome":
+        if fastq_2 is None:
+            raise ValueError(f"paired_genome mapping requested for {name}, but fastq_2 is missing.")
+        command.extend(["--r1", str(fastq_1), "--r2", str(fastq_2)])
+        return command
+
+    if sequencing_layout in {"paired", "paired_end"}:
+        if genome_mapping_mate == "R2":
+            if fastq_2 is None:
+                raise ValueError(f"R2 genome mapping requested for {name}, but fastq_2 is missing.")
+            map_fastq = fastq_2
+        else:
+            map_fastq = fastq_1
+    else:
+        map_fastq = fastq_1
+
+    command.extend(["--input-file-name", str(map_fastq)])
+    return command
 
 def _detected_outputs(output_dir: Path) -> list[str]:
     return sorted(str(path) for path in output_dir.iterdir() if path.is_file()) if output_dir.is_dir() else []
@@ -188,6 +268,15 @@ def run_mapfastq_sample(
         "fastq_1": str(fastq_1) if fastq_1 else None,
         "fastq_2": str(fastq_2) if fastq_2 else None,
         "layout": str(sample.get("layout") or "single").lower(),
+        "sequencing_layout": str(
+            sample.get("sequencing_layout")
+            or sample.get("read_layout")
+            or ("paired_end" if str(sample.get("layout") or "single").lower() in {"paired", "paired_end"} else "single_end")
+        ).lower(),
+        "mapping_strategy": str(sample.get("mapping_strategy") or "").lower(),
+        "genome_mapping_mate": str(sample.get("genome_mapping_mate") or sample.get("resolved_genome_mapping_mate") or "").upper(),
+        "junction_mate": str(sample.get("junction_mate") or "").upper(),
+        "require_mate_alignment": str(sample.get("require_mate_alignment") or "false").lower(),
         "species": config.get("species"), "bowtie2_index_prefix": str(prefix),
         "threads": selected_threads, "output_dir": str(paths["output"]),
         "log_file": str(paths["log"]), "status": "failed",

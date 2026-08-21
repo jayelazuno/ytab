@@ -1,2 +1,2 @@
 sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
-yH299-parent-pool3-mock,156334516,156334516,74410305,81924211,47.597,0,0.0,69118997,92.889,38.85,/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/mapfastq/yH299-parent-pool3-mock/yH299-parent-pool3-mock.sam
+yH299-parent-pool3-mock,78167258,78167258,74470294,3696964,95.27,0,0.0,69170830,92.884,38.84,/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/mapfastq/yH299-parent-pool3-mock/yH299-parent-pool3-mock.sam

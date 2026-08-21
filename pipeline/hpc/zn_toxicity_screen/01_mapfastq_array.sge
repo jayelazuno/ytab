@@ -11,26 +11,30 @@
 set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-Zn_toxicity_screen}"
-REPO_ROOT="${REPO_ROOT:-/Users/jayelazuno/workspace/ytab}"
+REPO_ROOT="${REPO_ROOT:-/old_Users/jayelazuno/workspace/ytab}"
 PROJECT_CONFIG="${PROJECT_CONFIG:-$REPO_ROOT/output/projects/$PROJECT_ID/config/project.yaml}"
 MANIFEST="${MANIFEST:-$REPO_ROOT/output/projects/$PROJECT_ID/config/hpc_sample_manifest.csv}"
 PROJECT_DIR="$REPO_ROOT/output/projects/$PROJECT_ID"
 PYTHON="${PYTHON:-python}"
 THREADS="${THREADS:-${NSLOTS:-8}}"
 FORCE="${FORCE:-0}"
-YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-ytab-local}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-tnseq}"
 
 if [[ "$PROJECT_ID" != "Zn_toxicity_screen" ]]; then
   echo "ERROR: PROJECT_ID must be Zn_toxicity_screen, got $PROJECT_ID" >&2
   exit 2
 fi
+
 if [[ -z "${SGE_TASK_ID:-}" ]]; then
   echo "ERROR: SGE_TASK_ID is missing; this script must run as an SGE array task." >&2
   exit 2
 fi
 
 activate_env() {
-  if [[ "${YTAB_SKIP_CONDA:-0}" == "1" ]]; then return 0; fi
+  if [[ "${YTAB_SKIP_CONDA:-0}" == "1" ]]; then
+    return 0
+  fi
+
   if command -v conda >/dev/null 2>&1; then
     eval "$(conda shell.bash hook)"
   else
@@ -38,64 +42,149 @@ activate_env() {
       /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh \
       /Users/jayelazuno/miniforge3/etc/profile.d/conda.sh; do
       if [[ -n "$conda_sh" && -s "$conda_sh" ]]; then
-        # shellcheck disable=SC1090
         source "$conda_sh"
         break
       fi
     done
   fi
+
   conda activate "$YTAB_CONDA_ENV"
 }
 
 activate_env
+
 export PYTHONPATH="$REPO_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+
 eval "$("$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_manifest_row.py" --manifest "$MANIFEST" --task-id "$SGE_TASK_ID" --format shell)"
 
-if [[ ! -s "$YTAB_R1_FASTQ" || ! -s "$YTAB_R2_FASTQ" ]]; then
-  echo "ERROR: paired FASTQs missing for $YTAB_SAMPLE" >&2
-  echo "R1=$YTAB_R1_FASTQ" >&2
-  echo "R2=$YTAB_R2_FASTQ" >&2
+YTAB_SEQUENCING_LAYOUT="${YTAB_SEQUENCING_LAYOUT:-${YTAB_READ_LAYOUT:-${YTAB_LAYOUT:-paired_end}}}"
+YTAB_MAPPING_STRATEGY="${YTAB_MAPPING_STRATEGY:-}"
+YTAB_GENOME_MAPPING_MATE="${YTAB_GENOME_MAPPING_MATE:-}"
+YTAB_JUNCTION_MATE="${YTAB_JUNCTION_MATE:-}"
+YTAB_REQUIRE_MATE_ALIGNMENT="${YTAB_REQUIRE_MATE_ALIGNMENT:-false}"
+
+if [[ -z "$YTAB_MAPPING_STRATEGY" ]]; then
+  echo "ERROR: YTAB_MAPPING_STRATEGY is missing. Set single_mate, paired_genome, or auto." >&2
   exit 2
 fi
 
+if [[ "$YTAB_MAPPING_STRATEGY" != "paired_genome" && -z "$YTAB_GENOME_MAPPING_MATE" ]]; then
+  echo "ERROR: YTAB_GENOME_MAPPING_MATE is missing for non-paired_genome mapping. Set R1, R2, or run an auto diagnostic first." >&2
+  exit 2
+fi
+
+if [[ -z "$YTAB_JUNCTION_MATE" ]]; then
+  echo "ERROR: YTAB_JUNCTION_MATE is missing. Set R1, R2, or both." >&2
+  exit 2
+fi
+
+if [[ "$YTAB_MAPPING_STRATEGY" == "auto" || "$YTAB_GENOME_MAPPING_MATE" == "auto" ]]; then
+  echo "ERROR: auto mate resolution is not yet wired into this HPC script. Run mate-orientation diagnostic first and set genome_mapping_mate explicitly." >&2
+  exit 2
+fi
+
+
+if [[ ! -s "$YTAB_R1_FASTQ" ]]; then
+  echo "ERROR: R1 FASTQ missing for $YTAB_SAMPLE" >&2
+  echo "R1=$YTAB_R1_FASTQ" >&2
+  exit 2
+fi
+
+if [[ "$YTAB_SEQUENCING_LAYOUT" == "paired_end" || "$YTAB_SEQUENCING_LAYOUT" == "paired" ]]; then
+  if [[ ! -s "$YTAB_R2_FASTQ" ]]; then
+    echo "ERROR: paired-end metadata says R2 should exist, but R2 FASTQ is missing for $YTAB_SAMPLE" >&2
+    echo "R2=$YTAB_R2_FASTQ" >&2
+    exit 2
+  fi
+fi
+
 BT2_INDEX="$("$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_config_value.py" --project-config "$PROJECT_CONFIG" --key reference.bowtie2_index_prefix --resolve-repo)"
+
 if [[ ! -s "${BT2_INDEX}.1.bt2" && ! -s "${BT2_INDEX}.1.bt2l" ]]; then
   echo "ERROR: Bowtie2 index prefix is not complete or not visible: $BT2_INDEX" >&2
   exit 2
 fi
 
-mkdir -p "$YTAB_SCRATCH_MAPFASTQ_DIR" "$YTAB_SCRATCH_BAM_DIR" "$YTAB_SCRATCH_TMP_DIR" "$PROJECT_DIR/mapfastq/$YTAB_SAMPLE" "$PROJECT_DIR/logs/mapfastq"
+mkdir -p \
+  "$YTAB_SCRATCH_MAPFASTQ_DIR" \
+  "$YTAB_SCRATCH_BAM_DIR" \
+  "$YTAB_SCRATCH_TMP_DIR" \
+  "$PROJECT_DIR/mapfastq/$YTAB_SAMPLE" \
+  "$PROJECT_DIR/logs/mapfastq"
 
 expected_bam="$YTAB_SCRATCH_BAM_DIR/$YTAB_SAMPLE.sorted.bam"
 expected_bai="$expected_bam.bai"
 stats="$YTAB_SCRATCH_MAPFASTQ_DIR/$YTAB_SAMPLE.mapping_stats.csv"
+
 start=$(date +%s)
 
 echo "Project: $PROJECT_ID"
 echo "Sample: $YTAB_SAMPLE"
-echo "Paired-end handling: passing R1/R2 to MapFastq as --r1/--r2; MapFastq uses Bowtie2 -1/-2 and junction-mate R1 by default."
+echo "Sequencing layout: $YTAB_SEQUENCING_LAYOUT"
+echo "Mapping strategy: $YTAB_MAPPING_STRATEGY"
+echo "Genome mapping mate: $YTAB_GENOME_MAPPING_MATE"
+echo "Junction mate: $YTAB_JUNCTION_MATE"
+echo "Require mate alignment: $YTAB_REQUIRE_MATE_ALIGNMENT"
 echo "R1: $YTAB_R1_FASTQ"
-echo "R2: $YTAB_R2_FASTQ"
+echo "R2: ${YTAB_R2_FASTQ:-}"
 echo "MapFastq scratch dir: $YTAB_SCRATCH_MAPFASTQ_DIR"
 echo "Scratch BAM dir: $YTAB_SCRATCH_BAM_DIR"
+echo "Bowtie2 index: $BT2_INDEX"
 
 if [[ "$FORCE" != "1" && -s "$expected_bam" && -s "$stats" ]]; then
   echo "[SKIP] Existing scratch mapping outputs found for $YTAB_SAMPLE"
 else
-  "$PYTHON" "$REPO_ROOT/src/ytab/mapping/MapFastq.py" \
-    --r1 "$YTAB_R1_FASTQ" \
-    --r2 "$YTAB_R2_FASTQ" \
-    --out-dir "$YTAB_SCRATCH_MAPFASTQ_DIR" \
-    --bt2-index "$BT2_INDEX" \
-    --threads "$THREADS" \
-    --sample-name "$YTAB_SAMPLE"
+  rm -f "$expected_bam" "$expected_bai" "$stats"
+  rm -f "$YTAB_SCRATCH_MAPFASTQ_DIR/$YTAB_SAMPLE.sorted.bam" \
+        "$YTAB_SCRATCH_MAPFASTQ_DIR/$YTAB_SAMPLE.sorted.bam.bai" \
+        "$YTAB_SCRATCH_MAPFASTQ_DIR/${YTAB_SAMPLE}.sorted.bai"
+
+  if [[ "$YTAB_MAPPING_STRATEGY" == "paired_genome" ]]; then
+    echo "Resolved MapFastq command: paired_genome; passing R1 and R2 to Bowtie2 paired-end mode."
+
+    "$PYTHON" "$REPO_ROOT/src/ytab/mapping/MapFastq.py" \
+      --r1 "$YTAB_R1_FASTQ" \
+      --r2 "$YTAB_R2_FASTQ" \
+      --out-dir "$YTAB_SCRATCH_MAPFASTQ_DIR" \
+      --bt2-index "$BT2_INDEX" \
+      --threads "$THREADS" \
+      --sample-name "$YTAB_SAMPLE"
+  else
+    case "$YTAB_GENOME_MAPPING_MATE" in
+      R2|r2)
+        YTAB_MAP_FASTQ="$YTAB_R2_FASTQ"
+        RESOLVED_MATE="R2"
+        ;;
+      R1|r1|auto|AUTO)
+        YTAB_MAP_FASTQ="$YTAB_R1_FASTQ"
+        RESOLVED_MATE="R1"
+        ;;
+      *)
+        echo "ERROR: unsupported YTAB_GENOME_MAPPING_MATE: $YTAB_GENOME_MAPPING_MATE" >&2
+        exit 2
+        ;;
+    esac
+
+    echo "Resolved MapFastq command: single_mate; mapping $RESOLVED_MATE only with Bowtie2 single-end mode."
+    echo "Paired-end FASTQs are retained in metadata; non-selected mate is not rate-limiting for genome mapping."
+
+    "$PYTHON" "$REPO_ROOT/src/ytab/mapping/MapFastq.py" \
+      --input-file-name "$YTAB_MAP_FASTQ" \
+      --out-dir "$YTAB_SCRATCH_MAPFASTQ_DIR" \
+      --bt2-index "$BT2_INDEX" \
+      --threads "$THREADS" \
+      --sample-name "$YTAB_SAMPLE"
+  fi
 
   map_bam="$YTAB_SCRATCH_MAPFASTQ_DIR/$YTAB_SAMPLE.sorted.bam"
+
   if [[ ! -s "$map_bam" ]]; then
     echo "ERROR: MapFastq did not produce expected BAM: $map_bam" >&2
     exit 1
   fi
+
   mv -f "$map_bam" "$expected_bam"
+
   if [[ -s "$map_bam.bai" ]]; then
     mv -f "$map_bam.bai" "$expected_bai"
   elif [[ -s "${map_bam%.bam}.bai" ]]; then
@@ -107,6 +196,7 @@ if [[ ! -s "$expected_bam" ]]; then
   echo "ERROR: expected scratch BAM missing: $expected_bam" >&2
   exit 1
 fi
+
 if [[ ! -s "$stats" ]]; then
   echo "ERROR: expected mapping stats missing: $stats" >&2
   exit 1
@@ -114,6 +204,7 @@ fi
 
 cp -f "$stats" "$PROJECT_DIR/mapfastq/$YTAB_SAMPLE/$YTAB_SAMPLE.mapping_stats.csv"
 printf '%s\n' "$expected_bam" > "$PROJECT_DIR/mapfastq/$YTAB_SAMPLE/scratch_bam_path.txt"
+
 end=$(date +%s)
 
 "$PYTHON" "$REPO_ROOT/scripts/hpc/ytab_hpc_write_sample_status.py" \
@@ -121,12 +212,12 @@ end=$(date +%s)
   --project-dir "$PROJECT_DIR" \
   --sample "$YTAB_SAMPLE" \
   --status success \
-  --layout paired \
+  --layout "$YTAB_SEQUENCING_LAYOUT" \
   --fastq-1 "$YTAB_R1_FASTQ" \
-  --fastq-2 "$YTAB_R2_FASTQ" \
+  --fastq-2 "${YTAB_R2_FASTQ:-}" \
   --output-dir "$YTAB_SCRATCH_MAPFASTQ_DIR" \
   --log-file "${SGE_STDOUT_PATH:-}" \
   --elapsed-seconds "$((end - start))" \
-  --message "Mapped paired-end FASTQs on HPC; BAM retained on scratch: $expected_bam"
+  --message "Mapped paired-end Zn input using separated sequencing-layout/mapping-strategy logic; genome alignment used selected mapping mate unless paired_genome was explicitly selected; BAM retained on scratch: $expected_bam"
 
 echo "Done MapFastq for $YTAB_SAMPLE"

@@ -1,2 +1,2 @@
 sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
-yH299-parent-pool4-1_5mM-Zn-treated,164215794,164215794,76917637,87298157,46.839,0,0.0,72834815,94.692,39.61,/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/mapfastq/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.sam
+yH299-parent-pool4-1_5mM-Zn-treated,82107897,82107897,76968053,5139844,93.74,0,0.0,72881934,94.691,39.61,/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/mapfastq/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.sam

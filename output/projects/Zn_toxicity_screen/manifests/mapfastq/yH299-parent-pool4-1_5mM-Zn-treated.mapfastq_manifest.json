@@ -4,6 +4,6 @@
   "status": "success",
   "output_dir": "/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/mapfastq/yH299-parent-pool4-1_5mM-Zn-treated",
   "log_file": "/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/logs/01_mapfastq_array.7.log",
-  "message": "Mapped paired-end FASTQs on HPC; BAM retained on scratch: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/bam/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.sorted.bam",
-  "last_updated": "2026-08-17T20:29:17.575418+00:00"
+  "message": "Mapped paired-end Zn input using separated sequencing-layout/mapping-strategy logic; genome alignment used selected mapping mate unless paired_genome was explicitly selected; BAM retained on scratch: /nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/bam/yH299-parent-pool4-1_5mM-Zn-treated/yH299-parent-pool4-1_5mM-Zn-treated.sorted.bam",
+  "last_updated": "2026-08-21T19:38:38.839898+00:00"
 }
