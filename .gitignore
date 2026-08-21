@@ -1,5 +1,5 @@
 
-###
+# Local troubleshooting / HPC-only files
 /codex/
 /blast/
 /tmp/
@@ -8,7 +8,6 @@
 *.bak
 *.bak_*
 *.log
-EOF
 
 
 # OS
