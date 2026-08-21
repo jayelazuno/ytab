@@ -1185,7 +1185,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
                                             nrow(result_data())))
   })
   output$classifier_predictions_table <- DT::renderDT({
-    data <- essentiality_visible_results(result_filtered())
+    data <- essentiality_visible_results(result_filtered(), repo_root)
     if (!nrow(data)) return(NULL)
     DT::datatable(data, rownames = FALSE, filter = "none",
                   options = list(scrollX = TRUE, pageLength = 15,

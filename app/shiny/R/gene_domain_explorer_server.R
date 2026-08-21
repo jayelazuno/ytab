@@ -128,6 +128,16 @@ gene_domain_explorer_server <- function(input, output, session, active,
   output$gene_domain_candidates <- DT::renderDT({
     data <- gene_domain_candidate_table(search_state()$candidates)
     if (!nrow(data)) return(NULL)
+    data <- ytab_join_glabrata_display(data, repo_root, "gene_id")
+    mapped <- data.frame(`CAGL ID` = data$cagl_display_id,
+                         `Gene name` = data$gene_display_name,
+                         `Cg-to-Sc relationship` = data$cg_to_sc_relationship_display,
+                         `Internal feature ID` = data$gene_id,
+                         data[, intersect(c("chromosome", "start", "end", "strand",
+                                             "product", "match_type"), names(data)),
+                              drop = FALSE],
+                         check.names = FALSE)
+    data <- mapped
     DT::datatable(data, rownames = FALSE, selection = "single",
                   options = list(pageLength = 8, scrollX = TRUE))
   })
@@ -146,9 +156,12 @@ gene_domain_explorer_server <- function(input, output, session, active,
     data <- gene_domain_candidate_table(search_state()$candidates)
     row <- data[data$gene_id == gene_id, , drop = FALSE]
     if (!nrow(row)) return(tags$p("Selected gene: ", tags$b(gene_id)))
+    row <- ytab_join_glabrata_display(row, repo_root, "gene_id")
     tags$dl(
       class = "ytab-meta",
-      tags$dt("Selected gene"), tags$dd(tags$b(row$display_name[[1]]), " · ", row$gene_id[[1]]),
+      tags$dt("CAGL ID"), tags$dd(row$cagl_display_id[[1]]),
+      tags$dt("Gene name"), tags$dd(tags$b(row$gene_display_name[[1]])),
+      tags$dt("Cg-to-Sc relationship"), tags$dd(row$cg_to_sc_relationship_display[[1]] %||% ""),
       tags$dt("Location"), tags$dd(sprintf("%s:%s-%s (%s)", row$chromosome[[1]], row$start[[1]], row$end[[1]], row$strand[[1]])),
       tags$dt("Product"), tags$dd(row$product[[1]] %||% "")
     )

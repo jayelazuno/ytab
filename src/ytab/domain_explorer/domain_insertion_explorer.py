@@ -14,7 +14,7 @@ import hashlib
 import json
 import math
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -331,6 +331,56 @@ def load_project_gene_context(project_config: str | Path) -> dict[str, Any]:
     return context
 
 
+def _glabrata_annotation_lookup_path() -> Path:
+    return REPO_ROOT / "resources" / "comparative" / "orthology" / "20260610_Cgla_CAGL_to_Scer_annotation_lookup.csv"
+
+
+def _add_lookup_index(index: dict[str, list[int]], key: str, ix: int) -> None:
+    key = _safe_text(key)
+    if key:
+        index.setdefault(key, []).append(ix)
+
+
+def _add_glabrata_annotation_aliases(records: list[GeneRecord], exact: dict[str, list[int]], lower: dict[str, list[int]]) -> None:
+    path = _glabrata_annotation_lookup_path()
+    if not path.is_file():
+        return
+    by_gwk: dict[str, int] = {}
+    for ix, record in enumerate(records):
+        for name in _uniq(record.aliases + (record.gene_id, record.standard_name, record.systematic_name)):
+            if name.startswith("GWK60_"):
+                by_gwk[name.lower()] = ix
+    if not by_gwk:
+        return
+    with path.open(newline="", encoding="utf-8", errors="replace") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            gwk = _safe_text(row.get("gwk60_id_clean"))
+            ix = by_gwk.get(gwk.lower())
+            if ix is None:
+                continue
+            cagl_id = _safe_text(row.get("cagl_id"))
+            scer_gene_name = _safe_text(row.get("scer_gene_name"))
+            cgla_common_name = _safe_text(row.get("cgla_common_name"))
+            display_name = scer_gene_name or cagl_id or records[ix].display_name
+            if display_name and display_name != records[ix].display_name:
+                records[ix] = replace(
+                    records[ix],
+                    display_name=display_name,
+                    standard_name=cagl_id or records[ix].standard_name,
+                    common_name=cgla_common_name or records[ix].common_name,
+                    aliases=_uniq(records[ix].aliases + (cagl_id, scer_gene_name, cgla_common_name,
+                                                          _safe_text(row.get("qng_id")),
+                                                          _safe_text(row.get("scer_gene_id")))),
+                )
+            for field in ("cagl_id", "qng_id", "cgla_common_name", "scer_gene_id", "scer_gene_name"):
+                value = _safe_text(row.get(field))
+                if not value:
+                    continue
+                _add_lookup_index(exact, value, ix)
+                _add_lookup_index(lower, value.lower(), ix)
+
+
 def build_gene_lookup(project_config: str | Path) -> dict[str, Any]:
     """Build a searchable gene lookup from current project annotation."""
     context = load_project_gene_context(project_config)
@@ -350,6 +400,8 @@ def build_gene_lookup(project_config: str | Path) -> dict[str, Any]:
         for name in _uniq(names):
             exact.setdefault(name, []).append(i)
             lower.setdefault(name.lower(), []).append(i)
+    if _safe_text(context.get("species")).lower() == "glabrata":
+        _add_glabrata_annotation_aliases(records, exact, lower)
     lookup = {
         "project_id": context["project_id"],
         "species": context["species"],
@@ -768,6 +820,11 @@ def _format_track_label(track_name: str, site_count: int, label_mode: str = "ful
 def _gene_title(gene: dict[str, Any]) -> str:
     display = str(gene.get("display_name") or "").strip()
     gene_id = str(gene.get("gene_id") or "").strip()
+    cagl_id = str(gene.get("standard_name") or "").strip()
+    if cagl_id and not cagl_id.upper().startswith("CAGL"):
+        cagl_id = ""
+    if display and cagl_id and display != cagl_id:
+        return f"{display} ({cagl_id})"
     if display and gene_id and display != gene_id:
         return f"{display} ({gene_id})"
     return display or gene_id or "Selected gene"

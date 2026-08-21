@@ -6,6 +6,7 @@ self <- normalizePath(sub("^--file=", "", grep("^--file=", all_args, value = TRU
 root <- normalizePath(file.path(dirname(self), "../.."), winslash = "/")
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
 source(file.path(root, "app/shiny/R/project_discovery.R"))
+source(file.path(root, "app/shiny/R/glabrata_annotation_lookup.R"))
 source(file.path(root, "app/shiny/R/essentiality_targets.R"))
 source(file.path(root, "app/shiny/R/essentiality_state.R"))
 source(file.path(root, "app/shiny/R/essentiality_results.R"))
@@ -31,6 +32,10 @@ stopifnot(is.logical(provenance$final), essentiality_smoke_project(project))
 visible <- essentiality_visible_results(data)
 stopifnot(!any(vapply(visible, function(column)
   any(grepl(project$project_root, as.character(column), fixed = TRUE)), logical(1))))
+visible_mapped <- essentiality_visible_results(data, root)
+stopifnot(nrow(visible_mapped) == nrow(visible),
+          all(c("CAGL ID", "Gene name", "Cg-to-Sc relationship") %in% names(visible_mapped)),
+          !"C. glabrata DESeq gene name" %in% names(visible_mapped))
 downloads <- essentiality_download_paths(project$project_root, result)
 stopifnot(file.exists(downloads$predictions), file.exists(downloads$combined_feature),
           file.exists(downloads$target_evaluation),

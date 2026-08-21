@@ -5,7 +5,7 @@ library(bslib)
 app_file <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL) %||% file.path(getwd(), "app.R")
 app_dir <- normalizePath(dirname(app_file), winslash = "/", mustWork = TRUE)
 repo_root <- normalizePath(file.path(app_dir, "../.."), winslash = "/", mustWork = TRUE)
-for (helper in c("project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "ui_qc.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_generated_plots.R", "fitness_condition_control_plot.R", "fitness_plot_utils.R", "ui_fitness.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "ui_workspace.R"))
+for (helper in c("project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "ui_qc.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_generated_plots.R", "fitness_condition_control_plot.R", "fitness_plot_utils.R", "ui_fitness.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "ui_workspace.R"))
   source(file.path(app_dir, "R", helper), local = TRUE)
 
 detected_cpu <- parallel::detectCores(logical = TRUE)
@@ -613,19 +613,21 @@ server <- function(input, output, session) {
   observe({data<-fitness_data();column<-fitness_call_column(data);calls<-if(nzchar(column))sort(unique(as.character(data[[column]])))else character();calls<-calls[!is.na(calls)&nzchar(calls)];choices<-as.list(c("All",unname(calls)));names(choices)<-c("All calls",tools::toTitleCase(gsub("_"," ",calls)));updateSelectInput(session,"fitness_call_filter",choices=choices)})
   output$fitness_summary_cards<-renderUI({data<-fitness_data();if(!nrow(data))return(NULL);counts<-fitness_call_counts(data);card<-function(key,label)tags$div(tags$b(counts[[key]]),label);tags$div(class="ytab-stat-grid",tags$div(tags$b(nrow(data)),"Total features"),card("consistently_depleted","Consistently depleted"),card("consistently_enriched","Consistently enriched"),card("single_pool_depleted","Single-pool depleted"),card("single_pool_enriched","Single-pool enriched"),card("mixed","Mixed"))})
   output$fitness_filtered_count<-renderUI(if(nrow(fitness_data()))tags$p(sprintf("Showing %d of %d features.",nrow(fitness_filtered()),nrow(fitness_data()))))
-  output$fitness_results_table<-DT::renderDT({x<-fitness_result_table_data(fitness_filtered());if(!nrow(x))return(NULL);compact_qc_table(x)})
+  output$fitness_results_table<-DT::renderDT({x<-fitness_result_table_data(fitness_filtered(),repo_root);if(!nrow(x))return(NULL);compact_qc_table(x)})
   fitness_ma_selected_hits <- reactive({
     result <- current_fitness_result(); if (is.null(result)) return(data.frame())
     mode <- input$fitness_ma_mode %||% "combined"; pair <- input$fitness_ma_pair %||% ""
     direction <- input$fitness_ma_hit_direction %||% "both"; n <- as.integer(input$fitness_ma_top_n %||% 10)
     min_support <- if (identical(mode, "combined")) as.integer(input$fitness_ma_min_support %||% 0) else 0L
-    fitness_ma_top_hits_table(result, mode, pair, direction, n, input$fitness_ma_annotation_mode %||% "top", input$fitness_ma_custom_features %||% "", min_support)
+    x <- fitness_ma_top_hits_table(result, mode, pair, direction, n, input$fitness_ma_annotation_mode %||% "top", input$fitness_ma_custom_features %||% "", min_support)
+    if (nrow(x) && "feature_id" %in% names(x)) x <- ytab_join_glabrata_display(x, repo_root, "feature_id")
+    x
   })
   fitness_ma_selected_hits_visible <- reactive({
     x <- fitness_ma_selected_hits()
     q <- trimws(input$fitness_gene_search %||% "")
     if (!nrow(x) || !nzchar(q)) return(x)
-    fields <- intersect(c("feature_id", "label", "hit_direction", "call", "supporting_pool_ids", "support_class"), names(x))
+    fields <- intersect(c("feature_id", "original_feature_id", "cagl_display_id", "gene_display_name", "label", "hit_direction", "supporting_pool_ids"), names(x))
     if (!length(fields)) return(x)
     keep <- Reduce(`|`, lapply(x[fields], function(v) grepl(q, as.character(v), ignore.case = TRUE)))
     x[keep, , drop = FALSE]
@@ -633,11 +635,11 @@ server <- function(input, output, session) {
   output$fitness_selected_top_hits_table <- DT::renderDT({
     x <- fitness_ma_selected_hits_visible()
     if (!nrow(x)) return(NULL)
-    keep <- intersect(c("selected_rank", "label", "hit_direction", "pair", "log2fc", "mean_abundance", "rank_z_strength", "valid_pool_n", "rank_support_n", "supporting_pool_ids", "support_class", "call"), names(x))
+    keep <- intersect(c("selected_rank", "cagl_display_id", "gene_display_name", "cg_to_sc_relationship_display", "hit_direction", "pair", "log2fc", "mean_abundance", "rank_z_strength", "supporting_pool_ids"), names(x))
     x <- x[, keep, drop = FALSE]
     for (nm in intersect(c("log2fc", "mean_abundance", "rank_lfc_strength", "rank_cpm_support", "rank_z_strength"), names(x))) x[[nm]] <- round(as.numeric(x[[nm]]), 3)
     for (nm in intersect(c("candidate_rank_order", "valid_pool_n", "rank_support_n", "selected_min_support_pools"), names(x))) x[[nm]] <- as.integer(x[[nm]])
-    names(x)[names(x) == "overall_candidate_rank"] <- "Overall rank"; names(x)[names(x) == "selected_rank"] <- "Rank"; names(x)[names(x) == "feature_id"] <- "Feature ID"; names(x)[names(x) == "label"] <- "Gene"; names(x)[names(x) == "hit_direction"] <- "Hit direction"; names(x)[names(x) == "log2fc"] <- "Directional log2FC"; names(x)[names(x) == "mean_abundance"] <- "CPM/read support"; names(x)[names(x) == "rank_z_strength"] <- "Local z-score support"; names(x)[names(x) == "valid_pool_n"] <- "Valid pools"; names(x)[names(x) == "rank_support_n"] <- "Supporting pools"; names(x)[names(x) == "supporting_pool_ids"] <- "Supporting pool IDs"; names(x)[names(x) == "support_class"] <- "Support class"; names(x)[names(x) == "call"] <- "Stored final call"
+    names(x)[names(x) == "selected_rank"] <- "Rank"; names(x)[names(x) == "cagl_display_id"] <- "CAGL ID"; names(x)[names(x) == "gene_display_name"] <- "Gene name"; names(x)[names(x) == "cg_to_sc_relationship_display"] <- "Cg-to-Sc relationship"; names(x)[names(x) == "hit_direction"] <- "Hit direction"; names(x)[names(x) == "log2fc"] <- "Directional log2FC"; names(x)[names(x) == "mean_abundance"] <- "CPM/read support"; names(x)[names(x) == "rank_z_strength"] <- "Local z-score support"; names(x)[names(x) == "supporting_pool_ids"] <- "Supporting pool IDs"
     DT::datatable(x, rownames = FALSE, selection = "none", class = "compact stripe hover", options = list(pageLength = 10, lengthMenu = c(10, 25, 50, 100), autoWidth = FALSE, ordering = TRUE, searching = TRUE, scrollX = TRUE, order = list(list(0, "asc")), columnDefs = list(list(className = "dt-right", targets = which(vapply(x, is.numeric, FALSE)) - 1L), list(className = "ytab-nowrap", targets = 0))))
   })
   output$fitness_visualization_selector<-renderUI({
@@ -715,12 +717,12 @@ server <- function(input, output, session) {
   output$fitness_ma_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
     result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";pair<-input$fitness_ma_pair%||%"";direction<-input$fitness_ma_hit_direction%||%"both";n<-suppressWarnings(as.integer(input$fitness_ma_top_n%||%10));if(is.na(n))n<-10
     min_support<-if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L
-    plot_fitness_ma(result,mode,pair,direction,n,input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),min_support)
+    plot_fitness_ma(result,mode,pair,direction,n,input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),min_support,repo_root)
   }))
   output$fitness_condition_control_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
     result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";pair<-input$fitness_ma_pair%||%"";direction<-input$fitness_ma_hit_direction%||%"both";n<-suppressWarnings(as.integer(input$fitness_ma_top_n%||%10));if(is.na(n))n<-10
     min_support<-if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L
-    plot_fitness_condition_control_scatter(result,mode,pair,direction,n,input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),min_support)
+    plot_fitness_condition_control_scatter(result,mode,pair,direction,n,input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),min_support,repo_root)
   }))
   output$fitness_selected_hit_heatmap<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
     result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";pair<-input$fitness_ma_pair%||%""
@@ -739,7 +741,7 @@ server <- function(input, output, session) {
   output$download_fitness_design<-downloadHandler(filename=function()"comparison_design.csv",content=function(file)file.copy(fitness_download_path(fitness_design_path(active()),"No comparison design is available for download."),file,overwrite=TRUE))
   output$download_fitness_comparison<-downloadHandler(filename=function()"treated_vs_parent_comparison_summary.csv",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$comparison_summary;file.copy(fitness_download_path(path,"No comparison-level fitness summary is available for download."),file,overwrite=TRUE)})
   output$download_fitness_manifest<-downloadHandler(filename=function()"treated_vs_parent_manifest.json",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$manifest;file.copy(fitness_download_path(path,"No fitness run manifest is available for download."),file,overwrite=TRUE)})
-  output$download_fitness_ma_plot<-downloadHandler(filename=function(){paste0(active()$project_id,".fitness.ma_plot.png")},content=function(file){result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";min_support<-if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L;png(file,width=2400,height=1800,res=200);plot_fitness_ma(result,mode,input$fitness_ma_pair%||%"",input$fitness_ma_hit_direction%||%"both",as.integer(input$fitness_ma_top_n%||%10),input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",TRUE,as.numeric(input$fitness_point_size%||%1.5),min_support);dev.off()})
+  output$download_fitness_ma_plot<-downloadHandler(filename=function(){paste0(active()$project_id,".fitness.ma_plot.png")},content=function(file){result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";min_support<-if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L;png(file,width=2400,height=1800,res=200);plot_fitness_ma(result,mode,input$fitness_ma_pair%||%"",input$fitness_ma_hit_direction%||%"both",as.integer(input$fitness_ma_top_n%||%10),input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",TRUE,as.numeric(input$fitness_point_size%||%1.5),min_support,repo_root);dev.off()})
   output$download_fitness_ma_data <- downloadHandler(
     filename = function() paste0(active()$project_id, ".fitness.ma_plot.csv"),
     content = function(file) {
@@ -772,6 +774,14 @@ server <- function(input, output, session) {
       min_support <- if (identical(mode, "combined")) as.integer(input$fitness_ma_min_support %||% 0) else 0L
       top <- fitness_ma_selected_hits()
       if (!nrow(top)) top <- data.frame(no_top_hits_selected = "No top hits selected under current controls", comparison_view = if (identical(mode, "individual")) "individual_pair" else "combined", hit_direction = direction, selected_min_support_pools = min_support, stringsAsFactors = FALSE)
+      else {
+        raw_annotation <- c("cagl_id", "gwk60_id_clean", "qng_id", "cgla_common_name",
+                            "cg_to_sc_relationship", "pre_WGD_Ancestor", "scer_gene_id",
+                            "scer_gene_name", "SGD_essentiality", "SGD_description",
+                            "cgla_gene_name_from_deseq")
+        top <- top[, setdiff(names(top), raw_annotation), drop = FALSE]
+        top <- ytab_standardize_glabrata_annotation_names(top)
+      }
       write.csv(top, file, row.names = FALSE)
     }
   )

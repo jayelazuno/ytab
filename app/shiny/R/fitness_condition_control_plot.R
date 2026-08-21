@@ -51,11 +51,12 @@ fitness_condition_control_highlights <- function(data, n = 10L) {
 
 plot_fitness_condition_control_scatter <- function(result, mode = "combined", pair = "", direction = "both", n = 10L,
                                                    annotation_mode = "top", custom = "", text_size = "medium", grid = TRUE,
-                                                   point_size = 1.5, min_support = 0L) {
+                                                   point_size = 1.5, min_support = 0L, repo_root = NULL) {
   data <- fitness_condition_control_plot_data(result, mode, pair)
   if (!nrow(data)) return(qc_plot_empty("Condition-control log-log scatter data are not available for this selected fitness result."))
   ranked <- fitness_ma_rank_data(result, mode, pair, direction, min_support)
   if (!nrow(ranked)) return(qc_plot_empty("Selected-hit ranking data are not available for this selected fitness result."))
+  ranked <- fitness_ma_apply_display_labels(ranked, repo_root)
   highlighted_ranked <- fitness_ma_highlight_rows(ranked, direction, as.integer(n %||% 10L), min_support)
   highlighted_features <- as.character(ranked$feature_id[highlighted_ranked])
   label_info <- fitness_ma_label_table(ranked, highlighted_ranked, annotation_mode, custom, mode, pair)

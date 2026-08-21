@@ -173,7 +173,7 @@ filter_essentiality_results <- function(data, search = "", label = "All", inclus
   data[keep, , drop = FALSE]
 }
 
-essentiality_visible_results <- function(data) {
+essentiality_visible_results <- function(data, repo_root = NULL) {
   if (!nrow(data)) return(data.frame())
   columns <- essentiality_prediction_columns(data)
   chosen <- unique(c(columns$feature, columns$gene, columns$label, columns$score,
@@ -181,6 +181,10 @@ essentiality_visible_results <- function(data) {
   chosen <- chosen[nzchar(chosen) & chosen %in% names(data)]
   if (!length(chosen)) chosen <- names(data)[seq_len(min(8L, ncol(data)))]
   result <- data[, chosen, drop = FALSE]
+  if (!is.null(repo_root) && nzchar(columns$feature) && columns$feature %in% names(data)) {
+    mapped <- ytab_glabrata_regular_display_columns(data, repo_root, columns$feature)
+    result <- cbind(mapped, result[, setdiff(names(result), c(columns$feature, columns$gene)), drop = FALSE])
+  }
   labels <- c(
     setNames("Feature ID", columns$feature), setNames("Gene", columns$gene),
     setNames("Classifier label", columns$label), setNames("Prediction score", columns$score),

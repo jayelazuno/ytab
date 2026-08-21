@@ -42,6 +42,36 @@ def main() -> int:
         records = lookup["records"]
         if not records:
             raise AssertionError("gene lookup is empty")
+        annotation_lookup = REPO_ROOT / "resources/comparative/orthology/20260610_Cgla_CAGL_to_Scer_annotation_lookup.csv"
+        if annotation_lookup.is_file():
+            record_ids = {record.gene_id for record in records}
+            with annotation_lookup.open(newline="", encoding="utf-8") as handle:
+                rows = list(csv.DictReader(handle))
+            alias_row = next(
+                (
+                    row
+                    for row in rows
+                    if row.get("gwk60_id_clean") in record_ids
+                    and row.get("cagl_id")
+                    and row.get("scer_gene_name")
+                ),
+                None,
+            )
+            if alias_row:
+                for query in (alias_row["cagl_id"], alias_row["qng_id"], alias_row["scer_gene_id"], alias_row["scer_gene_name"]):
+                    if not query:
+                        continue
+                    hits = explorer.query_gene(args.project_config, query)
+                    if not any(hit.get("gene_id") == alias_row["gwk60_id_clean"] for hit in hits):
+                        raise AssertionError(f"annotation alias did not resolve to internal GWK60 ID: {query}")
+                mapped_record = next((record for record in records if record.gene_id == alias_row["gwk60_id_clean"]), None)
+                if mapped_record is None:
+                    raise AssertionError("mapped glabrata record is missing")
+                if mapped_record.display_name != alias_row["scer_gene_name"]:
+                    raise AssertionError("Gene Explorer plot display name does not use the glabrata mapping")
+                title = explorer._gene_title(mapped_record.as_dict())
+                if alias_row["scer_gene_name"] not in title or alias_row["cagl_id"] not in title:
+                    raise AssertionError("Gene Explorer plot title does not show mapped gene/CAGL identifiers")
         eligible_records = [r for r in records if r.gene_id and r.chromosome and r.start > 0 and r.end > r.start]
         gene = min(eligible_records, key=lambda r: r.end - r.start) if eligible_records else records[0]
         candidates = explorer.query_gene(args.project_config, gene.gene_id)

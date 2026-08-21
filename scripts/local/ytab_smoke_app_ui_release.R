@@ -43,7 +43,8 @@ helper_files <- c(
   "app/shiny/R/ui_components.R",
   "app/shiny/R/plot_display_helpers.R",
   "app/shiny/R/table_display_helpers.R",
-  "app/shiny/R/plot_customization_helpers.R"
+  "app/shiny/R/plot_customization_helpers.R",
+  "app/shiny/R/glabrata_annotation_lookup.R"
 )
 for (helper in helper_files) {
   full <- must_exist(helper)
@@ -233,6 +234,11 @@ must_contain("app/shiny/app.R", "download_fitness_ma_data", "Fitness MA plotted-
 must_contain("app/shiny/app.R", "download_fitness_ma_top_hits", "Fitness MA selected top-hits download")
 must_contain("app/shiny/app.R", "fitness_ma_selected_hits", "shared selected top-hits reactive")
 must_contain("app/shiny/app.R", "fitness_ma_selected_hits_visible", "selected top-hits search-filtered table view")
+must_contain("app/shiny/app.R", "glabrata_annotation_lookup.R", "shared glabrata annotation helper loaded")
+must_contain("app/shiny/app.R", "ytab_join_glabrata_display", "shared glabrata display join used")
+must_contain("app/shiny/app.R", "CAGL ID", "Fitness selected top-hits CAGL ID display")
+must_contain("app/shiny/app.R", "Gene name", "Fitness selected top-hits gene-name display")
+must_contain("app/shiny/app.R", "Cg-to-Sc relationship", "Fitness selected top-hits relationship display")
 must_contain("app/shiny/R/ui_fitness.R", "fitness_selected_top_hits_table", "selected top-hits table UI")
 must_contain("app/shiny/R/ui_fitness.R", "Search gene or feature ID", "selected top-hits search control")
 must_contain("app/shiny/R/ui_fitness.R", "Full result fitness-call filter", "full-result-only fitness call filter")

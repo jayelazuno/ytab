@@ -3,6 +3,36 @@ fitness_ma_lfc_support_threshold <- function() 0
 fitness_ma_candidate_lfc_threshold <- function() 1
 fitness_ma_candidate_cpm_threshold <- function() 1
 
+fitness_ma_first_nonempty <- function(...) {
+  values <- list(...)
+  if (!length(values)) return(character())
+  n <- max(vapply(values, length, integer(1)))
+  out <- rep("", n)
+  for (value in values) {
+    value <- as.character(value %||% "")
+    if (length(value) == 1L && n > 1L) value <- rep(value, n)
+    value[is.na(value)] <- ""
+    take <- !nzchar(out) & nzchar(trimws(value))
+    out[take] <- value[take]
+  }
+  out
+}
+
+fitness_ma_apply_display_labels <- function(data, repo_root = NULL) {
+  if (!is.data.frame(data) || !nrow(data) || !"feature_id" %in% names(data)) return(data)
+  if (!is.null(repo_root) && exists("ytab_join_glabrata_display", mode = "function")) {
+    data <- tryCatch(ytab_join_glabrata_display(data, repo_root, "feature_id"),
+                     error = function(e) data)
+  }
+  data$label <- fitness_ma_first_nonempty(
+    if ("gene_display_name" %in% names(data)) data$gene_display_name else "",
+    if ("cagl_display_id" %in% names(data)) data$cagl_display_id else "",
+    if ("label" %in% names(data)) data$label else "",
+    data$feature_id
+  )
+  data
+}
+
 fitness_ma_pair_choices <- function(result) {
   if (is.null(result) || !nzchar(result$output_dir %||% "")) return(setNames(character(), character()))
   path <- file.path(result$output_dir, "tables", "treated_vs_parent.by_pool.log2fc_z.csv")
@@ -190,7 +220,15 @@ fitness_ma_annotation_rows <- function(data, highlighted, mode = "top", custom =
   queries <- trimws(unlist(strsplit(custom %||% "", "[,;[:space:][:cntrl:]]+"))); queries <- unique(queries[nzchar(queries)])
   custom_rows <- integer(); unmatched <- character()
   if (mode %in% c("custom", "top_custom") && length(queries)) for (q in queries) {
-    hit <- which(tolower(as.character(data$feature_id)) == tolower(q) | tolower(as.character(data$label)) == tolower(q))
+    fields <- intersect(c("feature_id", "original_feature_id", "label", "cagl_display_id",
+                          "gene_display_name", "scer_gene_name", "scer_gene_id", "qng_id",
+                          "cgla_common_name"), names(data))
+    hit <- integer()
+    if (length(fields)) {
+      matches <- vapply(data[fields], function(x) tolower(as.character(x)) == tolower(q),
+                        logical(nrow(data)))
+      hit <- which(rowSums(as.matrix(matches), na.rm = TRUE) > 0)
+    }
     if (length(hit)) custom_rows <- c(custom_rows, hit[[1]]) else unmatched <- c(unmatched, q)
   }
   top_rows <- if (mode %in% c("top", "top_custom")) highlighted else integer()
@@ -286,11 +324,12 @@ fitness_ma_supporting_pool_ids <- function(result, feature_id, direction = "both
 
 plot_fitness_ma <- function(result, mode = "combined", pair = "", direction = "both", n = 10L,
                             annotation_mode = "top", custom = "", text_size = "medium", grid = TRUE,
-                            point_size = 1.5, min_support = 1L) {
+                            point_size = 1.5, min_support = 1L, repo_root = NULL) {
   data <- fitness_ma_rank_data(result, mode, pair, direction, min_support)
   if (!nrow(data)) return(qc_plot_empty("No MA data are available for this comparison."))
   if (!identical(direction, "none") && any(nzchar(as.character(data$ranking_warning %||% ""))))
     return(qc_plot_empty(unique(as.character(data$ranking_warning))[1]))
+  data <- fitness_ma_apply_display_labels(data, repo_root)
   data <- data[is.finite(data$mean_abundance) & is.finite(data$log2fc), , drop = FALSE]
   if (!nrow(data)) return(qc_plot_empty("No finite abundance/log2FC values are available for this comparison."))
   highlighted <- fitness_ma_highlight_rows(data, direction, as.integer(n %||% 10L), min_support)
@@ -351,7 +390,12 @@ fitness_selected_hit_heatmap_data <- function(result, selected_hits, mode = "com
   feature_order <- selected$feature_id
   z <- matrix(NA_real_, nrow = length(feature_order), ncol = length(contrast_order), dimnames = list(feature_order, contrast_order))
   for (i in seq_len(nrow(by_pool))) z[by_pool$feature_id[[i]], by_pool$contrast[[i]]] <- by_pool$log2FC[[i]]
-  row_labels <- selected$label %||% selected$feature_id
+  row_labels <- fitness_ma_first_nonempty(
+    if ("gene_display_name" %in% names(selected)) selected$gene_display_name else "",
+    if ("cagl_display_id" %in% names(selected)) selected$cagl_display_id else "",
+    if ("label" %in% names(selected)) selected$label else "",
+    selected$feature_id
+  )
   row_labels[is.na(row_labels) | !nzchar(trimws(row_labels))] <- selected$feature_id[is.na(row_labels) | !nzchar(trimws(row_labels))]
   column_labels <- vapply(contrast_order, function(id) {
     row <- by_pool[match(id, by_pool$contrast), , drop = FALSE]
