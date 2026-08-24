@@ -1187,9 +1187,13 @@ essentiality_server <- function(input, output, session, active, active_project_p
   output$classifier_predictions_table <- DT::renderDT({
     data <- essentiality_visible_results(result_filtered(), repo_root)
     if (!nrow(data)) return(NULL)
-    DT::datatable(data, rownames = FALSE, filter = "none",
-                  options = list(scrollX = TRUE, pageLength = 15,
-                                 deferRender = TRUE, processing = TRUE))
+    ytab_gene_details_datatable(
+      data,
+      page_length = 15,
+      filter = "none",
+      options = list(scrollX = TRUE, pageLength = 15,
+                     deferRender = TRUE, processing = TRUE)
+    )
   })
   classifier_label_plot <- function() {
     result <- current_result()

@@ -182,7 +182,8 @@ essentiality_visible_results <- function(data, repo_root = NULL) {
   if (!length(chosen)) chosen <- names(data)[seq_len(min(8L, ncol(data)))]
   result <- data[, chosen, drop = FALSE]
   if (!is.null(repo_root) && nzchar(columns$feature) && columns$feature %in% names(data)) {
-    mapped <- ytab_glabrata_regular_display_columns(data, repo_root, columns$feature)
+    mapped <- ytab_glabrata_regular_display_columns(data, repo_root, columns$feature,
+                                                    include_details = TRUE)
     result <- cbind(mapped, result[, setdiff(names(result), c(columns$feature, columns$gene)), drop = FALSE])
   }
   labels <- c(

@@ -138,6 +138,9 @@ blast/
 # notes
 codex/
 docs/codex/
+docs/setup_local.md
+docs/ui_reference_research_step14F1.md
+docs/reports/fitness_candidate_ranking_inventory.md
 codex/ui_references/
 codex/ui_references/**
 

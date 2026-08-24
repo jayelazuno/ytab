@@ -21,10 +21,13 @@ data <- qc_mapping_stats_plot_data(project)
 stopifnot(nrow(data) >= 8L)
 labels <- as.character(data$sample)
 stopifnot(any(nchar(labels) >= 18L))
+stopifnot("total_records" %in% names(data))
+stopifnot("primary_mapped" %in% names(data))
 stopifnot("percent_mapped" %in% names(data))
-stopifnot(any(c("percent_mapq_ge_threshold", "percent_mapq_ge20") %in% names(data)))
+stopifnot("avg_mapq_mapped_primary" %in% names(data))
 
 default_input <- list(
+  mapping_qc_plot_choice = "read_counts",
   mapping_qc_text_size = "medium",
   mapping_qc_label_mode = "full",
   mapping_qc_label_angle = "0",
@@ -33,6 +36,7 @@ default_input <- list(
   mapping_qc_show_value_labels = FALSE
 )
 compact_input <- list(
+  mapping_qc_plot_choice = "percent_mapped",
   mapping_qc_text_size = "small",
   mapping_qc_label_mode = "compact",
   mapping_qc_label_angle = "90",
@@ -41,6 +45,7 @@ compact_input <- list(
   mapping_qc_show_value_labels = TRUE
 )
 full_vertical_input <- list(
+  mapping_qc_plot_choice = "mapq",
   mapping_qc_text_size = "medium",
   mapping_qc_label_mode = "full",
   mapping_qc_label_angle = "90",
@@ -53,7 +58,8 @@ render_plot <- function(input) {
   file <- tempfile(fileext = ".png")
   grDevices::png(file, width = 1600, height = 1000, res = 150)
   on.exit(grDevices::dev.off(), add = TRUE)
-  ytab_with_plot_display_options(input, "mapping_qc", plot_qc_mapping_stats(project))
+  ytab_with_plot_display_options(input, "mapping_qc",
+                                 plot_qc_mapping_stats(project, input$mapping_qc_plot_choice))
   grDevices::dev.off()
   on.exit(NULL)
   file
@@ -98,9 +104,21 @@ qc_utils_text <- paste(readLines(file.path(repo_root, "app/shiny/R/qc_plot_utils
 ui_qc_text <- paste(readLines(file.path(repo_root, "app/shiny/R/ui_qc.R"), warn = FALSE),
                     collapse = "\n")
 stopifnot(
+  grepl("read_counts", ui_qc_text, fixed = TRUE),
+  grepl("percent_mapped", ui_qc_text, fixed = TRUE),
+  grepl("mapq", ui_qc_text, fixed = TRUE),
+  grepl("mapping_qc_plot_key", paste(readLines(file.path(repo_root, "app/shiny/app.R"), warn = FALSE),
+                                     collapse = "\n"), fixed = TRUE),
+  grepl("ytab-inline-legend", paste(readLines(file.path(repo_root, "app/shiny/www/ytab_release_ui.css"),
+                                             warn = FALSE), collapse = "\n"), fixed = TRUE),
+  grepl("Total reads", mapping_plot_text, fixed = TRUE),
+  grepl("Mapped reads", mapping_plot_text, fixed = TRUE),
   grepl("% reads mapped", mapping_plot_text, fixed = TRUE),
-  grepl("% HQ aligned", mapping_plot_text, fixed = TRUE),
+  grepl("Average MAPQ mapped primary", mapping_plot_text, fixed = TRUE),
+  grepl("primary_mapped", mapping_plot_text, fixed = TRUE),
+  grepl("avg_mapq_mapped_primary", mapping_plot_text, fixed = TRUE),
   !grepl("% l", mapping_plot_text, fixed = TRUE),
+  !grepl("legend(\"topleft\"", mapping_plot_text, fixed = TRUE),
   !grepl("legend(\"right\"", mapping_plot_text, fixed = TRUE),
   grepl("legend(\"center\"", mapping_plot_text, fixed = TRUE),
   grepl("layout(matrix", mapping_plot_text, fixed = TRUE),

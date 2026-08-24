@@ -103,13 +103,50 @@ ytab_standardize_glabrata_annotation_names <- function(data) {
   data
 }
 
-ytab_glabrata_regular_display_columns <- function(data, repo_root, id_col) {
-  data <- ytab_join_glabrata_display(data, repo_root, id_col)
+ytab_glabrata_gene_detail_columns <- function(data) {
+  if (!is.data.frame(data) || !nrow(data)) {
+    return(data.frame(
+      .ytab_gene_detail_name = character(),
+      .ytab_sgd_description = character(),
+      .ytab_sgd_essentiality = character(),
+      check.names = FALSE,
+      stringsAsFactors = FALSE
+    ))
+  }
+  gene_name <- ytab_first_nonempty(
+    if ("gene_display_name" %in% names(data)) data$gene_display_name else "",
+    if ("Gene name" %in% names(data)) data[["Gene name"]] else "",
+    if ("scer_gene_name" %in% names(data)) data$scer_gene_name else "",
+    if ("cagl_display_id" %in% names(data)) data$cagl_display_id else "",
+    if ("CAGL ID" %in% names(data)) data[["CAGL ID"]] else ""
+  )
+  description <- ytab_first_nonempty(
+    if ("SGD_description" %in% names(data)) data$SGD_description else "",
+    if ("SGD description" %in% names(data)) data[["SGD description"]] else ""
+  )
+  essentiality <- ytab_first_nonempty(
+    if ("SGD_essentiality" %in% names(data)) data$SGD_essentiality else "",
+    if ("SGD essentiality" %in% names(data)) data[["SGD essentiality"]] else ""
+  )
   data.frame(
+    .ytab_gene_detail_name = gene_name,
+    .ytab_sgd_description = description,
+    .ytab_sgd_essentiality = essentiality,
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+}
+
+ytab_glabrata_regular_display_columns <- function(data, repo_root, id_col,
+                                                  include_details = FALSE) {
+  data <- ytab_join_glabrata_display(data, repo_root, id_col)
+  out <- data.frame(
     `CAGL ID` = data$cagl_display_id,
     `Gene name` = data$gene_display_name,
     `Cg-to-Sc relationship` = data$cg_to_sc_relationship_display,
     check.names = FALSE,
     stringsAsFactors = FALSE
   )
+  if (isTRUE(include_details)) out <- cbind(out, ytab_glabrata_gene_detail_columns(data))
+  out
 }

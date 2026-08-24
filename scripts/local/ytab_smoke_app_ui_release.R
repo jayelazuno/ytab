@@ -63,7 +63,7 @@ for (fn in c(
   "ytab_technical_details", "ytab_empty_state",
   "ytab_plot_output", "ytab_static_image_ui", "ytab_generated_file_gallery",
   "ytab_static_image_output_card", "ytab_plot_frame", "ytab_two_column_layout",
-  "ytab_datatable", "ytab_file_table", "ytab_plot_customization_controls",
+  "ytab_datatable", "ytab_gene_details_datatable", "ytab_file_table", "ytab_plot_customization_controls",
   "ytab_plot_customization_values", "ytab_plot_height_px",
   "ytab_with_plot_display_options"
 )) {
@@ -94,6 +94,10 @@ for (tab in c("Quality Control", "Essentiality", "Fitness Screen",
 
 must_contain("app/shiny/R/ui_qc.R", "summary_qc_plot_choice", "Summary QC plot selector")
 must_contain("app/shiny/R/ui_qc.R", "mapping_qc_plot_choice", "Mapping QC plot selector")
+must_contain("app/shiny/R/ui_qc.R", "\"read_counts\"", "Mapping QC read-count graph choice")
+must_contain("app/shiny/R/ui_qc.R", "\"percent_mapped\"", "Mapping QC percent-mapped graph choice")
+must_contain("app/shiny/R/ui_qc.R", "\"mapq\"", "Mapping QC MAPQ graph choice")
+must_contain("app/shiny/app.R", "plot_qc_mapping_stats\\(active\\(\\),input\\$mapping_qc_plot_choice", "Mapping QC selected graph wiring")
 must_contain("app/shiny/R/ui_qc.R", "ytab_plot_customization_controls\\(\"mapping_qc\"", "Mapping QC display controls")
 must_contain("app/shiny/R/ui_qc.R", "default_bar_orientation = \"horizontal\"", "Mapping QC horizontal default")
 must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_display_labels", "Mapping QC label mode wiring")
@@ -101,10 +105,15 @@ must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_grid_enabled", "Map
 must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_show_value_labels", "Mapping QC value-label wiring")
 must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_label_angle", "Mapping QC label-angle wiring")
 must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_bar_horizontal", "Mapping QC orientation wiring")
-must_contain("app/shiny/R/qc_mapping_stats_plot.R", "legend\\(\"center\"", "Mapping QC metric key row")
-must_contain("app/shiny/R/qc_mapping_stats_plot.R", "layout\\(matrix", "Mapping QC separate metric key row")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "metric = \"read_counts\"", "Mapping QC selectable metric argument")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "total_records", "Mapping QC total read source column")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "primary_mapped", "Mapping QC mapped read source column")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "percent_mapped", "Mapping QC percent mapped source column")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "avg_mapq_mapped_primary", "Mapping QC MAPQ source column")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "Total reads", "Mapping QC total reads legend label")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "Mapped reads", "Mapping QC mapped reads legend label")
 must_contain("app/shiny/R/qc_mapping_stats_plot.R", "% reads mapped", "Mapping QC readable mapped legend label")
-must_contain("app/shiny/R/qc_mapping_stats_plot.R", "% HQ aligned", "Mapping QC readable HQ legend label")
+must_contain("app/shiny/R/qc_mapping_stats_plot.R", "Average MAPQ mapped primary", "Mapping QC readable MAPQ legend label")
 must_contain("app/shiny/R/qc_mapping_stats_plot.R", "qc_plot_label_margin_lines", "Mapping QC dynamic label margins")
 must_not_contain(file.path(repo_root, "app/shiny/R/qc_mapping_stats_plot.R"),
                  "% l",
@@ -236,6 +245,20 @@ must_contain("app/shiny/app.R", "fitness_ma_selected_hits", "shared selected top
 must_contain("app/shiny/app.R", "fitness_ma_selected_hits_visible", "selected top-hits search-filtered table view")
 must_contain("app/shiny/app.R", "glabrata_annotation_lookup.R", "shared glabrata annotation helper loaded")
 must_contain("app/shiny/app.R", "ytab_join_glabrata_display", "shared glabrata display join used")
+must_contain("app/shiny/R/table_display_helpers.R", "ytab_gene_details_datatable", "shared clickable gene-detail table helper")
+must_contain("app/shiny/R/table_display_helpers.R", "ytab-gene-detail-toggle", "clickable CAGL/Gene detail cells")
+must_contain("app/shiny/R/table_display_helpers.R", "Gene details", "gene detail child-row title")
+must_contain("app/shiny/R/table_display_helpers.R", "SGD description", "gene detail SGD description field")
+must_contain("app/shiny/R/table_display_helpers.R", "SGD essentiality", "gene detail SGD essentiality field")
+must_contain("app/shiny/R/table_display_helpers.R", "searchable = FALSE", "hidden gene detail columns are not normal searchable visible columns")
+must_contain("app/shiny/R/glabrata_annotation_lookup.R", "ytab_glabrata_gene_detail_columns", "shared glabrata gene detail hidden-column helper")
+must_contain("app/shiny/R/glabrata_annotation_lookup.R", "SGD_essentiality", "gene details use lookup SGD_essentiality annotation")
+must_contain("app/shiny/R/fitness_result_state.R", "include_details=TRUE", "Fitness full result table carries hidden gene details")
+must_contain("app/shiny/R/essentiality_results.R", "include_details = TRUE", "Essentiality prediction table carries hidden lookup details")
+must_contain("app/shiny/R/essentiality_server.R", "ytab_gene_details_datatable", "Essentiality prediction table clickable gene details")
+must_contain("app/shiny/app.R", "ytab_glabrata_gene_detail_columns\\(x\\)", "Fitness selected top hits carries hidden gene details")
+must_contain("app/shiny/app.R", "ytab_gene_details_datatable\\(x", "Fitness gene-level tables render clickable gene details")
+must_contain("app/shiny/www/ytab_release_ui.css", "ytab-gene-details-child", "wrapped gene detail child-row CSS")
 must_contain("app/shiny/app.R", "CAGL ID", "Fitness selected top-hits CAGL ID display")
 must_contain("app/shiny/app.R", "Gene name", "Fitness selected top-hits gene-name display")
 must_contain("app/shiny/app.R", "Cg-to-Sc relationship", "Fitness selected top-hits relationship display")

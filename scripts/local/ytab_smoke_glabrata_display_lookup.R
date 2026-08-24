@@ -42,6 +42,27 @@ if (joined$gene_display_name[[2]] != "GWK60_UNMATCHED") fail("unmatched gene dis
 if (!"cg_to_sc_relationship_display" %in% names(joined)) fail("relationship display column missing")
 if (!"gwk60_id_clean" %in% names(joined)) fail("raw lookup columns were not preserved internally")
 
+detail_candidates <- lookup[nzchar(lookup$gwk60_id_clean) &
+                              (nzchar(lookup$SGD_description) | nzchar(lookup$SGD_essentiality)),
+                            , drop = FALSE]
+if (!nrow(detail_candidates)) fail("no lookup row has SGD description or SGD essentiality for detail test")
+detail_hit <- detail_candidates[1, , drop = FALSE]
+detail_joined <- ytab_join_glabrata_display(
+  data.frame(feature_id = detail_hit$gwk60_id_clean[[1]], stringsAsFactors = FALSE),
+  root,
+  "feature_id"
+)
+details <- ytab_glabrata_gene_detail_columns(detail_joined)
+for (name in c(".ytab_gene_detail_name", ".ytab_sgd_description", ".ytab_sgd_essentiality"))
+  if (!name %in% names(details)) fail(paste("gene detail hidden column missing:", name))
+if (!identical(details$.ytab_sgd_description[[1]], detail_joined$SGD_description[[1]]))
+  fail("gene details do not use the lookup SGD_description value")
+if (!identical(details$.ytab_sgd_essentiality[[1]], detail_joined$SGD_essentiality[[1]]))
+  fail("gene details do not use the lookup SGD_essentiality annotation value")
+if ("classifier_label" %in% names(detail_joined) ||
+    "Classifier label" %in% names(detail_joined))
+  fail("gene detail lookup smoke unexpectedly contains classifier prediction columns")
+
 plot_label_input <- data.frame(feature_id = hit$gwk60_id_clean[[1]],
                                label = hit$gwk60_id_clean[[1]],
                                stringsAsFactors = FALSE)

@@ -277,6 +277,81 @@
   align-items: center;
 }
 
+.ytab-inline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.25rem;
+  margin: 0.75rem auto 0;
+  padding-top: 0.35rem;
+  max-width: 100%;
+  font-weight: 700;
+}
+
+.ytab-inline-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.ytab-inline-swatch {
+  display: inline-block;
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 2px solid #64748b;
+  border-radius: 2px;
+}
+
+td.ytab-gene-detail-toggle {
+  cursor: pointer;
+  color: #1d4f8f;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.18rem;
+}
+
+tr.ytab-gene-details-open > td.ytab-gene-detail-toggle {
+  color: #0f2f57;
+}
+
+.ytab-gene-details-child {
+  max-width: min(860px, 100%);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  background: #f8fbff;
+  border: 1px solid #dbe8f4;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin: 0.35rem 0;
+  color: #27364a;
+}
+
+.ytab-gene-details-title {
+  font-weight: 800;
+  margin-bottom: 0.45rem;
+}
+
+.ytab-gene-details-child dl {
+  margin: 0;
+}
+
+.ytab-gene-details-child dt {
+  font-weight: 800;
+  margin-top: 0.45rem;
+}
+
+.ytab-gene-details-child dt:first-child {
+  margin-top: 0;
+}
+
+.ytab-gene-details-child dd {
+  margin: 0.12rem 0 0;
+}
+
+.ytab-gene-description {
+  line-height: 1.35;
+}
+
 .dataTables_wrapper {
   font-size: 0.92rem;
 }
