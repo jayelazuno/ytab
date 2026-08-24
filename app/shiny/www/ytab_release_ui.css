@@ -353,7 +353,40 @@ tr.ytab-gene-details-open > td.ytab-gene-detail-toggle {
 }
 
 .dataTables_wrapper {
-  font-size: 0.92rem;
+  font-size: 1.18rem !important;
+}
+
+.dataTables_wrapper table.dataTable {
+  font-size: 1.18rem !important;
+}
+
+.dataTables_wrapper table.dataTable thead th,
+.dataTables_wrapper table.dataTable thead td,
+.dataTables_wrapper table.dataTable tbody th,
+.dataTables_wrapper table.dataTable tbody td {
+  font-size: 1.18rem !important;
+  line-height: 1.46 !important;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate,
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label,
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+  font-size: 1.1rem !important;
+}
+
+.dataTables_wrapper table.dataTable.compact thead th,
+.dataTables_wrapper table.dataTable.compact thead td {
+  padding: 0.58rem 0.72rem !important;
+}
+
+.dataTables_wrapper table.dataTable.compact tbody th,
+.dataTables_wrapper table.dataTable.compact tbody td {
+  padding: 0.54rem 0.72rem !important;
 }
 
 details.ytab-technical-details,

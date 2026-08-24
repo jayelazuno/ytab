@@ -54,7 +54,8 @@ ytab_plot_customization_controls <- function(
     include_grid = TRUE,
     default_height = "medium",
     default_width = "standard",
-    default_bar_orientation = "auto",
+    default_bar_orientation = "vertical",
+    default_label_angle = "30",
     default_show_value_labels = TRUE) {
   ns_id <- function(suffix) paste0(id, "_", suffix)
   controls <- list(
@@ -66,7 +67,7 @@ ytab_plot_customization_controls <- function(
   if (include_labels) {
     controls <- c(controls, list(
       selectInput(ns_id("label_mode"), "Label mode", ytab_label_mode_choices(), selected = "full"),
-      selectInput(ns_id("label_angle"), "Label angle", ytab_label_angle_choices(), selected = "0")
+      selectInput(ns_id("label_angle"), "Label angle", ytab_label_angle_choices(), selected = default_label_angle)
     ))
   }
   if (include_grid)
@@ -115,11 +116,11 @@ ytab_plot_customization_values <- function(input, id) {
     width = value("plot_width", "standard"),
     text_size = ytab_text_size_px(value("text_size", "medium")),
     label_mode = value("label_mode", "full"),
-    label_angle = suppressWarnings(as.integer(value("label_angle", 0))),
+    label_angle = suppressWarnings(as.integer(value("label_angle", 30))),
     grid = value("grid", "show"),
     point_size = suppressWarnings(as.numeric(value("point_size", 1.5))),
     point_opacity = suppressWarnings(as.numeric(value("point_opacity", 0.55))),
-    bar_orientation = value("bar_orientation", "auto"),
+    bar_orientation = value("bar_orientation", "vertical"),
     show_value_labels = isTRUE(value("show_value_labels", TRUE)),
     heatmap_height = ytab_plot_height_px(value("heatmap_height", "large"), default = "large"),
     row_label_size = suppressWarnings(as.numeric(value("row_label_size", 10))),
@@ -132,11 +133,12 @@ ytab_plot_customization_values <- function(input, id) {
 ytab_with_plot_display_options <- function(input, id, expr) {
   get <- function(suffix, fallback = NULL) input[[paste0(id, "_", suffix)]] %||% fallback
   old <- options(
+    ytab.plot.style = get("plot_style", "clean"),
     ytab.plot.text_size = get("text_size", "medium"),
-    ytab.plot.label_angle = get("label_angle", "0"),
+    ytab.plot.label_angle = get("label_angle", "30"),
     ytab.plot.label_mode = get("label_mode", "full"),
     ytab.plot.grid = get("grid", "show"),
-    ytab.plot.bar_orientation = get("bar_orientation", "auto"),
+    ytab.plot.bar_orientation = get("bar_orientation", "vertical"),
     ytab.plot.show_value_labels = isTRUE(get("show_value_labels", TRUE))
   )
   on.exit(options(old), add = TRUE)

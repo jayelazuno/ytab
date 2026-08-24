@@ -122,6 +122,44 @@ def _safe_text(value: Any) -> str:
     return str(value).strip()
 
 
+def _glabrata_chromosome_map() -> dict[str, str]:
+    fallback = {f"CP048{230 + i}.1": f"Chr {chr(ord('A') + i)}" for i in range(13)}
+    path = REPO_ROOT / "resources" / "species" / "glabrata" / "reference_genome" / "chr_to_cp.tsv"
+    if not path.is_file():
+        return fallback
+    mapping: dict[str, str] = {}
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 2:
+                    continue
+                chrom_name, contig = parts[0].strip(), parts[1].strip()
+                match = re.match(r"^Chr([A-Z])", chrom_name)
+                display = f"Chr {match.group(1)}" if match else chrom_name
+                if contig:
+                    mapping[contig] = display
+                if chrom_name:
+                    mapping[chrom_name] = display
+                compact = display.replace(" ", "")
+                mapping[display] = display
+                mapping[compact] = display
+                mapping[f"{compact}_C_glabrata_CBS138"] = display
+    except OSError:
+        return fallback
+    return mapping or fallback
+
+
+def _chromosome_display(chromosome: Any, species: Any = "") -> str:
+    text = _safe_text(chromosome)
+    if not text:
+        return ""
+    species_text = _safe_text(species).lower()
+    if species_text and species_text != "glabrata":
+        return text
+    return _glabrata_chromosome_map().get(text, text)
+
+
 def _uniq(values: list[str] | tuple[str, ...] | set[str]) -> tuple[str, ...]:
     seen: set[str] = set()
     out: list[str] = []
@@ -786,14 +824,23 @@ def collect_gene_insertions(
             }
         )
     domains = list(record.domains) if show_domains else []
+    chromosome_display = _chromosome_display(record.chromosome, context["species"])
+    gene_data = record.as_dict()
+    gene_data["display_chromosome"] = chromosome_display
     return {
         "project_id": context["project_id"],
         "project_config": context["project_config"],
         "project_root": context["project_root"],
         "species": context["species"],
         "annotation_source": context["annotation_source"],
-        "gene": record.as_dict(),
-        "region": {"chromosome": record.chromosome, "start": start, "end": end, "flank_bp": flank_bp},
+        "gene": gene_data,
+        "region": {
+            "chromosome": record.chromosome,
+            "display_chromosome": chromosome_display,
+            "start": start,
+            "end": end,
+            "flank_bp": flank_bp,
+        },
         "count_region": {"start": gene_start, "end": gene_end},
         "track_source": track_source,
         "track_preset": track_preset,
@@ -872,13 +919,14 @@ def draw_gene_domain_insertion_figure(
     region_end = int(region["end"])
     gene_start = int(gene["start"])
     gene_end = int(gene["end"])
+    display_chromosome = str(region.get("display_chromosome") or region.get("chromosome") or "")
     ax_tracks.set_xlim(region_start, region_end)
     ax_tracks.set_ylim(0.4, n_tracks + 0.6)
     ax_gene.set_ylim(0, 1)
 
     strand = str(gene.get("strand") or "unknown")
     subtitle = (
-        f"{region['chromosome']}:{region_start:,}–{region_end:,}"
+        f"{display_chromosome}:{region_start:,}–{region_end:,}"
         f" | strand {strand}"
         f" | flank {int(region.get('flank_bp', 0)):,} bp"
     )
@@ -1013,7 +1061,7 @@ def draw_gene_domain_insertion_figure(
         va="top",
         clip_on=False,
     )
-    ax_gene.set_xlabel(f"{region['chromosome']} coordinate (bp)", fontsize=11, fontweight="bold")
+    ax_gene.set_xlabel(f"{display_chromosome} coordinate (bp)", fontsize=11, fontweight="bold")
     ax_gene.xaxis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{int(value):,}"))
     fig.subplots_adjust(left=0.30, right=0.98, top=0.90, bottom=0.16)
     fig.savefig(output_png, bbox_inches="tight")
@@ -1105,6 +1153,7 @@ def run_gene_domain_explorer(
         "dpi": int(dpi),
         "label_mode": label_mode,
         "show_site_counts": bool(show_site_counts),
+        "chromosome_display_version": 1,
     }
     key = _hash_params(cache_params)
     project_root = Path(payload["project_root"])
@@ -1136,6 +1185,7 @@ def run_gene_domain_explorer(
         "resolved_gene_id": gene_id,
         "resolved_gene_name": payload["gene"]["display_name"],
         "chromosome": payload["gene"]["chromosome"],
+        "chromosome_display": payload["gene"].get("display_chromosome", payload["gene"]["chromosome"]),
         "start": payload["gene"]["start"],
         "end": payload["gene"]["end"],
         "flank_bp": int(flank_bp),

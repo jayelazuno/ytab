@@ -42,6 +42,11 @@ def main() -> int:
         records = lookup["records"]
         if not records:
             raise AssertionError("gene lookup is empty")
+        if str(lookup.get("species") or "").lower() == "glabrata":
+            if explorer._chromosome_display("CP048230.1", "glabrata") != "Chr A":
+                raise AssertionError("CP048230.1 did not display-map to Chr A")
+            if explorer._chromosome_display("ChrM_C_glabrata_CBS138", "glabrata") != "Chr M":
+                raise AssertionError("ChrM_C_glabrata_CBS138 did not display-map to Chr M")
         annotation_lookup = REPO_ROOT / "resources/comparative/orthology/20260610_Cgla_CAGL_to_Scer_annotation_lookup.csv"
         if annotation_lookup.is_file():
             record_ids = {record.gene_id for record in records}
@@ -141,6 +146,18 @@ def main() -> int:
             raise AssertionError("multi-track plot was not generated")
         if int(manifest.get("track_count") or 0) != len(matched_tracks):
             raise AssertionError("generated matched-pairs plot did not use the resolved track subset")
+        raw_chromosome = str(manifest.get("chromosome") or "")
+        display_chromosome = str(manifest.get("chromosome_display") or "")
+        if str(lookup.get("species") or "").lower() == "glabrata":
+            if raw_chromosome.startswith("CP048") and display_chromosome.startswith("CP048"):
+                raise AssertionError("manifest/display still shows raw CP048 contig instead of conventional chromosome label")
+            if raw_chromosome and not display_chromosome:
+                raise AssertionError("manifest is missing chromosome_display")
+        payload_region = result.get("payload", {}).get("region", {})
+        if raw_chromosome and payload_region.get("chromosome") != raw_chromosome:
+            raise AssertionError("payload raw chromosome changed unexpectedly")
+        if display_chromosome and payload_region.get("display_chromosome") != display_chromosome:
+            raise AssertionError("payload display chromosome does not match manifest")
         if manifest.get("count_definition") != "insertion sites inside gene_start..gene_end only; flank insertions are displayed but not counted":
             raise AssertionError("manifest count definition is missing or incorrect")
         with Path(manifest["table_path"]).open(newline="", encoding="utf-8") as handle:

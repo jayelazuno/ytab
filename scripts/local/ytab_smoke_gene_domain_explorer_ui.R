@@ -8,6 +8,8 @@ app_file <- file.path(repo_root, "app", "shiny", "app.R")
 ui_file <- file.path(repo_root, "app", "shiny", "R", "ui_gene_domain_explorer.R")
 server_file <- file.path(repo_root, "app", "shiny", "R", "gene_domain_explorer_server.R")
 state_file <- file.path(repo_root, "app", "shiny", "R", "gene_domain_explorer_state.R")
+qc_plot_file <- file.path(repo_root, "app", "shiny", "R", "qc_plot_utils.R")
+table_helpers_file <- file.path(repo_root, "app", "shiny", "R", "table_display_helpers.R")
 
 fail <- function(message) {
   cat("FAIL:", message, "\n", file = stderr())
@@ -16,9 +18,10 @@ fail <- function(message) {
 
 tryCatch(invisible(parse(file = app_file)), error = function(e) fail(conditionMessage(e)))
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
+source(qc_plot_file)
 source(state_file)
 
-all_text <- paste(vapply(c(app_file, ui_file, server_file, state_file), function(path) {
+all_text <- paste(vapply(c(app_file, ui_file, server_file, state_file, qc_plot_file, table_helpers_file), function(path) {
   if (!file.exists(path)) fail(paste("missing file", path))
   paste(readLines(path, warn = FALSE), collapse = "\n")
 }, ""), collapse = "\n")
@@ -45,6 +48,29 @@ required <- c(
 missing <- required[!vapply(required, function(pattern)
   grepl(pattern, all_text, fixed = TRUE), logical(1))]
 if (length(missing)) fail(paste("missing UI controls:", paste(missing, collapse = ", ")))
+
+project <- list(species = "glabrata", repo_root = repo_root)
+if (!identical(qc_plot_chromosome_display("CP048230.1", project), "Chr A"))
+  fail("CP048230.1 does not map to Chr A")
+if (!identical(qc_plot_chromosome_display("ChrM_C_glabrata_CBS138", project), "Chr M"))
+  fail("ChrM_C_glabrata_CBS138 does not map to Chr M")
+display_map_calls <- gregexpr("qc_plot_chromosome_display\\(data\\$chromosome", all_text, perl = TRUE)[[1]]
+if (identical(display_map_calls[[1]], -1L) || length(display_map_calls) < 2L)
+  fail("Gene Explorer candidate/insertion tables do not both display-map chromosome values")
+if (!grepl("qc_plot_chromosome_display\\(row\\$chromosome", all_text))
+  fail("Gene Explorer selected-gene summary does not display-map chromosome values")
+if (!grepl("\"Chromosome\"", all_text, fixed = TRUE))
+  fail("Gene Explorer does not use a readable Chromosome display column")
+if (!grepl("write.csv\\(data, file, row.names = FALSE\\)", all_text))
+  fail("Gene Explorer insertion table download is not written from display-mapped data")
+if (grepl("Internal feature ID", all_text, fixed = TRUE))
+  fail("Gene Explorer visible results still expose Internal feature ID")
+if (!grepl("ytab_gene_details_datatable\\(data", all_text))
+  fail("Gene Explorer search results do not use the shared clickable gene-details table")
+if (!grepl("ytab_glabrata_gene_detail_columns\\(data\\)", all_text))
+  fail("Gene Explorer search results do not carry hidden gene-detail columns")
+if (!grepl("selection = \"single\"", all_text, fixed = TRUE))
+  fail("Gene Explorer search results do not preserve single-row selection")
 
 sample_sheet <- data.frame(
   sample = c(

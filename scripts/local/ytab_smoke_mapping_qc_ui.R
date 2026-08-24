@@ -30,9 +30,9 @@ default_input <- list(
   mapping_qc_plot_choice = "read_counts",
   mapping_qc_text_size = "medium",
   mapping_qc_label_mode = "full",
-  mapping_qc_label_angle = "0",
+  mapping_qc_label_angle = "30",
   mapping_qc_grid = "show",
-  mapping_qc_bar_orientation = "horizontal",
+  mapping_qc_bar_orientation = "vertical",
   mapping_qc_show_value_labels = FALSE
 )
 compact_input <- list(
@@ -74,6 +74,8 @@ stopifnot(file.exists(full_vertical_png), file.info(full_vertical_png)$size > 10
 
 options(ytab.plot.label_mode = "full")
 stopifnot(identical(qc_plot_display_labels(labels[[1L]]), labels[[1L]]))
+options(ytab.plot.bar_orientation = NULL, ytab.plot.label_angle = NULL)
+stopifnot(!qc_plot_bar_horizontal(labels), identical(qc_plot_label_angle(), 30L))
 options(ytab.plot.label_mode = "compact")
 stopifnot(!identical(qc_plot_display_labels(labels[[1L]]), ""))
 options(ytab.plot.text_size = "small")

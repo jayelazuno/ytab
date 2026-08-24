@@ -77,22 +77,20 @@ plot_fitness_condition_control_scatter <- function(result, mode = "combined", pa
       feature_id = as.character(data$feature_id[label_rows]),
       display_label = label_info$data$display_label[idx],
       x = x[label_rows], y = y[label_rows],
+      x_label = x[label_rows], y_label = y[label_rows],
+      side = 1,
       stringsAsFactors = FALSE
     )
-    xr <- diff(range(x[keep], finite = TRUE)); yr <- diff(range(y[keep], finite = TRUE))
-    if (!is.finite(xr) || xr <= 0) xr <- 1
-    if (!is.finite(yr) || yr <= 0) yr <- 1
-    x_mid <- mean(range(x[keep], finite = TRUE))
-    side <- ifelse(label_data$x >= x_mid, 1, -1)
-    label_data$x_label <- label_data$x + side * 0.11 * xr
-    label_data$y_label <- label_data$y
   }
 
   scales <- qc_plot_text_sizes()
-  old <- qc_plot_par(mar = c(7.2, 6.2, 4.2, 1.8))
+  old <- qc_plot_par(mar = c(8.3, 6.2, 5.4, 2.2), mgp = c(3.2, 0.9, 0))
   on.exit(par(old), add = TRUE)
   lim <- range(c(x[keep], y[keep]), na.rm = TRUE)
-  plot(x[keep], y[keep], pch = 16, cex = point_size, col = adjustcolor("grey70", alpha.f = 0.7),
+  if (diff(lim) <= 0 || !all(is.finite(lim))) lim <- lim + c(-0.5, 0.5)
+  if (nrow(label_data)) lim <- lim + c(-0.16, 0.16) * diff(lim)
+  display_point_size <- qc_plot_point_cex(point_size)
+  plot(x[keep], y[keep], pch = 16, cex = display_point_size, col = adjustcolor("grey70", alpha.f = 0.7),
        xlim = lim, ylim = lim,
        xlab = "Control abundance, log10(CPM + 1)",
        ylab = "Treated abundance, log10(CPM + 1)",
@@ -103,13 +101,15 @@ plot_fitness_condition_control_scatter <- function(result, mode = "combined", pa
   if (length(highlight)) {
     depleted_col <- "#2f6fb5"; enriched_col <- "#c83f3f"
     hit_cols <- if (identical(direction, "depleted")) rep(depleted_col, length(highlight)) else if (identical(direction, "enriched")) rep(enriched_col, length(highlight)) else ifelse(qc_plot_numeric(ranked$log2fc[match(data$feature_id[highlight], ranked$feature_id)]) < 0, depleted_col, enriched_col)
-    points(x[highlight], y[highlight], pch = 21, bg = hit_cols, col = "black", cex = point_size + 0.55, lwd = 1.1)
+    points(x[highlight], y[highlight], pch = 21, bg = hit_cols, col = "black", cex = display_point_size + qc_plot_point_cex(0.55), lwd = qc_plot_lwd)
   }
   if (nrow(label_data)) {
+    label_data <- fitness_ma_place_labels(label_data, cex = scales$key)
     segments(label_data$x, label_data$y, label_data$x_label, label_data$y_label,
-             col = adjustcolor("#68727d", alpha.f = 0.65), lwd = 0.7)
+             col = adjustcolor("#68727d", alpha.f = 0.65), lwd = qc_plot_lwd * 0.5)
     text(label_data$x_label, label_data$y_label, labels = label_data$display_label,
-         cex = scales$key, font = 2, xpd = NA)
+         cex = scales$key, font = 2, xpd = NA,
+         adj = ifelse(label_data$side > 0, 0, 1))
   }
   if (length(highlight)) {
     present <- c(depleted = any(ranked$log2fc[highlighted_ranked] < 0), enriched = any(ranked$log2fc[highlighted_ranked] > 0))
@@ -117,9 +117,9 @@ plot_fitness_condition_control_scatter <- function(result, mode = "combined", pa
            col = c(depleted = "#2f6fb5", enriched = "#c83f3f")[present], pch = 21,
            pt.bg = c(depleted = "#2f6fb5", enriched = "#c83f3f")[present], bty = "n", cex = scales$key)
   }
-  note_line <- 5.2
+  note_line <- 5.75
   mtext("Below diagonal = depleted in treatment; above diagonal = enriched in treatment.", side = 1, line = note_line, cex = scales$key, col = "#666666")
-  if (length(highlight) > 10L && nrow(label_data)) mtext("More than 10 labels may overlap; reduce Number of hits for cleaner labels.", side = 1, line = note_line + 0.65, cex = scales$key, col = "#666666")
+  if (length(highlight) > 10L && nrow(label_data)) mtext("More than 10 labels may overlap; reduce Number of hits for cleaner labels.", side = 1, line = note_line + 0.9, cex = scales$key, col = "#666666")
 }
 
 fitness_condition_control_plot_file <- function(result) {

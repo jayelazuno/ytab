@@ -649,9 +649,11 @@ server <- function(input, output, session) {
     result<-current_fitness_result()
     plots<-fitness_generated_plot_inventory_for_result(active(),result)
     result_ok<-!is.null(result)&&nrow(fitness_ma_data(result,"combined"))
-    choices<-c(if(result_ok)c("MA plot"="combined_ma","Condition versus control log-log scatter"="condition_control","Top selected hits log2FC heatmap"="selected_hit_heatmap"),"Fitness call distribution"="call_distribution","Effect size versus z-score"="effect_size")
+    control_z_choices<-fitness_control_z_scope_choices(result)
+    library_size_choices<-fitness_library_size_scope_choices(result)
+    choices<-c(if(result_ok)c("MA plot"="combined_ma","Condition versus control log-log scatter"="condition_control","Top selected hits log2FC heatmap"="selected_hit_heatmap"),if(length(library_size_choices))c("Feature-level library sizes"="library_sizes"),if(length(control_z_choices))c("Control-control z histogram"="control_z"),"Effect size versus z-score"="effect_size")
     if(nrow(plots))choices<-c(choices,setNames(paste0("generated:",seq_len(nrow(plots))),tools::file_path_sans_ext(gsub("_", " ", plots$filename))))
-    selectInput("fitness_visualization_choice","Plot",choices=choices,selected=if(result_ok)"combined_ma"else"call_distribution")
+    selectInput("fitness_visualization_choice","Plot",choices=choices,selected=if(result_ok)"combined_ma"else"effect_size")
   })
   output$fitness_ma_controls<-renderUI({
     if(!((input$fitness_visualization_choice%||%"") %in% c("combined_ma","condition_control","selected_hit_heatmap")))return(NULL)
@@ -666,6 +668,26 @@ server <- function(input, output, session) {
       conditionalPanel("input.fitness_ma_annotation_mode == 'custom' || input.fitness_ma_annotation_mode == 'top_custom'", textAreaInput("fitness_ma_custom_features", "Custom features", value="", placeholder="Feature or gene IDs, separated by commas or new lines", rows=3)),
       uiOutput("fitness_ma_selection_status"),
       tags$details(class="ytab-more-options", tags$summary("MA plot downloads"), tags$div(class="ytab-actions", downloadButton("download_fitness_ma_plot", "Download plot"), downloadButton("download_fitness_ma_data", "Download plotted data"), downloadButton("download_fitness_heatmap_data", "Download heatmap data CSV")), tags$hr(), tags$p("Download top selected hits"), downloadButton("download_fitness_ma_top_hits", "Download selected top hits CSV"))
+    )
+  })
+  output$fitness_library_size_controls<-renderUI({
+    if(!identical(input$fitness_visualization_choice%||%"","library_sizes"))return(NULL)
+    result<-current_fitness_result();choices<-fitness_library_size_scope_choices(result)
+    if(!length(choices))return(tags$p(class="text-muted","Feature-level library-size data are unavailable for this result."))
+    selected<-input$fitness_library_size_scope%||%"combined";if(!(selected%in%unlist(choices,use.names=FALSE)))selected<-"combined"
+    tagList(
+      selectInput("fitness_library_size_scope","Library-size scope",choices=choices,selected=selected),
+      tags$p(class="text-muted","Default combines backgrounds; individual backgrounds remain available for background-specific library-size checks.")
+    )
+  })
+  output$fitness_control_z_controls<-renderUI({
+    if(!identical(input$fitness_visualization_choice%||%"","control_z"))return(NULL)
+    result<-current_fitness_result();choices<-fitness_control_z_scope_choices(result)
+    if(!length(choices))return(tags$p(class="text-muted","Control-control z-score data are unavailable for this result."))
+    selected<-input$fitness_control_z_scope%||%"combined";if(!(selected%in%unlist(choices,use.names=FALSE)))selected<-"combined"
+    tagList(
+      selectInput("fitness_control_z_scope","Histogram scope",choices=choices,selected=selected),
+      tags$p(class="text-muted","Default combines backgrounds; individual backgrounds remain available for parent-parent noise-model diagnostics.")
     )
   })
   output$fitness_ma_support_control<-renderUI({
@@ -704,10 +726,12 @@ server <- function(input, output, session) {
     else tags$p(class = "text-muted", sprintf("Showing %d selected top hit%s.", total, if (total == 1L) "" else "s"))
   })
   output$fitness_selected_visualization<-renderUI({
-    choice<-input$fitness_visualization_choice%||%"call_distribution"
+    choice<-input$fitness_visualization_choice%||%"effect_size"
     fitness_height<-ytab_plot_height_px(input$fitness_plot_height%||%"large",default="large")
     if(identical(choice,"combined_ma"))return(ytab_plot_frame(plotOutput("fitness_ma_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
     if(identical(choice,"selected_hit_heatmap"))return(ytab_plot_frame(plotOutput("fitness_selected_hit_heatmap",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
+    if(identical(choice,"library_sizes"))return(ytab_plot_frame(plotOutput("fitness_library_size_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
+    if(identical(choice,"control_z"))return(ytab_plot_frame(plotOutput("fitness_control_z_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
     if(startsWith(choice,"generated:")){
       plots<-fitness_generated_plot_inventory_for_result(active(),current_fitness_result());index<-suppressWarnings(as.integer(sub("^generated:","",choice)))
       if(is.na(index)||index<1L||index>nrow(plots))return(tags$p(class="text-muted","Selected plot is unavailable."))
@@ -715,7 +739,7 @@ server <- function(input, output, session) {
     }
     if(identical(choice,"condition_control"))return(ytab_plot_frame(plotOutput("fitness_condition_control_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
     if(identical(choice,"effect_size"))return(tagList(uiOutput("fitness_effect_plot_state"),ytab_plot_frame(plotOutput("fitness_effect_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered")))
-    ytab_plot_frame(plotOutput("fitness_call_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered")
+    tags$p(class="text-muted","Selected plot is unavailable.")
   })
   output$fitness_ma_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
     result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";pair<-input$fitness_ma_pair%||%"";direction<-input$fitness_ma_hit_direction%||%"both";n<-suppressWarnings(as.integer(input$fitness_ma_top_n%||%10));if(is.na(n))n<-10
@@ -727,11 +751,18 @@ server <- function(input, output, session) {
     min_support<-if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L
     plot_fitness_condition_control_scatter(result,mode,pair,direction,n,input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),min_support,repo_root)
   }))
+  output$fitness_control_z_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
+    result<-current_fitness_result();req(!is.null(result))
+    plot_fitness_control_control_z_histogram(result,input$fitness_control_z_scope%||%"combined")
+  }))
+  output$fitness_library_size_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
+    result<-current_fitness_result();req(!is.null(result))
+    plot_fitness_library_sizes_feature_reads(result,input$fitness_library_size_scope%||%"combined")
+  }))
   output$fitness_selected_hit_heatmap<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
     result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";pair<-input$fitness_ma_pair%||%""
     plot_fitness_selected_hit_heatmap(result,fitness_ma_selected_hits(),mode,pair,input$fitness_text_size%||%"medium")
   }))
-  output$fitness_call_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{data<-fitness_data();req(nrow(data));counts<-fitness_call_counts(data);counts<-counts[counts>0];if(!length(counts)){qc_plot_empty("No fitness-call values are available.");return()};horizontal<-qc_plot_bar_horizontal(names(counts));old<-qc_plot_par(mar=if(horizontal)c(5,12,3,1)else c(9,5,3,1));on.exit(par(old),add=TRUE);barplot(counts,las=if(horizontal)1 else qc_plot_label_las(2),horiz=horizontal,col=qc_plot_fill,border=qc_plot_border,lwd=qc_plot_lwd,main=sprintf("Fitness calls (%d features)",nrow(data)),xlab=if(horizontal)"Features"else"",ylab=if(horizontal)""else"Features")}))
   fitness_effect_data<-reactive(normalize_fitness_result_columns(fitness_data())$data)
   fitness_effect_columns<-reactive({data<-fitness_effect_data();effect<-intersect(c("mean_log2fc"),names(data));z<-intersect(c("max_z","min_z"),names(data));list(effect=if(length(effect))effect[[1]]else"",z=if(length(z))z[[1]]else"")})
   output$fitness_effect_plot_state<-renderUI({columns<-fitness_effect_columns();if(!nzchar(columns$effect)||!nzchar(columns$z))tags$p(class="text-muted","This result does not contain the columns required for this plot.")})

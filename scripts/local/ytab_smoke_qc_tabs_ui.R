@@ -99,6 +99,8 @@ library_text <- paste(readLines(file.path(repo_root, "app/shiny/R/qc_library_dia
                       collapse = "\n")
 ui_qc_text <- paste(readLines(file.path(repo_root, "app/shiny/R/ui_qc.R"), warn = FALSE),
                     collapse = "\n")
+plot_controls_text <- paste(readLines(file.path(repo_root, "app/shiny/R/plot_customization_helpers.R"), warn = FALSE),
+                            collapse = "\n")
 app_text <- paste(readLines(file.path(repo_root, "app/shiny/app.R"), warn = FALSE),
                   collapse = "\n")
 
@@ -113,7 +115,9 @@ stopifnot(
   grepl("qc_plot_metric_key_row", library_text, fixed = TRUE),
   grepl("qc_plot_begin_key_layout", library_text, fixed = TRUE),
   grepl("ytab_plot_customization_controls\\(\"summary_qc\"", ui_qc_text),
-  grepl("default_bar_orientation = \"horizontal\"", ui_qc_text, fixed = TRUE),
+  !grepl("default_bar_orientation = \"horizontal\"", ui_qc_text, fixed = TRUE),
+  grepl("default_bar_orientation = \"vertical\"", plot_controls_text, fixed = TRUE),
+  grepl("default_label_angle = \"30\"", plot_controls_text, fixed = TRUE),
   grepl("ytab_plot_customization_controls\\(\"library_diagnostics\"", ui_qc_text),
   grepl("diagnostic_show_archived_static", ui_qc_text, fixed = TRUE),
   grepl("diagnostic_files_table", ui_qc_text, fixed = TRUE),

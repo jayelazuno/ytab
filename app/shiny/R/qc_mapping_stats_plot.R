@@ -27,7 +27,7 @@ plot_qc_mapping_stats_legacy_stacked <- function(project) {
   labels <- qc_plot_display_labels(raw_labels)
   horizontal <- qc_plot_bar_horizontal(raw_labels)
   show_values <- qc_plot_show_value_labels()
-  label_angle <- qc_plot_label_angle(0L)
+  label_angle <- qc_plot_label_angle()
   label_mode <- qc_plot_label_mode()
   mapq_available <- length(mapq_source) > 0L && any(is.finite(mapped_mapq))
   left_margin <- if (horizontal && !identical(label_mode, "hide")) {
@@ -195,7 +195,7 @@ plot_qc_mapping_stats <- function(project, metric = "read_counts") {
   labels <- qc_plot_display_labels(raw_labels)
   horizontal <- qc_plot_bar_horizontal(raw_labels)
   show_values <- qc_plot_show_value_labels()
-  label_angle <- qc_plot_label_angle(0L)
+  label_angle <- qc_plot_label_angle()
   label_mode <- qc_plot_label_mode()
   left_margin <- if (horizontal && !identical(label_mode, "hide")) {
     qc_plot_label_margin_lines(labels, orientation = "horizontal")

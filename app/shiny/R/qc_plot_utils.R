@@ -12,6 +12,67 @@ qc_plot_column <- function(data, candidates, n = nrow(data)) {
   if (length(hit)) data[[hit[[1]]]] else rep(NA, n)
 }
 
+qc_plot_repo_root <- function(project = NULL) {
+  root <- as.character((project %||% list())$repo_root %||% "")
+  if (nzchar(root)) return(root)
+  project_root <- as.character((project %||% list())$project_root %||% "")
+  if (nzchar(project_root)) {
+    return(normalizePath(file.path(project_root, "../../.."),
+                         winslash = "/", mustWork = FALSE))
+  }
+  normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+}
+
+qc_plot_glabrata_chromosome_map <- function(project = NULL) {
+  fallback <- data.frame(
+    contig = paste0("CP048", 230:242, ".1"),
+    display = paste("Chr", LETTERS[1:13]),
+    order = seq_len(13L),
+    stringsAsFactors = FALSE
+  )
+  species <- tolower(as.character((project %||% list())$species %||% ""))
+  if (nzchar(species) && !identical(species, "glabrata")) return(data.frame())
+  repo_root <- qc_plot_repo_root(project)
+  path <- file.path(repo_root, "resources", "species", "glabrata", "reference_genome", "chr_to_cp.tsv")
+  if (!file.exists(path)) return(fallback)
+  map <- tryCatch(read.delim(path, header = FALSE, stringsAsFactors = FALSE,
+                             col.names = c("chromosome_name", "contig")),
+                  error = function(e) data.frame())
+  if (!nrow(map) || !all(c("chromosome_name", "contig") %in% names(map))) return(fallback)
+  map$letter <- sub("^Chr([A-Z]).*$", "\\1", as.character(map$chromosome_name))
+  map$display <- ifelse(grepl("^[A-Z]$", map$letter), paste("Chr", map$letter),
+                        as.character(map$chromosome_name))
+  map$order <- match(map$letter, LETTERS)
+  map <- map[is.finite(map$order), c("contig", "display", "order"), drop = FALSE]
+  if (!nrow(map)) return(fallback)
+  map[order(map$order), , drop = FALSE]
+}
+
+qc_plot_chromosome_display <- function(chrom, project = NULL) {
+  chrom <- as.character(chrom)
+  map <- qc_plot_glabrata_chromosome_map(project)
+  if (!nrow(map)) return(chrom)
+  aliases <- data.frame(
+    key = c(map$contig, map$display, gsub(" ", "", map$display),
+            paste0(gsub(" ", "", map$display), "_C_glabrata_CBS138")),
+    display = rep(map$display, times = 4L),
+    order = rep(map$order, times = 4L),
+    stringsAsFactors = FALSE
+  )
+  idx <- match(chrom, aliases$key)
+  out <- ifelse(is.na(idx), chrom, aliases$display[idx])
+  out
+}
+
+qc_plot_chromosome_order <- function(chrom, project = NULL) {
+  chrom <- as.character(chrom)
+  map <- qc_plot_glabrata_chromosome_map(project)
+  if (!nrow(map)) return(chrom)
+  display <- qc_plot_chromosome_display(chrom, project)
+  known <- map$display[map$display %in% unique(display)]
+  c(known, sort(setdiff(unique(display), known)))
+}
+
 qc_plot_sample_order <- function(samples) {
   canonical <- c(
     "yH298-parent-pool1", "yH298-parent-pool2",
@@ -38,8 +99,36 @@ qc_plot_card <- function(title, output_id, height = "300px") {
 }
 
 qc_plot_text_scale <- function() {
-  switch(getOption("ytab.plot.text_size", "medium"),
-         small = 0.95, large = 1.55, 1.2)
+  text_scale <- switch(getOption("ytab.plot.text_size", "medium"),
+                       small = 0.95, large = 1.55, 1.2)
+  text_scale * qc_plot_style_scale("text")
+}
+
+qc_plot_style <- function() {
+  style <- as.character(getOption("ytab.plot.style", "clean"))
+  if (style %in% c("clean", "compact", "presentation")) style else "clean"
+}
+
+qc_plot_style_scale <- function(component = c("text", "margin", "line", "point", "key")) {
+  component <- match.arg(component)
+  style <- qc_plot_style()
+  values <- switch(
+    component,
+    text = c(clean = 1.00, compact = 0.82, presentation = 1.24),
+    margin = c(clean = 1.00, compact = 0.72, presentation = 1.16),
+    line = c(clean = 1.00, compact = 0.78, presentation = 1.35),
+    point = c(clean = 1.00, compact = 0.84, presentation = 1.22),
+    key = c(clean = 1.00, compact = 0.82, presentation = 1.18)
+  )
+  unname(values[[style]] %||% values[["clean"]])
+}
+
+qc_plot_style_margins <- function(mar) {
+  mar <- as.numeric(mar)
+  scale <- qc_plot_style_scale("margin")
+  if (identical(qc_plot_style(), "clean")) return(mar)
+  minimum <- c(3.2, 3.2, 2.2, 0.8)
+  pmax(minimum, mar * scale)
 }
 
 qc_plot_text_sizes <- function() {
@@ -55,13 +144,13 @@ qc_plot_text_sizes <- function() {
 }
 
 qc_plot_label_las <- function(default = 2L) {
-  angle <- as.character(getOption("ytab.plot.label_angle", "90"))
+  angle <- as.character(getOption("ytab.plot.label_angle", "30"))
   if (identical(angle, "0")) return(1L)
   if (identical(angle, "90")) return(2L)
   default
 }
 
-qc_plot_label_angle <- function(default = 0L) {
+qc_plot_label_angle <- function(default = 30L) {
   angle <- suppressWarnings(as.integer(getOption("ytab.plot.label_angle", default)))
   if (is.na(angle)) default else angle
 }
@@ -100,7 +189,7 @@ qc_plot_grid_enabled <- function() {
 }
 
 qc_plot_bar_horizontal <- function(labels = character()) {
-  mode <- as.character(getOption("ytab.plot.bar_orientation", "auto"))
+  mode <- as.character(getOption("ytab.plot.bar_orientation", "vertical"))
   if (identical(mode, "horizontal")) return(TRUE)
   if (identical(mode, "vertical")) return(FALSE)
   if (!length(labels)) return(FALSE)
@@ -120,7 +209,11 @@ qc_plot_value_cex <- function(multiplier = 1) {
 }
 
 qc_plot_key_cex <- function(multiplier = 1) {
-  multiplier * qc_plot_text_sizes()$key
+  multiplier * qc_plot_style_scale("key") * qc_plot_text_sizes()$key
+}
+
+qc_plot_point_cex <- function(multiplier = 1) {
+  multiplier * qc_plot_style_scale("point")
 }
 
 qc_plot_label_margin_lines <- function(labels, angle = 0L, orientation = c("horizontal", "vertical")) {
@@ -144,13 +237,13 @@ qc_plot_bar_margins <- function(labels, horizontal = FALSE, top = 3.5, right = 2
   if (isTRUE(horizontal)) {
     c(6.2, qc_plot_label_margin_lines(labels, orientation = "horizontal"), top, right)
   } else {
-    angle <- qc_plot_label_angle(0L)
+    angle <- qc_plot_label_angle()
     c(qc_plot_label_margin_lines(labels, angle = angle, orientation = "vertical"),
       5.5, top, right)
   }
 }
 
-qc_plot_draw_vertical_labels <- function(at, labels, angle = qc_plot_label_angle(0L),
+qc_plot_draw_vertical_labels <- function(at, labels, angle = qc_plot_label_angle(),
                                          cex = qc_plot_label_cex(1)) {
   labels <- qc_plot_display_labels(labels)
   axis(1, at = at, labels = FALSE)
@@ -226,14 +319,14 @@ qc_plot_metric_key_row <- function(labels, fill = NULL, col = NULL, border = NUL
 qc_plot_par <- function(mar = c(5, 5, 3, 1), ...) {
   sizes <- qc_plot_text_sizes()
   par(
-    mar = mar,
+    mar = qc_plot_style_margins(mar),
     font.axis = 2,
     font.lab = 2,
     font.main = 2,
     cex.axis = sizes$axis,
     cex.lab = sizes$lab,
     cex.main = sizes$main,
-    lwd = 1.35,
+    lwd = 1.35 * qc_plot_style_scale("line"),
     ...
   )
 }
@@ -241,4 +334,15 @@ qc_plot_par <- function(mar = c(5, 5, 3, 1), ...) {
 qc_plot_fill <- "grey70"
 qc_plot_fill_light <- "grey85"
 qc_plot_border <- "black"
-qc_plot_lwd <- 1.4
+.qc_plot_lwd_base <- 1.4
+if (exists("qc_plot_lwd", inherits = FALSE))
+  rm(qc_plot_lwd, envir = environment())
+makeActiveBinding(
+  "qc_plot_lwd",
+  function(value) {
+    if (missing(value)) return(.qc_plot_lwd_base * qc_plot_style_scale("line"))
+    .qc_plot_lwd_base <<- as.numeric(value)
+    invisible(.qc_plot_lwd_base)
+  },
+  environment()
+)

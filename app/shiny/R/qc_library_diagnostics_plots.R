@@ -185,15 +185,15 @@ qc_library_sample_style <- function(data, color_by = "group") {
     colors <- qc_plot_palette(length(samples))
     key <- data.frame(label = qc_plot_display_labels(samples), color = colors, pch = 16, lty = 1, stringsAsFactors = FALSE)
   } else if (identical(color_by, "pool")) {
-    pools <- unique(roles$pool)
+    pools <- unique(as.character(roles$pool))
     pool_colors <- stats::setNames(qc_plot_palette(length(pools)), pools)
-    colors <- unname(pool_colors[roles$pool])
+    colors <- unname(pool_colors[as.character(roles$pool)])
     key <- data.frame(label = paste("Pool", pools), color = unname(pool_colors), pch = 16, lty = 1, stringsAsFactors = FALSE)
   } else {
     group_colors <- qc_library_group_color_map()
     colors <- qc_library_group_color(roles$role)
     groups <- unique(roles[, c("role", "display_group"), drop = FALSE])
-    key <- data.frame(label = groups$display_group,
+    key <- data.frame(label = as.character(groups$display_group),
                       color = qc_library_group_color(groups$role),
                       pch = 16, lty = 1, stringsAsFactors = FALSE)
   }
@@ -223,9 +223,12 @@ qc_library_plot_cache_key <- function(project, visualization, sample_group = "al
     as.character(color_by %||% "group"),
     paste(sort(as.character(selected_samples %||% character())), collapse = ","),
     as.character(metaplot_panel %||% ""),
+    as.character(getOption("ytab.plot.style", "clean")),
     as.character(getOption("ytab.plot.text_size", "medium")),
     as.character(getOption("ytab.plot.label_mode", "full")),
     as.character(getOption("ytab.plot.grid", "show")),
+    as.character(getOption("ytab.plot.bar_orientation", "vertical")),
+    as.character(getOption("ytab.plot.show_value_labels", TRUE)),
     sep = "|"
   )
 }
@@ -314,7 +317,8 @@ plot_qc_library_jackpot_depth <- function(project, group = "all", color_by = "gr
   bar_cols <- style$colors[match(as.character(data$sample), style$samples)]
   old <- par(no.readonly = TRUE)
   on.exit({ qc_plot_reset_layout(); par(old) }, add = TRUE)
-  qc_plot_begin_key_layout(0.14)
+  metric_labels <- c(style$key$label, "Triangle = depth / MidLC ratio, scaled to plot range")
+  qc_plot_begin_key_layout(0.24)
   qc_plot_par(mar = qc_plot_bar_margins(labels, horizontal, top = 3.8, right = if (horizontal) 7 else 5.5))
   values <- jackpot * 100
   limit <- max(values, na.rm = TRUE)
@@ -340,11 +344,11 @@ plot_qc_library_jackpot_depth <- function(project, group = "all", color_by = "gr
     points(if (horizontal) depth_scaled else at, if (horizontal) at else depth_scaled,
            pch = 17, col = "black", cex = qc_plot_label_cex(1.05), lwd = qc_plot_lwd)
   }
-  qc_plot_metric_key_row(c(style$key$label,
-                           "Triangle = depth / MidLC scaled to plot range"),
+  qc_plot_metric_key_row(metric_labels,
                          fill = c(style$key$color, NA), col = c(style$key$color, "black"),
                          border = c(rep(qc_plot_border, nrow(style$key)), NA),
-                         pch = c(rep(NA, nrow(style$key)), 17), ncol = min(3L, nrow(style$key) + 1L))
+                         pch = c(rep(NA, nrow(style$key)), 17), ncol = 1L,
+                         title = "Metrics")
 }
 
 qc_library_sequence_bias_plot_data <- function(project) {

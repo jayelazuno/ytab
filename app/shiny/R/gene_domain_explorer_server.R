@@ -129,17 +129,22 @@ gene_domain_explorer_server <- function(input, output, session, active,
     data <- gene_domain_candidate_table(search_state()$candidates)
     if (!nrow(data)) return(NULL)
     data <- ytab_join_glabrata_display(data, repo_root, "gene_id")
+    if ("chromosome" %in% names(data)) {
+      data$chromosome_display <- qc_plot_chromosome_display(data$chromosome, active())
+    }
     mapped <- data.frame(`CAGL ID` = data$cagl_display_id,
                          `Gene name` = data$gene_display_name,
                          `Cg-to-Sc relationship` = data$cg_to_sc_relationship_display,
-                         `Internal feature ID` = data$gene_id,
-                         data[, intersect(c("chromosome", "start", "end", "strand",
+                         data[, intersect(c("chromosome_display", "start", "end", "strand",
                                              "product", "match_type"), names(data)),
                               drop = FALSE],
+                         ytab_glabrata_gene_detail_columns(data),
                          check.names = FALSE)
+    names(mapped)[names(mapped) == "chromosome_display"] <- "Chromosome"
     data <- mapped
-    DT::datatable(data, rownames = FALSE, selection = "single",
-                  options = list(pageLength = 8, scrollX = TRUE))
+    ytab_gene_details_datatable(data, page_length = 8, filter = "none",
+                                selection = "single",
+                                options = list(pageLength = 8, scrollX = TRUE))
   })
 
   observeEvent(input$gene_domain_candidates_rows_selected, {
@@ -157,12 +162,13 @@ gene_domain_explorer_server <- function(input, output, session, active,
     row <- data[data$gene_id == gene_id, , drop = FALSE]
     if (!nrow(row)) return(tags$p("Selected gene: ", tags$b(gene_id)))
     row <- ytab_join_glabrata_display(row, repo_root, "gene_id")
+    chromosome_display <- qc_plot_chromosome_display(row$chromosome[[1]], active())
     tags$dl(
       class = "ytab-meta",
       tags$dt("CAGL ID"), tags$dd(row$cagl_display_id[[1]]),
       tags$dt("Gene name"), tags$dd(tags$b(row$gene_display_name[[1]])),
       tags$dt("Cg-to-Sc relationship"), tags$dd(row$cg_to_sc_relationship_display[[1]] %||% ""),
-      tags$dt("Location"), tags$dd(sprintf("%s:%s-%s (%s)", row$chromosome[[1]], row$start[[1]], row$end[[1]], row$strand[[1]])),
+      tags$dt("Location"), tags$dd(sprintf("%s:%s-%s (%s)", chromosome_display, row$start[[1]], row$end[[1]], row$strand[[1]])),
       tags$dt("Product"), tags$dd(row$product[[1]] %||% "")
     )
   })
@@ -265,6 +271,10 @@ gene_domain_explorer_server <- function(input, output, session, active,
     if (is.null(manifest)) return(NULL)
     data <- gene_domain_read_insertions(manifest)
     if (!nrow(data)) return(DT::datatable(data.frame(Message = "No insertions in the selected region."), rownames = FALSE))
+    if ("chromosome" %in% names(data)) {
+      data$chromosome <- qc_plot_chromosome_display(data$chromosome, active())
+      names(data)[names(data) == "chromosome"] <- "Chromosome"
+    }
     DT::datatable(data, rownames = FALSE, options = list(pageLength = 10, scrollX = TRUE))
   })
 
@@ -285,7 +295,12 @@ gene_domain_explorer_server <- function(input, output, session, active,
     filename = function() basename(as.character(plot_state()$manifest$table_path %||% "gene_domain_insertions.csv")),
     content = function(file) {
       validate(need(gene_domain_valid_output(plot_state()), "No Gene Explorer table is available for download."))
-      file.copy(as.character(plot_state()$manifest$table_path), file, overwrite = TRUE)
+      data <- gene_domain_read_insertions(plot_state()$manifest)
+      if ("chromosome" %in% names(data)) {
+        data$chromosome <- qc_plot_chromosome_display(data$chromosome, active())
+        names(data)[names(data) == "chromosome"] <- "Chromosome"
+      }
+      write.csv(data, file, row.names = FALSE)
     }
   )
 }

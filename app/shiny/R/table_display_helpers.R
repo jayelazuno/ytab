@@ -13,7 +13,7 @@ ytab_datatable <- function(data, page_length = 10L, filter = "top",
 
 ytab_gene_details_datatable <- function(data, page_length = 10L, filter = "none",
                                         options = list(), class = "compact stripe hover",
-                                        order = NULL) {
+                                        order = NULL, selection = "none") {
   if (!is.data.frame(data)) data <- data.frame()
   detail_cols <- c(".ytab_gene_detail_name", ".ytab_sgd_description", ".ytab_sgd_essentiality")
   for (col in detail_cols) if (!col %in% names(data)) data[[col]] <- ""
@@ -21,7 +21,7 @@ ytab_gene_details_datatable <- function(data, page_length = 10L, filter = "none"
   hidden <- match(detail_cols, names(data)) - 1L
   if (!length(clickable)) {
     return(DT::datatable(data[, setdiff(names(data), detail_cols), drop = FALSE],
-                         rownames = FALSE, filter = filter, selection = "none",
+                         rownames = FALSE, filter = filter, selection = selection,
                          class = class, options = options))
   }
   column_defs <- options$columnDefs %||% list()
@@ -37,8 +37,7 @@ ytab_gene_details_datatable <- function(data, page_length = 10L, filter = "none"
   options$pageLength <- options$pageLength %||% page_length
   options$scrollX <- options$scrollX %||% TRUE
   callback <- DT::JS(sprintf(
-    "var table = this.api();
-     var detailNameCol = %d;
+    "var detailNameCol = %d;
      var detailDescriptionCol = %d;
      var detailEssentialityCol = %d;
      function ytabEscapeGeneDetail(value) {
@@ -79,7 +78,7 @@ ytab_gene_details_datatable <- function(data, page_length = 10L, filter = "none"
     match(".ytab_sgd_description", names(data)) - 1L,
     match(".ytab_sgd_essentiality", names(data)) - 1L
   ))
-  DT::datatable(data, rownames = FALSE, filter = filter, selection = "none",
+  DT::datatable(data, rownames = FALSE, filter = filter, selection = selection,
                 class = class, escape = TRUE, callback = callback,
                 options = options)
 }

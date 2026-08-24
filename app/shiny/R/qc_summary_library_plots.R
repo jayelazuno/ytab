@@ -329,7 +329,9 @@ qc_summary_binned_plot_data <- function(project) {
     if (is.null(data) || ncol(data) < 2L) return(NULL)
     bin_id <- as.character(data[[1L]])
     chrom <- sub("-[0-9]+$", "", bin_id)
-    aggregate(qc_plot_numeric(data[[2L]]), list(chrom = chrom), function(x) mean(x, na.rm = TRUE))
+    out <- aggregate(qc_plot_numeric(data[[2L]]), list(chrom_raw = chrom), function(x) mean(x, na.rm = TRUE))
+    out$chrom <- qc_plot_chromosome_display(out$chrom_raw, project)
+    out
   })
   data <- do.call(rbind, Filter(Negate(is.null), rows))
   if (is.null(data) || !nrow(data)) return(data.frame())
@@ -340,19 +342,23 @@ qc_summary_binned_plot_data <- function(project) {
 plot_qc_summary_genome_bins <- function(project) {
   data <- qc_summary_binned_plot_data(project)
   if (!nrow(data)) return(qc_plot_empty("Genome-wide binned hit files are not available."))
-  data$chrom <- factor(data$chrom, levels = unique(data$chrom))
+  data$chrom <- factor(data$chrom, levels = qc_plot_chromosome_order(data$chrom_raw, project))
   labels <- levels(data$chrom)
-  old <- qc_plot_par(mar = c(qc_plot_label_margin_lines(qc_plot_display_labels(labels),
+  display_labels <- qc_plot_display_labels(labels)
+  old <- qc_plot_par(mar = c(qc_plot_label_margin_lines(display_labels,
                                                         angle = qc_plot_label_angle(45L),
                                                         orientation = "vertical"),
                             5, 3, 1))
   on.exit(par(old), add = TRUE)
-  boxplot(log10(data$mean_bin_signal + 1) ~ data$chrom, xaxt = "n",
+  boxplot(log10(mean_bin_signal + 1) ~ chrom, data = data, xaxt = "n",
           col = qc_plot_fill, border = qc_plot_border, lwd = qc_plot_lwd,
+          xlab = "",
           ylab = "log10(mean binned signal + 1)",
           main = "Genome-wide binned insertion signal")
   qc_plot_add_grid(FALSE)
   qc_plot_draw_vertical_labels(seq_along(labels), labels, angle = qc_plot_label_angle(45L))
+  mtext("Chromosome", side = 1, line = max(3.6, par("mar")[[1L]] - 1.4),
+        font = 2, cex = qc_plot_text_sizes()$lab)
 }
 
 qc_summary_pairwise_plot_data <- function(project) {

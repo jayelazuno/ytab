@@ -127,7 +127,6 @@ qc_mapping_ui <- function() panel_card(
       ytab_plot_customization_controls("mapping_qc", include_bars = TRUE,
                                        default_height = "medium",
                                        default_width = "wide",
-                                       default_bar_orientation = "horizontal",
                                        default_show_value_labels = FALSE),
       tags$details(
         class = "ytab-more-options",
@@ -173,7 +172,6 @@ qc_summary_ui <- function() panel_card(
       uiOutput("summary_qc_combined_group_selector"),
       ytab_plot_customization_controls("summary_qc", include_bars = TRUE,
                                        default_height = "medium",
-                                       default_bar_orientation = "horizontal",
                                        default_show_value_labels = FALSE),
       tags$details(
         class = "ytab-more-options",
@@ -241,9 +239,7 @@ qc_library_diagnostics_ui <- function() panel_card(
         selectInput("library_diagnostics_color_by", "Color by",
                     choices = qc_library_color_choices(), selected = "group"),
         ytab_plot_customization_controls("library_diagnostics", include_bars = TRUE,
-                                         include_heatmap = TRUE,
                                          default_height = "medium",
-                                         default_bar_orientation = "horizontal",
                                          default_show_value_labels = FALSE),
         tags$details(
           class = "ytab-more-options",

@@ -36,6 +36,22 @@ render_plot <- function(input, expr, width = 1600, height = 1000) {
 
 data <- qc_summary_combined_features_hit_data(project)
 stopifnot(nrow(data) >= 1L)
+
+chrom_a <- qc_plot_chromosome_display("CP048230.1", project)
+chrom_m <- qc_plot_chromosome_display("ChrM_C_glabrata_CBS138", project)
+if (identical(as.character(project$species %||% ""), "glabrata")) {
+  stopifnot(identical(chrom_a, "Chr A"))
+  stopifnot(identical(chrom_m, "Chr M"))
+}
+binned_data <- qc_summary_binned_plot_data(project)
+if (nrow(binned_data) && identical(as.character(project$species %||% ""), "glabrata")) {
+  stopifnot("chrom_raw" %in% names(binned_data))
+  stopifnot("chrom" %in% names(binned_data))
+  stopifnot(any(grepl("^CP048", as.character(binned_data$chrom_raw))))
+  stopifnot(!any(grepl("^CP048", as.character(binned_data$chrom))))
+  stopifnot(all(c("Chr A", "Chr M") %in% qc_plot_chromosome_order(binned_data$chrom_raw, project)))
+}
+
 choices <- qc_summary_combined_feature_group_choices(project)
 choice_values <- unname(unlist(choices, use.names = FALSE))
 stopifnot(length(choices) >= 1L)
@@ -129,6 +145,12 @@ app_text <- paste(readLines(file.path(repo_root, "app/shiny/app.R"), warn = FALS
 stopifnot(
   grepl("qc_summary_combined_feature_group_choices", summary_text, fixed = TRUE),
   grepl("qc_summary_combined_feature_sample_roles", summary_text, fixed = TRUE),
+  grepl("qc_plot_chromosome_display", summary_text, fixed = TRUE),
+  grepl("qc_plot_chromosome_order", summary_text, fixed = TRUE),
+  grepl("xlab = \"\"", summary_text, fixed = TRUE),
+  grepl("mtext(\"Chromosome\"", summary_text, fixed = TRUE),
+  grepl("par\\(\"mar\"\\)\\[\\[1L\\]\\] - 1\\.4", summary_text),
+  !grepl("~ data\\$chrom", summary_text),
   grepl("control_or_treated", summary_text, fixed = TRUE),
   grepl("library_role", summary_text, fixed = TRUE),
   grepl("rect\\(", summary_text),

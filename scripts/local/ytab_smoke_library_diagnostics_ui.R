@@ -147,6 +147,13 @@ sample_style <- qc_library_sample_style(qc_library_filter_data(project, midlc, "
 if (length(treated_samples)) stopifnot(all(sample_style$key$color == "#d95f02"))
 sample_style <- qc_library_sample_style(qc_library_filter_data(project, midlc, "control"), "group")
 if (length(control_samples)) stopifnot(all(sample_style$key$color == "#2c7fb8"))
+group_style <- qc_library_sample_style(qc_library_filter_data(project, summary_tbl, "both"), "group")
+if (nrow(group_style$key)) {
+  stopifnot(is.character(group_style$key$label),
+            !any(grepl("^[0-9]+$", group_style$key$label)),
+            any(grepl("mock|parent|control", group_style$key$label, ignore.case = TRUE)),
+            any(grepl("treated|Zn|H2O2", group_style$key$label, ignore.case = TRUE)))
+}
 
 render_plot(plot_qc_library_midlc(project, "both", "group"))
 render_plot(plot_qc_library_jackpot_depth(project, "both", "group"))
@@ -180,6 +187,10 @@ stopifnot(
   grepl('selectInput("library_diagnostics_plot_choice", "Visualization"', ui_text, fixed = TRUE),
   grepl('library_diagnostics_group_selector', ui_text, fixed = TRUE),
   grepl('ytab_plot_customization_controls("library_diagnostics"', ui_text, fixed = TRUE),
+  !grepl('ytab_plot_customization_controls\\("library_diagnostics"[^\\n]*include_heatmap\\s*=\\s*TRUE', ui_text),
+  !grepl("library_diagnostics_heatmap_height", ui_text, fixed = TRUE),
+  !grepl("library_diagnostics_column_label_angle", ui_text, fixed = TRUE),
+  !grepl("library_diagnostics_heatmap_palette", ui_text, fixed = TRUE),
   !grepl('job_progress_ui("library_diagnostics_job")', ui_text, fixed = TRUE),
   !grepl('uiOutput("library_diagnostics_result")', ui_text, fixed = TRUE),
   !grepl('No matching diagnostics result', ui_text, fixed = TRUE),
@@ -189,6 +200,12 @@ stopifnot(
   grepl("library_diagnostics_color_by", ui_text, fixed = TRUE),
   grepl("library_diagnostics_metaplot_panel", app_text, fixed = TRUE),
   grepl("qc_library_plot_cache_key", app_text, fixed = TRUE),
+  grepl("ytab.plot.style", plot_text, fixed = TRUE),
+  grepl("ytab.plot.bar_orientation", plot_text, fixed = TRUE),
+  grepl("ytab.plot.show_value_labels", plot_text, fixed = TRUE),
+  grepl("Triangle = depth / MidLC ratio, scaled to plot range", plot_text, fixed = TRUE),
+  grepl("qc_plot_begin_key_layout(0.24)", plot_text, fixed = TRUE),
+  grepl("title = \"Metrics\"", plot_text, fixed = TRUE),
   grepl("sample_group", plot_text, fixed = TRUE),
   grepl("qc_library_group_color_map", plot_text, fixed = TRUE),
   grepl("qc_library_group_color", plot_text, fixed = TRUE),
@@ -206,8 +223,7 @@ stopifnot(
   grepl("src/ytab/qc/LibraryDiagnostics.py", paste(capture.output(tools::md5sum(file.path(repo_root, "src/ytab/qc/LibraryDiagnostics.py"))), collapse = "\n")) ||
     file.exists(file.path(repo_root, "src/ytab/qc/LibraryDiagnostics.py")),
   file.exists(file.path(repo_root, "scripts/plot_gene_feature_metaplots.R")),
-  file.exists(file.path(repo_root, "scripts/plot_centromere_bias.R")),
-  file.exists(file.path(repo_root, "docs/codex/LibraryQC.R"))
+  file.exists(file.path(repo_root, "scripts/plot_centromere_bias.R"))
 )
 
 cat("PASS\n")

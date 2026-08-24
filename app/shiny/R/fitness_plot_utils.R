@@ -241,29 +241,92 @@ fitness_ma_label_table <- function(data, highlighted, annotation_mode = "top", c
   if (length(rows) > max_labels) rows <- rows[seq_len(max_labels)]
   if (!length(rows)) return(list(data = data.frame(), unmatched = ann$unmatched, limited = FALSE, requested = length(ann$rows)))
   x <- log10(data$mean_abundance[rows] + 1); y <- data$log2fc[rows]
-  xr <- diff(range(log10(data$mean_abundance + 1), finite = TRUE)); yr <- diff(range(data$log2fc, finite = TRUE))
-  if (!is.finite(xr) || xr <= 0) xr <- 1
-  if (!is.finite(yr) || yr <= 0) yr <- 1
-  x_mid <- mean(range(log10(data$mean_abundance + 1), finite = TRUE))
-  side <- ifelse(x >= x_mid, 1, -1)
-  y_label <- y
-  min_gap <- 0.055 * yr
-  for (s in c(-1, 1)) {
-    idx <- which(side == s)
-    if (length(idx) > 1L) {
-      ord <- idx[order(y[idx])]
-      y_spread <- y[ord]
-      for (i in seq_along(y_spread)[-1L]) y_spread[[i]] <- max(y_spread[[i]], y_spread[[i - 1L]] + min_gap)
-      y_label[ord] <- y_spread - mean(y_spread - y[ord])
-    }
-  }
   label_data <- data.frame(feature_id = data$feature_id[rows], display_label = data$label[rows], x = x, y = y,
-                           x_label = x + side * 0.11 * xr,
-                           y_label = y_label,
+                           x_label = x,
+                           y_label = y,
+                           side = 1,
                            annotation_source = ifelse(rows %in% highlighted, "top_hit", "custom"),
                            comparison_view = if (identical(mode, "individual")) "individual_pair" else "combined",
                            pair = if (nzchar(pair)) pair else NA_character_, stringsAsFactors = FALSE)
   list(data = label_data, unmatched = ann$unmatched, limited = length(ann$rows) > nrow(label_data), requested = length(ann$rows))
+}
+
+fitness_ma_pack_label_y <- function(target_y, labels, cex, y_min, y_max, yr) {
+  n <- length(target_y)
+  if (!n) return(target_y)
+  if (n == 1L) return(min(max(target_y, y_min), y_max))
+  label_heights <- vapply(labels, strheight, numeric(1), cex = cex, font = 2)
+  label_height <- max(label_heights[is.finite(label_heights)], 0.025 * yr)
+  min_gap <- max(label_height * 1.45, 0.035 * yr)
+  available <- y_max - y_min
+  if (!is.finite(available) || available <= 0) return(target_y)
+  if ((n - 1L) * min_gap > available) {
+    min_gap <- available / max(1L, n - 1L)
+  }
+  ord <- order(target_y)
+  y <- target_y[ord]
+  for (i in seq.int(2L, n)) {
+    y[[i]] <- max(y[[i]], y[[i - 1L]] + min_gap)
+  }
+  if (y[[n]] > y_max) y <- y - (y[[n]] - y_max)
+  for (i in seq.int(n - 1L, 1L)) {
+    y[[i]] <- min(y[[i]], y[[i + 1L]] - min_gap)
+  }
+  if (y[[1L]] < y_min) y <- y + (y_min - y[[1L]])
+  y <- pmin(pmax(y, y_min), y_max)
+  out <- target_y
+  out[ord] <- y
+  out
+}
+
+fitness_ma_place_labels <- function(label_data, cex = 1) {
+  if (!nrow(label_data)) return(label_data)
+  usr <- par("usr")
+  xr <- diff(usr[1:2]); yr <- diff(usr[3:4])
+  if (!is.finite(xr) || xr <= 0) xr <- 1
+  if (!is.finite(yr) || yr <= 0) yr <- 1
+  edge_x <- 0.025 * xr
+  edge_y <- 0.050 * yr
+  stagger_pattern <- data.frame(
+    side = c(1, -1, 1, -1, 1, -1, 1, -1, 1, -1),
+    x_frac = c(0.120, 0.120, 0.155, 0.155, 0.190, 0.190, 0.135, 0.135, 0.170, 0.170),
+    y_frac = c(0.000, 0.000, 0.018, -0.018, -0.032, 0.032, 0.050, -0.050, -0.065, 0.065),
+    stringsAsFactors = FALSE
+  )
+  label_order <- order(label_data$x, label_data$y)
+  for (rank in seq_along(label_order)) {
+    row_ix <- label_order[[rank]]
+    pattern_ix <- ((rank - 1L) %% nrow(stagger_pattern)) + 1L
+    pattern <- stagger_pattern[pattern_ix, , drop = FALSE]
+    side <- pattern$side[[1L]]
+    label <- as.character(label_data$display_label[[row_ix]])
+    text_width <- strwidth(label, cex = cex, font = 2)
+    proposed_x <- label_data$x[[row_ix]] + side * pattern$x_frac[[1L]] * xr
+    if (side > 0) {
+      proposed_x <- min(proposed_x, usr[[2L]] - edge_x - text_width)
+      proposed_x <- max(proposed_x, label_data$x[[row_ix]] + 0.085 * xr)
+    } else {
+      proposed_x <- max(proposed_x, usr[[1L]] + edge_x + text_width)
+      proposed_x <- min(proposed_x, label_data$x[[row_ix]] - 0.085 * xr)
+    }
+    label_data$x_label[[row_ix]] <- proposed_x
+    label_data$y_label[[row_ix]] <- label_data$y[[row_ix]] + pattern$y_frac[[1L]] * yr
+    label_data$side[[row_ix]] <- side
+  }
+  for (side in c(-1, 1)) {
+    idx <- which(label_data$side == side)
+    if (length(idx)) {
+      label_data$y_label[idx] <- fitness_ma_pack_label_y(
+        target_y = label_data$y_label[idx],
+        labels = as.character(label_data$display_label[idx]),
+        cex = cex,
+        y_min = usr[[3L]] + edge_y,
+        y_max = usr[[4L]] - edge_y,
+        yr = yr
+      )
+    }
+  }
+  label_data
 }
 
 fitness_ma_top_hits_table <- function(result, mode = "combined", pair = "", direction = "both", n = 10L,
@@ -334,38 +397,49 @@ plot_fitness_ma <- function(result, mode = "combined", pair = "", direction = "b
   if (!nrow(data)) return(qc_plot_empty("No finite abundance/log2FC values are available for this comparison."))
   highlighted <- fitness_ma_highlight_rows(data, direction, as.integer(n %||% 10L), min_support)
   label_table <- fitness_ma_label_table(data, highlighted, annotation_mode, custom, mode, pair)
-  scales <- qc_plot_text_sizes(); old <- qc_plot_par(mar = c(7.2, 6.2, 4.2, 1.8)); on.exit(par(old), add = TRUE)
+  scales <- qc_plot_text_sizes(); old <- qc_plot_par(mar = c(8.3, 6.2, 5.4, 2.2), mgp = c(3.2, 0.9, 0)); on.exit(par(old), add = TRUE)
   depleted_col <- "#2f6fb5"; enriched_col <- "#c83f3f"
   selected_hit_colors <- rep(NA_character_, nrow(data))
   if (length(highlighted)) {
     selected_hit_colors[highlighted] <- if (identical(direction, "depleted")) depleted_col else if (identical(direction, "enriched")) enriched_col else ifelse(data$log2fc[highlighted] < 0, depleted_col, enriched_col)
   }
-  plot(log10(data$mean_abundance + 1), data$log2fc, pch = 16, cex = point_size, col = adjustcolor("grey70", alpha.f = 0.7),
+  display_point_size <- qc_plot_point_cex(point_size)
+  plot_x <- log10(data$mean_abundance + 1)
+  xlim <- range(plot_x, finite = TRUE)
+  if (diff(xlim) <= 0 || !all(is.finite(xlim))) xlim <- xlim + c(-0.5, 0.5)
+  if (nrow(label_table$data)) xlim <- xlim + c(-0.16, 0.16) * diff(xlim)
+  plot(plot_x, data$log2fc, pch = 16, cex = display_point_size, col = adjustcolor("grey70", alpha.f = 0.7),
+       xlim = xlim,
        xlab = "M: mean abundance, log10(CPM + 1)", ylab = "A: fitness effect, log2FC treated/control",
        main = if (identical(mode, "individual")) "MA plot — individual treated-control pair" else "MA plot — combined across pools",
        cex.main = scales$title, cex.lab = scales$axis, cex.axis = scales$sample)
   if (isTRUE(grid)) grid(col = "grey85", lty = 1)
-  if (length(highlighted)) points(log10(data$mean_abundance[highlighted] + 1), data$log2fc[highlighted], pch = 21, bg = selected_hit_colors[highlighted], col = "black", lwd = 1.1, cex = point_size + 0.55)
+  if (length(highlighted)) points(log10(data$mean_abundance[highlighted] + 1), data$log2fc[highlighted], pch = 21, bg = selected_hit_colors[highlighted], col = "black", lwd = qc_plot_lwd, cex = display_point_size + qc_plot_point_cex(0.55))
   if (nrow(label_table$data)) {
+    label_table$data <- fitness_ma_place_labels(label_table$data, cex = scales$key)
     segments(label_table$data$x, label_table$data$y, label_table$data$x_label, label_table$data$y_label,
-             col = adjustcolor("#68727d", alpha.f = 0.65), lwd = 0.7)
+             col = adjustcolor("#68727d", alpha.f = 0.65), lwd = qc_plot_lwd * 0.5)
     text(label_table$data$x_label, label_table$data$y_label, labels = label_table$data$display_label,
-         cex = scales$key, font = 2, xpd = NA)
+         cex = scales$key, font = 2, xpd = NA,
+         adj = ifelse(label_table$data$side > 0, 0, 1))
   }
   present <- c(depleted = any(selected_hit_colors[highlighted] == depleted_col), enriched = any(selected_hit_colors[highlighted] == enriched_col))
   legend_labels <- c(depleted = "Depleted selected hit", enriched = "Enriched selected hit")
   legend_cols <- c(depleted = depleted_col, enriched = enriched_col)
   if (any(present)) legend("topright", legend = unname(legend_labels[present]), col = unname(legend_cols[present]), pch = 21, pt.bg = unname(legend_cols[present]), bty = "n", cex = scales$key)
-  note_line <- 5.2
+  note_line <- 5.75
   if (length(highlighted)) {
     mtext("Depleted/enriched colors reflect stored calls from local-abundance z-scores.", side = 1, line = note_line, cex = scales$key, col = "#666666")
-    note_line <- note_line + 0.65
+    note_line <- note_line + 0.9
   }
   if (length(highlighted) > 10L && nrow(label_table$data)) {
     mtext("More than 10 labels may overlap; reduce Number of hits for cleaner labels.", side = 1, line = note_line, cex = scales$key, col = "#666666")
-    note_line <- note_line + 0.65
+    note_line <- note_line + 0.9
   }
-  if (length(label_table$unmatched)) mtext(paste("Unmatched:", paste(label_table$unmatched, collapse = ", ")), side = 1, line = note_line, cex = scales$key, col = "#666666")
+  if (length(label_table$unmatched)) {
+    mtext(paste("Unmatched:", paste(label_table$unmatched, collapse = ", ")), side = 1, line = note_line, cex = scales$key, col = "#666666")
+    note_line <- note_line + 0.9
+  }
   if (isTRUE(label_table$limited)) mtext(sprintf("Showing labels for the top %d of %d highlighted features to reduce overlap.", nrow(label_table$data), label_table$requested), side = 1, line = note_line, cex = scales$key, col = "#666666")
   invisible(data)
 }

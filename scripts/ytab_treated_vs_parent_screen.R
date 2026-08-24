@@ -384,6 +384,20 @@ readr::write_csv(
   file.path(table_dir, "background_noise_model_coefficients.csv")
 )
 
+control_z_scores <- purrr::imap_dfr(control_models, function(x, background) tibble(
+  background = background,
+  parent_comparison = paste(x$controls, collapse = "_vs_"),
+  feature_id = x$model$ctrl_tab$feature_id,
+  A_ctrl = x$model$ctrl_tab$A_ctrl,
+  M_ctrl = x$model$ctrl_tab$M_ctrl,
+  z = x$z
+))
+
+readr::write_csv(
+  control_z_scores,
+  file.path(table_dir, "control_control_z_scores.csv")
+)
+
 # ---------------------------
 # 6) Treated-vs-parent CPM log2FC and z scores
 # ---------------------------
