@@ -63,6 +63,7 @@ fitness_results_ui <- function() tagList(
         uiOutput("fitness_ma_controls"),
         uiOutput("fitness_library_size_controls"),
         uiOutput("fitness_control_z_controls"),
+        uiOutput("fitness_current_plot_downloads"),
         ytab_plot_customization_controls("fitness", include_points = TRUE,
                                          include_bars = TRUE,
                                          include_labels = TRUE,

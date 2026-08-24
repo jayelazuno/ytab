@@ -666,8 +666,22 @@ server <- function(input, output, session) {
       numericInput("fitness_ma_top_n", tagList("Number of hits",tags$span(title="Top hits are ranked by directional log2FC magnitude and CPM/read support, with local z-score used as statistical support."," ⓘ")), value=10, min=0, max=100, step=1),
       selectInput("fitness_ma_annotation_mode", "Annotation mode", choices=c("None"="none","Top highlighted hits"="top","Custom feature list"="custom","Top highlighted hits + custom feature list"="top_custom"), selected=input$fitness_ma_annotation_mode%||%"top"),
       conditionalPanel("input.fitness_ma_annotation_mode == 'custom' || input.fitness_ma_annotation_mode == 'top_custom'", textAreaInput("fitness_ma_custom_features", "Custom features", value="", placeholder="Feature or gene IDs, separated by commas or new lines", rows=3)),
-      uiOutput("fitness_ma_selection_status"),
-      tags$details(class="ytab-more-options", tags$summary("MA plot downloads"), tags$div(class="ytab-actions", downloadButton("download_fitness_ma_plot", "Download plot"), downloadButton("download_fitness_ma_data", "Download plotted data"), downloadButton("download_fitness_heatmap_data", "Download heatmap data CSV")), tags$hr(), tags$p("Download top selected hits"), downloadButton("download_fitness_ma_top_hits", "Download selected top hits CSV"))
+      uiOutput("fitness_ma_selection_status")
+    )
+  })
+  output$fitness_current_plot_downloads<-renderUI({
+    result<-current_fitness_result();if(is.null(result))return(NULL)
+    choice<-input$fitness_visualization_choice%||%"effect_size"
+    tagList(
+      tags$details(class="ytab-more-options", open=FALSE,
+        tags$summary("Current plot downloads"),
+        tags$div(class="ytab-actions",
+          downloadButton("download_fitness_ma_plot", "Download current plot"),
+          downloadButton("download_fitness_ma_data", "Download current plotted data")
+        ),
+        if(choice%in%c("combined_ma","condition_control","selected_hit_heatmap"))
+          tagList(tags$hr(),tags$p("Download selected top hits"),downloadButton("download_fitness_ma_top_hits", "Download selected top hits CSV"))
+      )
     )
   })
   output$fitness_library_size_controls<-renderUI({
@@ -775,28 +789,110 @@ server <- function(input, output, session) {
   output$download_fitness_design<-downloadHandler(filename=function()"comparison_design.csv",content=function(file)file.copy(fitness_download_path(fitness_design_path(active()),"No comparison design is available for download."),file,overwrite=TRUE))
   output$download_fitness_comparison<-downloadHandler(filename=function()"treated_vs_parent_comparison_summary.csv",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$comparison_summary;file.copy(fitness_download_path(path,"No comparison-level fitness summary is available for download."),file,overwrite=TRUE)})
   output$download_fitness_manifest<-downloadHandler(filename=function()"treated_vs_parent_manifest.json",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$manifest;file.copy(fitness_download_path(path,"No fitness run manifest is available for download."),file,overwrite=TRUE)})
-  output$download_fitness_ma_plot<-downloadHandler(filename=function(){paste0(active()$project_id,".fitness.ma_plot.png")},content=function(file){result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";min_support<-if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L;png(file,width=2400,height=1800,res=200);plot_fitness_ma(result,mode,input$fitness_ma_pair%||%"",input$fitness_ma_hit_direction%||%"both",as.integer(input$fitness_ma_top_n%||%10),input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",TRUE,as.numeric(input$fitness_point_size%||%1.5),min_support,repo_root);dev.off()})
+  fitness_current_plot_slug<-function(){
+    choice<-input$fitness_visualization_choice%||%"effect_size"
+    mode<-input$fitness_ma_mode%||%"combined"
+    pair<-input$fitness_ma_pair%||%""
+    scope<-if(identical(choice,"library_sizes"))input$fitness_library_size_scope%||%"combined" else if(identical(choice,"control_z"))input$fitness_control_z_scope%||%"combined" else ""
+    qc_download_slug(active()$project_id,"fitness",choice,mode,pair,scope,input$fitness_ma_hit_direction%||%"")
+  }
+  fitness_current_ma_state<-function(){
+    mode<-input$fitness_ma_mode%||%"combined"
+    list(
+      mode=mode,
+      pair=input$fitness_ma_pair%||%"",
+      direction=input$fitness_ma_hit_direction%||%"both",
+      n=as.integer(input$fitness_ma_top_n%||%10),
+      annotation=input$fitness_ma_annotation_mode%||%"top",
+      custom=input$fitness_ma_custom_features%||%"",
+      min_support=if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L
+    )
+  }
+  fitness_current_plot_data<-function(){
+    result<-current_fitness_result();req(!is.null(result))
+    choice<-input$fitness_visualization_choice%||%"effect_size"
+    state<-fitness_current_ma_state()
+    if(identical(choice,"combined_ma")){
+      data<-fitness_ma_rank_data(result,state$mode,state$pair,state$direction,state$min_support)
+      hi<-fitness_ma_highlight_rows(data,state$direction,state$n,state$min_support)
+      ann<-fitness_ma_annotation_rows(data,hi,state$annotation,state$custom)
+      highlighted<-seq_len(nrow(data))%in%hi
+      data$plotted<-TRUE;data$highlighted<-highlighted;data$labeled<-seq_len(nrow(data))%in%ann$rows
+      data$annotation_source<-ifelse(data$labeled&highlighted,"top_hit",ifelse(data$labeled,"custom",ifelse(highlighted,"top_hit","none")))
+      data$comparison_view<-if(identical(state$mode,"individual"))"individual_pair"else"combined";data$pair<-if(nzchar(state$pair))state$pair else NA_character_
+      return(data)
+    }
+    if(identical(choice,"condition_control")){
+      data<-fitness_condition_control_plot_data(result,state$mode,state$pair)
+      ranked<-fitness_ma_rank_data(result,state$mode,state$pair,state$direction,state$min_support)
+      hi<-fitness_ma_highlight_rows(ranked,state$direction,state$n,state$min_support)
+      ann<-fitness_ma_annotation_rows(ranked,hi,state$annotation,state$custom,state$mode,state$pair)
+      data$x_log10_control_plus_1<-log10(qc_plot_numeric(data$control_abundance)+1)
+      data$y_log10_treated_plus_1<-log10(qc_plot_numeric(data$treated_abundance)+1)
+      data$highlighted<-as.character(data$feature_id)%in%as.character(ranked$feature_id[hi])
+      data$labeled<-as.character(data$feature_id)%in%as.character(ranked$feature_id[ann$rows])
+      data$comparison_view<-if(identical(state$mode,"individual"))"individual_pair"else"combined";data$pair<-if(nzchar(state$pair))state$pair else NA_character_
+      return(data)
+    }
+    if(identical(choice,"selected_hit_heatmap")){
+      hm<-fitness_selected_hit_heatmap_data(result,fitness_ma_selected_hits(),state$mode,state$pair)
+      return(hm$data)
+    }
+    if(identical(choice,"library_sizes")){
+      data<-fitness_library_size_data(result);scope<-input$fitness_library_size_scope%||%"combined"
+      if(!identical(scope,"combined"))data<-data[as.character(data$background)==scope,,drop=FALSE]
+      data$plot_scope<-scope
+      return(data)
+    }
+    if(identical(choice,"control_z")){
+      data<-fitness_control_z_data(result);scope<-input$fitness_control_z_scope%||%"combined"
+      if(!identical(scope,"combined"))data<-data[as.character(data$background)==scope,,drop=FALSE]
+      data$plot_scope<-scope
+      return(data)
+    }
+    if(startsWith(choice,"generated:")){
+      plots<-fitness_generated_plot_inventory_for_result(active(),result);index<-suppressWarnings(as.integer(sub("^generated:","",choice)))
+      return(data.frame(message="Current selected plot is a static generated PNG; plotted source data are not available through this button.", file=if(!is.na(index)&&index>=1L&&index<=nrow(plots))plots$file[[index]]else NA_character_, stringsAsFactors=FALSE))
+    }
+    data<-fitness_effect_data()
+    columns<-fitness_effect_columns()
+    data$effect_column<-columns$effect;data$z_column<-columns$z
+    data
+  }
+  fitness_render_current_plot<-function(file){
+    result<-current_fitness_result();req(!is.null(result))
+    choice<-input$fitness_visualization_choice%||%"effect_size"
+    if(startsWith(choice,"generated:")){
+      plots<-fitness_generated_plot_inventory_for_result(active(),result);index<-suppressWarnings(as.integer(sub("^generated:","",choice)))
+      validate(need(!is.na(index)&&index>=1L&&index<=nrow(plots)&&file.exists(plots$file[[index]]),"Selected generated plot is unavailable."))
+      file.copy(plots$file[[index]],file,overwrite=TRUE);return(invisible())
+    }
+    dim<-qc_download_dimensions("fitness","large")
+    grDevices::png(file,width=dim$width,height=dim$height,res=150)
+    on.exit(grDevices::dev.off(),add=TRUE)
+    ytab_with_plot_display_options(input,"fitness",{
+      state<-fitness_current_ma_state()
+      if(identical(choice,"combined_ma"))plot_fitness_ma(result,state$mode,state$pair,state$direction,state$n,state$annotation,state$custom,input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),state$min_support,repo_root)
+      else if(identical(choice,"condition_control"))plot_fitness_condition_control_scatter(result,state$mode,state$pair,state$direction,state$n,state$annotation,state$custom,input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),state$min_support,repo_root)
+      else if(identical(choice,"selected_hit_heatmap"))plot_fitness_selected_hit_heatmap(result,fitness_ma_selected_hits(),state$mode,state$pair,input$fitness_text_size%||%"medium")
+      else if(identical(choice,"library_sizes"))plot_fitness_library_sizes_feature_reads(result,input$fitness_library_size_scope%||%"combined")
+      else if(identical(choice,"control_z"))plot_fitness_control_control_z_histogram(result,input$fitness_control_z_scope%||%"combined")
+      else {
+        data<-fitness_effect_data();columns<-fitness_effect_columns();req(nrow(data),nzchar(columns$effect),nzchar(columns$z))
+        old<-qc_plot_par(mar=c(5,5,3,1));on.exit(par(old),add=TRUE)
+        point_opacity<-suppressWarnings(as.numeric(input$fitness_point_opacity%||%0.55));if(is.na(point_opacity))point_opacity<-0.55
+        point_size<-suppressWarnings(as.numeric(input$fitness_point_size%||%1.5));if(is.na(point_size))point_size<-1.5
+        plot(as.numeric(data[[columns$effect]]),as.numeric(data[[columns$z]]),pch=16,cex=point_size,col=rgb(0,0,0,max(0.1,min(1,point_opacity))),xlab="Mean log2 fold change",ylab=gsub("_"," ",columns$z),main="Effect size versus z-score")
+      }
+    })
+  }
+  output$download_fitness_ma_plot<-downloadHandler(filename=function(){paste0(fitness_current_plot_slug(),".png")},content=function(file)fitness_render_current_plot(file))
   output$download_fitness_ma_data <- downloadHandler(
-    filename = function() paste0(active()$project_id, ".fitness.ma_plot.csv"),
+    filename = function() paste0(fitness_current_plot_slug(), ".csv"),
     content = function(file) {
-      result <- current_fitness_result(); req(!is.null(result))
-      mode <- input$fitness_ma_mode %||% "combined"; pair <- input$fitness_ma_pair %||% ""
-      min_support <- if (identical(mode, "combined")) as.integer(input$fitness_ma_min_support %||% 0) else 0L
-      data <- fitness_ma_rank_data(result, mode, pair, input$fitness_ma_hit_direction %||% "both", min_support)
-      n <- as.integer(input$fitness_ma_top_n %||% 10)
-      hi <- fitness_ma_highlight_rows(data, input$fitness_ma_hit_direction %||% "both", n, min_support)
-      ann <- fitness_ma_annotation_rows(data, hi, input$fitness_ma_annotation_mode %||% "top", input$fitness_ma_custom_features %||% "")
-      highlighted <- seq_len(nrow(data)) %in% hi
-      custom_mode <- input$fitness_ma_annotation_mode %||% "top"
-      custom_queries <- trimws(unlist(strsplit(input$fitness_ma_custom_features %||% "", "[,;[:space:][:cntrl:]]+")))
-      custom_queries <- custom_queries[nzchar(custom_queries)]
-      custom_rows <- if (custom_mode %in% c("custom", "top_custom") && length(custom_queries)) setdiff(ann$rows, hi) else integer()
-      data$plotted <- TRUE; data$highlighted <- highlighted; data$labeled <- seq_len(nrow(data)) %in% ann$rows
-      data$annotation_source <- ifelse(data$labeled & highlighted & length(custom_rows), "both", ifelse(data$labeled & highlighted, "top_hit", ifelse(data$labeled, "custom", ifelse(highlighted, "top_hit", "none"))))
-      data$unmatched_query <- FALSE; data$comparison_view <- if (identical(mode, "individual")) "individual_pair" else "combined"
-      data$pair <- if (nzchar(pair)) pair else NA_character_
-      if (identical(mode, "individual") && nrow(data)) { design <- fitness_ma_pair_choices(result); data$pair_label <- names(design)[match(pair, unname(design))] }
-      data$call_category <- data$call; write.csv(data, file, row.names = FALSE)
+      data <- fitness_current_plot_data()
+      if (!nrow(data)) data <- data.frame(no_plotted_data = "No plotted data are available for the current Fitness plot.", stringsAsFactors = FALSE)
+      write.csv(data, file, row.names = FALSE)
     }
   )
   output$download_fitness_ma_top_hits <- downloadHandler(
