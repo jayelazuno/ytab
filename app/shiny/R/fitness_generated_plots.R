@@ -8,7 +8,9 @@ fitness_generated_plot_inventory <- function(project) {
     "MA_y_299_labeled_top_hits.png",
     "top_features_log2FC_heatmap.png",
     "control_control_z_histogram.png",
-    "library_sizes_feature_reads.png"
+    "library_sizes_feature_reads.png",
+    "ranked_mean_log2FC.png",
+    "mean_log2FC_distribution.png"
   )]
   if (!length(files)) return(data.frame())
   project_root <- normalizePath(project$project_root, winslash = "/", mustWork = FALSE)
@@ -23,6 +25,83 @@ fitness_generated_plot_inventory <- function(project) {
     }, ""),
     stringsAsFactors = FALSE
   )
+}
+
+fitness_mean_log2fc_data <- function(result) {
+  if (is.null(result) || !nzchar(result$table %||% "") || !file.exists(result$table)) return(data.frame())
+  data <- tryCatch(read.csv(result$table, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame())
+  if (!nrow(data) || !"mean_log2FC" %in% names(data)) return(data.frame())
+  if (!"feature_id" %in% names(data)) data$feature_id <- seq_len(nrow(data))
+  data$feature_id <- as.character(data$feature_id)
+  data$mean_log2FC <- qc_plot_numeric(data$mean_log2FC)
+  data <- data[is.finite(data$mean_log2FC), , drop = FALSE]
+  if (!nrow(data)) return(data.frame())
+  data <- data[order(data$mean_log2FC, data$feature_id), , drop = FALSE]
+  data$rank <- seq_len(nrow(data))
+  data
+}
+
+plot_fitness_ranked_mean_log2fc <- function(result) {
+  data <- fitness_mean_log2fc_data(result)
+  if (!nrow(data)) return(qc_plot_empty("Mean log2FC values are unavailable for this fitness result."))
+  scales <- qc_plot_text_sizes()
+  old <- qc_plot_par(mar = c(5.6, 6.0, 4.3, 2.2), mgp = c(3.2, 0.9, 0))
+  on.exit(par(old), add = TRUE)
+  x <- data$rank
+  y <- data$mean_log2FC
+  ylim <- range(c(y, -1, 1), na.rm = TRUE)
+  pad <- max(0.1, diff(ylim) * 0.06)
+  ylim <- ylim + c(-pad, pad)
+  plot(
+    x, y,
+    pch = 16,
+    cex = qc_plot_point_cex(0.65),
+    col = adjustcolor("#3f566c", alpha.f = 0.48),
+    xlab = "Genes/features ranked by mean log2FC",
+    ylab = "Mean log2FC",
+    main = "Ranked treated-versus-control mean log2FC",
+    ylim = ylim,
+    cex.main = scales$title,
+    cex.lab = scales$axis,
+    cex.axis = scales$sample
+  )
+  if (qc_plot_grid_enabled()) grid(col = "#e3e9ee", lty = 3, lwd = 1)
+  abline(h = c(-1, 1), lty = 2, lwd = qc_plot_lwd, col = adjustcolor("black", alpha.f = 0.55))
+  text(max(x, na.rm = TRUE), 1, "+1", pos = 3, xpd = NA, cex = scales$key, font = 2, col = "#666666")
+  text(max(x, na.rm = TRUE), -1, "-1", pos = 1, xpd = NA, cex = scales$key, font = 2, col = "#666666")
+  box()
+  invisible(data)
+}
+
+plot_fitness_mean_log2fc_distribution <- function(result) {
+  data <- fitness_mean_log2fc_data(result)
+  if (!nrow(data)) return(qc_plot_empty("Mean log2FC values are unavailable for this fitness result."))
+  scales <- qc_plot_text_sizes()
+  old <- qc_plot_par(mar = c(5.6, 6.0, 4.3, 2.2), mgp = c(3.2, 0.9, 0))
+  on.exit(par(old), add = TRUE)
+  h <- hist(
+    data$mean_log2FC,
+    breaks = 80,
+    plot = FALSE
+  )
+  plot(
+    h,
+    col = qc_plot_fill,
+    border = qc_plot_border,
+    lwd = qc_plot_lwd,
+    main = "Distribution of mean treated-versus-control log2FC",
+    xlab = "Mean log2FC",
+    ylab = "Number of genes/features",
+    cex.main = scales$title,
+    cex.lab = scales$axis,
+    cex.axis = scales$sample
+  )
+  if (qc_plot_grid_enabled()) abline(h = pretty(par("usr")[3:4]), col = "#e3e9ee", lty = 3, lwd = 1)
+  abline(v = c(-1, 1), lty = 2, lwd = qc_plot_lwd, col = adjustcolor("black", alpha.f = 0.55))
+  text(1, par("usr")[[4L]], "+1", pos = 1, xpd = NA, cex = scales$key, font = 2, col = "#666666")
+  text(-1, par("usr")[[4L]], "-1", pos = 1, xpd = NA, cex = scales$key, font = 2, col = "#666666")
+  box()
+  invisible(data)
 }
 
 fitness_library_size_data <- function(result) {
@@ -76,7 +155,7 @@ plot_fitness_library_sizes_feature_reads <- function(result, scope = "combined")
   if (horizontal) plot_margins[[1L]] <- max(plot_margins[[1L]], 7.0)
   else {
     plot_margins[[1L]] <- max(plot_margins[[1L]], 13.5)
-    plot_margins[[2L]] <- max(plot_margins[[2L]], 7.2)
+    plot_margins[[2L]] <- max(plot_margins[[2L]], 9.2)
   }
   qc_plot_par(mar = plot_margins)
   limit <- max(values, na.rm = TRUE) * 1.12
@@ -94,7 +173,7 @@ plot_fitness_library_sizes_feature_reads <- function(result, scope = "combined")
     xlab = if (horizontal) "Total feature reads" else "",
     ylab = ""
   )
-  if (!horizontal) title(ylab = "Total feature reads", line = 6.3)
+  if (!horizontal) title(ylab = "Total feature reads", line = 7.0)
   qc_plot_add_grid(horizontal)
   if (horizontal) {
     axis(1, labels = format(pretty(c(0, limit)), big.mark = ",", scientific = FALSE), at = pretty(c(0, limit)))

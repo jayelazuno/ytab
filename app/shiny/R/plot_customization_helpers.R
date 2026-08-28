@@ -52,6 +52,7 @@ ytab_plot_customization_controls <- function(
     include_heatmap = FALSE,
     include_labels = TRUE,
     include_grid = TRUE,
+    include_value_labels = include_bars,
     default_height = "medium",
     default_width = "standard",
     default_bar_orientation = "vertical",
@@ -83,9 +84,10 @@ ytab_plot_customization_controls <- function(
                                              c("Horizontal when labels are long" = "auto",
                                                "Horizontal" = "horizontal",
                                                "Vertical" = "vertical"),
-                                             selected = default_bar_orientation),
-                                  checkboxInput(ns_id("show_value_labels"),
-                                                "Show value labels", default_show_value_labels)))
+                                             selected = default_bar_orientation)))
+  if (include_value_labels)
+    controls <- c(controls, list(checkboxInput(ns_id("show_value_labels"),
+                                               "Show value labels", default_show_value_labels)))
   if (include_heatmap) {
     controls <- c(controls, list(
       selectInput(ns_id("heatmap_height"), "Heatmap height", ytab_plot_height_choices(), selected = "large"),

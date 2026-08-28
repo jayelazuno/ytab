@@ -1115,6 +1115,18 @@ essentiality_server <- function(input, output, session, active, active_project_p
     if (!length(choices)) return(tags$p(class = "text-muted", "No classifier visualizations are available."))
     selectInput("essentiality_visualization_choice", "Plot", choices = choices)
   })
+  output$essentiality_plot_controls <- renderUI({
+    choice <- input$essentiality_visualization_choice %||% "label"
+    ytab_plot_customization_controls(
+      "essentiality",
+      include_bars = identical(choice, "label"),
+      include_value_labels = identical(choice, "label"),
+      include_heatmap = FALSE,
+      include_labels = !startsWith(choice, "generated:"),
+      default_height = "medium",
+      default_show_value_labels = TRUE
+    )
+  })
   output$essentiality_selected_visualization <- renderUI({
     choice <- input$essentiality_visualization_choice %||% "label"
     plot_height <- ytab_plot_height_px(input$essentiality_plot_height %||% "medium")

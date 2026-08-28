@@ -6,7 +6,7 @@ workspace_ui <- function(detected_cpu) {
       actionButton("switch_project", "Switch project")),
     job_progress_ui("global_job",compact=TRUE),
     navbarPage(id="workspace_tabs", title=NULL, collapsible=TRUE, inverse=TRUE,
-      tabPanel("Overview",value="overview", panel_card("Project overview", uiOutput("overview_ui"), tags$div(class="ytab-actions", actionButton("overview_continue", "Continue preprocessing", class="btn-primary"), actionButton("refresh_project_status", "Refresh status")), tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("project_status_text")))),
+      tabPanel("Overview",value="overview", panel_card("Project overview", uiOutput("overview_ui"), uiOutput("overview_actions"), tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("project_status_text")))),
       tabPanel("Project & Data",value="project_data",navset_tab(
         nav_panel("Project",panel_card("Project metadata",uiOutput("project_metadata_ui"))),
         nav_panel("Samples",panel_card("Project sample sheet",uiOutput("sample_metadata_summary"),DT::DTOutput("sample_sheet_table"))),
@@ -22,7 +22,7 @@ workspace_ui <- function(detected_cpu) {
       tabPanel("Fitness Screen",value="fitness",fitness_ui()),
       tabPanel("Gene & Domain Insertion Explorer",value="gene_domain_explorer",gene_domain_explorer_ui()),
       tabPanel("Comparative Species",value="comparative_species",comparative_ui()),
-      tabPanel("Genome Browser",value="genome_browser", panel_card("Genome Browser", "Genome-browser integration will use existing WIG/bedGraph tracks in a later step.")),
+      tabPanel("Genome Browser",value="genome_browser",genome_browser_ui()),
       tabPanel("Results & Exports",value="results_exports", panel_card("Reports and exports",
         ytab_two_column_layout(
           controls=ytab_control_panel("Export actions",

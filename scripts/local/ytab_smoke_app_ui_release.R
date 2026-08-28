@@ -44,7 +44,8 @@ helper_files <- c(
   "app/shiny/R/plot_display_helpers.R",
   "app/shiny/R/table_display_helpers.R",
   "app/shiny/R/plot_customization_helpers.R",
-  "app/shiny/R/glabrata_annotation_lookup.R"
+  "app/shiny/R/glabrata_annotation_lookup.R",
+  "app/shiny/R/genome_browser_state.R"
 )
 for (helper in helper_files) {
   full <- must_exist(helper)
@@ -54,6 +55,8 @@ for (helper in helper_files) {
 
 invisible(must_exist("app/shiny/www/ytab_release_ui.css"))
 must_contain("app/shiny/app.R", "ytab_release_ui\\.css", "release CSS reference")
+must_contain("app/shiny/app.R", "igv@3/dist/igv\\.min\\.js", "IGV.js dependency")
+must_contain("app/shiny/app.R", "ytab_igv_browser\\.js", "YTAB IGV bridge")
 must_contain("app/shiny/app.R", "ui_components\\.R", "shared UI helper source")
 must_contain("app/shiny/app.R", "plot_customization_helpers\\.R", "plot customization helper source")
 
@@ -104,11 +107,30 @@ must_contain("app/shiny/www/ytab_release_ui.css", "font-size: 1\\.18rem !importa
 must_contain("app/shiny/www/ytab_release_ui.css", "line-height: 1\\.46 !important", "readable DataTables line height")
 must_contain("app/shiny/www/ytab_release_ui.css", "dataTables_filter", "readable DataTables search controls")
 must_contain("app/shiny/www/ytab_release_ui.css", "table\\.dataTable\\.compact tbody td", "readable compact DataTables cell padding")
+must_contain("app/shiny/www/ytab_release_ui.css", "ytab-igv-browser", "IGV browser containment CSS")
+must_contain("app/shiny/www/ytab_igv_browser.js", "ytab_igv_init", "IGV init message handler")
+must_contain("app/shiny/R/genome_browser_state.R", "genome_browser_track_inventory", "Genome Browser track discovery helper")
+must_contain("app/shiny/R/genome_browser_state.R", "genome_browser_session_config", "Genome Browser session config helper")
+must_contain("app/shiny/R/genome_browser_state.R", "genome_browser_display_insertion_bed", "Genome Browser insertion-site BED conversion")
+must_contain("app/shiny/R/genome_browser_state.R", "_hits", "Genome Browser uses CreateHitFile hit tables")
+must_contain("app/shiny/R/genome_browser_state.R", "ytab_join_glabrata_display", "Genome Browser mapped gene labels")
+must_contain("app/shiny/www/ytab_igv_browser.js", "ArrowLeft", "Genome Browser arrow-key panning")
+must_contain("app/shiny/www/ytab_igv_browser.js", "activeInsideBrowser", "Genome Browser arrow keys work from focused IGV controls")
+must_contain("app/shiny/www/ytab_igv_browser.js", "ytab_igv_pan", "Genome Browser explicit pan control")
+must_contain("app/shiny/www/ytab_igv_browser.js", "attachPanButtons", "Genome Browser direct pan-button handler")
+must_contain("app/shiny/www/ytab_igv_browser.js", "chrName", "Genome Browser currentLoci chrName support")
+must_contain("app/shiny/app.R", "genome_browser_pan_left", "Genome Browser pan-left button wiring")
+must_contain("app/shiny/app.R", "genome_browser_lane_key", "Genome Browser external lane key")
+must_contain("app/shiny/www/ytab_release_ui.css", "ytab-igv-lane-key", "Genome Browser external lane-key CSS")
+must_contain("app/shiny/R/genome_browser_state.R", "insertions\\.v3\\.bed", "Genome Browser unlabeled three-column insertion BED")
+must_contain("app/shiny/R/genome_browser_state.R", "genes\\.v5\\.bed", "Genome Browser refreshed mapped gene BED")
+must_contain("app/shiny/R/genome_browser_state.R", "genome_browser_first_display_label", "Genome Browser skips placeholder labels before fallback")
+must_contain("app/shiny/R/genome_browser_state.R", "showTrackLabel = FALSE", "Genome Browser internal track labels disabled")
 
 workspace_text <- paste(readLines(must_exist("app/shiny/R/ui_workspace.R"), warn = FALSE), collapse = "\n")
 for (tab in c("Quality Control", "Essentiality", "Fitness Screen",
               "Gene & Domain Insertion Explorer", "Comparative Species",
-              "Results & Exports")) {
+              "Genome Browser", "Results & Exports")) {
   if (!grepl(tab, workspace_text, fixed = TRUE)) fail(paste("Missing major tab:", tab))
 }
 
@@ -118,7 +140,8 @@ must_contain("app/shiny/R/ui_qc.R", "\"read_counts\"", "Mapping QC read-count gr
 must_contain("app/shiny/R/ui_qc.R", "\"percent_mapped\"", "Mapping QC percent-mapped graph choice")
 must_contain("app/shiny/R/ui_qc.R", "\"mapq\"", "Mapping QC MAPQ graph choice")
 must_contain("app/shiny/app.R", "plot_qc_mapping_stats\\(active\\(\\),input\\$mapping_qc_plot_choice", "Mapping QC selected graph wiring")
-must_contain("app/shiny/R/ui_qc.R", "ytab_plot_customization_controls\\(\"mapping_qc\"", "Mapping QC display controls")
+must_contain("app/shiny/R/ui_qc.R", "mapping_qc_plot_controls", "Mapping QC display controls placeholder")
+must_contain("app/shiny/app.R", "ytab_plot_customization_controls\\(\"mapping_qc\"", "Mapping QC display controls")
 must_not_contain(file.path(repo_root, "app/shiny/R/ui_qc.R"),
                  "default_bar_orientation = \"horizontal\"",
                  "old QC horizontal bar default")
@@ -146,7 +169,8 @@ must_not_contain(file.path(repo_root, "app/shiny/R/ui_qc.R"),
 must_not_contain(file.path(repo_root, "app/shiny/R/qc_mapping_stats_plot.R"),
                  "abbreviate\\(|strtrim\\(",
                  "Mapping QC silent label truncation")
-must_contain("app/shiny/R/ui_qc.R", "ytab_plot_customization_controls\\(\"summary_qc\"", "Summary QC display controls")
+must_contain("app/shiny/R/ui_qc.R", "summary_qc_plot_controls", "Summary QC display controls placeholder")
+must_contain("app/shiny/app.R", "ytab_plot_customization_controls\\(\"summary_qc\"", "Summary QC display controls")
 must_contain("app/shiny/R/ui_qc.R", "ytab_two_column_layout", "Summary QC two-column layout")
 must_contain("app/shiny/R/qc_summary_library_plots.R", "qc_plot_label_margin_lines", "Summary QC dynamic label margins")
 must_contain("app/shiny/R/qc_summary_library_plots.R", "qc_plot_draw_vertical_labels", "Summary QC vertical label drawing")
@@ -216,7 +240,8 @@ must_contain("app/shiny/R/ui_qc.R", "download_summary_qc_plotted_data", "Summary
 must_contain("app/shiny/R/ui_qc.R", "download_library_diagnostics_plot", "Library Diagnostics download plot control")
 must_contain("app/shiny/R/ui_qc.R", "download_library_diagnostics_plotted_data", "Library Diagnostics download plotted-data control")
 must_contain("app/shiny/R/ui_qc.R", "library_diagnostics_plot_choice", "Library Diagnostics visualization selector")
-must_contain("app/shiny/R/ui_qc.R", "ytab_plot_customization_controls\\(\\\"library_diagnostics\\\"", "Library Diagnostics plot display options")
+must_contain("app/shiny/R/ui_qc.R", "library_diagnostics_plot_controls", "Library Diagnostics plot display options placeholder")
+must_contain("app/shiny/app.R", "ytab_plot_customization_controls\\(\\\"library_diagnostics\\\"", "Library Diagnostics plot display options")
 must_not_contain(file.path(repo_root, "app/shiny/R/ui_qc.R"),
                  "job_progress_ui\\(\\\"library_diagnostics_job\\\"\\)",
                  "Library Diagnostics job-progress card in normal plot controls")
@@ -252,24 +277,32 @@ must_not_contain(file.path(repo_root, "app/shiny/R/ui_qc.R"),
                  "App-rendered: Summary QC",
                  "dominant app-rendered Summary QC title")
 must_contain("app/shiny/R/ui_essentiality.R", "ytab_two_column_layout", "Essentiality two-column layout")
-must_contain("app/shiny/R/ui_essentiality.R", "ytab_plot_customization_controls\\(\"essentiality\"", "Essentiality display controls")
+must_contain("app/shiny/R/ui_essentiality.R", "essentiality_plot_controls", "Essentiality display controls placeholder")
+must_contain("app/shiny/R/essentiality_server.R", "ytab_plot_customization_controls", "Essentiality display controls")
 must_contain("app/shiny/R/ui_fitness.R", "fitness_visualization_selector", "Fitness plot selector")
-must_contain("app/shiny/R/ui_fitness.R", "ytab_plot_customization_controls\\(\"fitness\"", "Fitness display controls")
-must_contain("app/shiny/R/ui_fitness.R", "include_bars = TRUE", "Fitness bar plot orientation controls")
+must_contain("app/shiny/R/ui_fitness.R", "fitness_plot_controls", "Fitness display controls placeholder")
+must_contain("app/shiny/app.R", "ytab_plot_customization_controls\\(\"fitness\"", "Fitness display controls")
+must_contain("app/shiny/app.R", "include_bars = identical\\(choice,\"library_sizes\"\\)", "Fitness bar plot orientation controls")
 must_contain("app/shiny/app.R", "\"MA plot\"=\"combined_ma\"", "dynamic Fitness MA plot option")
 must_contain("app/shiny/app.R", "Condition versus control log-log scatter", "Fitness condition-control plot option")
 must_contain("app/shiny/app.R", "Top selected hits log2FC heatmap", "Fitness selected-hit heatmap option")
 must_contain("app/shiny/app.R", "Feature-level library sizes", "Fitness dynamic feature-level library-size option")
+must_contain("app/shiny/app.R", "Ranked mean log2FC", "Fitness dynamic ranked mean log2FC option")
+must_contain("app/shiny/app.R", "Mean log2FC distribution", "Fitness dynamic mean log2FC distribution option")
 must_contain("app/shiny/app.R", "Control-control z histogram", "Fitness dynamic control-control z histogram option")
 must_contain("app/shiny/app.R", "fitness_condition_control_plot", "Fitness condition-control live plot output")
 must_contain("app/shiny/app.R", "fitness_selected_hit_heatmap", "Fitness selected-hit heatmap live plot output")
 must_contain("app/shiny/app.R", "fitness_library_size_plot", "Fitness feature-level library-size live plot output")
+must_contain("app/shiny/app.R", "fitness_ranked_mean_log2fc_plot", "Fitness ranked mean log2FC live plot output")
+must_contain("app/shiny/app.R", "fitness_mean_log2fc_distribution_plot", "Fitness mean log2FC distribution live plot output")
 must_contain("app/shiny/app.R", "fitness_control_z_plot", "Fitness control-control z histogram live plot output")
 must_contain("app/shiny/app.R", "fitness_library_size_scope", "Fitness feature-level library-size scope selector")
 must_contain("app/shiny/app.R", "fitness_control_z_scope", "Fitness control-control z histogram scope selector")
 must_contain("app/shiny/app.R", "plot_fitness_condition_control_scatter", "Fitness condition-control live plot renderer")
 must_contain("app/shiny/app.R", "plot_fitness_selected_hit_heatmap", "Fitness selected-hit heatmap renderer")
 must_contain("app/shiny/app.R", "plot_fitness_library_sizes_feature_reads", "Fitness feature-level library-size renderer")
+must_contain("app/shiny/app.R", "plot_fitness_ranked_mean_log2fc", "Fitness ranked mean log2FC renderer")
+must_contain("app/shiny/app.R", "plot_fitness_mean_log2fc_distribution", "Fitness mean log2FC distribution renderer")
 must_contain("app/shiny/app.R", "plot_fitness_control_control_z_histogram", "Fitness control-control z histogram renderer")
 must_contain("app/shiny/app.R", "download_fitness_heatmap_data", "Fitness selected-hit heatmap data download")
 must_not_contain(file.path(repo_root, "app/shiny/app.R"), "Fitness call distribution", "removed Fitness call distribution plot")
@@ -293,6 +326,8 @@ must_contain("app/shiny/app.R", "fitness_current_plot_data", "Fitness current pl
 must_contain("app/shiny/app.R", "fitness_render_current_plot", "Fitness current plot PNG router")
 must_contain("app/shiny/app.R", "plot_fitness_condition_control_scatter", "Fitness current plot download can render log-log scatter")
 must_contain("app/shiny/app.R", "plot_fitness_library_sizes_feature_reads", "Fitness current plot download can render library-size plot")
+must_contain("app/shiny/app.R", "plot_fitness_ranked_mean_log2fc", "Fitness current plot download can render ranked mean log2FC")
+must_contain("app/shiny/app.R", "plot_fitness_mean_log2fc_distribution", "Fitness current plot download can render mean log2FC distribution")
 must_contain("app/shiny/app.R", "plot_fitness_control_control_z_histogram", "Fitness current plot download can render control-control z histogram")
 must_not_contain(file.path(repo_root, "app/shiny/app.R"), "MA plot downloads", "Fitness plot download section is not MA-only")
 must_contain("app/shiny/app.R", "download_fitness_ma_top_hits", "Fitness MA selected top-hits download")
@@ -378,6 +413,11 @@ must_contain("app/shiny/R/fitness_condition_control_plot.R", "line = note_line \
 must_contain("app/shiny/R/fitness_generated_plots.R", "top_features_log2FC_heatmap.png", "legacy static Fitness heatmap excluded from generated inventory")
 must_contain("app/shiny/R/fitness_generated_plots.R", "control_control_z_histogram.png", "legacy static control-control z histogram excluded from generated inventory")
 must_contain("app/shiny/R/fitness_generated_plots.R", "library_sizes_feature_reads.png", "legacy static feature-level library-size plot excluded from generated inventory")
+must_contain("app/shiny/R/fitness_generated_plots.R", "ranked_mean_log2FC.png", "legacy static ranked mean log2FC plot excluded from generated inventory")
+must_contain("app/shiny/R/fitness_generated_plots.R", "mean_log2FC_distribution.png", "legacy static mean log2FC distribution plot excluded from generated inventory")
+must_contain("app/shiny/R/fitness_generated_plots.R", "fitness_mean_log2fc_data", "mean log2FC dynamic plot data source")
+must_contain("app/shiny/R/fitness_generated_plots.R", "plot_fitness_ranked_mean_log2fc", "ranked mean log2FC app-rendered plot")
+must_contain("app/shiny/R/fitness_generated_plots.R", "plot_fitness_mean_log2fc_distribution", "mean log2FC distribution app-rendered plot")
 must_contain("app/shiny/R/fitness_generated_plots.R", "library_sizes.feature_reads.csv", "feature-level library-size app data source")
 must_contain("app/shiny/R/fitness_generated_plots.R", "fitness_library_size_scope_choices", "feature-level library-size background scope choices")
 must_contain("app/shiny/R/fitness_generated_plots.R", "control_control_z_scores.csv", "future saved control-control z-score table")

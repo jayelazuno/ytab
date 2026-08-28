@@ -172,6 +172,20 @@ qc_plot_display_labels <- function(labels) {
   compact
 }
 
+qc_plot_horizontal_axis_labels <- function(labels) {
+  labels <- qc_plot_display_labels(labels)
+  if (identical(qc_plot_label_mode(), "hide")) return(labels)
+  labels <- gsub("-parent-", " ", labels, fixed = TRUE)
+  labels <- gsub("^parent-", "", labels)
+  labels <- gsub("-pool([0-9]+)-", " p\\1 ", labels)
+  labels <- gsub("-pool([0-9]+)$", " p\\1", labels)
+  labels <- gsub("1_5mM-Zn-treated", "Zn-treated", labels, fixed = TRUE)
+  labels <- gsub("1.5mM-Zn-treated", "Zn-treated", labels, fixed = TRUE)
+  labels <- gsub("H2O2-treated-facs", "H2O2-treated", labels, fixed = TRUE)
+  labels <- gsub("\\s+", " ", labels)
+  trimws(labels)
+}
+
 qc_plot_wrapped_labels <- function(labels, width = NULL) {
   labels <- as.character(labels)
   if (is.null(width)) {
@@ -180,7 +194,10 @@ qc_plot_wrapped_labels <- function(labels, width = NULL) {
   }
   vapply(labels, function(label) {
     if (!nzchar(label)) return("")
-    paste(strwrap(label, width = width), collapse = "\n")
+    prepared <- gsub("([_/-])", "\\1 ", label)
+    wrapped <- strwrap(prepared, width = width)
+    wrapped <- gsub("([_/-]) ", "\\1", wrapped)
+    paste(wrapped, collapse = "\n")
   }, character(1))
 }
 
@@ -216,52 +233,117 @@ qc_plot_point_cex <- function(multiplier = 1) {
   multiplier * qc_plot_style_scale("point")
 }
 
+qc_plot_margin_cap_lines <- function(orientation = c("horizontal", "vertical")) {
+  orientation <- match.arg(orientation)
+  if (grDevices::dev.cur() <= 1L) return(if (orientation == "horizontal") 34 else 22)
+  din <- par("din")
+  line_inches <- par("csi")
+  if (!length(din) || any(!is.finite(din)) || !is.finite(line_inches) || line_inches <= 0)
+    return(if (orientation == "horizontal") 34 else 22)
+  if (orientation == "horizontal") max(22, min(70, din[[1L]] * 0.70 / line_inches))
+  else max(10, min(24, din[[2L]] * 0.42 / line_inches))
+}
+
+qc_plot_label_extent_lines <- function(labels, angle = 0L, orientation = c("horizontal", "vertical"),
+                                       cex = qc_plot_label_cex(1)) {
+  orientation <- match.arg(orientation)
+  labels <- as.character(labels)
+  labels <- labels[nzchar(labels)]
+  if (!length(labels)) return(if (orientation == "horizontal") 7 else 5)
+  if (grDevices::dev.cur() <= 1L) {
+    longest <- max(nchar(labels), na.rm = TRUE)
+    scale <- qc_plot_text_scale()
+    if (orientation == "horizontal") return(longest * 0.74 * scale + 6)
+    angle <- abs(as.numeric(angle %||% 0L))
+    if (angle >= 90) return(longest * 0.48 * scale + 5)
+    if (angle >= 45) return(longest * 0.36 * scale + 5)
+    if (angle >= 30) return(longest * 0.30 * scale + 5)
+    return(ceiling(longest / 12) * 2.3 * scale + 4)
+  }
+  labels <- qc_plot_wrapped_labels(labels)
+  line_inches <- par("csi")
+  if (!is.finite(line_inches) || line_inches <= 0) line_inches <- 0.2
+  widths <- suppressWarnings(strwidth(labels, units = "inches", cex = cex, font = 2))
+  heights <- suppressWarnings(strheight(labels, units = "inches", cex = cex, font = 2))
+  if (!length(widths) || any(!is.finite(widths))) widths <- nchar(labels) * 0.075 * cex
+  if (!length(heights) || any(!is.finite(heights))) heights <- rep(line_inches * cex, length(labels))
+  angle <- abs(as.numeric(angle %||% 0L)) * pi / 180
+  if (orientation == "horizontal") {
+    return(max(widths, na.rm = TRUE) / line_inches + 4.8)
+  }
+  vertical_inches <- max(widths * sin(angle) + heights * cos(angle), na.rm = TRUE)
+  vertical_inches / line_inches + 5.2
+}
+
 qc_plot_label_margin_lines <- function(labels, angle = 0L, orientation = c("horizontal", "vertical")) {
   orientation <- match.arg(orientation)
   labels <- as.character(labels)
   visible <- labels[nzchar(labels)]
   if (!length(visible)) return(if (orientation == "horizontal") 7 else 5)
   scale <- qc_plot_text_scale()
+  measured <- qc_plot_label_extent_lines(visible, angle = angle, orientation = orientation)
   longest <- max(nchar(visible), na.rm = TRUE)
   if (orientation == "horizontal") {
-    return(max(22, min(60, longest * 0.82 * scale)))
+    if (grDevices::dev.cur() > 1L)
+      return(max(12, min(qc_plot_margin_cap_lines("horizontal"), measured + 1.5)))
+    return(max(16, min(qc_plot_margin_cap_lines("horizontal"), longest * 0.62 * scale + 7)))
   }
-  if (angle == 90L) return(max(15, min(42, longest * 0.48 * scale)))
-  if (angle == 45L) return(max(12, min(34, longest * 0.36 * scale)))
-  if (angle == 30L) return(max(10, min(30, longest * 0.30 * scale)))
-  max(8, min(22, ceiling(longest / 12) * 2.3 * scale + 4))
+  cap <- qc_plot_margin_cap_lines("vertical")
+  if (angle == 90L) return(max(12, min(cap, max(measured, longest * 0.48 * scale + 5))))
+  if (angle == 45L) return(max(11, min(cap, max(measured, longest * 0.36 * scale + 5))))
+  if (angle == 30L) return(max(10, min(cap, max(measured, longest * 0.30 * scale + 5))))
+  max(8, min(cap, max(measured, ceiling(longest / 12) * 2.3 * scale + 4)))
 }
 
 qc_plot_bar_margins <- function(labels, horizontal = FALSE, top = 3.5, right = 2.4) {
   labels <- qc_plot_display_labels(labels)
   if (isTRUE(horizontal)) {
-    c(6.2, qc_plot_label_margin_lines(labels, orientation = "horizontal"), top, right)
+    hlabels <- qc_plot_horizontal_axis_labels(labels)
+    c(7.0, qc_plot_label_margin_lines(hlabels, orientation = "horizontal") + 2.0, top, right)
   } else {
     angle <- qc_plot_label_angle()
-    c(qc_plot_label_margin_lines(labels, angle = angle, orientation = "vertical"),
-      5.5, top, right)
+    c(qc_plot_label_margin_lines(labels, angle = angle, orientation = "vertical") + 1.2,
+      6.3, top, right)
   }
 }
 
 qc_plot_draw_vertical_labels <- function(at, labels, angle = qc_plot_label_angle(),
                                          cex = qc_plot_label_cex(1)) {
   labels <- qc_plot_display_labels(labels)
+  if (!identical(qc_plot_label_mode(), "full")) {
+    labels <- qc_plot_horizontal_axis_labels(labels)
+  } else if (length(labels) && max(nchar(labels), na.rm = TRUE) >= 18L) {
+    labels <- qc_plot_horizontal_axis_labels(labels)
+  }
   axis(1, at = at, labels = FALSE)
   if (!length(labels) || !any(nzchar(labels))) return(invisible())
   text_labels <- if (identical(as.integer(angle), 0L)) qc_plot_wrapped_labels(labels, width = 18L) else labels
   usr <- par("usr")
   line_height <- strheight("M", cex = cex)
-  y <- usr[[3L]] - line_height * if (identical(as.integer(angle), 0L)) 1.2 else 1.8
+  y <- usr[[3L]] - line_height * if (identical(as.integer(angle), 0L)) 1.7 else 2.5
   adj <- if (identical(as.integer(angle), 90L)) c(1, 0.5) else if (angle > 0) c(1, 1) else c(0.5, 1)
-  text(at, y, labels = text_labels, srt = angle, adj = adj, xpd = NA, cex = cex, font = 2)
+  draw_at <- at
+  angle_num <- suppressWarnings(as.numeric(angle))
+  if (!is.na(angle_num) && angle_num > 0 && length(draw_at) > 1L) {
+    span <- diff(range(draw_at, na.rm = TRUE))
+    if (is.finite(span) && span > 0) {
+      edge_shift <- span * 0.025
+      draw_at[which.min(draw_at)] <- draw_at[which.min(draw_at)] + edge_shift
+      draw_at[which.max(draw_at)] <- draw_at[which.max(draw_at)] - edge_shift
+    }
+  }
+  text(draw_at, y, labels = text_labels, srt = angle, adj = adj, xpd = NA, cex = cex, font = 2)
 }
 
 qc_plot_draw_horizontal_labels <- function(at, labels, cex = qc_plot_label_cex(1)) {
-  labels <- qc_plot_display_labels(labels)
+  labels <- qc_plot_horizontal_axis_labels(labels)
   axis(2, at = at, labels = FALSE, las = 1)
   if (!length(labels) || !any(nzchar(labels))) return(invisible())
-  axis(2, at = at, labels = qc_plot_wrapped_labels(labels, width = 32L),
-       las = 1, tick = FALSE, cex.axis = cex, font = 2)
+  x <- grconvertX(0.018, from = "ndc", to = "user")
+  text(x, at,
+       labels = labels,
+       adj = c(0, 0.5), xpd = NA, cex = cex, font = 2)
+  invisible()
 }
 
 qc_plot_add_grid <- function(horizontal = FALSE) {

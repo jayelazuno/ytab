@@ -399,6 +399,97 @@ details.ytab-release-details {
   padding: 0.75rem;
 }
 
+.ytab-igv-browser {
+  min-height: 680px;
+  width: 100%;
+  border: 1px solid #d7e2ec;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.ytab-igv-lane-key {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.2rem 0 0.45rem;
+}
+
+.ytab-igv-lane-key-title {
+  color: #52616f;
+  font-size: 0.84rem;
+  font-weight: 700;
+  margin-right: 0.15rem;
+}
+
+.ytab-igv-lane-badge {
+  background: #eef3f8;
+  border: 1px solid #d7e2ec;
+  border-radius: 999px;
+  color: #263645;
+  display: inline-block;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  padding: 0.18rem 0.5rem;
+}
+
+.ytab-igv-lane-parent {
+  background: #eaf3fb;
+  border-color: #bfd7ea;
+}
+
+.ytab-igv-lane-treated {
+  background: #f7ece8;
+  border-color: #e8c6ba;
+}
+
+.ytab-igv-lane-gene {
+  background: #eef0ff;
+  border-color: #c7cdf7;
+}
+
+.ytab-igv-browser:focus,
+.ytab-igv-browser:focus-visible,
+.ytab-igv-browser:focus-within,
+.ytab-igv-browser *:focus,
+.ytab-igv-browser *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ytab-igv-browser:focus,
+.ytab-igv-browser:focus-visible,
+.ytab-igv-browser:focus-within {
+  border-color: #d7e2ec !important;
+}
+
+.ytab-igv-browser .igv-navbar {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.ytab-igv-browser .igv-track-label,
+.ytab-igv-browser .igv-track-label-container,
+.ytab-igv-browser .igv-track-label-div,
+.ytab-igv-browser [class*="track-label"],
+.ytab-igv-browser [class*="trackLabel"],
+.ytab-igv-browser [class*="TrackLabel"] {
+  display: none !important;
+}
+
+.ytab-igv-browser .igv-track-manipulation-handle {
+  display: none !important;
+}
+
+.navbar-nav > li > a:focus,
+.navbar-nav > li > a:focus-visible,
+.nav > li > a:focus,
+.nav > li > a:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 900px) {
   .ytab-release-header,
   .ytab-plot-card-header,

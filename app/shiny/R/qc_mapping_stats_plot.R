@@ -31,14 +31,14 @@ plot_qc_mapping_stats_legacy_stacked <- function(project) {
   label_mode <- qc_plot_label_mode()
   mapq_available <- length(mapq_source) > 0L && any(is.finite(mapped_mapq))
   left_margin <- if (horizontal && !identical(label_mode, "hide")) {
-    min(qc_plot_label_margin_lines(labels, orientation = "horizontal"), 22)
+    qc_plot_label_margin_lines(qc_plot_horizontal_axis_labels(labels), orientation = "horizontal") + 2.0
   } else 6
   bottom_margin <- if (horizontal) {
-    3.2
+    6.0
   } else if (identical(label_mode, "hide")) {
     4.2
   } else {
-    min(qc_plot_label_margin_lines(labels, angle = label_angle, orientation = "vertical") + 2, 7)
+    qc_plot_label_margin_lines(labels, angle = label_angle, orientation = "vertical") + 1.8
   }
 
   old <- par(no.readonly = TRUE)
@@ -60,11 +60,12 @@ plot_qc_mapping_stats_legacy_stacked <- function(project) {
     x_limit_counts <- c(0, max(read_matrix, na.rm = TRUE) * 1.12)
     if (!all(is.finite(x_limit_counts))) x_limit_counts <- c(0, 1)
     count_pos <- barplot(
-      read_matrix, beside = TRUE, names.arg = labels, horiz = TRUE, las = 1,
+      read_matrix, beside = TRUE, names.arg = rep("", length(labels)), horiz = TRUE, las = 1,
       xlim = x_limit_counts, col = read_cols, border = read_border,
       lwd = qc_plot_lwd, xlab = "Reads (millions)", ylab = "",
       main = "Mapping QC: total and mapped reads"
     )
+    qc_plot_draw_horizontal_labels(colMeans(count_pos), labels)
     if (qc_plot_grid_enabled()) abline(v = pretty(x_limit_counts), col = "#e3e9ee", lty = 3)
     if (show_values) {
       text(mapped_millions + max(x_limit_counts) * 0.015, count_pos[2, ],
@@ -74,11 +75,12 @@ plot_qc_mapping_stats_legacy_stacked <- function(project) {
 
     qc_plot_par(mar = c(3.0, left_margin, 2.5, 2.4))
     pct_pos <- barplot(
-      percent_mapped, names.arg = labels, horiz = TRUE, las = 1,
+      percent_mapped, names.arg = rep("", length(labels)), horiz = TRUE, las = 1,
       xlim = c(0, 104), col = qc_plot_fill, border = qc_plot_border,
       lwd = qc_plot_lwd, xlab = "Mapped reads (%)", ylab = "",
       main = "Percent mapped reads"
     )
+    qc_plot_draw_horizontal_labels(pct_pos, labels)
     if (qc_plot_grid_enabled()) abline(v = seq(0, 100, by = 20), col = "#e3e9ee", lty = 3)
     if (show_values) {
       text(pmin(percent_mapped + 1.8, 102), pct_pos,
@@ -90,11 +92,12 @@ plot_qc_mapping_stats_legacy_stacked <- function(project) {
     mapq_limit <- c(0, max(45, max(mapped_mapq, na.rm = TRUE) * 1.08))
     if (!mapq_available || !all(is.finite(mapq_limit))) mapq_limit <- c(0, 45)
     mapq_pos <- barplot(
-      mapped_mapq, names.arg = labels, horiz = TRUE, las = 1,
+      mapped_mapq, names.arg = rep("", length(labels)), horiz = TRUE, las = 1,
       xlim = mapq_limit, col = "#c9d7c2", border = "#5b7654",
       lwd = qc_plot_lwd, xlab = "Average MAPQ", ylab = "",
       main = "Mapping quality score"
     )
+    qc_plot_draw_horizontal_labels(mapq_pos, labels)
     if (qc_plot_grid_enabled()) abline(v = pretty(mapq_limit), col = "#e3e9ee", lty = 3)
     if (show_values && mapq_available) {
       text(mapped_mapq + max(mapq_limit) * 0.015, mapq_pos,
@@ -140,18 +143,7 @@ plot_qc_mapping_stats_legacy_stacked <- function(project) {
     )
     if (qc_plot_grid_enabled()) abline(h = pretty(mapq_limit), col = "#e3e9ee", lty = 3)
     if (!identical(label_mode, "hide")) {
-      axis(1, at = mapq_pos, labels = FALSE)
-      axis_labels <- if (label_angle == 0L) qc_plot_wrapped_labels(labels) else labels
-      label_y <- par("usr")[3] - max(mapq_limit) * 0.055
-      if (label_angle %in% c(30L, 45L)) {
-        text(mapq_pos, label_y, labels = axis_labels, srt = label_angle,
-             adj = 1, xpd = NA, cex = qc_plot_label_cex(0.82), font = 2)
-      } else if (label_angle == 90L) {
-        text(mapq_pos, label_y, labels = labels, srt = 90,
-             adj = 1, xpd = NA, cex = qc_plot_label_cex(0.82), font = 2)
-      } else {
-        axis(1, at = mapq_pos, labels = axis_labels, las = 1)
-      }
+      qc_plot_draw_vertical_labels(mapq_pos, labels, angle = label_angle, cex = qc_plot_label_cex(0.88))
     }
     if (show_values && mapq_available) {
       text(mapq_pos, mapped_mapq + max(mapq_limit) * 0.025,
@@ -198,30 +190,20 @@ plot_qc_mapping_stats <- function(project, metric = "read_counts") {
   label_angle <- qc_plot_label_angle()
   label_mode <- qc_plot_label_mode()
   left_margin <- if (horizontal && !identical(label_mode, "hide")) {
-    qc_plot_label_margin_lines(labels, orientation = "horizontal")
+    qc_plot_label_margin_lines(qc_plot_horizontal_axis_labels(labels), orientation = "horizontal")
   } else 6
+  left_margin <- left_margin + if (horizontal) 2.0 else 0
   bottom_margin <- if (horizontal) {
     6
   } else if (identical(label_mode, "hide")) {
     5.5
   } else {
-    qc_plot_label_margin_lines(labels, angle = label_angle, orientation = "vertical") + 2
+    qc_plot_label_margin_lines(labels, angle = label_angle, orientation = "vertical") + 1.8
   }
 
   draw_vertical_labels <- function(at, plot_labels, value_range) {
     if (identical(label_mode, "hide")) return(invisible())
-    axis(1, at = at, labels = FALSE)
-    axis_labels <- if (label_angle == 0L) qc_plot_wrapped_labels(plot_labels) else plot_labels
-    label_y <- par("usr")[3] - max(value_range, na.rm = TRUE) * 0.035
-    if (label_angle %in% c(30L, 45L)) {
-      text(at, label_y, labels = axis_labels, srt = label_angle,
-           adj = 1, xpd = NA, cex = qc_plot_label_cex(0.82), font = 2)
-    } else if (label_angle == 90L) {
-      text(at, label_y, labels = plot_labels, srt = 90,
-           adj = 1, xpd = NA, cex = qc_plot_label_cex(0.82), font = 2)
-    } else {
-      axis(1, at = at, labels = axis_labels, las = 1)
-    }
+    qc_plot_draw_vertical_labels(at, plot_labels, angle = label_angle, cex = qc_plot_label_cex(0.88))
     invisible()
   }
 
@@ -240,10 +222,11 @@ plot_qc_mapping_stats <- function(project, metric = "read_counts") {
       qc_plot_par(mar = c(6.2, left_margin, 4.2, 2.8))
       x_limit <- c(0, max(read_matrix, na.rm = TRUE) * 1.12)
       if (!all(is.finite(x_limit))) x_limit <- c(0, 1)
-      pos <- barplot(read_matrix, beside = TRUE, names.arg = labels, horiz = TRUE,
+      pos <- barplot(read_matrix, beside = TRUE, names.arg = rep("", length(labels)), horiz = TRUE,
                      las = 1, xlim = x_limit, col = read_cols, border = read_border,
                      lwd = qc_plot_lwd, xlab = "Reads (millions)", ylab = "",
                      main = "Mapping summary — total and mapped reads")
+      qc_plot_draw_horizontal_labels(colMeans(pos), labels)
       if (qc_plot_grid_enabled()) abline(v = pretty(x_limit), col = "#e3e9ee", lty = 3)
       if (show_values) {
         text(mapped_millions + max(x_limit) * 0.015, pos[2, ],
@@ -273,10 +256,11 @@ plot_qc_mapping_stats <- function(project, metric = "read_counts") {
     percent_mapped[!is.finite(percent_mapped)] <- NA_real_
     if (horizontal) {
       qc_plot_par(mar = c(6.2, left_margin, 4.2, 2.8))
-      pos <- barplot(percent_mapped, names.arg = labels, horiz = TRUE, las = 1,
+      pos <- barplot(percent_mapped, names.arg = rep("", length(labels)), horiz = TRUE, las = 1,
                      xlim = c(0, 104), col = qc_plot_fill, border = qc_plot_border,
                      lwd = qc_plot_lwd, xlab = "Mapped reads (%)", ylab = "",
                      main = "Mapping summary — percent mapped reads")
+      qc_plot_draw_horizontal_labels(pos, labels)
       if (qc_plot_grid_enabled()) abline(v = seq(0, 100, by = 20), col = "#e3e9ee", lty = 3)
       if (show_values) {
         text(pmin(percent_mapped + 1.8, 102), pos,
@@ -304,10 +288,11 @@ plot_qc_mapping_stats <- function(project, metric = "read_counts") {
   if (!length(mapq_source) || !all(is.finite(mapq_limit))) mapq_limit <- c(0, 45)
   if (horizontal) {
     qc_plot_par(mar = c(6.2, left_margin, 4.2, 2.8))
-    pos <- barplot(mapped_mapq, names.arg = labels, horiz = TRUE, las = 1,
+    pos <- barplot(mapped_mapq, names.arg = rep("", length(labels)), horiz = TRUE, las = 1,
                    xlim = mapq_limit, col = "#c9d7c2", border = "#5b7654",
                    lwd = qc_plot_lwd, xlab = "Average MAPQ", ylab = "",
                    main = "Mapping summary — mapping quality score")
+    qc_plot_draw_horizontal_labels(pos, labels)
     if (qc_plot_grid_enabled()) abline(v = pretty(mapq_limit), col = "#e3e9ee", lty = 3)
     if (show_values && length(mapq_source)) {
       text(mapped_mapq + max(mapq_limit) * 0.015, pos,

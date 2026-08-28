@@ -44,6 +44,23 @@ manifest_sample_status <- function(rows, sample, prerequisite=TRUE) {
 
 nonempty_file <- function(path) nzchar(path %||% "") && file.exists(path) && !dir.exists(path) && isTRUE(file.info(path)$size > 0)
 
+valid_mapping_stats_file <- function(path) {
+  if (!nonempty_file(path)) return(FALSE)
+  row <- tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE, nrows = 1),
+                  error = function(e) data.frame())
+  if (!nrow(row)) return(FALSE)
+  required <- c("total_records", "primary_mapped", "percent_mapped")
+  if (!all(required %in% names(row))) return(FALSE)
+  values <- suppressWarnings(stats::setNames(as.numeric(row[1, required]), required))
+  all(is.finite(values)) && values[["total_records"]] > 0 && values[["primary_mapped"]] >= 0
+}
+
+scratch_bam_pointer_available <- function(path) {
+  if (!nonempty_file(path)) return(FALSE)
+  target <- trimws(readLines(path, warn = FALSE, n = 1))
+  nzchar(target)
+}
+
 scientific_status_row <- function(rows,sample) {
   if(!nrow(rows)||!"sample"%in%names(rows)||!sample%in%rows$sample)return(NULL)
   candidates<-rows[rows$sample==sample,,drop=FALSE]
@@ -75,13 +92,15 @@ build_sample_pipeline_status <- function(project, samples=project$samples, proje
     fastq_1<-sample_value(samples,i,"fastq_1","")
     sample_hit<-sample_value(samples,i,"hit_file","")
     if(nzchar(sample_hit))sample_hit<-resolve_project_file(sample_hit,repo_root)
-    bam<-file.path(project$project_root,"mapfastq",s,paste0(s,".sorted.bam"));bai<-c(paste0(bam,".bai"),sub("\\.bam$",".bai",bam));stats<-file.path(project$project_root,"mapfastq",s,paste0(s,".mapping_stats.csv"));hits<-if(nzchar(sample_hit))sample_hit else file.path(project$project_root,"create_hit_file",s,paste0(s,"_hits.txt"));feature_files<-if(dir.exists(file.path(project$project_root,"summary",s)))list.files(file.path(project$project_root,"summary",s),pattern="\\.feature_table.*\\.(csv|tsv|txt)$",full.names=TRUE)else character()
-    mapped_ok<-nonempty_file(bam)&&any(vapply(bai,nonempty_file,FALSE));hits_ok<-nonempty_file(hits);summary_ok<-length(feature_files)>0&&any(vapply(feature_files,nonempty_file,FALSE))
+    bam<-file.path(project$project_root,"mapfastq",s,paste0(s,".sorted.bam"));bai<-c(paste0(bam,".bai"),sub("\\.bam$",".bai",bam));stats<-file.path(project$project_root,"mapfastq",s,paste0(s,".mapping_stats.csv"));scratch_bam_path<-file.path(project$project_root,"mapfastq",s,"scratch_bam_path.txt");hits<-if(nzchar(sample_hit))sample_hit else file.path(project$project_root,"create_hit_file",s,paste0(s,"_hits.txt"));feature_files<-if(dir.exists(file.path(project$project_root,"summary",s)))list.files(file.path(project$project_root,"summary",s),pattern="\\.feature_table.*\\.(csv|tsv|txt)$",full.names=TRUE)else character()
+    local_bam_ok<-nonempty_file(bam)&&any(vapply(bai,nonempty_file,FALSE))
+    stats_ok<-valid_mapping_stats_file(stats)
+    mapped_ok<-local_bam_ok||(stats_ok&&scratch_bam_pointer_available(scratch_bam_path));hits_ok<-nonempty_file(hits);summary_ok<-length(feature_files)>0&&any(vapply(feature_files,nonempty_file,FALSE))
     map_value<-tolower(row_value(map_row,"status",""));hit_value<-tolower(row_value(hit_row,"status",""));sum_value<-tolower(row_value(sum_row,"status",""))
     mapping<-if(map_value%in%c("failed","running"))map_value else if(imported)"imported_or_not_required"else if(mapped_ok&&nonempty_file(stats))"success"else if(nonempty_file(fastq_1))"ready"else"blocked"
     hit<-if(hit_value%in%c("failed","running"))hit_value else if(imported&&hits_ok)"imported_success"else if(hits_ok)"success"else if(mapped_ok)"ready"else"blocked"
     summary<-if(sum_value%in%c("failed","running"))sum_value else if(summary_ok)"success"else if(hits_ok)"ready"else"blocked"
-    data.frame(sample=s,included=included[[i]],fastq=if(imported)"not_required"else if(nonempty_file(fastq_1))"success"else"missing",mapping=mapping,bam_index=if(imported)"not_required"else if(any(vapply(bai,nonempty_file,FALSE)))"success"else if(nonempty_file(bam))"ready"else"blocked",mapped_bam=bam,hit_file=hit,hits_path=hits,summary=summary,feature_table=if(length(feature_files))paste(feature_files,collapse=";")else"",mapping_elapsed=row_value(map_row,"elapsed_seconds"),hit_elapsed=row_value(hit_row,"elapsed_seconds"),summary_elapsed=row_value(sum_row,"elapsed_seconds"),mapping_message=if(imported)"MapFastq is not required for imported hit-file projects."else if(mapping=="success")"Scientific mapping outputs available."else row_value(map_row,"message"),hit_message=if(imported&&hits_ok)"Existing CreateHitFile output imported."else if(hit=="ready")"Mapped BAM and index available; hit-file creation is ready."else row_value(hit_row,"message"),summary_message=if(summary=="ready")"Hit file available; SummaryTable is ready."else row_value(sum_row,"message"),stringsAsFactors=FALSE)
+    data.frame(sample=s,included=included[[i]],fastq=if(imported)"not_required"else if(nonempty_file(fastq_1))"success"else"missing",mapping=mapping,bam_index=if(imported)"not_required"else if(any(vapply(bai,nonempty_file,FALSE))||scratch_bam_pointer_available(scratch_bam_path))"success"else if(nonempty_file(bam))"ready"else"blocked",mapped_bam=if(scratch_bam_pointer_available(scratch_bam_path))trimws(readLines(scratch_bam_path,warn=FALSE,n=1))else bam,hit_file=hit,hits_path=hits,summary=summary,feature_table=if(length(feature_files))paste(feature_files,collapse=";")else"",mapping_elapsed=row_value(map_row,"elapsed_seconds"),hit_elapsed=row_value(hit_row,"elapsed_seconds"),summary_elapsed=row_value(sum_row,"elapsed_seconds"),mapping_message=if(imported)"MapFastq is not required for imported hit-file projects."else if(mapping=="success")"Scientific mapping outputs available."else row_value(map_row,"message"),hit_message=if(imported&&hits_ok)"Existing CreateHitFile output imported."else if(hit=="ready")"Mapped BAM and index available; hit-file creation is ready."else row_value(hit_row,"message"),summary_message=if(summary=="ready")"Hit file available; SummaryTable is ready."else row_value(sum_row,"message"),stringsAsFactors=FALSE)
   })
   do.call(rbind,result)
 }

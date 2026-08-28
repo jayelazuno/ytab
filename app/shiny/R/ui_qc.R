@@ -124,10 +124,7 @@ qc_mapping_ui <- function() panel_card(
                               "Percent mapped reads" = "percent_mapped",
                               "Mapping quality score" = "mapq"),
                   selected = "read_counts"),
-      ytab_plot_customization_controls("mapping_qc", include_bars = TRUE,
-                                       default_height = "medium",
-                                       default_width = "wide",
-                                       default_show_value_labels = FALSE),
+      uiOutput("mapping_qc_plot_controls"),
       tags$details(
         class = "ytab-more-options",
         tags$summary("Tables / downloads"),
@@ -170,9 +167,7 @@ qc_summary_ui <- function() panel_card(
                     "Library concordance" = "pairwise")
       ),
       uiOutput("summary_qc_combined_group_selector"),
-      ytab_plot_customization_controls("summary_qc", include_bars = TRUE,
-                                       default_height = "medium",
-                                       default_show_value_labels = FALSE),
+      uiOutput("summary_qc_plot_controls"),
       tags$details(
         class = "ytab-more-options",
         tags$summary("Tables / downloads"),
@@ -238,9 +233,7 @@ qc_library_diagnostics_ui <- function() panel_card(
         uiOutput("library_diagnostics_metaplot_selector"),
         selectInput("library_diagnostics_color_by", "Color by",
                     choices = qc_library_color_choices(), selected = "group"),
-        ytab_plot_customization_controls("library_diagnostics", include_bars = TRUE,
-                                         default_height = "medium",
-                                         default_show_value_labels = FALSE),
+        uiOutput("library_diagnostics_plot_controls"),
         tags$details(
           class = "ytab-more-options",
           tags$summary("Downloads"),

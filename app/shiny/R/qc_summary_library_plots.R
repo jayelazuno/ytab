@@ -392,18 +392,104 @@ qc_summary_pairwise_plot_data <- function(project) {
   if (is.null(data)) data.frame() else data
 }
 
+qc_summary_concordance_matrix <- function(project) {
+  root <- file.path(project$project_root, "summary")
+  files <- if (dir.exists(root)) {
+    list.files(root, pattern = "\\.feature_table\\.RDF_1\\.csv$", recursive = TRUE, full.names = TRUE)
+  } else character()
+  sample_tables <- lapply(files, function(file) {
+    sample <- basename(dirname(file))
+    data <- tryCatch(read.csv(file, skip = 1, stringsAsFactors = FALSE, check.names = FALSE),
+                     error = function(e) NULL)
+    if (is.null(data) || !"standard_name" %in% names(data) || !"reads" %in% names(data)) return(NULL)
+    reads <- qc_plot_numeric(data$reads)
+    keep <- nzchar(as.character(data$standard_name)) & is.finite(reads)
+    if (!any(keep)) return(NULL)
+    stats::setNames(reads[keep], as.character(data$standard_name[keep]))
+  })
+  names(sample_tables) <- basename(dirname(files))
+  sample_tables <- sample_tables[!vapply(sample_tables, is.null, TRUE)]
+  if (length(sample_tables) < 2L) return(list(correlation = matrix(numeric()), samples = character()))
+
+  samples <- qc_plot_sample_order(names(sample_tables))
+  sample_tables <- sample_tables[samples]
+  features <- sort(unique(unlist(lapply(sample_tables, names), use.names = FALSE)))
+  mat <- matrix(NA_real_, nrow = length(features), ncol = length(sample_tables),
+                dimnames = list(features, samples))
+  for (sample in samples) {
+    values <- sample_tables[[sample]]
+    mat[names(values), sample] <- values
+  }
+  correlation <- suppressWarnings(stats::cor(mat, method = "spearman", use = "pairwise.complete.obs"))
+  finite_samples <- colnames(correlation)[colSums(is.finite(correlation)) > 0L]
+  correlation <- correlation[finite_samples, finite_samples, drop = FALSE]
+  list(correlation = correlation, samples = finite_samples)
+}
+
 plot_qc_summary_pairwise_correlations <- function(project) {
-  data <- qc_summary_pairwise_plot_data(project)
-  if (!nrow(data)) return(qc_plot_empty("Feature-table correlations are not available."))
-  labels <- qc_plot_display_labels(paste(data$condition, data$pair, sep = ": "))
-  old <- qc_plot_par(mar = c(5, qc_plot_label_margin_lines(labels, orientation = "horizontal"), 3, 1))
+  concordance <- qc_summary_concordance_matrix(project)
+  corr <- concordance$correlation
+  if (!length(corr) || nrow(corr) < 2L) return(qc_plot_empty("Feature-table correlations are not available."))
+  samples <- concordance$samples
+  labels <- qc_plot_horizontal_axis_labels(qc_plot_display_labels(samples))
+  n <- length(samples)
+
+  bottom_margin <- qc_plot_label_margin_lines(labels, angle = qc_plot_label_angle(45L),
+                                              orientation = "vertical") + 1.8
+  left_margin <- qc_plot_label_margin_lines(labels, orientation = "horizontal") + 1.8
+  old <- qc_plot_par(mar = c(bottom_margin, left_margin, 3.8, 5.4))
   on.exit(par(old), add = TRUE)
-  y <- seq_len(nrow(data))
-  plot(data$spearman, y, xlim = c(0, 1), yaxt = "n", pch = 16, col = "black",
-       xlab = "Spearman correlation", ylab = "", main = "Library concordance")
-  qc_plot_draw_horizontal_labels(y, labels)
-  if (qc_plot_grid_enabled()) abline(v = seq(0, 1, by = 0.25), col = "#e3e9ee", lty = 3)
-  if (qc_plot_show_value_labels()) text(data$spearman, y, labels = sprintf("%.2f", data$spearman),
-                                        pos = 4, xpd = NA, font = 2,
-                                        cex = qc_plot_label_cex(0.85))
+
+  palette <- grDevices::colorRampPalette(c("#f7fbff", "#9ecae1", "#3182bd", "#08519c"))(100L)
+  zlim <- c(0, 1)
+  plot(NA, xlim = c(0.5, n + 0.5), ylim = c(0.5, n + 0.5),
+       xaxt = "n", yaxt = "n", xlab = "", ylab = "",
+       main = "Library concordance heatmap")
+  if (qc_plot_grid_enabled()) {
+    abline(h = seq(0.5, n + 0.5, by = 1), v = seq(0.5, n + 0.5, by = 1),
+           col = "#f0f4f8", lwd = 0.8)
+  }
+  for (i in seq_len(n)) {
+    for (j in seq_len(n)) {
+      value <- corr[i, j]
+      fill <- if (is.finite(value)) {
+        palette[pmax(1L, pmin(length(palette), floor((value - zlim[[1L]]) / diff(zlim) * (length(palette) - 1L)) + 1L))]
+      } else {
+        "#f5f5f5"
+      }
+      rect(i - 0.5, n - j + 0.5, i + 0.5, n - j + 1.5,
+           col = fill, border = "white", lwd = 1)
+      if (qc_plot_show_value_labels() && is.finite(value)) {
+        text(i, n - j + 1, labels = sprintf("%.2f", value),
+             cex = qc_plot_value_cex(0.65),
+             col = if (value >= 0.72) "white" else "black", font = 2)
+      }
+    }
+  }
+  axis(1, at = seq_len(n), labels = FALSE)
+  qc_plot_draw_vertical_labels(seq_len(n), labels, angle = qc_plot_label_angle(45L),
+                               cex = qc_plot_label_cex(0.82))
+  axis(2, at = seq_len(n), labels = FALSE, las = 1)
+  y_labels <- rev(labels)
+  y_label_x <- 0.04
+  text(y_label_x, seq_len(n),
+       labels = y_labels, adj = c(1, 0.5), xpd = NA,
+       cex = qc_plot_label_cex(0.82), font = 2)
+  box()
+  mtext("Spearman correlation of feature read profiles", side = 1,
+        line = max(3.8, par("mar")[[1L]] - 1.6),
+        font = 2, cex = qc_plot_text_sizes()$lab)
+
+  legend_y <- seq(0.7, n + 0.3, length.out = length(palette) + 1L)
+  usr <- par("usr")
+  legend_x0 <- usr[[2L]] + 0.18
+  legend_x1 <- usr[[2L]] + 0.42
+  for (k in seq_along(palette)) {
+    rect(legend_x0, legend_y[[k]], legend_x1, legend_y[[k + 1L]],
+         col = palette[[k]], border = NA, xpd = NA)
+  }
+  axis(4, at = seq(0.7, n + 0.3, length.out = 5L),
+       labels = sprintf("%.2f", seq(zlim[[1L]], zlim[[2L]], length.out = 5L)),
+       las = 1, tick = FALSE, line = 1.2, cex.axis = qc_plot_label_cex(0.72))
+  mtext("Spearman", side = 4, line = 3.4, font = 2, cex = qc_plot_label_cex(0.78))
 }
