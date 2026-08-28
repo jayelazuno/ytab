@@ -384,7 +384,7 @@ genome_browser_reference_config <- function(project) {
     if (nzchar(gene_url)) {
       tracks <- list(list(
         id = "gene_annotations",
-        name = "",
+        name = "Gene annotations",
         type = "annotation",
         format = "bed",
         url = gene_url,
@@ -442,7 +442,7 @@ genome_browser_track_configs <- function(project, rows) {
     color <- if (identical(role, "treated")) "rgb(190, 95, 65)" else if (identical(role, "parent")) "rgb(70, 125, 165)" else "rgb(90, 90, 90)"
     list(
       id = row$track_id[[1]] %||% make.names(row$sample[[1]]),
-      name = "",
+      name = as.character(i),
       type = if (format %in% c("bigwig", "bedgraph", "wig")) "wig" else "annotation",
       format = if (identical(format, "insertion_bed")) "bed" else format,
       url = url,
@@ -470,6 +470,7 @@ genome_browser_session_config <- function(project, rows, locus = "") {
     project_id = project$project_id %||% "",
     genome = genome,
     locus = locus,
+    showTrackLabels = FALSE,
     tracks = genome_browser_track_configs(project, rows)
   )
 }

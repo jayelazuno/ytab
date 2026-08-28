@@ -412,13 +412,13 @@ details.ytab-release-details {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin: 0.2rem 0 0.45rem;
+  gap: 0.45rem;
+  margin: 0.25rem 0 0.55rem;
 }
 
 .ytab-igv-lane-key-title {
   color: #52616f;
-  font-size: 0.84rem;
+  font-size: 0.98rem;
   font-weight: 700;
   margin-right: 0.15rem;
 }
@@ -429,9 +429,14 @@ details.ytab-release-details {
   border-radius: 999px;
   color: #263645;
   display: inline-block;
-  font-size: 0.8rem;
-  line-height: 1.25;
-  padding: 0.18rem 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  padding: 0.22rem 0.58rem;
+}
+
+.ytab-igv-lane-number {
+  font-weight: 800;
+  margin-right: 0.2rem;
 }
 
 .ytab-igv-lane-parent {

@@ -19,9 +19,9 @@ demo_project_id <- as.character(launcher_config$demo_project_id %||% "")
 
 ui <- tagList(
   tags$head(tags$title("YTAB — Yeast Transposon Analysis Browser"), tags$link(rel="stylesheet", href="ytab.css"),
-    tags$link(rel="stylesheet", href="ytab-landing.css"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css"),
+    tags$link(rel="stylesheet", href="ytab-landing.css"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20260828_2"),
     tags$script(src="https://cdn.jsdelivr.net/npm/igv@3/dist/igv.min.js"),
-    tags$script(src="ytab_igv_browser.js?v=20260827_2")),
+    tags$script(src="ytab_igv_browser.js?v=20260828_3")),
   uiOutput("app_shell")
 )
 
@@ -740,7 +740,11 @@ server <- function(input, output, session) {
       } else {
         "ytab-igv-lane-badge"
       }
-      tags$span(class = css, rows$display_label[[i]] %||% rows$sample[[i]])
+      tags$span(
+        class = css,
+        tags$span(class = "ytab-igv-lane-number", paste0(i, ".")),
+        rows$display_label[[i]] %||% rows$sample[[i]]
+      )
     })
     tags$div(
       class = "ytab-igv-lane-key",

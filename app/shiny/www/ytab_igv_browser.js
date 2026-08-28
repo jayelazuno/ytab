@@ -3,6 +3,7 @@
   let lastConfig = null;
   let lastLocus = "";
   let loadSerial = 0;
+  let internalLaneNames = [];
 
   function warning(message) {
     const node = document.getElementById("ytab_igv_warning");
@@ -45,6 +46,9 @@
     });
     next.genome.tracks = (next.genome.tracks || []).map(normalizeTrack);
     next.tracks = (next.tracks || []).map(normalizeTrack);
+    internalLaneNames = (next.tracks || [])
+      .map(function (track) { return String(track.name || "").trim(); })
+      .filter(function (name) { return name; });
     return next;
   }
 
@@ -140,6 +144,46 @@
     });
   }
 
+  function isInternalTrackLabelText(text) {
+    const value = String(text || "").trim();
+    return internalLaneNames.includes(value) ||
+      /^Lane [0-9]+$/.test(value) ||
+      value === "Gene annotations" ||
+      /^genes[.]v[0-9]+[.]bed$/.test(value) ||
+      /insertions[.]v[0-9]+[.]bed$/.test(value);
+  }
+
+  function scrubInternalTrackLabels() {
+    const igvDiv = container();
+    if (!igvDiv) return;
+    Array.from(igvDiv.querySelectorAll("div,span"))
+      .filter(function (node) { return node.children.length === 0; })
+      .forEach(function (node) {
+        if (isInternalTrackLabelText(node.textContent)) {
+          node.style.display = "none";
+          node.setAttribute("aria-hidden", "true");
+        }
+      });
+  }
+
+  function attachTrackLabelScrubber() {
+    const igvDiv = container();
+    if (!igvDiv) return;
+    if (!igvDiv.__ytabTrackLabelObserver) {
+      igvDiv.__ytabTrackLabelObserver = new MutationObserver(function () {
+        window.requestAnimationFrame(scrubInternalTrackLabels);
+      });
+      igvDiv.__ytabTrackLabelObserver.observe(igvDiv, {
+        childList: true,
+        subtree: true,
+        characterData: true
+      });
+    }
+    scrubInternalTrackLabels();
+    setTimeout(scrubInternalTrackLabels, 250);
+    setTimeout(scrubInternalTrackLabels, 1000);
+  }
+
   function handlePanKeydown(event) {
     if (!genomeBrowserIsVisible() || !browser) return;
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
@@ -152,7 +196,8 @@
     const editingOutsideBrowser = !activeInsideBrowser &&
       (["input", "textarea", "select"].includes(tag) || active && active.isContentEditable);
     if (editingOutsideBrowser) return;
-    if (!activeInsideBrowser && !targetInsideBrowser && !document.body.classList.contains("ytab-genome-browser-active")) return;
+    if (!activeInsideBrowser && !targetInsideBrowser &&
+        !(document.body && document.body.classList.contains("ytab-genome-browser-active"))) return;
     event.preventDefault();
     if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
     else event.stopPropagation();
@@ -169,23 +214,14 @@
   }
 
   function attachDocumentKeyboardPan() {
+    if (!document.body) {
+      setTimeout(attachDocumentKeyboardPan, 50);
+      return;
+    }
     if (document.body.dataset.ytabIgvKeyboardPan === "1") return;
     document.body.dataset.ytabIgvKeyboardPan = "1";
     document.addEventListener("keydown", handlePanKeydown, true);
     window.addEventListener("keydown", handlePanKeydown, true);
-  }
-
-  function attachPanButtons() {
-    if (document.body.dataset.ytabIgvPanButtons === "1") return;
-    document.body.dataset.ytabIgvPanButtons = "1";
-    document.addEventListener("click", function (event) {
-      const target = event.target;
-      const left = target && target.closest ? target.closest("#genome_browser_pan_left") : null;
-      const right = target && target.closest ? target.closest("#genome_browser_pan_right") : null;
-      if (!left && !right) return;
-      event.preventDefault();
-      pan(left ? -1 : 1);
-    }, true);
   }
 
   async function createOrReload(config) {
@@ -195,7 +231,6 @@
     document.body.classList.add("ytab-genome-browser-active");
     attachKeyboardPan();
     attachDocumentKeyboardPan();
-    attachPanButtons();
     if (typeof igv === "undefined" || !igv.createBrowser) {
       warning("IGV.js is not available. Check network access to the IGV JavaScript dependency.");
       return;
@@ -206,12 +241,14 @@
     const igvConfig = {
       reference: lastConfig.genome,
       locus: lastConfig.locus || undefined,
-      tracks: lastConfig.tracks || []
+      tracks: lastConfig.tracks || [],
+      showTrackLabels: lastConfig.showTrackLabels === false ? false : undefined
     };
     if (browser) {
       try {
         await browser.loadSessionObject(igvConfig);
         attachLocusChangeHandler();
+        attachTrackLabelScrubber();
         return;
       } catch (e) {
         try { igv.removeBrowser(browser); } catch (ignored) {}
@@ -228,7 +265,7 @@
     browser = nextBrowser;
     attachLocusChangeHandler();
     attachKeyboardPan();
-    attachPanButtons();
+    attachTrackLabelScrubber();
   }
 
   async function setTracks(tracks) {
@@ -249,6 +286,7 @@
     for (const track of normalized) {
       await browser.loadTrack(track);
     }
+    attachTrackLabelScrubber();
   }
 
   function gotoLocus(locus) {
@@ -271,6 +309,5 @@
     Shiny.addCustomMessageHandler("ytab_igv_warning", warning);
   }
 
-  attachPanButtons();
   attachHandlers();
 })();
