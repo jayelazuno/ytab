@@ -21,7 +21,7 @@ ui <- tagList(
   tags$head(tags$title("YTAB — Yeast Transposon Analysis Browser"), tags$link(rel="stylesheet", href="ytab.css"),
     tags$link(rel="stylesheet", href="ytab-landing.css"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20260828_2"),
     tags$script(src="https://cdn.jsdelivr.net/npm/igv@3/dist/igv.min.js"),
-    tags$script(src="ytab_igv_browser.js?v=20260828_3")),
+    tags$script(src="ytab_igv_browser.js?v=20260828_5")),
   uiOutput("app_shell")
 )
 

@@ -116,10 +116,15 @@ must_contain("app/shiny/R/genome_browser_state.R", "_hits", "Genome Browser uses
 must_contain("app/shiny/R/genome_browser_state.R", "ytab_join_glabrata_display", "Genome Browser mapped gene labels")
 must_contain("app/shiny/www/ytab_igv_browser.js", "ArrowLeft", "Genome Browser arrow-key panning")
 must_contain("app/shiny/www/ytab_igv_browser.js", "activeInsideBrowser", "Genome Browser arrow keys work from focused IGV controls")
+must_contain("app/shiny/www/ytab_igv_browser.js", "composedPath", "Genome Browser protects IGV native controls")
 must_contain("app/shiny/www/ytab_igv_browser.js", "ytab_igv_pan", "Genome Browser explicit pan control")
 must_contain("app/shiny/www/ytab_igv_browser.js", "attachTrackLabelScrubber", "Genome Browser internal lane-label scrubber")
 must_contain("app/shiny/www/ytab_igv_browser.js", "internalLaneNames", "Genome Browser internal lane-label targeting")
 must_contain("app/shiny/www/ytab_igv_browser.js", "chrName", "Genome Browser currentLoci chrName support")
+must_not_contain(file.path(repo_root, "app/shiny/www/ytab_igv_browser.js"),
+                 "igvDiv\\.focus", "Genome Browser parent click-focus handler")
+must_not_contain(file.path(repo_root, "app/shiny/R/ui_genome_browser.R"),
+                 "tabindex = \"0\"", "Genome Browser parent tabindex focus trap")
 must_contain("app/shiny/R/ui_genome_browser.R", "genome_browser_pan_left", "Genome Browser pan-left button UI")
 must_contain("app/shiny/app.R", "genome_browser_pan_left", "Genome Browser pan-left Shiny wiring")
 must_contain("app/shiny/app.R", "genome_browser_lane_key", "Genome Browser external lane key")

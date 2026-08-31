@@ -191,6 +191,13 @@
     const active = document.activeElement;
     const target = event.target || active;
     const tag = active && active.tagName ? active.tagName.toLowerCase() : "";
+    const path = typeof event.composedPath === "function" ? event.composedPath() : [];
+    const pathHasControl = path.some(function (node) {
+      const nodeTag = node && node.tagName ? node.tagName.toLowerCase() : "";
+      return ["input", "textarea", "select", "option", "button", "a"].includes(nodeTag) ||
+        (node && node.isContentEditable);
+    });
+    if (pathHasControl) return;
     const activeInsideBrowser = igvDiv && active && igvDiv.contains(active);
     const targetInsideBrowser = igvDiv && target && igvDiv.contains(target);
     const editingOutsideBrowser = !activeInsideBrowser &&
@@ -208,8 +215,6 @@
     const igvDiv = container();
     if (!igvDiv || igvDiv.dataset.ytabKeyboardPan === "1") return;
     igvDiv.dataset.ytabKeyboardPan = "1";
-    igvDiv.tabIndex = 0;
-    igvDiv.addEventListener("click", function () { igvDiv.focus({ preventScroll: true }); });
     igvDiv.addEventListener("keydown", handlePanKeydown, true);
   }
 

@@ -36,7 +36,7 @@ genome_browser_ui <- function() {
              "Embedded IGV view of the current project reference and insertion tracks."),
       tags$div(id = "ytab_igv_warning", class = "ytab-warning-banner", style = "display:none;"),
       uiOutput("genome_browser_lane_key"),
-      tags$div(id = "ytab_igv_browser", class = "ytab-igv-browser", tabindex = "0"),
+      tags$div(id = "ytab_igv_browser", class = "ytab-igv-browser"),
       tags$p(class = "text-muted ytab-control-help",
              "Tip: click the browser, then use ← and → to pan across nearby genes."),
       tags$details(
