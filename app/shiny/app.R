@@ -864,6 +864,211 @@ server <- function(input, output, session) {
     keep <- Reduce(`|`, lapply(x[fields], function(v) grepl(q, as.character(v), ignore.case = TRUE)))
     x[keep, , drop = FALSE]
   })
+  fitness_sgd_description_for_download <- function(data) {
+    description <- ytab_first_nonempty(
+      if (".ytab_sgd_description" %in% names(data)) data$.ytab_sgd_description else "",
+      if ("SGD_description" %in% names(data)) data$SGD_description else "",
+      if ("SGD description" %in% names(data)) data[["SGD description"]] else ""
+    )
+    if (!length(description) || length(description) != nrow(data)) {
+      details <- ytab_glabrata_gene_detail_columns(data)
+      description <- as.character(details$.ytab_sgd_description %||% "")
+    }
+    description[is.na(description) | !nzchar(trimws(description))] <- "Not available"
+    description
+  }
+  fitness_selected_top_hits_download_table <- function(data) {
+    if (!is.data.frame(data) || !nrow(data)) {
+      return(data.frame(
+        Message = "No selected top hits under current controls.",
+        check.names = FALSE,
+        stringsAsFactors = FALSE
+      ))
+    }
+    description <- fitness_sgd_description_for_download(data)
+    keep <- intersect(c("selected_rank", "cagl_display_id", "gene_display_name",
+                        "cg_to_sc_relationship_display", "hit_direction", "pair",
+                        "log2fc", "mean_abundance", "rank_z_strength",
+                        "supporting_pool_ids"), names(data))
+    out <- data[, keep, drop = FALSE]
+    for (nm in intersect(c("log2fc", "mean_abundance", "rank_z_strength"), names(out))) {
+      out[[nm]] <- round(as.numeric(out[[nm]]), 3)
+    }
+    names(out)[names(out) == "selected_rank"] <- "Rank"
+    names(out)[names(out) == "cagl_display_id"] <- "CAGL ID"
+    names(out)[names(out) == "gene_display_name"] <- "Gene name"
+    names(out)[names(out) == "cg_to_sc_relationship_display"] <- "Cg-to-Sc relationship"
+    names(out)[names(out) == "hit_direction"] <- "Hit direction"
+    names(out)[names(out) == "pair"] <- "Pair"
+    names(out)[names(out) == "log2fc"] <- "Directional log2FC"
+    names(out)[names(out) == "mean_abundance"] <- "CPM/read support"
+    names(out)[names(out) == "rank_z_strength"] <- "Local z-score support"
+    names(out)[names(out) == "supporting_pool_ids"] <- "Supporting pool IDs"
+    out[["SGD description"]] <- description
+    out
+  }
+  fitness_supporting_pool_ids_for_download <- function(result, feature_ids, direction, mode) {
+    feature_ids <- as.character(feature_ids %||% character())
+    if (!length(feature_ids)) return(character())
+    if (identical(mode, "individual")) return(rep("Current pair only", length(feature_ids)))
+    out <- rep("", length(feature_ids))
+    if (is.null(result) || !nzchar(result$output_dir %||% "")) return(out)
+    if (identical(direction, "none")) return(out)
+    path <- file.path(result$output_dir, "tables", "treated_vs_parent.by_pool.log2fc_z.csv")
+    if (!file.exists(path)) return(out)
+    pool_data <- tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE),
+                          error = function(e) data.frame())
+    if (!nrow(pool_data) || !all(c("feature_id", "log2FC", "z") %in% names(pool_data))) return(out)
+    pz <- fitness_ma_numeric(pool_data$z)
+    pl <- fitness_ma_numeric(pool_data$log2FC)
+    keep <- if (identical(direction, "depleted")) {
+      pz < 0 & pl < 0
+    } else if (identical(direction, "enriched")) {
+      pz > 0 & pl > 0
+    } else {
+      pz * pl > 0
+    }
+    labels <- if ("pool" %in% names(pool_data)) paste0("pool", pool_data$pool) else as.character(pool_data$contrast)
+    valid <- keep & !is.na(labels) & nzchar(labels)
+    if (!any(valid, na.rm = TRUE)) return(out)
+    support_map <- tapply(labels[valid], as.character(pool_data$feature_id[valid]),
+                          function(v) paste(unique(v), collapse = ";"))
+    out <- unname(support_map[feature_ids])
+    out[is.na(out)] <- ""
+    out
+  }
+  fitness_full_result_download_table <- function(data) {
+    out <- fitness_result_table_data(data, repo_root)
+    if (!is.data.frame(out) || !nrow(out)) {
+      return(data.frame(
+        Message = "No filtered fitness result rows under current controls.",
+        check.names = FALSE,
+        stringsAsFactors = FALSE
+      ))
+    }
+    description <- fitness_sgd_description_for_download(out)
+    hidden <- c(".ytab_gene_detail_name", ".ytab_sgd_description", ".ytab_sgd_essentiality")
+    out <- out[, setdiff(names(out), c(hidden, "Fitness call", "Comparisons depleted",
+                                       "Comparisons enriched")), drop = FALSE]
+    mode <- input$fitness_ma_mode %||% "combined"
+    pair <- if (identical(mode, "individual")) input$fitness_ma_pair %||% "" else ""
+    direction <- input$fitness_ma_hit_direction %||% "both"
+    support_ids <- if ("feature_id" %in% names(data)) {
+      fitness_supporting_pool_ids_for_download(current_fitness_result(), data$feature_id,
+                                               direction, mode)
+    } else {
+      rep("", nrow(out))
+    }
+    context <- data.frame(
+      pair = rep(pair, nrow(out)),
+      hit_direction = rep(direction, nrow(out)),
+      supporting_pool_ids = support_ids,
+      check.names = FALSE,
+      stringsAsFactors = FALSE
+    )
+    if (nrow(context) != nrow(out)) {
+      context <- data.frame(pair = rep(pair, nrow(out)),
+                            hit_direction = rep(direction, nrow(out)),
+                            supporting_pool_ids = rep("", nrow(out)),
+                            check.names = FALSE,
+                            stringsAsFactors = FALSE)
+    }
+    display_id <- intersect(c("CAGL ID", "Gene name", "Cg-to-Sc relationship"), names(out))
+    out <- cbind(out[, display_id, drop = FALSE],
+                 context,
+                 out[, setdiff(names(out), display_id), drop = FALSE])
+    out[["SGD description"]] <- description
+    out
+  }
+  fitness_current_plot_download_table <- function(data, choice) {
+    if (!is.data.frame(data) || !nrow(data)) return(data)
+    if (!"feature_id" %in% names(data)) return(data)
+    data <- ytab_join_glabrata_display(data, repo_root, "feature_id")
+    description <- fitness_sgd_description_for_download(data)
+    mode <- input$fitness_ma_mode %||% "combined"
+    pair <- if (identical(mode, "individual")) input$fitness_ma_pair %||% "" else ""
+    direction <- input$fitness_ma_hit_direction %||% "both"
+    context <- data.frame(
+      pair = rep(pair, nrow(data)),
+      hit_direction = rep(direction, nrow(data)),
+      supporting_pool_ids = fitness_supporting_pool_ids_for_download(
+        current_fitness_result(), data$feature_id, direction, mode
+      ),
+      check.names = FALSE,
+      stringsAsFactors = FALSE
+    )
+    if (identical(choice, "condition_control")) {
+      keep <- intersect(c("cagl_display_id", "gene_display_name",
+                          "cg_to_sc_relationship_display", "control_abundance",
+                          "treated_abundance", "x_log10_control_plus_1",
+                          "y_log10_treated_plus_1", "highlighted", "labeled",
+                          "annotation_source"), names(data))
+    } else if (identical(choice, "selected_hit_heatmap")) {
+      keep <- intersect(c("cagl_display_id", "gene_display_name",
+                          "cg_to_sc_relationship_display", "rank",
+                          "hit_direction", "contrast", "log2FC"), names(data))
+    } else if (identical(choice, "ranked_mean_log2fc")) {
+      keep <- intersect(c("cagl_display_id", "gene_display_name",
+                          "cg_to_sc_relationship_display", "rank",
+                          "mean_log2FC"), names(data))
+    } else if (identical(choice, "mean_log2fc_distribution")) {
+      keep <- intersect(c("cagl_display_id", "gene_display_name",
+                          "cg_to_sc_relationship_display",
+                          "mean_log2FC"), names(data))
+    } else if (identical(choice, "effect_size")) {
+      keep <- intersect(c("cagl_display_id", "gene_display_name",
+                          "cg_to_sc_relationship_display", "mean_log2fc",
+                          "max_z", "min_z", "effect_column",
+                          "z_column"), names(data))
+    } else {
+      keep <- intersect(c("cagl_display_id", "gene_display_name",
+                          "cg_to_sc_relationship_display", "log2fc",
+                          "mean_abundance", "rank_z_strength",
+                          "highlighted", "labeled", "annotation_source"), names(data))
+    }
+    out <- data[, keep, drop = FALSE]
+    display_id <- intersect(c("cagl_display_id", "gene_display_name",
+                              "cg_to_sc_relationship_display"), names(out))
+    out <- cbind(out[, display_id, drop = FALSE],
+                 context,
+                 out[, setdiff(names(out), c(display_id, "pair",
+                                             "hit_direction",
+                                             "supporting_pool_ids")), drop = FALSE])
+    for (nm in intersect(c("control_abundance", "treated_abundance",
+                          "x_log10_control_plus_1", "y_log10_treated_plus_1",
+                          "log2fc", "mean_abundance", "rank_z_strength",
+                          "log2FC", "mean_log2FC", "mean_log2fc",
+                          "max_z", "min_z"), names(out))) {
+      out[[nm]] <- round(as.numeric(out[[nm]]), 3)
+    }
+    names(out)[names(out) == "cagl_display_id"] <- "CAGL ID"
+    names(out)[names(out) == "gene_display_name"] <- "Gene name"
+    names(out)[names(out) == "cg_to_sc_relationship_display"] <- "Cg-to-Sc relationship"
+    names(out)[names(out) == "control_abundance"] <- "Control abundance"
+    names(out)[names(out) == "treated_abundance"] <- "Treated abundance"
+    names(out)[names(out) == "x_log10_control_plus_1"] <- "Control abundance log10(+1)"
+    names(out)[names(out) == "y_log10_treated_plus_1"] <- "Treated abundance log10(+1)"
+    names(out)[names(out) == "log2fc"] <- "Directional log2FC"
+    names(out)[names(out) == "mean_abundance"] <- "CPM/read support"
+    names(out)[names(out) == "rank_z_strength"] <- "Local z-score support"
+    names(out)[names(out) == "highlighted"] <- "Highlighted"
+    names(out)[names(out) == "labeled"] <- "Labeled"
+    names(out)[names(out) == "annotation_source"] <- "Annotation source"
+    names(out)[names(out) == "rank"] <- "Rank"
+    names(out)[names(out) == "hit_direction"] <- "Hit direction"
+    names(out)[names(out) == "pair"] <- "Pair"
+    names(out)[names(out) == "supporting_pool_ids"] <- "Supporting pool IDs"
+    names(out)[names(out) == "contrast"] <- "Contrast"
+    names(out)[names(out) == "log2FC"] <- "log2FC"
+    names(out)[names(out) == "mean_log2FC"] <- "Mean log2FC"
+    names(out)[names(out) == "mean_log2fc"] <- "Mean log2FC"
+    names(out)[names(out) == "max_z"] <- "Maximum z-score"
+    names(out)[names(out) == "min_z"] <- "Minimum z-score"
+    names(out)[names(out) == "effect_column"] <- "Effect column"
+    names(out)[names(out) == "z_column"] <- "Z-score column"
+    out[["SGD description"]] <- description
+    out
+  }
   output$fitness_selected_top_hits_table <- DT::renderDT({
     x <- fitness_ma_selected_hits_visible()
     if (!nrow(x)) return(NULL)
@@ -1038,7 +1243,7 @@ server <- function(input, output, session) {
   output$fitness_result_technical<-renderUI({result<-current_fitness_result();if(is.null(result))return(NULL);tags$div(class="ytab-technical-console",tags$p("Result: ",tags$code(relative_project_path(result$table,active()$project_root))),tags$p("Manifest: ",tags$code(if(file.exists(result$manifest))relative_project_path(result$manifest,active()$project_root)else"Legacy manifest unavailable")),tags$p("Input mode: raw-summary"),tags$p("Normalization: CPM inside R"))})
   fitness_download_path<-function(path,message="No fitness result is available for download."){if(!nzchar(path%||%"")||!file.exists(path)){showNotification(message,type="warning");validate(need(FALSE,message))};path}
   output$download_fitness_full<-downloadHandler(filename=function()"treated_vs_parent_results.csv",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$table;file.copy(fitness_download_path(path),file,overwrite=TRUE)})
-  output$download_fitness_filtered<-downloadHandler(filename=function()"treated_vs_parent_results.filtered.csv",content=function(file)write.csv(fitness_filtered(),file,row.names=FALSE))
+  output$download_fitness_filtered<-downloadHandler(filename=function()"treated_vs_parent_results.filtered.csv",content=function(file)write.csv(fitness_full_result_download_table(fitness_filtered()),file,row.names=FALSE))
   output$download_fitness_design<-downloadHandler(filename=function()"comparison_design.csv",content=function(file)file.copy(fitness_download_path(fitness_design_path(active()),"No comparison design is available for download."),file,overwrite=TRUE))
   output$download_fitness_comparison<-downloadHandler(filename=function()"treated_vs_parent_comparison_summary.csv",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$comparison_summary;file.copy(fitness_download_path(path,"No comparison-level fitness summary is available for download."),file,overwrite=TRUE)})
   output$download_fitness_manifest<-downloadHandler(filename=function()"treated_vs_parent_manifest.json",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$manifest;file.copy(fitness_download_path(path,"No fitness run manifest is available for download."),file,overwrite=TRUE)})
@@ -1155,7 +1360,8 @@ server <- function(input, output, session) {
   output$download_fitness_ma_data <- downloadHandler(
     filename = function() paste0(fitness_current_plot_slug(), ".csv"),
     content = function(file) {
-      data <- fitness_current_plot_data()
+      choice <- input$fitness_visualization_choice %||% "effect_size"
+      data <- fitness_current_plot_download_table(fitness_current_plot_data(), choice)
       if (!nrow(data)) data <- data.frame(no_plotted_data = "No plotted data are available for the current Fitness plot.", stringsAsFactors = FALSE)
       write.csv(data, file, row.names = FALSE)
     }
@@ -1167,16 +1373,9 @@ server <- function(input, output, session) {
       mode <- input$fitness_ma_mode %||% "combined"; pair <- input$fitness_ma_pair %||% ""
       direction <- input$fitness_ma_hit_direction %||% "both"; n <- as.integer(input$fitness_ma_top_n %||% 10)
       min_support <- if (identical(mode, "combined")) as.integer(input$fitness_ma_min_support %||% 0) else 0L
-      top <- fitness_ma_selected_hits()
+      top <- fitness_ma_selected_hits_visible()
       if (!nrow(top)) top <- data.frame(no_top_hits_selected = "No top hits selected under current controls", comparison_view = if (identical(mode, "individual")) "individual_pair" else "combined", hit_direction = direction, selected_min_support_pools = min_support, stringsAsFactors = FALSE)
-      else {
-        raw_annotation <- c("cagl_id", "gwk60_id_clean", "qng_id", "cgla_common_name",
-                            "cg_to_sc_relationship", "pre_WGD_Ancestor", "scer_gene_id",
-                            "scer_gene_name", "SGD_essentiality", "SGD_description",
-                            "cgla_gene_name_from_deseq")
-        top <- top[, setdiff(names(top), raw_annotation), drop = FALSE]
-        top <- ytab_standardize_glabrata_annotation_names(top)
-      }
+      else top <- fitness_selected_top_hits_download_table(top)
       write.csv(top, file, row.names = FALSE)
     }
   )
