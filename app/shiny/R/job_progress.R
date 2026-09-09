@@ -77,9 +77,9 @@ as_time_or_na <- function(value) {if(is.null(value)||!length(value)||!nzchar(val
 
 job_progress_ui <- function(id,compact=FALSE) {ns<-NS(id);tags$div(class=if(compact)"ytab-job-progress compact"else"ytab-job-progress",uiOutput(ns("body")))}
 job_progress_server <- function(id,job_manager,project,compact=FALSE,expected_stage=NULL) moduleServer(id,function(input,output,session){
-  progress<-reactive({running<-job_manager$job_is_running();if(running)invalidateLater(if(compact)1500 else 1000,session);job_manager$poll_job();p<-job_manager$current_progress();if(!essentiality_job_matches(p,expected_stage))return(NULL);p})
+  progress<-reactive({job_manager$poll_job();p<-job_manager$current_progress();if(!essentiality_job_matches(p,expected_stage))return(NULL);running<-job_manager$job_is_running();active_status<-!is.null(p)&&p$status%in%c("queued","starting","running");if(running||(active_status&&!progress_is_stale(p,60)))invalidateLater(if(compact)1500 else 1000,session);p})
   output$body<-renderUI({p<-progress();job<-job_manager$current_job();if(is.null(p)){if(compact)return(NULL);return(tags$p(class="text-muted","No job progress is available."))}
-    if(compact&&!p$status%in%c("queued","starting","running"))return(NULL)
+    if(compact){if(!p$status%in%c("queued","starting","running"))return(NULL);if(progress_is_stale(p,60)&&!job_manager$job_is_running())return(NULL)}
     now<-Sys.time();started<-as_time_or_na(p$job_started_at);item_started<-as_time_or_na(p$current_item_started_at);live_job_elapsed<-if(!is.na(started)&&p$status%in%c("queued","starting","running"))as.numeric(difftime(now,started,units="secs"))else p$job_elapsed_seconds;live_item_elapsed<-if(!is.na(item_started)&&p$status=="running")as.numeric(difftime(now,item_started,units="secs"))else p$current_item_elapsed_seconds
     if(!is.null(p$eta_seconds)&&p$status=="running"&&!is.null(p$updated_at)){updated<-as_time_or_na(p$updated_at);if(!is.na(updated))p$eta_seconds<-max(0,p$eta_seconds-as.numeric(difftime(now,updated,units="secs")))}
     current<-p$current_item%||%"No active item";index<-p$current_item_index%||%0;total<-p$total_items%||%0;processed<-p$processed_items%||%0;pct<-p$progress_percent%||%0

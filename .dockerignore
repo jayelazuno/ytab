@@ -1,0 +1,28 @@
+.git
+.DS_Store
+**/.DS_Store
+.venv
+.cache
+tmp
+blast
+docs/codex
+
+# Project results are mounted at runtime for hosted/demo use.
+output
+
+# Common large sequencing/alignment artifacts.
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.bam
+*.bai
+*.sam
+*.cram
+*.bw
+*.bigWig
+
+# Local logs and run clutter.
+*.log
+*.tmp
+shiny_bookmarks

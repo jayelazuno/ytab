@@ -495,6 +495,67 @@ details.ytab-release-details {
   box-shadow: none !important;
 }
 
+.navbar-nav > li.ytab-nav-menu-host {
+  position: relative;
+}
+
+.navbar-nav > li.ytab-nav-menu-host > a[data-value] {
+  padding-right: 1.9rem;
+}
+
+.ytab-nav-menu-caret {
+  position: absolute;
+  top: 50%;
+  right: 0.32rem;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1;
+  padding: 0.25rem;
+  z-index: 4;
+}
+
+.ytab-nav-menu-caret:hover,
+.ytab-nav-menu-caret:focus {
+  color: #fff;
+  outline: none;
+}
+
+.navbar-nav > li.ytab-nav-menu-host > .ytab-nav-submenu {
+  min-width: 220px;
+  padding: 0.35rem 0;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+}
+
+.navbar-nav > li.ytab-nav-menu-host:hover > .ytab-nav-submenu,
+.navbar-nav > li.ytab-nav-menu-host:focus-within > .ytab-nav-submenu {
+  display: block;
+}
+
+.ytab-nav-submenu > li > a {
+  padding: 0.55rem 0.9rem;
+  white-space: nowrap;
+}
+
+.ytab-nav-submenu > li > a:hover,
+.ytab-nav-submenu > li > a:focus {
+  background: #e8f3f7;
+  color: #064e5a;
+  outline: none;
+}
+
+.ytab-go-result-table td,
+.ytab-go-result-table th {
+  vertical-align: top !important;
+}
+
+.ytab-go-result-table .ytab-go-term-cell {
+  white-space: normal !important;
+  max-width: 34rem;
+}
+
 @media (max-width: 900px) {
   .ytab-release-header,
   .ytab-plot-card-header,

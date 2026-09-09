@@ -45,7 +45,8 @@ helper_files <- c(
   "app/shiny/R/table_display_helpers.R",
   "app/shiny/R/plot_customization_helpers.R",
   "app/shiny/R/glabrata_annotation_lookup.R",
-  "app/shiny/R/genome_browser_state.R"
+  "app/shiny/R/genome_browser_state.R",
+  "app/shiny/R/go_analysis.R"
 )
 for (helper in helper_files) {
   full <- must_exist(helper)
@@ -57,8 +58,15 @@ invisible(must_exist("app/shiny/www/ytab_release_ui.css"))
 must_contain("app/shiny/app.R", "ytab_release_ui\\.css", "release CSS reference")
 must_contain("app/shiny/app.R", "igv@3/dist/igv\\.min\\.js", "IGV.js dependency")
 must_contain("app/shiny/app.R", "ytab_igv_browser\\.js", "YTAB IGV bridge")
+must_contain("app/shiny/app.R", "ytab_nav_menus\\.js\\?v=20260909_1", "navigation menu cachebuster")
+must_contain("app/shiny/app.R", "navigation_history_restore <- reactiveVal\\(FALSE\\)", "browser-history restore guard")
+must_contain("app/shiny/app.R", "!isTRUE\\(navigation_history_restore\\(\\)\\)", "suppress URL push during browser-history restore")
+must_contain("app/shiny/app.R", "sync_navigation_url\\(session, location, replace = TRUE", "replace URL during browser-history restore")
 must_contain("app/shiny/app.R", "ui_components\\.R", "shared UI helper source")
 must_contain("app/shiny/app.R", "plot_customization_helpers\\.R", "plot customization helper source")
+must_contain("app/shiny/www/ytab_nav_menus.js", "function restoreFromBrowserHistory\\(\\)", "browser history restore handler")
+must_contain("app/shiny/www/ytab_nav_menus.js", "window\\.addEventListener\\(\"popstate\", restoreFromBrowserHistory\\)", "Back/Forward popstate handler")
+must_contain("app/shiny/www/ytab_nav_menus.js", "window\\.addEventListener\\(\"hashchange\", restoreFromBrowserHistory\\)", "hash navigation restore handler")
 
 for (fn in c(
   "ytab_page_header", "ytab_result_card", "ytab_metric_card",
@@ -139,6 +147,7 @@ must_contain("app/shiny/R/genome_browser_state.R", "showTrackLabel = FALSE", "Ge
 
 workspace_text <- paste(readLines(must_exist("app/shiny/R/ui_workspace.R"), warn = FALSE), collapse = "\n")
 for (tab in c("Quality Control", "Essentiality", "Fitness Screen",
+              "GO Analysis",
               "Gene & Domain Insertion Explorer", "Comparative Species",
               "Genome Browser", "Results & Exports")) {
   if (!grepl(tab, workspace_text, fixed = TRUE)) fail(paste("Missing major tab:", tab))
@@ -151,6 +160,28 @@ must_contain("app/shiny/R/ui_qc.R", "\"percent_mapped\"", "Mapping QC percent-ma
 must_contain("app/shiny/R/ui_qc.R", "\"mapq\"", "Mapping QC MAPQ graph choice")
 must_contain("app/shiny/app.R", "plot_qc_mapping_stats\\(active\\(\\),input\\$mapping_qc_plot_choice", "Mapping QC selected graph wiring")
 must_contain("app/shiny/R/ui_qc.R", "mapping_qc_plot_controls", "Mapping QC display controls placeholder")
+must_contain("app/shiny/R/go_analysis.R", "go_analysis_ui", "GO Analysis UI helper")
+must_contain("app/shiny/R/go_analysis.R", "plotOutput\\(\"go_enrichment_plot\"", "dynamic GO enrichment plot")
+must_contain("app/shiny/R/go_analysis.R", "plotOutput\\(\"go_semantic_heatmap\"", "dynamic GO semantic plot")
+must_contain("app/shiny/R/go_analysis.R", "download_go_targets_current", "GO gene-set tab download")
+must_contain("app/shiny/R/go_analysis.R", "go_fitness_hit_direction", "GO selected-hit direction control")
+must_contain("app/shiny/R/go_analysis.R", "go_fitness_min_support", "GO selected-hit concordance control")
+must_contain("app/shiny/R/go_analysis.R", "fitness_ma_top_hits_table", "GO uses Fitness selected-hit logic")
+must_contain("app/shiny/R/go_analysis.R", "go_results_tick <- reactiveVal\\(0L\\)", "GO result refresh tick")
+must_contain("app/shiny/R/go_analysis.R", "latest_go_result <- reactive\\(\\{\\s*go_analysis_latest_result\\(go_results\\(\\)\\)", "GO latest result is render-stable")
+must_contain("app/shiny/R/go_analysis.R", "observe\\(\\{\\s*if \\(!identical\\(jobs\\$stage\\(\\), \"go_analysis\"\\)\\) return\\(NULL\\)", "GO job polling separated from rendered results")
+must_contain("app/shiny/R/go_analysis.R", "go_results_tick\\(go_results_tick\\(\\) \\+ 1L\\)", "GO results refresh after job completion")
+must_not_contain("app/shiny/R/go_analysis.R", "latest_go_result <- reactive\\(\\{\\s*if \\(identical\\(jobs\\$stage\\(\\), \"go_analysis\"\\) && jobs\\$job_is_running\\(\\)\\)", "GO result reactive polling loop")
+must_contain("app/shiny/R/go_analysis.R", "go_analysis_go_display_table", "GO enrichment compact display table")
+must_contain("app/shiny/R/go_analysis.R", "go_analysis_semantic_display_table", "GO semantic compact display table")
+must_contain("app/shiny/R/go_analysis.R", "Classic Fisher P", "GO enrichment readable p-value column")
+must_contain("app/shiny/R/go_analysis.R", "Representative theme", "GO semantic readable representative column")
+must_contain("app/shiny/R/go_analysis.R", "Best enrichment score", "GO semantic readable score column")
+must_contain("app/shiny/R/go_analysis.R", "go_semantic_ontology", "GO semantic ontology filter")
+must_contain("app/shiny/www/ytab_release_ui.css", "ytab-go-result-table", "GO result table wrapping CSS")
+must_not_contain("app/shiny/R/go_analysis.R", "go_results <- reactive\\(\\{\\s*invalidateLater\\(1500, session\\)", "unconditional GO output-directory refresh")
+must_not_contain("app/shiny/R/go_analysis.R", "nav_panel\\(\"Downloads\"", "separate GO Downloads tab")
+must_not_contain("app/shiny/R/go_analysis.R", "ytab_static_image", "static GO image display")
 must_contain("app/shiny/app.R", "ytab_plot_customization_controls\\(\"mapping_qc\"", "Mapping QC display controls")
 must_not_contain(file.path(repo_root, "app/shiny/R/ui_qc.R"),
                  "default_bar_orientation = \"horizontal\"",

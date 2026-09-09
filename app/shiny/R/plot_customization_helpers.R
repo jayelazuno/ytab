@@ -60,19 +60,19 @@ ytab_plot_customization_controls <- function(
     default_show_value_labels = TRUE) {
   ns_id <- function(suffix) paste0(id, "_", suffix)
   controls <- list(
-    selectInput(ns_id("plot_style"), "Plot style", ytab_plot_style_choices(), selected = "clean"),
-    selectInput(ns_id("plot_height"), "Plot height", ytab_plot_height_choices(), selected = default_height),
-    selectInput(ns_id("plot_width"), "Plot width", ytab_plot_width_choices(), selected = default_width),
-    selectInput(ns_id("text_size"), "Text size", ytab_text_size_choices(), selected = "medium")
+    selectInput(ns_id("plot_style"), "Plot style", as.list(ytab_plot_style_choices()), selected = "clean"),
+    selectInput(ns_id("plot_height"), "Plot height", as.list(ytab_plot_height_choices()), selected = default_height),
+    selectInput(ns_id("plot_width"), "Plot width", as.list(ytab_plot_width_choices()), selected = default_width),
+    selectInput(ns_id("text_size"), "Text size", as.list(ytab_text_size_choices()), selected = "medium")
   )
   if (include_labels) {
     controls <- c(controls, list(
-      selectInput(ns_id("label_mode"), "Label mode", ytab_label_mode_choices(), selected = "full"),
-      selectInput(ns_id("label_angle"), "Label angle", ytab_label_angle_choices(), selected = default_label_angle)
+      selectInput(ns_id("label_mode"), "Label mode", as.list(ytab_label_mode_choices()), selected = "full"),
+      selectInput(ns_id("label_angle"), "Label angle", as.list(ytab_label_angle_choices()), selected = default_label_angle)
     ))
   }
   if (include_grid)
-    controls <- c(controls, list(selectInput(ns_id("grid"), "Grid", ytab_grid_choices(), selected = "show")))
+    controls <- c(controls, list(selectInput(ns_id("grid"), "Grid", as.list(ytab_grid_choices()), selected = "show")))
   if (include_points) {
     controls <- c(controls, list(
       sliderInput(ns_id("point_size"), "Point size", min = 0.4, max = 4, value = 1.5, step = 0.1),
@@ -81,22 +81,22 @@ ytab_plot_customization_controls <- function(
   }
   if (include_bars)
     controls <- c(controls, list(selectInput(ns_id("bar_orientation"), "Bar orientation",
-                                             c("Horizontal when labels are long" = "auto",
-                                               "Horizontal" = "horizontal",
-                                               "Vertical" = "vertical"),
+                                             as.list(c("Horizontal when labels are long" = "auto",
+                                                       "Horizontal" = "horizontal",
+                                                       "Vertical" = "vertical")),
                                              selected = default_bar_orientation)))
   if (include_value_labels)
     controls <- c(controls, list(checkboxInput(ns_id("show_value_labels"),
                                                "Show value labels", default_show_value_labels)))
   if (include_heatmap) {
     controls <- c(controls, list(
-      selectInput(ns_id("heatmap_height"), "Heatmap height", ytab_plot_height_choices(), selected = "large"),
+      selectInput(ns_id("heatmap_height"), "Heatmap height", as.list(ytab_plot_height_choices()), selected = "large"),
       sliderInput(ns_id("row_label_size"), "Row label size", min = 6, max = 18, value = 10, step = 1),
-      selectInput(ns_id("column_label_angle"), "Column label angle", ytab_label_angle_choices(), selected = "45"),
+      selectInput(ns_id("column_label_angle"), "Column label angle", as.list(ytab_label_angle_choices()), selected = "45"),
       checkboxInput(ns_id("show_row_labels"), "Show row labels", TRUE),
       selectInput(ns_id("heatmap_palette"), "Palette",
-                  c("Blue-white-red" = "blue_red", "Viridis" = "viridis",
-                    "Magma" = "magma", "Gray" = "gray"),
+                  as.list(c("Blue-white-red" = "blue_red", "Viridis" = "viridis",
+                            "Magma" = "magma", "Gray" = "gray")),
                   selected = "blue_red")
     ))
   }

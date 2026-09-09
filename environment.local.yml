@@ -33,3 +33,9 @@ dependencies:
   - r-slider
   - r-minpack.lm
   - r-ggrepel
+  - bioconductor-topgo
+  - bioconductor-go.db
+  - bioconductor-org.sc.sgd.db
+  - bioconductor-annotationdbi
+  - bioconductor-rrvgo
+  - bioconductor-gosemsim

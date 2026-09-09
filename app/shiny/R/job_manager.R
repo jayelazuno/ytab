@@ -64,7 +64,8 @@ job_stage_has_valid_output <- function(project_root, stage) {
     combined_hits = c("combined_hits", "combined_parent_hits.*\\.txt$"),
     summary_combined = c("summary_combined", "combined_feature_table.*\\.txt$"),
     classifier = c("classifier", "essentiality_predictions.*\\.csv$"),
-    fitness_analysis = c("treated_vs_parent", "treated_vs_parent_results\\.csv$")
+    fitness_analysis = c("treated_vs_parent", "treated_vs_parent_results\\.csv$"),
+    go_analysis = c("go_analysis", "topgo_results\\.csv$")
   )
   spec <- patterns[[as.character(stage %||% "")]]
   if (is.null(spec)) return(FALSE)
@@ -78,7 +79,7 @@ job_stage_has_valid_output <- function(project_root, stage) {
     library_diagnostics = "library_diagnostics", sample_normalization = "sample_normalization",
     summary_normalized = "summary_normalized", combined_hits = "combined_hits",
     summary_combined = "summary_combined", classifier = "classifier",
-    fitness_analysis = "treated_vs_parent", "")
+    fitness_analysis = "treated_vs_parent", go_analysis = "go_analysis", "")
   manifest_root <- file.path(project_root, "manifests", manifest_stage)
   manifests <- if (nzchar(manifest_stage) && dir.exists(manifest_root))
     list.files(manifest_root, pattern = "\\.json$", recursive = TRUE, full.names = TRUE) else character()
@@ -103,7 +104,7 @@ new_job_manager <- function() {
       recovered_progress<-raw_progress();if(is.null(state$process)&&!is.null(recovered_progress)&&job_status_is_active(recovered_progress$status)&&job_process_exists(state$pid))stop("A pipeline job is already running.")
       stamp<-format(Sys.time(),"%Y%m%dT%H%M%SZ",tz="UTC");random<-paste(sample(c(letters,0:9),6,replace=TRUE),collapse="");state$job_id<-job_id%||%paste(stage_or_profile,stamp,random,sep="_")
       project_root<-dirname(dirname(project_config));state$progress_file<-progress_file%||%file.path(project_root,"manifests","jobs",paste0(state$job_id,".progress.json"))
-      progress_args<-if(stage_or_profile%in%c("mapfastq","create_hit_file","summary","library_diagnostics","fitness_analysis","sample_normalization","summary_normalized","combined_hits","summary_combined","classifier"))c("--job-id",state$job_id,"--progress-file",state$progress_file)else character()
+      progress_args<-if(stage_or_profile%in%c("mapfastq","create_hit_file","summary","library_diagnostics","fitness_analysis","sample_normalization","summary_normalized","combined_hits","summary_combined","classifier","go_analysis"))c("--job-id",state$job_id,"--progress-file",state$progress_file)else character()
       state$command<-command;state$args<-c(args,progress_args);state$display_command<-format_command_for_display(command,state$args);state$started<-Sys.time();state$stdout<-state$stderr<-character();state$project_config<-project_config;state$stage<-stage_or_profile;state$selected_items<-selected_items;state$status<-"starting";state$recovered<-FALSE;state$dismissed<-FALSE
       dir.create(dirname(state$progress_file),recursive=TRUE,showWarnings=FALSE)
       initial<-c(list(schema_version=1,job_id=state$job_id,project_id=basename(project_root),stage=state$stage,status="queued",selected_items=unname(as.character(selected_items)),total_items=length(selected_items),processed_items=0,successful_items=0,skipped_items=0,failed_items=0,remaining_items=length(selected_items),current_item=NULL,current_item_index=NULL,current_phase="queued",job_started_at=format(Sys.time(),tz="UTC",usetz=TRUE),updated_at=format(Sys.time(),tz="UTC",usetz=TRUE),job_elapsed_seconds=0,current_item_elapsed_seconds=0,progress_fraction=0,progress_percent=0,eta_seconds=NULL,estimated_completion_time=NULL,eta_confidence="unavailable",message="Command submitted",cancel_requested=FALSE,items=lapply(unname(as.character(selected_items)),function(x)list(item=x,status="queued"))),json_safe_value(metadata))

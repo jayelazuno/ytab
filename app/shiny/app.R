@@ -5,7 +5,7 @@ library(bslib)
 app_file <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL) %||% file.path(getwd(), "app.R")
 app_dir <- normalizePath(dirname(app_file), winslash = "/", mustWork = TRUE)
 repo_root <- normalizePath(file.path(app_dir, "../.."), winslash = "/", mustWork = TRUE)
-for (helper in c("project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "ui_qc.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_generated_plots.R", "fitness_condition_control_plot.R", "fitness_plot_utils.R", "ui_fitness.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "ui_workspace.R"))
+for (helper in c("project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "ui_qc.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_generated_plots.R", "fitness_condition_control_plot.R", "fitness_plot_utils.R", "ui_fitness.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "go_analysis.R", "ui_workspace.R"))
   source(file.path(app_dir, "R", helper), local = TRUE)
 
 detected_cpu <- parallel::detectCores(logical = TRUE)
@@ -19,9 +19,10 @@ demo_project_id <- as.character(launcher_config$demo_project_id %||% "")
 
 ui <- tagList(
   tags$head(tags$title("YTAB — Yeast Transposon Analysis Browser"), tags$link(rel="stylesheet", href="ytab.css"),
-    tags$link(rel="stylesheet", href="ytab-landing.css"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20260828_2"),
+    tags$link(rel="stylesheet", href="ytab-landing.css"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20260903_1"),
     tags$script(src="https://cdn.jsdelivr.net/npm/igv@3/dist/igv.min.js"),
-    tags$script(src="ytab_igv_browser.js?v=20260828_5")),
+    tags$script(src="ytab_igv_browser.js?v=20260828_5"),
+    tags$script(src="ytab_nav_menus.js?v=20260909_1")),
   uiOutput("app_shell")
 )
 
@@ -40,20 +41,78 @@ server <- function(input, output, session) {
   jobs <- new_job_manager()
   status_tick <- reactiveVal(0L)
   project_created <- reactiveVal(FALSE)
+  initial_project_opened <- reactiveVal(FALSE)
   completed_job_seen <- reactiveVal("")
   last_project_path <- reactiveVal("")
   navigation_location <- reactiveVal(navigation_state_defaults("overview"))
-  go_to <- function(top,nested_id=NULL,nested_value=NULL,results_view=NULL){
-    navigation_location(navigate_workspace(
-      session, navigation_location(), top, nested_id, nested_value, results_view
-    ))
+  navigation_history_restore <- reactiveVal(FALSE)
+  current_project_id <- function() {
+    project <- isolate(state$values$project)
+    as.character(project$project_id %||% "")
   }
+  project_config_for_id <- function(project_id) {
+    project_id <- trimws(as.character(project_id %||% ""))
+    if (!nzchar(project_id)) return("")
+    found <- projects()
+    if (!nrow(found) || !"project_id" %in% names(found) ||
+        !"project_config" %in% names(found)) return("")
+    matches <- found$project_config[found$project_id == project_id]
+    if (length(matches)) matches[[1L]] else ""
+  }
+  parse_navigation_target <- function(target) {
+    if (is.character(target) && length(target) == 1L && nzchar(target[[1L]]) &&
+        requireNamespace("jsonlite", quietly = TRUE))
+      target <- tryCatch(jsonlite::fromJSON(target[[1L]], simplifyVector = FALSE),
+                         error = function(e) NULL)
+    if (!is.list(target)) return(NULL)
+    target
+  }
+  go_to <- function(top,nested_id=NULL,nested_value=NULL,results_view=NULL,replace=FALSE){
+    location <- navigate_workspace(
+      session, navigation_location(), top, nested_id, nested_value, results_view
+    )
+    navigation_location(location)
+    sync_navigation_url(session, location, replace = replace,
+                        project_id = current_project_id())
+    invisible(location)
+  }
+  observeEvent(input$ytab_nav_menu, {
+    target <- parse_navigation_target(input$ytab_nav_menu)
+    if (!is.list(target)) return(NULL)
+    top <- as.character(target$top %||% "")
+    nested_id <- as.character(target$nested_id %||% "")
+    nested_value <- as.character(target$nested_value %||% "")
+    if (!nzchar(top) || !nzchar(nested_id) || !nzchar(nested_value)) return(NULL)
+    go_to(top, nested_id, nested_value)
+  }, ignoreInit = TRUE)
+  observeEvent(input$ytab_nav_hash, {
+    target <- parse_navigation_target(input$ytab_nav_hash)
+    if (!is.list(target)) return(NULL)
+    location <- navigation_state_from_url(target)
+    navigation_location(location)
+    if (identical(state$values$view, "workspace")) {
+      navigation_history_restore(TRUE)
+      session$onFlushed(function() {
+        restore_navigation_state(session, location)
+        sync_navigation_url(session, location, replace = TRUE,
+                            project_id = current_project_id())
+        session$onFlushed(function() navigation_history_restore(FALSE), once = TRUE)
+      }, once = TRUE)
+    } else {
+      project_path <- project_config_for_id(target$project_id %||% "")
+      if (nzchar(project_path)) open_path(project_path)
+    }
+  }, ignoreInit = TRUE)
   for (navigation_input in c("workspace_tabs", names(navigation_nested_fields))) local({
     key <- navigation_input
     observeEvent(input[[key]], {
-      navigation_location(record_navigation_selection(
+      location <- record_navigation_selection(
         navigation_location(), key, input[[key]]
-      ))
+      )
+      navigation_location(location)
+      if (identical(state$values$view, "workspace") &&
+          !isTRUE(navigation_history_restore()))
+        sync_navigation_url(session, location, project_id = current_project_id())
     }, ignoreInit = TRUE)
   })
 
@@ -113,14 +172,42 @@ server <- function(input, output, session) {
     if (!checked$valid) { showNotification(checked$message, type="error", duration=NULL); return(FALSE) }
     state$load(checked$path, repo_root); state$enter(); status_tick(status_tick()+1L);last_project_path(checked$path);jobs$recover_project(checked$path)
     workspace_tab <- isolate(state$values$workspace_tab)
-    location <- navigation_state_defaults(workspace_tab)
+    hash_target <- parse_navigation_target(isolate(input$ytab_nav_hash))
+    if (!is.list(hash_target))
+      hash_target <- navigation_target_from_hash(isolate(session$clientData$url_hash %||% ""))
+    location <- if (is.list(hash_target) && nzchar(as.character(hash_target$top %||% "")))
+      navigation_state_from_url(hash_target)
+    else
+      navigation_state_defaults(workspace_tab)
     navigation_location(location)
-    session$onFlushed(function() restore_navigation_state(session, location), once=TRUE)
+    session$onFlushed(function() {
+      restore_navigation_state(session, location)
+      sync_navigation_url(session, location, replace = TRUE,
+                          project_id = current_project_id())
+    }, once=TRUE)
     TRUE
   }
+  observe({
+    if (isTRUE(initial_project_opened())) return(NULL)
+    hash_target <- navigation_target_from_hash(isolate(session$clientData$url_hash %||% ""))
+    hash_project <- if (is.list(hash_target)) as.character(hash_target$project_id %||% "") else ""
+    if (nzchar(hash_project)) {
+      project_path <- project_config_for_id(hash_project)
+      if (nzchar(project_path)) {
+        initial_project_opened(TRUE)
+        open_path(project_path)
+        return(NULL)
+      }
+    }
+    if (!nzchar(initial_raw)) return(NULL)
+    checked <- validate_project_config_path(initial_raw, repo_root)
+    if (!checked$valid) return(NULL)
+    initial_project_opened(TRUE)
+    open_path(checked$path)
+  })
   observeEvent(input$open_project, { info <- selected_info(); if (!is.null(info)) open_path(info$project_config) })
   observeEvent(input$open_demo, { demo <- demo_project(); if (!is.null(demo)) open_path(demo$project_config[[1]]) })
-  switch_to_landing<-function(){last<-last_project_path();state$clear();jobs$clear_display_state();navigation_location(navigation_state_defaults("overview"));projects(discover_ytab_projects(repo_root,include_tests=FALSE));if(nzchar(last))last_project_path(last);session$onFlushed(function()updateSelectizeInput(session,"project_selector",selected=character()),once=TRUE)}
+  switch_to_landing<-function(){last<-last_project_path();state$clear();jobs$clear_display_state();location<-navigation_state_defaults("overview");navigation_location(location);sync_navigation_url(session,location,replace=TRUE);projects(discover_ytab_projects(repo_root,include_tests=FALSE));if(nzchar(last))last_project_path(last);session$onFlushed(function()updateSelectizeInput(session,"project_selector",selected=character()),once=TRUE)}
   observeEvent(input$switch_project,{
     if(jobs$job_is_running()){
       showModal(modalDialog(title="Pipeline job running","A pipeline job is running. Switching projects will not stop the job. You may continue monitoring it from its project later.",footer=tagList(modalButton("Stay here"),actionButton("confirm_switch_project","Switch project",class="btn-danger"))))
@@ -1090,7 +1177,10 @@ server <- function(input, output, session) {
     mean_log2fc_ok<-nrow(fitness_mean_log2fc_data(result))>0L
     choices<-c(if(result_ok)c("MA plot"="combined_ma","Condition versus control log-log scatter"="condition_control","Top selected hits log2FC heatmap"="selected_hit_heatmap"),if(length(library_size_choices))c("Feature-level library sizes"="library_sizes"),if(mean_log2fc_ok)c("Ranked mean log2FC"="ranked_mean_log2fc","Mean log2FC distribution"="mean_log2fc_distribution"),if(length(control_z_choices))c("Control-control z histogram"="control_z"),"Effect size versus z-score"="effect_size")
     if(nrow(plots))choices<-c(choices,setNames(paste0("generated:",seq_len(nrow(plots))),tools::file_path_sans_ext(gsub("_", " ", plots$filename))))
-    selectInput("fitness_visualization_choice","Plot",choices=choices,selected=if(result_ok)"combined_ma"else"effect_size")
+    default_choice <- if(result_ok)"combined_ma"else"effect_size"
+    selected <- input$fitness_visualization_choice %||% default_choice
+    if(!(selected %in% unname(choices))) selected <- default_choice
+    selectInput("fitness_visualization_choice","Plot",choices=as.list(choices),selected=selected)
   })
   output$fitness_plot_controls<-renderUI({
     choice<-input$fitness_visualization_choice%||%"effect_size"
@@ -1111,7 +1201,7 @@ server <- function(input, output, session) {
       uiOutput("fitness_ma_support_control"),
       conditionalPanel("input.fitness_ma_mode == 'individual'", selectInput("fitness_ma_pair", "Pair", choices=if(length(pairs))pairs else "No pair data available")),
       selectInput("fitness_ma_hit_direction", "Hit direction", choices=c("Depleted in treatment"="depleted","Enriched in treatment"="enriched","Both depleted and enriched"="both","None"="none"), selected=input$fitness_ma_hit_direction%||%"both"),
-      numericInput("fitness_ma_top_n", tagList("Number of hits",tags$span(title="Top hits are ranked by directional log2FC magnitude and CPM/read support, with local z-score used as statistical support."," ⓘ")), value=10, min=0, max=100, step=1),
+      numericInput("fitness_ma_top_n", tagList("Number of hits",tags$span(title="Top hits are ranked by directional log2FC magnitude and CPM/read support, with local z-score used as statistical support."," ⓘ")), value=input$fitness_ma_top_n%||%10, min=0, max=100, step=1),
       selectInput("fitness_ma_annotation_mode", "Annotation mode", choices=c("None"="none","Top highlighted hits"="top","Custom feature list"="custom","Top highlighted hits + custom feature list"="top_custom"), selected=input$fitness_ma_annotation_mode%||%"top"),
       conditionalPanel("input.fitness_ma_annotation_mode == 'custom' || input.fitness_ma_annotation_mode == 'top_custom'", textAreaInput("fitness_ma_custom_features", "Custom features", value="", placeholder="Feature or gene IDs, separated by commas or new lines", rows=3)),
       uiOutput("fitness_ma_selection_status")
@@ -1390,6 +1480,10 @@ server <- function(input, output, session) {
       write.csv(data, file, row.names = FALSE)
     }
   )
+
+  go_analysis_server(input, output, session, repo_root, active,
+                     active_project_path, jobs, python_bin,
+                     fitness_ma_selected_hits, current_fitness_result)
 
   launch_pipeline <- function(dry_override=NULL){if(jobs$job_is_running()){showNotification("A pipeline job is already running.",type="warning");return()};dry<-if(is.null(dry_override))FALSE else dry_override;args<-c(file.path(repo_root,"scripts/local/ytab_run_pipeline.py"),"--project-config",active_project_path(),"--profile",input$pipeline_profile,"--threads",as.character(input$pipeline_threads),"--target",input$pipeline_target,"--analysis-id",input$pipeline_analysis_id,"--print-plan",if(dry)"--dry-run","--keep-going");jobs$start_job(python_bin(),args,active_project_path(),input$pipeline_profile,wd=repo_root)}
   observeEvent(input$preview_pipeline,launch_pipeline(TRUE));observeEvent(input$run_pipeline,launch_pipeline(NULL));observeEvent(input$cancel_pipeline,jobs$cancel_job())
