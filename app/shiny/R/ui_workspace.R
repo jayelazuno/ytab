@@ -21,6 +21,7 @@ workspace_ui <- function(detected_cpu) {
       tabPanel("Essentiality",value="essentiality", essentiality_ui()),
       tabPanel("Fitness Screen",value="fitness",fitness_ui()),
       tabPanel("GO Analysis",value="go_analysis",go_analysis_ui()),
+      tabPanel("Screen Coverage",value="screen_coverage",screen_coverage_ui()),
       tabPanel("Gene & Domain Insertion Explorer",value="gene_domain_explorer",gene_domain_explorer_ui()),
       tabPanel("Comparative Species",value="comparative_species",comparative_ui()),
       tabPanel("Genome Browser",value="genome_browser",genome_browser_ui()),

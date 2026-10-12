@@ -72,7 +72,7 @@ ytab_plot_customization_controls <- function(
     ))
   }
   if (include_grid)
-    controls <- c(controls, list(selectInput(ns_id("grid"), "Grid", as.list(ytab_grid_choices()), selected = "show")))
+    controls <- c(controls, list(selectInput(ns_id("grid"), "Grid", as.list(ytab_grid_choices()), selected = "hide")))
   if (include_points) {
     controls <- c(controls, list(
       sliderInput(ns_id("point_size"), "Point size", min = 0.4, max = 4, value = 1.5, step = 0.1),
@@ -119,7 +119,7 @@ ytab_plot_customization_values <- function(input, id) {
     text_size = ytab_text_size_px(value("text_size", "medium")),
     label_mode = value("label_mode", "full"),
     label_angle = suppressWarnings(as.integer(value("label_angle", 30))),
-    grid = value("grid", "show"),
+    grid = value("grid", "hide"),
     point_size = suppressWarnings(as.numeric(value("point_size", 1.5))),
     point_opacity = suppressWarnings(as.numeric(value("point_opacity", 0.55))),
     bar_orientation = value("bar_orientation", "vertical"),
@@ -139,7 +139,7 @@ ytab_with_plot_display_options <- function(input, id, expr) {
     ytab.plot.text_size = get("text_size", "medium"),
     ytab.plot.label_angle = get("label_angle", "30"),
     ytab.plot.label_mode = get("label_mode", "full"),
-    ytab.plot.grid = get("grid", "show"),
+    ytab.plot.grid = get("grid", "hide"),
     ytab.plot.bar_orientation = get("bar_orientation", "vertical"),
     ytab.plot.show_value_labels = isTRUE(get("show_value_labels", TRUE))
   )

@@ -7,6 +7,7 @@ navigation_state_defaults <- function(top = "overview") {
     active_essentiality_subtab = "normalize",
     active_fitness_subtab = "fitness_design",
     active_go_analysis_subtab = "gene_set",
+    active_screen_coverage_subtab = "planner",
     active_comparative_subtab = "single_species",
     active_results_view = "overview"
   )
@@ -14,7 +15,7 @@ navigation_state_defaults <- function(top = "overview") {
 
 navigation_top_values <- c(
   "overview", "project_data", "pipeline", "preprocessing", "quality_control",
-  "essentiality", "fitness", "go_analysis", "gene_domain_explorer", "comparative_species",
+  "essentiality", "fitness", "go_analysis", "screen_coverage", "gene_domain_explorer", "comparative_species",
   "genome_browser", "results_exports", "logs_provenance", "help"
 )
 
@@ -25,6 +26,7 @@ navigation_top_nested_ids <- c(
   essentiality = "essentiality_tabs",
   fitness = "fitness_tabs",
   go_analysis = "go_analysis_tabs",
+  screen_coverage = "screen_coverage_tabs",
   comparative_species = "comparative_tabs"
 )
 
@@ -42,6 +44,7 @@ navigation_nested_fields <- c(
   essentiality_tabs = "active_essentiality_subtab",
   fitness_tabs = "active_fitness_subtab",
   go_analysis_tabs = "active_go_analysis_subtab",
+  screen_coverage_tabs = "active_screen_coverage_subtab",
   comparative_tabs = "active_comparative_subtab",
   essentiality_results_view = "active_results_view"
 )
@@ -125,6 +128,7 @@ navigation_subtab <- function(value, top = NULL) {
     essentiality = "active_essentiality_subtab",
     fitness = "active_fitness_subtab",
     go_analysis = "active_go_analysis_subtab",
+    screen_coverage = "active_screen_coverage_subtab",
     comparative_species = "active_comparative_subtab",
     ""
   )
@@ -167,6 +171,7 @@ navigate_workspace <- function(session, value, top_tab, nested_id = NULL,
     essentiality = "essentiality_tabs",
     fitness = "fitness_tabs",
     go_analysis = "go_analysis_tabs",
+    screen_coverage = "screen_coverage_tabs",
     comparative_species = "comparative_tabs",
     NULL
   )

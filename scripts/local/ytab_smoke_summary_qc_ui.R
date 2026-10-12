@@ -108,6 +108,13 @@ if (has_treated) render_plot(horizontal_small, plot_qc_summary_combined_features
 if (has_control && has_treated) {
   render_plot(vertical_45, plot_qc_summary_combined_features_hit(project, "both"))
 }
+render_plot(vertical_45, plot_qc_summary_insertion_role_stats(project))
+pool_stats <- summary_qc_pool_insertion_stats_raw(project)
+stopifnot(nrow(pool_stats) >= 1L)
+render_plot(vertical_45, plot_qc_summary_insertion_pool_stats(project, c("control", "treated"), pool_stats$sample, "unique"))
+render_plot(horizontal_small, plot_qc_summary_insertion_pool_stats(project, "treated", pool_stats$sample[pool_stats$role == "treated"], "total"))
+render_plot(horizontal_small, plot_qc_summary_gene_hit_bins(project, c("control", "treated"), pool_stats$sample, "per_pool"))
+render_plot(vertical_45, plot_qc_summary_gene_hit_bins(project, c("control", "treated"), pool_stats$sample, "combined"))
 
 old <- options(ytab.plot.text_size = "small")
 small_sizes <- qc_plot_text_sizes()
@@ -162,7 +169,18 @@ stopifnot(
   grepl("qc_plot_text_sizes", paste(readLines(file.path(repo_root, "app/shiny/R/qc_plot_utils.R"), warn = FALSE),
                                     collapse = "\n"), fixed = TRUE),
   grepl("summary_qc_combined_group_selector", ui_text, fixed = TRUE),
+  grepl("Parent/treated insertion summary", ui_text, fixed = TRUE),
+  grepl("Insertion counts per pool", ui_text, fixed = TRUE),
+  grepl("Genes by insertion count", ui_text, fixed = TRUE),
+  grepl("summary_qc_insertion_role_stats_table", ui_text, fixed = TRUE),
+  grepl("Download parent/treated insertion summary", ui_text, fixed = TRUE),
+  grepl("summary_qc_insertion_pool_selector", ui_text, fixed = TRUE),
+  grepl("summary_qc_gene_hit_bin_selector", ui_text, fixed = TRUE),
   grepl("summary_qc_combined_group_selector", app_text, fixed = TRUE),
+  grepl("summary_qc_insertion_role_stats_plot", app_text, fixed = TRUE),
+  grepl("summary_qc_insertion_pool_stats_plot", app_text, fixed = TRUE),
+  grepl("summary_qc_gene_hit_bins_plot", app_text, fixed = TRUE),
+  grepl("download_summary_qc_insertion_role_stats", app_text, fixed = TRUE),
   grepl("input\\$summary_qc_combined_group", app_text),
   grepl("Combined group", app_text, fixed = TRUE)
 )

@@ -226,7 +226,7 @@ qc_library_plot_cache_key <- function(project, visualization, sample_group = "al
     as.character(getOption("ytab.plot.style", "clean")),
     as.character(getOption("ytab.plot.text_size", "medium")),
     as.character(getOption("ytab.plot.label_mode", "full")),
-    as.character(getOption("ytab.plot.grid", "show")),
+    as.character(getOption("ytab.plot.grid", "hide")),
     as.character(getOption("ytab.plot.bar_orientation", "vertical")),
     as.character(getOption("ytab.plot.show_value_labels", TRUE)),
     sep = "|"

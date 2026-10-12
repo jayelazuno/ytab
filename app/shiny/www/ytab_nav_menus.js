@@ -57,6 +57,13 @@
         ["Semantic reduction", "semantic_reduction"]
       ]
     },
+    screen_coverage: {
+      nested_id: "screen_coverage_tabs",
+      items: [["Screen Planner", "planner"], ["Pool Contribution / QC", "pool_qc"],
+        ["Library QC", "representation"], ["Parent Sequencing", "parent_sequencing"],
+        ["Statistical Details", "statistics"],
+        ["Methods & references", "methods"]]
+    },
     comparative_species: {
       nested_id: "comparative_tabs",
       items: [
@@ -82,6 +89,16 @@
         if (toggle) toggle.setAttribute("aria-expanded", "false");
       }
     });
+  }
+
+  function clearHoverSuppression(host) {
+    if (host) delete host.dataset.ytabSuppressHover;
+  }
+
+  function suppressHoverUntilLeave(host) {
+    if (!host) return;
+    host.dataset.ytabSuppressHover = "true";
+    setOpen(host, false);
   }
 
   function setOpen(host, open) {
@@ -159,6 +176,9 @@
     const target = parseHash();
     if (!target) return;
     sendShinyValue("ytab_nav_hash", target);
+    window.setTimeout(function () {
+      clientNavigate(target.top, target.nested_value);
+    }, 180);
   }
 
   function clickTab(value) {
@@ -208,15 +228,35 @@
           event.stopPropagation();
           clientNavigate(top, entry[1]);
           sendMenuTarget(top, config.nested_id, entry[1]);
-          setOpen(host, false);
+          suppressHoverUntilLeave(host);
+          item.blur();
+          if (document.activeElement && typeof document.activeElement.blur === "function") {
+            document.activeElement.blur();
+          }
         });
         li.appendChild(item);
         menu.appendChild(li);
       });
 
+      host.addEventListener("mouseenter", function () {
+        if (host.dataset.ytabSuppressHover === "true") return;
+        setOpen(host, true);
+      });
+
+      host.addEventListener("mouseleave", function () {
+        clearHoverSuppression(host);
+        setOpen(host, false);
+      });
+
+      link.addEventListener("click", function () {
+        suppressHoverUntilLeave(host);
+        if (typeof link.blur === "function") link.blur();
+      });
+
       caret.addEventListener("click", function (event) {
         event.preventDefault();
         event.stopPropagation();
+        clearHoverSuppression(host);
         setOpen(host, !host.classList.contains("open"));
       });
 

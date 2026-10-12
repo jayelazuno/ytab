@@ -202,7 +202,7 @@ qc_plot_wrapped_labels <- function(labels, width = NULL) {
 }
 
 qc_plot_grid_enabled <- function() {
-  identical(as.character(getOption("ytab.plot.grid", "show")), "show")
+  identical(as.character(getOption("ytab.plot.grid", "hide")), "show")
 }
 
 qc_plot_bar_horizontal <- function(labels = character()) {

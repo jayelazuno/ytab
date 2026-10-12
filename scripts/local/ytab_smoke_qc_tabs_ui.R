@@ -60,6 +60,12 @@ summary_vertical <- list(
 
 render_plot(summary_horizontal, "summary_qc", plot_qc_summary_metric(project, "complexity"))
 render_plot(summary_vertical, "summary_qc", plot_qc_summary_metric(project, "features"))
+render_plot(summary_vertical, "summary_qc", plot_qc_summary_insertion_role_stats(project))
+pool_stats <- summary_qc_pool_insertion_stats_raw(project)
+if (nrow(pool_stats)) {
+  render_plot(summary_horizontal, "summary_qc", plot_qc_summary_insertion_pool_stats(project, c("control", "treated"), pool_stats$sample, "unique"))
+  render_plot(summary_horizontal, "summary_qc", plot_qc_summary_gene_hit_bins(project, c("control", "treated"), pool_stats$sample, "combined"))
+}
 render_plot(summary_horizontal, "summary_qc", plot_qc_summary_metric(project, "feature_intergenic"))
 if (nrow(qc_summary_pairwise_plot_data(project))) {
   render_plot(summary_horizontal, "summary_qc", plot_qc_summary_pairwise_correlations(project))
@@ -115,7 +121,13 @@ stopifnot(
   grepl("qc_plot_metric_key_row", library_text, fixed = TRUE),
   grepl("qc_plot_begin_key_layout", library_text, fixed = TRUE),
   grepl("summary_qc_plot_controls", ui_qc_text, fixed = TRUE),
+  grepl("Parent/treated insertion summary", ui_qc_text, fixed = TRUE),
+  grepl("Insertion counts per pool", ui_qc_text, fixed = TRUE),
+  grepl("Genes by insertion count", ui_qc_text, fixed = TRUE),
   grepl("ytab_plot_customization_controls\\(\"summary_qc\"", app_text),
+  grepl("summary_qc_insertion_role_stats_plot", app_text, fixed = TRUE),
+  grepl("summary_qc_insertion_pool_stats_plot", app_text, fixed = TRUE),
+  grepl("summary_qc_gene_hit_bins_plot", app_text, fixed = TRUE),
   !grepl("default_bar_orientation = \"horizontal\"", ui_qc_text, fixed = TRUE),
   grepl("default_bar_orientation = \"vertical\"", plot_controls_text, fixed = TRUE),
   grepl("default_label_angle = \"30\"", plot_controls_text, fixed = TRUE),

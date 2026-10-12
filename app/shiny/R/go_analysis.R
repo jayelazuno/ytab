@@ -292,7 +292,7 @@ go_analysis_plot_top_terms <- function(data, ontology = "BP", top_n = 15L,
     text_size <- suppressWarnings(as.numeric(text_size %||% 13L))
     if (!is.finite(text_size)) text_size <- 13
     style <- as.character(plot_options$style %||% "clean")
-    show_grid <- !identical(plot_options$grid %||% "show", "hide")
+    show_grid <- identical(plot_options$grid %||% "hide", "show")
     label_mode <- as.character(plot_options$label_mode %||% "full")
     wrap_width <- if (identical(label_mode, "compact")) 42L else 62L
     terms <- as.character(data$Term)

@@ -37,7 +37,492 @@ summary_qc_data <- function(project) {
 
 summary_qc_cards <- function(project) {
   raw<-read_qc_csvs(file.path(project$project_root,"summary"),"summary_stats.*\\.csv$"); num<-function(name){if(!name%in%names(raw))numeric()else suppressWarnings(as.numeric(sub("%$","",raw[[name]])))}; safe<-function(x,fun,digits=0){x<-x[is.finite(x)];if(!length(x))"Unavailable"else format(round(fun(x),digits),big.mark=",",trim=TRUE)}
-  tags$div(class="ytab-stat-grid",tags$div(tags$b(nrow(raw)),"Samples"),tags$div(tags$b(safe(num("total_hits"),median)),"Median total hits"),tags$div(tags$b(paste0(safe(num("percent_features_hit"),median,1),"%")),"Median features hit"),tags$div(tags$b(paste0(safe(num("percent_features_hit"),min,1),"%")),"Minimum features hit"),tags$div(tags$b(paste0(safe(num("percent_features_hit"),max,1),"%")),"Maximum features hit"))
+  tags$div(
+    class = "ytab-qc-summary-list",
+    tags$p(class = "ytab-qc-summary-caption", "Per-sample SummaryTable overview"),
+    tags$dl(
+      tags$div(tags$dt("Included samples"), tags$dd(format(nrow(raw), big.mark = ","))),
+      tags$div(tags$dt("Median unique insertion sites / sample"), tags$dd(safe(num("total_hits"), median))),
+      tags$div(tags$dt("Median genes hit / sample"), tags$dd(paste0(safe(num("percent_features_hit"), median, 1), "%"))),
+      tags$div(tags$dt("Lowest genes-hit sample"), tags$dd(paste0(safe(num("percent_features_hit"), min, 1), "%"))),
+      tags$div(tags$dt("Highest genes-hit sample"), tags$dd(paste0(safe(num("percent_features_hit"), max, 1), "%")))
+    )
+  )
+}
+
+summary_qc_role_value <- function(values) {
+  values <- tolower(paste(stats::na.omit(as.character(values)), collapse = " "))
+  if (!nzchar(values)) return(NA_character_)
+  if (grepl("\\btreated\\b|zn-treated|h2o2-treated|1_5mm|h2o2", values)) return("treated")
+  if (grepl("\\bcontrol\\b|\\bmock\\b|\\bparent\\b|classifier_control", values)) return("control")
+  NA_character_
+}
+
+summary_qc_project_sample_roles <- function(project) {
+  metadata <- if (is.data.frame(project$samples) && nrow(project$samples)) project$samples else data.frame()
+  summary_root <- file.path(project$project_root, "summary")
+  summary_samples <- if (dir.exists(summary_root)) {
+    unique(basename(dirname(list.files(summary_root, pattern = "\\.all_hits\\.csv$|\\.feature_table\\.RDF_1\\.csv$", recursive = TRUE, full.names = TRUE))))
+  } else character()
+  if (is.data.frame(metadata) && "sample" %in% names(metadata)) {
+    samples <- unique(as.character(metadata$sample))
+  } else {
+    samples <- summary_samples
+  }
+  if (length(summary_samples)) samples <- intersect(samples, summary_samples)
+  samples <- samples[nzchar(samples) & !is.na(samples)]
+  if (!length(samples)) return(data.frame(sample = character(), role = character(), stringsAsFactors = FALSE))
+  role_cols <- c("library_role", "control_or_treated", "fitness_role", "classifier_role",
+                 "condition", "condition_label", "treatment", "treatment_label",
+                 "guessed_condition")
+  roles <- vapply(samples, function(sample) {
+    row <- if (is.data.frame(metadata) && "sample" %in% names(metadata)) metadata[as.character(metadata$sample) == sample, , drop = FALSE] else data.frame()
+    if (nrow(row)) {
+      for (col in intersect(role_cols, names(row))) {
+        role <- summary_qc_role_value(row[[col]])
+        if (!is.na(role)) return(role)
+      }
+    }
+    summary_qc_role_value(sample)
+  }, character(1))
+  included <- rep(TRUE, length(samples))
+  if (is.data.frame(metadata) && "sample" %in% names(metadata)) {
+    idx <- match(samples, as.character(metadata$sample))
+    include_cols <- intersect(c("include", "included"), names(metadata))
+    include_col <- if (length(include_cols)) include_cols[[1]] else ""
+    if (nzchar(include_col)) {
+      include_values <- tolower(as.character(metadata[[include_col]][idx]))
+      included <- is.na(include_values) | include_values %in% c("true", "1", "yes", "")
+    }
+  }
+  data.frame(sample = samples, role = roles, included = included, stringsAsFactors = FALSE)
+}
+
+summary_qc_read_feature_hits <- function(file, sample, role) {
+  data <- tryCatch(read.csv(file, skip = 1, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) NULL)
+  if (is.null(data) || !"standard_name" %in% names(data) || !"hits" %in% names(data)) return(NULL)
+  feature <- as.character(data$standard_name)
+  keep <- !is.na(feature) & nzchar(feature)
+  if (!any(keep)) return(NULL)
+  data.frame(
+    sample = sample,
+    role = role,
+    feature_id = feature[keep],
+    hits = suppressWarnings(as.numeric(data$hits[keep])),
+    stringsAsFactors = FALSE
+  )
+}
+
+summary_qc_read_all_hit_sites <- function(file, sample, role) {
+  data <- tryCatch(read.csv(file, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) NULL)
+  if (is.null(data) || ncol(data) < 2L || !nrow(data)) return(NULL)
+  chrom_cols <- intersect(c("Chromosome", "chromosome", "chrom", "Chrom", "seqnames"), names(data))
+  pos_cols <- intersect(c("Position", "position", "pos", "Hit position", "hit_position", "start"), names(data))
+  chrom_col <- if (length(chrom_cols)) chrom_cols[[1]] else names(data)[[1]]
+  pos_col <- if (length(pos_cols)) pos_cols[[1]] else names(data)[[2]]
+  chrom <- as.character(data[[chrom_col]])
+  pos <- as.character(data[[pos_col]])
+  keep <- !is.na(chrom) & nzchar(chrom) & !is.na(pos) & nzchar(pos)
+  if (!any(keep)) return(NULL)
+  data.frame(
+    sample = sample,
+    role = role,
+    insertion_site = paste(chrom[keep], pos[keep], sep = ":"),
+    stringsAsFactors = FALSE
+  )
+}
+
+summary_qc_read_hit_count_total <- function(project, sample) {
+  stats_file <- file.path(project$project_root, "summary", sample, "stats.csv")
+  if (file.exists(stats_file)) {
+    stats <- tryCatch(read.csv(stats_file, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) NULL)
+    if (is.data.frame(stats) && nrow(stats) && "Total Hits" %in% names(stats)) {
+      total_hits <- suppressWarnings(as.numeric(stats[["Total Hits"]][[1]]))
+      if (is.finite(total_hits)) return(total_hits)
+    }
+  }
+  candidates <- c(
+    file.path(project$project_root, "create_hit_file", sample, paste0(sample, "_hits.txt")),
+    file.path(project$project_root, "create_hit_file", sample, paste0(sample, ".hits.txt"))
+  )
+  metadata <- if (is.data.frame(project$samples) && "sample" %in% names(project$samples)) project$samples else data.frame()
+  if (nrow(metadata)) {
+    row <- metadata[as.character(metadata$sample) == sample, , drop = FALSE]
+    if (nrow(row) && "hit_file" %in% names(row)) {
+      hit_file <- as.character(row$hit_file[[1]] %||% "")
+      if (nzchar(hit_file)) {
+        candidates <- c(candidates, hit_file, file.path(project$repo_root %||% "", hit_file))
+      }
+    }
+  }
+  candidates <- unique(candidates[nzchar(candidates)])
+  existing <- candidates[file.exists(candidates)]
+  hit_file <- if (length(existing)) existing[[1]] else ""
+  if (!nzchar(hit_file)) return(NA_real_)
+  data <- tryCatch(read.delim(hit_file, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) NULL)
+  if (is.null(data) || !nrow(data)) return(NA_real_)
+  nrow(data)
+}
+
+summary_qc_insertion_role_stats_raw <- function(project) {
+  roles <- summary_qc_project_sample_roles(project)
+  roles <- roles[roles$included & roles$role %in% c("control", "treated"), , drop = FALSE]
+  if (!nrow(roles)) return(data.frame())
+  summary_root <- file.path(project$project_root, "summary")
+  feature_rows <- lapply(seq_len(nrow(roles)), function(i) {
+    sample <- roles$sample[[i]]
+    file <- file.path(summary_root, sample, paste0(sample, ".feature_table.RDF_1.csv"))
+    if (!file.exists(file)) return(NULL)
+    summary_qc_read_feature_hits(file, sample, roles$role[[i]])
+  })
+  site_rows <- lapply(seq_len(nrow(roles)), function(i) {
+    sample <- roles$sample[[i]]
+    file <- file.path(summary_root, sample, paste0(sample, ".all_hits.csv"))
+    if (!file.exists(file)) return(NULL)
+    summary_qc_read_all_hit_sites(file, sample, roles$role[[i]])
+  })
+  feature_data <- do.call(rbind, Filter(Negate(is.null), feature_rows))
+  site_data <- do.call(rbind, Filter(Negate(is.null), site_rows))
+  role_labels <- c(control = "Parents / controls", treated = "Treated")
+  out <- lapply(c("control", "treated"), function(role) {
+    role_samples <- roles$sample[roles$role == role]
+    features <- if (is.data.frame(feature_data) && nrow(feature_data)) feature_data[feature_data$role == role, , drop = FALSE] else data.frame()
+    sites <- if (is.data.frame(site_data) && nrow(site_data)) site_data[site_data$role == role, , drop = FALSE] else data.frame()
+    total_genes <- if (nrow(features)) length(unique(features$feature_id)) else NA_integer_
+    feature_totals <- if (nrow(features)) aggregate(hits ~ feature_id, features, sum, na.rm = TRUE) else data.frame()
+    hit_genes <- if (nrow(feature_totals)) sum(feature_totals$hits > 0, na.rm = TRUE) else NA_integer_
+    feature_hit_total <- if (nrow(feature_totals)) sum(feature_totals$hits, na.rm = TRUE) else NA_real_
+    unique_insertions <- if (nrow(sites)) length(unique(sites$insertion_site)) else NA_integer_
+    data.frame(
+      role = role,
+      `Sample group` = role_labels[[role]],
+      Samples = length(role_samples),
+      `Total unique insertions` = unique_insertions,
+      `Total genes evaluated` = total_genes,
+      `Genes with insertions` = hit_genes,
+      `Average insertions / gene` = if (is.finite(total_genes) && total_genes > 0) feature_hit_total / total_genes else NA_real_,
+      `Average insertions / hit gene` = if (is.finite(hit_genes) && hit_genes > 0) feature_hit_total / hit_genes else NA_real_,
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+  })
+  result <- do.call(rbind, out)
+  result[result$Samples > 0, , drop = FALSE]
+}
+
+summary_qc_insertion_role_stats <- function(project) {
+  data <- summary_qc_insertion_role_stats_raw(project)
+  if (!nrow(data)) return(data)
+  data <- data[, setdiff(names(data), "role"), drop = FALSE]
+  data <- format_qc_metrics(data, count_columns = c("Samples", "Total unique insertions", "Total genes evaluated", "Genes with insertions"),
+                            mean_columns = c("Average insertions / gene", "Average insertions / hit gene"))
+  data
+}
+
+summary_qc_sample_label <- function(sample, role = "", pool = "") {
+  role_label <- if (identical(role, "control")) "Parent/control" else if (identical(role, "treated")) "Treated" else "Sample"
+  pool <- as.character(pool %||% "")
+  if (nzchar(pool) && !identical(pool, "NA")) return(paste(role_label, paste0("pool ", pool)))
+  paste(role_label, sample)
+}
+
+summary_qc_pool_value <- function(metadata, sample, cols) {
+  if (!is.data.frame(metadata) || !"sample" %in% names(metadata)) return("")
+  row <- metadata[as.character(metadata$sample) == sample, , drop = FALSE]
+  if (!nrow(row)) return("")
+  for (col in intersect(cols, names(row))) {
+    value <- as.character(row[[col]][[1]] %||% "")
+    if (nzchar(value) && !is.na(value)) return(sub("^pool", "", value, ignore.case = TRUE))
+  }
+  ""
+}
+
+summary_qc_pool_insertion_stats_raw <- function(project) {
+  roles <- summary_qc_project_sample_roles(project)
+  roles <- roles[roles$included & roles$role %in% c("control", "treated"), , drop = FALSE]
+  if (!nrow(roles)) return(data.frame())
+  metadata <- if (is.data.frame(project$samples) && nrow(project$samples)) project$samples else data.frame()
+  summary_root <- file.path(project$project_root, "summary")
+  rows <- lapply(seq_len(nrow(roles)), function(i) {
+    sample <- roles$sample[[i]]
+    role <- roles$role[[i]]
+    file <- file.path(summary_root, sample, paste0(sample, ".all_hits.csv"))
+    if (!file.exists(file)) return(NULL)
+    sites <- summary_qc_read_all_hit_sites(file, sample, role)
+    if (is.null(sites) || !nrow(sites)) return(NULL)
+    pool <- summary_qc_pool_value(metadata, sample, c("pool", "pool_id", "guessed_pool", "replicate_id"))
+    role_label <- if (identical(role, "control")) "Parents / controls" else "Treated"
+    data.frame(
+      role = role,
+      `Sample group` = role_label,
+      sample = sample,
+      Pool = pool,
+      `Display sample` = summary_qc_sample_label(sample, role, pool),
+      `Total hit count` = summary_qc_read_hit_count_total(project, sample),
+      `Unique insertion sites` = length(unique(sites$insertion_site)),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+  })
+  data <- do.call(rbind, Filter(Negate(is.null), rows))
+  if (is.null(data) || !nrow(data)) return(data.frame())
+  role_order <- c(control = 1L, treated = 2L)
+  pool_number <- suppressWarnings(as.numeric(data$Pool))
+  data[order(role_order[data$role], pool_number, data$sample, na.last = TRUE), , drop = FALSE]
+}
+
+summary_qc_pool_insertion_stats <- function(project) {
+  data <- summary_qc_pool_insertion_stats_raw(project)
+  if (!nrow(data)) return(data)
+  data <- data[, setdiff(names(data), "role"), drop = FALSE]
+  format_qc_metrics(data, count_columns = c("Total hit count", "Unique insertion sites"))
+}
+
+plot_qc_summary_insertion_pool_stats <- function(project, roles = c("control", "treated"),
+                                                 samples = NULL, metric = "unique") {
+  data <- summary_qc_pool_insertion_stats_raw(project)
+  if (!nrow(data)) return(qc_plot_empty("Per-pool insertion data are not available."))
+  roles <- roles %||% c("control", "treated")
+  roles <- intersect(as.character(roles), c("control", "treated"))
+  if (!length(roles)) return(qc_plot_empty("Select at least one sample group."))
+  data <- data[data$role %in% roles, , drop = FALSE]
+  if (!is.null(samples) && length(samples)) {
+    samples <- as.character(samples)
+    data <- data[data$sample %in% samples, , drop = FALSE]
+  }
+  if (!nrow(data)) return(qc_plot_empty("No selected pools are available."))
+  metric <- if (identical(metric, "total")) "total" else "unique"
+  value_col <- switch(metric,
+                      total = "Total hit count",
+                      "Unique insertion sites")
+  values <- as.numeric(data[[value_col]])
+  labels <- as.character(data$`Display sample`)
+  fills <- c(control = "#d8e4ef", treated = "#2f6f9f")[as.character(data$role)]
+  fills[is.na(fills)] <- qc_plot_fill
+  horizontal <- qc_plot_bar_horizontal(labels) || length(labels) > 4L
+  old <- par(no.readonly = TRUE)
+  on.exit({ qc_plot_reset_layout(); par(old) }, add = TRUE)
+  qc_plot_reset_layout()
+  qc_plot_par(mar = qc_plot_bar_margins(labels, horizontal, top = 4.0, right = if (horizontal) 5.6 else 2.8))
+  limit <- max(values, na.rm = TRUE)
+  if (!is.finite(limit) || limit <= 0) limit <- 1
+  at <- barplot(values, names.arg = rep("", length(values)), axes = FALSE, horiz = horizontal,
+                xlim = if (horizontal) c(0, limit * 1.14) else NULL,
+                ylim = if (horizontal) NULL else c(0, limit * 1.16),
+                col = fills, border = qc_plot_border, lwd = max(1.7, qc_plot_lwd),
+                xlab = if (horizontal) value_col else "",
+                ylab = if (horizontal) "" else value_col,
+                main = paste(value_col, "per pool"))
+  qc_plot_add_grid(horizontal)
+  axis_values <- pretty(c(0, limit))
+  axis_labels <- format(axis_values, big.mark = ",", scientific = FALSE, trim = TRUE)
+  if (horizontal) axis(1, at = axis_values, labels = axis_labels) else axis(2, at = axis_values, labels = axis_labels)
+  if (horizontal) qc_plot_draw_horizontal_labels(at, labels)
+  else qc_plot_draw_vertical_labels(at, labels, angle = qc_plot_label_angle(30L))
+  if (qc_plot_show_value_labels()) {
+    value_labels <- format(round(values), big.mark = ",", trim = TRUE)
+    text(if (horizontal) values else at,
+         if (horizontal) at else values,
+         labels = value_labels, pos = if (horizontal) 4 else 3, xpd = NA,
+         font = 2, cex = qc_plot_value_cex(0.88))
+  }
+}
+
+summary_qc_gene_hit_bins_raw <- function(project, roles = c("control", "treated"),
+                                         samples = NULL, mode = "per_pool") {
+  role_data <- summary_qc_project_sample_roles(project)
+  role_data <- role_data[role_data$included & role_data$role %in% c("control", "treated"), , drop = FALSE]
+  roles <- intersect(as.character(roles %||% c("control", "treated")), c("control", "treated"))
+  if (length(roles)) role_data <- role_data[role_data$role %in% roles, , drop = FALSE]
+  if (!is.null(samples) && length(samples)) {
+    role_data <- role_data[role_data$sample %in% as.character(samples), , drop = FALSE]
+  }
+  if (!nrow(role_data)) return(data.frame())
+  metadata <- if (is.data.frame(project$samples) && nrow(project$samples)) project$samples else data.frame()
+  summary_root <- file.path(project$project_root, "summary")
+  feature_rows <- lapply(seq_len(nrow(role_data)), function(i) {
+    sample <- role_data$sample[[i]]
+    role <- role_data$role[[i]]
+    file <- file.path(summary_root, sample, paste0(sample, ".feature_table.RDF_1.csv"))
+    if (!file.exists(file)) return(NULL)
+    data <- summary_qc_read_feature_hits(file, sample, role)
+    if (is.null(data) || !nrow(data)) return(NULL)
+    pool <- summary_qc_pool_value(metadata, sample, c("pool", "pool_id", "guessed_pool", "replicate_id"))
+    data$Pool <- pool
+    data$`Sample group` <- if (identical(role, "control")) "Parents / controls" else "Treated"
+    data$`Display sample` <- summary_qc_sample_label(sample, role, pool)
+    data
+  })
+  features <- do.call(rbind, Filter(Negate(is.null), feature_rows))
+  if (is.null(features) || !nrow(features)) return(data.frame())
+  features$hits[is.na(features$hits)] <- 0
+  mode <- if (identical(mode, "combined")) "combined" else "per_pool"
+  bin_levels <- c("0", "1", "2", "3", "4", "\u22655")
+  make_bins <- function(data, group_label, role = "", sample = "", sample_group = "") {
+    bins <- ifelse(data$hits >= 5, "\u22655", as.character(pmax(0, pmin(4, floor(data$hits)))))
+    counts <- as.data.frame(table(factor(bins, levels = bin_levels)), stringsAsFactors = FALSE)
+    names(counts) <- c("Hit bin", "Genes")
+    counts$Genes <- as.integer(counts$Genes)
+    counts$group_label <- group_label
+    counts$role <- role
+    counts$sample <- sample
+    counts$`Sample group` <- sample_group
+    counts
+  }
+  if (identical(mode, "combined")) {
+    rows <- lapply(split(features, features$role), function(group_data) {
+      role <- unique(group_data$role)[[1]]
+      label <- if (identical(role, "control")) "Parents / controls combined" else "Treated combined"
+      summed <- aggregate(hits ~ feature_id, group_data, sum, na.rm = TRUE)
+      make_bins(summed, label, role = role, sample = "", sample_group = sub(" combined$", "", label))
+    })
+  } else {
+    rows <- lapply(split(features, features$sample), function(sample_data) {
+      make_bins(sample_data, unique(sample_data$`Display sample`)[[1]],
+                role = unique(sample_data$role)[[1]],
+                sample = unique(sample_data$sample)[[1]],
+                sample_group = unique(sample_data$`Sample group`)[[1]])
+    })
+  }
+  out <- do.call(rbind, rows)
+  if (is.null(out) || !nrow(out)) return(data.frame())
+  out$`Hit bin` <- factor(out$`Hit bin`, levels = bin_levels)
+  role_order <- c(control = 1L, treated = 2L)
+  out[order(role_order[out$role], out$group_label, out$`Hit bin`, na.last = TRUE), , drop = FALSE]
+}
+
+plot_qc_summary_gene_hit_bins <- function(project, roles = c("control", "treated"),
+                                          samples = NULL, mode = "per_pool") {
+  data <- summary_qc_gene_hit_bins_raw(project, roles = roles, samples = samples, mode = mode)
+  if (!nrow(data)) return(qc_plot_empty("Gene insertion-count distribution is not available."))
+  groups <- unique(as.character(data$group_label))
+  bins <- levels(data$`Hit bin`)
+  matrix_data <- matrix(0, nrow = length(bins), ncol = length(groups),
+                        dimnames = list(bins, groups))
+  for (i in seq_len(nrow(data))) {
+    matrix_data[as.character(data$`Hit bin`[[i]]), as.character(data$group_label[[i]])] <- data$Genes[[i]]
+  }
+  display_groups <- qc_plot_display_labels(groups)
+  horizontal <- qc_plot_bar_horizontal(display_groups) || length(groups) > 4L
+  colors <- c("0" = "#F7FBFF", "1" = "#D0E1F2", "2" = "#9CC8E8",
+              "3" = "#5DA5D8", "4" = "#1F78B4", "\u22655" = "#08306B")
+  old <- par(no.readonly = TRUE)
+  on.exit({ qc_plot_reset_layout(); par(old) }, add = TRUE)
+  qc_plot_begin_key_layout(0.14)
+  vertical_label_angle <- if (!horizontal && length(groups) <= 3L) 0L else qc_plot_label_angle(30L)
+  plot_margins <- if (horizontal) {
+    qc_plot_bar_margins(display_groups, TRUE, top = 4.0, right = 5.4)
+  } else {
+    c(qc_plot_label_margin_lines(display_groups, angle = vertical_label_angle, orientation = "vertical") + 1.6,
+      7.4, 4.0, 2.8)
+  }
+  qc_plot_par(mar = plot_margins)
+  totals <- colSums(matrix_data, na.rm = TRUE)
+  limit <- max(totals, na.rm = TRUE)
+  if (!is.finite(limit) || limit <= 0) limit <- 1
+  bar_width <- 0.42
+  bar_space <- 0.62
+  at_preview <- barplot(matrix_data, plot = FALSE, horiz = horizontal,
+                        width = bar_width, space = bar_space)
+  minimum_category_span <- if (identical(mode, "combined")) 3.4 else 5.8
+  padded_category_limits <- function(at, minimum_span, edge_pad = 0.75) {
+    upper <- max(max(at, na.rm = TRUE) + edge_pad, minimum_span)
+    c(0, upper)
+  }
+  if (horizontal) {
+    ylim <- padded_category_limits(at_preview, minimum_category_span)
+    at <- barplot(matrix_data, names.arg = rep("", length(groups)), axes = FALSE,
+                  horiz = TRUE, col = colors[rownames(matrix_data)],
+                  border = "#1f2d3a", lwd = max(1.4, qc_plot_lwd * 0.85),
+                  width = bar_width, space = bar_space,
+                  xlim = c(0, limit * 1.14), ylim = ylim,
+                  xlab = "", ylab = "",
+                  main = "Genes by insertion count")
+  } else {
+    xlim <- padded_category_limits(at_preview, minimum_category_span)
+    at <- barplot(matrix_data, names.arg = rep("", length(groups)), axes = FALSE,
+                  horiz = FALSE, col = colors[rownames(matrix_data)],
+                  border = "#1f2d3a", lwd = max(1.4, qc_plot_lwd * 0.85),
+                  width = bar_width, space = bar_space,
+                  xlim = xlim, ylim = c(0, limit * 1.16),
+                  xlab = "", ylab = "",
+                  main = "Genes by insertion count")
+  }
+  qc_plot_add_grid(horizontal)
+  axis_values <- pretty(c(0, limit))
+  axis_labels <- format(axis_values, big.mark = ",", scientific = FALSE, trim = TRUE)
+  if (horizontal) {
+    axis(1, at = axis_values, labels = axis_labels, line = 0.45)
+    mtext("Number of genes", side = 1, line = 3.4, font = 2, cex = qc_plot_text_sizes()$lab)
+  } else {
+    axis(2, at = axis_values, labels = axis_labels, las = 1)
+    mtext("Number of genes", side = 2, line = 4.2, font = 2, cex = qc_plot_text_sizes()$lab)
+  }
+  if (horizontal) qc_plot_draw_horizontal_labels(at, groups)
+  else qc_plot_draw_vertical_labels(at, groups, angle = vertical_label_angle)
+  if (qc_plot_show_value_labels()) {
+    text(if (horizontal) totals else at,
+         if (horizontal) at else totals,
+         labels = format(totals, big.mark = ",", trim = TRUE),
+         pos = if (horizontal) 4 else 3, xpd = NA,
+         font = 2, cex = qc_plot_value_cex(0.82))
+  }
+  qc_plot_metric_key_row(rownames(matrix_data), fill = colors[rownames(matrix_data)],
+                         border = qc_plot_border, ncol = 6,
+                         title = "Hits per gene")
+}
+
+plot_qc_summary_insertion_role_stats <- function(project) {
+  data <- summary_qc_insertion_role_stats_raw(project)
+  if (!nrow(data)) return(qc_plot_empty("Parent/treated insertion summary is not available."))
+  data <- data[data$role %in% c("control", "treated"), , drop = FALSE]
+  if (!nrow(data)) return(qc_plot_empty("Parent/treated insertion summary is not available."))
+  data$role <- factor(data$role, levels = c("control", "treated"))
+  data <- data[order(data$role), , drop = FALSE]
+  labels <- as.character(data$`Sample group`)
+  fills <- c(control = "#d8e4ef", treated = "#2f6f9f")[as.character(data$role)]
+  fills[is.na(fills)] <- qc_plot_fill
+  show_values <- qc_plot_show_value_labels()
+  old <- par(no.readonly = TRUE)
+  on.exit({ qc_plot_reset_layout(); par(old) }, add = TRUE)
+  qc_plot_reset_layout()
+  layout(matrix(c(1, 2), nrow = 1), widths = c(1, 1))
+
+  draw_metric <- function(values, title, ylab, value_digits = 0L) {
+    display_labels <- qc_plot_display_labels(labels)
+    old_par <- qc_plot_par(mar = c(qc_plot_label_margin_lines(display_labels, angle = 0L, orientation = "vertical") + 1.0,
+                                  7.0, 4.2, 2.2))
+    on.exit(par(old_par), add = TRUE)
+    values <- as.numeric(values)
+    limit <- max(values, na.rm = TRUE)
+    if (!is.finite(limit) || limit <= 0) limit <- 1
+    at <- barplot(values, names.arg = rep("", length(values)), axes = FALSE,
+                  ylim = c(0, limit * 1.18),
+                  col = fills, border = qc_plot_border, lwd = max(1.7, qc_plot_lwd),
+                  ylab = ylab, main = title)
+    qc_plot_add_grid(FALSE)
+    axis(2)
+    qc_plot_draw_vertical_labels(at, labels, angle = 0L, cex = qc_plot_label_cex(0.92))
+    if (show_values) {
+      value_labels <- if (value_digits > 0L) {
+        sprintf(paste0("%.", value_digits, "f"), values)
+      } else {
+        format(round(values), big.mark = ",", trim = TRUE)
+      }
+      text(at, values, labels = value_labels, pos = 3, xpd = NA,
+           font = 2, cex = qc_plot_value_cex(0.88))
+    }
+    box()
+  }
+
+  draw_metric(data$`Total unique insertions`,
+              "Total unique insertions",
+              "Unique insertion sites",
+              value_digits = 0L)
+  draw_metric(data$`Average insertions / gene`,
+              "Average insertions per gene",
+              "Insertions per gene",
+              value_digits = 2L)
 }
 
 compact_qc_table <- function(data) DT::datatable(data,rownames=FALSE,selection="none",options=list(pageLength=10,lengthMenu=c(10,25,50),autoWidth=FALSE,ordering=TRUE,searching=TRUE,scrollX=TRUE,columnDefs=list(list(className="dt-right",targets=which(vapply(data,is.numeric,FALSE))-1L),list(className="ytab-nowrap",targets=0))))
@@ -161,22 +646,32 @@ qc_summary_ui <- function() panel_card(
         choices = c("Library complexity" = "complexity",
                     "Features hit" = "features",
                     "Combined features hit" = "combined_features",
+                    "Parent/treated insertion summary" = "insertion_role_stats",
+                    "Insertion counts per pool" = "insertion_pool_stats",
+                    "Genes by insertion count" = "gene_hit_bins",
                     "Reads per insertion site" = "reads_per_hit",
                     "Feature vs intergenic hits" = "feature_intergenic",
                     "Genome-wide binned signal" = "genome_bins",
                     "Library concordance" = "pairwise")
       ),
       uiOutput("summary_qc_combined_group_selector"),
+      uiOutput("summary_qc_insertion_pool_selector"),
+      uiOutput("summary_qc_gene_hit_bin_selector"),
       uiOutput("summary_qc_plot_controls"),
       tags$details(
         class = "ytab-more-options",
         tags$summary("Tables / downloads"),
         uiOutput("summary_qc_cards"),
+        tags$h5("Parent/treated insertion summary"),
+        tags$p(class = "text-muted",
+               "Role-level totals are calculated from per-sample SummaryTable hit positions and feature tables."),
+        DT::DTOutput("summary_qc_insertion_role_stats_table"),
         tags$div(class = "ytab-actions",
                  downloadButton("download_summary_qc_plot", "Download plot"),
                  downloadButton("download_summary_qc_plotted_data", "Download plotted data"),
                  downloadButton("download_summary_qc_table", "Download summary table"),
-                 downloadButton("download_summary_qc_details", "Download detailed metrics")),
+                 downloadButton("download_summary_qc_details", "Download detailed metrics"),
+                 downloadButton("download_summary_qc_insertion_role_stats", "Download parent/treated insertion summary")),
         DT::DTOutput("summary_qc_table"),
         tags$details(tags$summary("Detailed metrics"), DT::DTOutput("summary_qc_details"))
       )

@@ -80,3 +80,9 @@ table.dataTable th:first-child,table.dataTable td:first-child { white-space: now
 .ytab-diagnostic-preview{min-height:150px;display:flex;align-items:center;justify-content:center}
 .ytab-more-options{margin-top:1rem;border-top:1px solid #dce5ec;padding-top:.75rem}
 .ytab-more-options>summary{font-weight:650;cursor:pointer}
+.ytab-qc-summary-list{margin:.35rem 0 1rem;padding:.75rem;border:1px solid #dce5ec;border-radius:.65rem;background:#f8fbfd}
+.ytab-qc-summary-caption{margin:0 0 .55rem;color:#52606d;font-size:.86rem;font-weight:700}
+.ytab-qc-summary-list dl{display:grid;grid-template-columns:1fr;gap:.42rem;margin:0}
+.ytab-qc-summary-list dl>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.65rem;align-items:baseline;padding:.35rem .45rem;border-radius:.45rem;background:#fff}
+.ytab-qc-summary-list dt{font-weight:650;color:#263746;line-height:1.25}
+.ytab-qc-summary-list dd{margin:0;color:#087f85;font-weight:800;white-space:nowrap}

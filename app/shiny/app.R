@@ -7,6 +7,7 @@ app_dir <- normalizePath(dirname(app_file), winslash = "/", mustWork = TRUE)
 repo_root <- normalizePath(file.path(app_dir, "../.."), winslash = "/", mustWork = TRUE)
 for (helper in c("project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "ui_qc.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_generated_plots.R", "fitness_condition_control_plot.R", "fitness_plot_utils.R", "ui_fitness.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "go_analysis.R", "ui_workspace.R"))
   source(file.path(app_dir, "R", helper), local = TRUE)
+source(file.path(app_dir, "R", "screen_coverage.R"), local = TRUE)
 
 detected_cpu <- parallel::detectCores(logical = TRUE)
 if (is.na(detected_cpu) || detected_cpu < 1L) detected_cpu <- 2L
@@ -19,10 +20,10 @@ demo_project_id <- as.character(launcher_config$demo_project_id %||% "")
 
 ui <- tagList(
   tags$head(tags$title("YTAB — Yeast Transposon Analysis Browser"), tags$link(rel="stylesheet", href="ytab.css"),
-    tags$link(rel="stylesheet", href="ytab-landing.css"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20260903_1"),
+    tags$link(rel="stylesheet", href="ytab-landing.css?v=20260911_1"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20260903_1"),
     tags$script(src="https://cdn.jsdelivr.net/npm/igv@3/dist/igv.min.js"),
     tags$script(src="ytab_igv_browser.js?v=20260828_5"),
-    tags$script(src="ytab_nav_menus.js?v=20260909_1")),
+    tags$script(src="ytab_nav_menus.js?v=20260917_1&screen_coverage=2")),
   uiOutput("app_shell")
 )
 
@@ -42,6 +43,7 @@ server <- function(input, output, session) {
   status_tick <- reactiveVal(0L)
   project_created <- reactiveVal(FALSE)
   initial_project_opened <- reactiveVal(FALSE)
+  initial_navigation_probe <- reactiveVal(0L)
   completed_job_seen <- reactiveVal("")
   last_project_path <- reactiveVal("")
   navigation_location <- reactiveVal(navigation_state_defaults("overview"))
@@ -76,6 +78,18 @@ server <- function(input, output, session) {
                         project_id = current_project_id())
     invisible(location)
   }
+  is_landing_target <- function(target) {
+    is.list(target) && identical(as.character(target$top %||% ""), "landing")
+  }
+  show_landing_state <- function(write_url = TRUE) {
+    state$clear()
+    jobs$clear_display_state()
+    location <- navigation_state_defaults("overview")
+    navigation_location(location)
+    if (isTRUE(write_url))
+      session$sendCustomMessage("ytab-nav-state", list(top = "landing", replace = TRUE))
+    invisible(location)
+  }
   observeEvent(input$ytab_nav_menu, {
     target <- parse_navigation_target(input$ytab_nav_menu)
     if (!is.list(target)) return(NULL)
@@ -88,6 +102,10 @@ server <- function(input, output, session) {
   observeEvent(input$ytab_nav_hash, {
     target <- parse_navigation_target(input$ytab_nav_hash)
     if (!is.list(target)) return(NULL)
+    if (is_landing_target(target)) {
+      show_landing_state(write_url = FALSE)
+      return(NULL)
+    }
     location <- navigation_state_from_url(target)
     navigation_location(location)
     if (identical(state$values$view, "workspace")) {
@@ -131,17 +149,26 @@ server <- function(input, output, session) {
   output$import_project_visible <- reactive(import_project_open()); outputOptions(output, "import_project_visible", suspendWhenHidden = FALSE)
   output$landing_warning <- renderUI(if (nzchar(state$values$landing_warning)) tags$div(class="alert alert-warning", state$values$landing_warning))
 
-  project_choices <- reactive({
-    p <- projects(); if (!nrow(p)) return(list())
+  project_choices_from_df <- function(p) {
+    if (!nrow(p)) return(list())
     labels <- vapply(seq_len(nrow(p)), function(i) project_display_label(read_project_summary(p$project_config[[i]], repo_root)), "")
     as.list(setNames(unname(p$project_config), unname(labels)))
-  })
+  }
+  project_choices <- reactive(project_choices_from_df(projects()))
+  update_project_selector_choices <- function(choices, selected = NULL) {
+    if (is.null(selected)) selected <- isolate(input$project_selector %||% "")
+    selected <- as.character(selected %||% "")
+    if (!length(selected) || is.na(selected[[1L]])) selected <- ""
+    values <- unname(as.character(unlist(choices, use.names = FALSE)))
+    initial_path <- if (!isTRUE(isolate(initial_project_opened())) && nzchar(initial_raw)) ytab_resolve_path(initial_raw, repo_root) else ""
+    if (nzchar(initial_path) && initial_path %in% values) selected <- initial_path
+    if (!length(values) || !selected %in% values) selected <- character()
+    updateSelectizeInput(session, "project_selector",
+      choices = c(list("Select a project…" = ""), choices),
+      selected = selected, server = TRUE)
+  }
   observe({
-    choices <- project_choices(); selected <- isolate(input$project_selector %||% "")
-    initial_path <- if (nzchar(initial_raw)) ytab_resolve_path(initial_raw, repo_root) else ""
-    values<-unname(as.character(unlist(choices,use.names=FALSE)));if (nzchar(initial_path) && initial_path %in% values) selected <- initial_path
-    if (!selected %in% values) selected <- character()
-    updateSelectizeInput(session, "project_selector", choices = c(list("Select a project…" = ""), choices), selected = selected, server = TRUE)
+    update_project_selector_choices(project_choices())
   })
   refresh_projects <- function() projects(discover_ytab_projects(repo_root, include_tests = isTRUE(input$show_test_projects)))
   observeEvent(input$refresh_projects, { refresh_projects(); showNotification("Project list refreshed.") })
@@ -189,7 +216,14 @@ server <- function(input, output, session) {
   }
   observe({
     if (isTRUE(initial_project_opened())) return(NULL)
-    hash_target <- navigation_target_from_hash(isolate(session$clientData$url_hash %||% ""))
+    hash_raw <- isolate(session$clientData$url_hash %||% "")
+    hash_target <- navigation_target_from_hash(hash_raw)
+    input_hash_target <- parse_navigation_target(isolate(input$ytab_nav_hash))
+    if (!is.list(hash_target) && is.list(input_hash_target)) hash_target <- input_hash_target
+    if (is_landing_target(hash_target)) {
+      initial_project_opened(TRUE)
+      return(NULL)
+    }
     hash_project <- if (is.list(hash_target)) as.character(hash_target$project_id %||% "") else ""
     if (nzchar(hash_project)) {
       project_path <- project_config_for_id(hash_project)
@@ -199,15 +233,27 @@ server <- function(input, output, session) {
         return(NULL)
       }
     }
-    if (!nzchar(initial_raw)) return(NULL)
-    checked <- validate_project_config_path(initial_raw, repo_root)
-    if (!checked$valid) return(NULL)
+    if (!is.list(input_hash_target) && !nzchar(hash_raw) && initial_navigation_probe() < 10L) {
+      initial_navigation_probe(initial_navigation_probe() + 1L)
+      invalidateLater(100, session)
+      return(NULL)
+    }
     initial_project_opened(TRUE)
-    open_path(checked$path)
+    return(NULL)
   })
   observeEvent(input$open_project, { info <- selected_info(); if (!is.null(info)) open_path(info$project_config) })
   observeEvent(input$open_demo, { demo <- demo_project(); if (!is.null(demo)) open_path(demo$project_config[[1]]) })
-  switch_to_landing<-function(){last<-last_project_path();state$clear();jobs$clear_display_state();location<-navigation_state_defaults("overview");navigation_location(location);sync_navigation_url(session,location,replace=TRUE);projects(discover_ytab_projects(repo_root,include_tests=FALSE));if(nzchar(last))last_project_path(last);session$onFlushed(function()updateSelectizeInput(session,"project_selector",selected=character()),once=TRUE)}
+  switch_to_landing<-function(){
+    last<-last_project_path()
+    show_landing_state(write_url=TRUE)
+    refreshed_projects<-discover_ytab_projects(repo_root,include_tests=FALSE)
+    refreshed_choices<-project_choices_from_df(refreshed_projects)
+    projects(refreshed_projects)
+    if(nzchar(last))last_project_path(last)
+    session$onFlushed(function(){
+      update_project_selector_choices(refreshed_choices,selected=character())
+    },once=TRUE)
+  }
   observeEvent(input$switch_project,{
     if(jobs$job_is_running()){
       showModal(modalDialog(title="Pipeline job running","A pipeline job is running. Switching projects will not stop the job. You may continue monitoring it from its project later.",footer=tagList(modalButton("Stay here"),actionButton("confirm_switch_project","Switch project",class="btn-danger"))))
@@ -511,7 +557,7 @@ server <- function(input, output, session) {
     ytab_with_plot_display_options(input,prefix,expr)
   }
   qc_mapping_plot_data_for_download<-function(project) qc_mapping_stats_plot_data(project)
-  qc_summary_plot_data_for_download<-function(project,choice,combined_group) {
+  qc_summary_plot_data_for_download<-function(project,choice,combined_group,pool_roles=NULL,pool_samples=NULL,pool_metric="unique",gene_roles=NULL,gene_samples=NULL,gene_mode="per_pool") {
     switch(choice,
            features=qc_summary_stats_plot_data(project),
            combined_features={
@@ -519,16 +565,32 @@ server <- function(input, output, session) {
              if(identical(combined_group,"both"))data[data$group%in%c("control","treated"),,drop=FALSE]
              else data[as.character(data$group)==combined_group,,drop=FALSE]
            },
+           insertion_role_stats=summary_qc_insertion_role_stats_raw(project),
+           insertion_pool_stats={
+             data<-summary_qc_pool_insertion_stats_raw(project)
+             if(is.data.frame(data)&&nrow(data)) {
+               roles<-intersect(as.character(pool_roles%||%c("control","treated")),c("control","treated"))
+               if(length(roles))data<-data[data$role%in%roles,,drop=FALSE]
+               samples<-as.character(pool_samples%||%character())
+               if(length(samples))data<-data[data$sample%in%samples,,drop=FALSE]
+               data$selected_metric<-if(identical(pool_metric,"total"))"Total hit count"else"Unique insertion sites"
+             }
+             data
+           },
+           gene_hit_bins=summary_qc_gene_hit_bins_raw(project,gene_roles%||%c("control","treated"),gene_samples,gene_mode%||%"per_pool"),
            reads_per_hit=qc_summary_stats_plot_data(project),
            feature_intergenic=qc_summary_stats_plot_data(project),
            genome_bins=qc_summary_binned_plot_data(project),
            pairwise=qc_summary_pairwise_plot_data(project),
            qc_summary_stats_plot_data(project))
   }
-  qc_render_current_summary_plot<-function(project,choice,combined_group) {
+  qc_render_current_summary_plot<-function(project,choice,combined_group,pool_roles=NULL,pool_samples=NULL,pool_metric="unique",gene_roles=NULL,gene_samples=NULL,gene_mode="per_pool") {
     switch(choice,
            features=plot_qc_summary_metric(project,"features"),
            combined_features=plot_qc_summary_combined_features_hit(project,combined_group),
+           insertion_role_stats=plot_qc_summary_insertion_role_stats(project),
+           insertion_pool_stats=plot_qc_summary_insertion_pool_stats(project,pool_roles,pool_samples,pool_metric),
+           gene_hit_bins=plot_qc_summary_gene_hit_bins(project,gene_roles%||%c("control","treated"),gene_samples,gene_mode%||%"per_pool"),
            reads_per_hit=plot_qc_summary_metric(project,"reads_per_hit"),
            feature_intergenic=plot_qc_summary_metric(project,"feature_intergenic"),
            genome_bins=plot_qc_summary_genome_bins(project),
@@ -586,9 +648,56 @@ server <- function(input, output, session) {
     if(!selected%in%values)selected<-qc_summary_combined_feature_default_group(active())
     selectInput("summary_qc_combined_group","Combined group",choices=choices,selected=selected)
   })
+  output$summary_qc_insertion_pool_selector<-renderUI({
+    if(!identical(input$summary_qc_plot_choice%||%"complexity","insertion_pool_stats"))return(NULL)
+    data<-summary_qc_pool_insertion_stats_raw(active())
+    if(!is.data.frame(data)||!nrow(data))return(tags$p(class="text-muted","No per-pool insertion data are available for this project."))
+    role_choices<-c("Parents / controls"="control","Treated"="treated")
+    available_roles<-intersect(unname(role_choices),unique(as.character(data$role)))
+    role_choices<-role_choices[role_choices%in%available_roles]
+    selected_roles<-intersect(input$summary_qc_insertion_pool_roles%||%available_roles,available_roles)
+    if(!length(selected_roles))selected_roles<-available_roles
+    sample_choices<-as.list(setNames(as.character(data$sample),as.character(data$`Display sample`)))
+    selected_samples<-intersect(input$summary_qc_insertion_pool_samples%||%as.character(data$sample),as.character(data$sample))
+    if(!length(selected_samples))selected_samples<-as.character(data$sample)
+    tagList(
+      checkboxGroupInput("summary_qc_insertion_pool_roles","Sample groups",choices=role_choices,selected=selected_roles,inline=FALSE),
+      selectInput("summary_qc_insertion_pool_metric","Insertion metric",
+                  choices=c("Unique insertion sites per pool"="unique",
+                            "Total hit count per pool"="total"),
+                  selected=input$summary_qc_insertion_pool_metric%||%"unique"),
+      selectizeInput("summary_qc_insertion_pool_samples","Pools / samples to display",
+                     choices=sample_choices,selected=selected_samples,multiple=TRUE,
+                     options=list(plugins=list("remove_button"))),
+      tags$p(class="text-muted","Sample choices stay available when groups are toggled; the group checkboxes decide which selected samples are currently plotted.")
+    )
+  })
+  output$summary_qc_gene_hit_bin_selector<-renderUI({
+    if(!identical(input$summary_qc_plot_choice%||%"complexity","gene_hit_bins"))return(NULL)
+    data<-summary_qc_pool_insertion_stats_raw(active())
+    if(!is.data.frame(data)||!nrow(data))return(tags$p(class="text-muted","No per-gene SummaryTable data are available for this project."))
+    role_choices<-c("Parents / controls"="control","Treated"="treated")
+    available_roles<-intersect(unname(role_choices),unique(as.character(data$role)))
+    role_choices<-role_choices[role_choices%in%available_roles]
+    selected_roles<-intersect(input$summary_qc_gene_hit_bin_roles%||%available_roles,available_roles)
+    if(!length(selected_roles))selected_roles<-available_roles
+    sample_choices<-as.list(setNames(as.character(data$sample),as.character(data$`Display sample`)))
+    selected_samples<-intersect(input$summary_qc_gene_hit_bin_samples%||%as.character(data$sample),as.character(data$sample))
+    if(!length(selected_samples))selected_samples<-as.character(data$sample)
+    tagList(
+      checkboxGroupInput("summary_qc_gene_hit_bin_roles","Sample groups",choices=role_choices,selected=selected_roles,inline=FALSE),
+      selectInput("summary_qc_gene_hit_bin_mode","Gene count mode",
+                  choices=c("Per pool / sample"="per_pool","Combine selected samples by group"="combined"),
+                  selected=input$summary_qc_gene_hit_bin_mode%||%"per_pool"),
+      selectizeInput("summary_qc_gene_hit_bin_samples","Pools / samples to include",
+                     choices=sample_choices,selected=selected_samples,multiple=TRUE,
+                     options=list(plugins=list("remove_button"))),
+      tags$p(class="text-muted","Sample choices stay available when groups are toggled; the group checkboxes decide which selected samples are currently plotted.")
+    )
+  })
   output$summary_qc_plot_controls<-renderUI({
     choice<-input$summary_qc_plot_choice%||%"complexity"
-    bar_choices<-c("complexity","features","combined_features","reads_per_hit","feature_intergenic")
+    bar_choices<-c("complexity","features","combined_features","insertion_role_stats","insertion_pool_stats","gene_hit_bins","reads_per_hit","feature_intergenic")
     ytab_plot_customization_controls("summary_qc",
                                      include_bars = choice %in% bar_choices,
                                      include_value_labels = choice %in% c(bar_choices,"pairwise"),
@@ -597,23 +706,28 @@ server <- function(input, output, session) {
   })
   output$summary_qc_selected_plot<-renderUI({
     choice<-input$summary_qc_plot_choice%||%"complexity"
-    output_id<-switch(choice,features="summary_qc_features_plot",combined_features="summary_qc_combined_features_plot",reads_per_hit="summary_qc_reads_per_hit_plot",feature_intergenic="summary_qc_feature_intergenic_plot",genome_bins="summary_qc_genome_bins_plot",pairwise="summary_qc_pairwise_plot","summary_qc_complexity_plot")
+    output_id<-switch(choice,features="summary_qc_features_plot",combined_features="summary_qc_combined_features_plot",insertion_role_stats="summary_qc_insertion_role_stats_plot",insertion_pool_stats="summary_qc_insertion_pool_stats_plot",gene_hit_bins="summary_qc_gene_hit_bins_plot",reads_per_hit="summary_qc_reads_per_hit_plot",feature_intergenic="summary_qc_feature_intergenic_plot",genome_bins="summary_qc_genome_bins_plot",pairwise="summary_qc_pairwise_plot","summary_qc_complexity_plot")
     default_height<-if(choice%in%c("pairwise","genome_bins"))"large"else"medium"
     ytab_plot_frame(plotOutput(output_id,width="100%",height=ytab_plot_height_px(input$summary_qc_plot_height%||%default_height,default=default_height)),input$summary_qc_plot_width%||%"standard","app-rendered")
   })
   output$summary_qc_complexity_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_metric(active(),"complexity")))
   output$summary_qc_features_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_metric(active(),"features")))
   output$summary_qc_combined_features_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_combined_features_hit(active(),input$summary_qc_combined_group%||%qc_summary_combined_feature_default_group(active()))))
+  output$summary_qc_insertion_role_stats_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_insertion_role_stats(active())))
+  output$summary_qc_insertion_pool_stats_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_insertion_pool_stats(active(),input$summary_qc_insertion_pool_roles%||%c("control","treated"),input$summary_qc_insertion_pool_samples,input$summary_qc_insertion_pool_metric%||%"unique")))
+  output$summary_qc_gene_hit_bins_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_gene_hit_bins(active(),input$summary_qc_gene_hit_bin_roles%||%c("control","treated"),input$summary_qc_gene_hit_bin_samples,input$summary_qc_gene_hit_bin_mode%||%"per_pool")))
   output$summary_qc_reads_per_hit_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_metric(active(),"reads_per_hit")))
   output$summary_qc_feature_intergenic_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_metric(active(),"feature_intergenic")))
   output$summary_qc_genome_bins_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_genome_bins(active())))
   output$summary_qc_pairwise_plot<-renderPlot(ytab_with_plot_display_options(input,"summary_qc",plot_qc_summary_pairwise_correlations(active())))
+  output$summary_qc_insertion_role_stats_table<-DT::renderDT({data<-summary_qc_insertion_role_stats(active());if(!nrow(data))return(NULL);compact_qc_table(data)})
   output$summary_qc_table<-DT::renderDT({data<-summary_data();if(!nrow(data))return(NULL);compact_qc_table(data)})
   output$summary_qc_details<-DT::renderDT({details<-attr(summary_data(),"details");if(is.null(details)||!nrow(details))return(NULL);compact_qc_table(details)})
-  output$download_summary_qc_plot<-downloadHandler(filename=function(){choice<-input$summary_qc_plot_choice%||%"complexity";group<-if(identical(choice,"combined_features"))input$summary_qc_combined_group%||%qc_summary_combined_feature_default_group(active())else"all";paste0(qc_download_slug(active()$project_id,"summary_qc",choice,group),".png")},content=function(file){choice<-input$summary_qc_plot_choice%||%"complexity";group<-input$summary_qc_combined_group%||%qc_summary_combined_feature_default_group(active());qc_download_plot_png(file,"summary_qc",qc_render_current_summary_plot(active(),choice,group),if(choice%in%c("pairwise","genome_bins"))"large"else"medium")})
-  output$download_summary_qc_plotted_data<-downloadHandler(filename=function(){choice<-input$summary_qc_plot_choice%||%"complexity";group<-if(identical(choice,"combined_features"))input$summary_qc_combined_group%||%qc_summary_combined_feature_default_group(active())else"all";paste0(qc_download_slug(active()$project_id,"summary_qc",choice,group),".csv")},content=function(file){choice<-input$summary_qc_plot_choice%||%"complexity";group<-input$summary_qc_combined_group%||%qc_summary_combined_feature_default_group(active());write.csv(qc_summary_plot_data_for_download(active(),choice,group),file,row.names=FALSE)})
+  output$download_summary_qc_plot<-downloadHandler(filename=function(){choice<-input$summary_qc_plot_choice%||%"complexity";group<-if(identical(choice,"combined_features"))input$summary_qc_combined_group%||%qc_summary_combined_feature_default_group(active())else if(identical(choice,"insertion_pool_stats"))input$summary_qc_insertion_pool_metric%||%"unique"else if(identical(choice,"gene_hit_bins"))input$summary_qc_gene_hit_bin_mode%||%"per_pool"else"all";paste0(qc_download_slug(active()$project_id,"summary_qc",choice,group),".png")},content=function(file){choice<-input$summary_qc_plot_choice%||%"complexity";group<-input$summary_qc_combined_group%||%qc_summary_combined_feature_default_group(active());qc_download_plot_png(file,"summary_qc",qc_render_current_summary_plot(active(),choice,group,input$summary_qc_insertion_pool_roles%||%c("control","treated"),input$summary_qc_insertion_pool_samples,input$summary_qc_insertion_pool_metric%||%"unique",input$summary_qc_gene_hit_bin_roles%||%c("control","treated"),input$summary_qc_gene_hit_bin_samples,input$summary_qc_gene_hit_bin_mode%||%"per_pool"),if(choice%in%c("pairwise","genome_bins"))"large"else"medium")})
+  output$download_summary_qc_plotted_data<-downloadHandler(filename=function(){choice<-input$summary_qc_plot_choice%||%"complexity";group<-if(identical(choice,"combined_features"))input$summary_qc_combined_group%||%qc_summary_combined_feature_default_group(active())else if(identical(choice,"insertion_pool_stats"))input$summary_qc_insertion_pool_metric%||%"unique"else if(identical(choice,"gene_hit_bins"))input$summary_qc_gene_hit_bin_mode%||%"per_pool"else"all";paste0(qc_download_slug(active()$project_id,"summary_qc",choice,group),".csv")},content=function(file){choice<-input$summary_qc_plot_choice%||%"complexity";group<-input$summary_qc_combined_group%||%qc_summary_combined_feature_default_group(active());write.csv(qc_summary_plot_data_for_download(active(),choice,group,input$summary_qc_insertion_pool_roles%||%c("control","treated"),input$summary_qc_insertion_pool_samples,input$summary_qc_insertion_pool_metric%||%"unique",input$summary_qc_gene_hit_bin_roles%||%c("control","treated"),input$summary_qc_gene_hit_bin_samples,input$summary_qc_gene_hit_bin_mode%||%"per_pool"),file,row.names=FALSE)})
   output$download_summary_qc_table<-downloadHandler(filename=function()"summary_qc_table.csv",content=function(file)write.csv(summary_data(),file,row.names=FALSE))
   output$download_summary_qc_details<-downloadHandler(filename=function()"summary_qc_detailed_metrics.csv",content=function(file){details<-attr(summary_data(),"details");if(is.null(details))details<-data.frame();write.csv(details,file,row.names=FALSE)})
+  output$download_summary_qc_insertion_role_stats<-downloadHandler(filename=function()"summary_qc_parent_treated_insertion_summary.csv",content=function(file)write.csv(summary_qc_insertion_role_stats_raw(active()),file,row.names=FALSE))
   output$library_diagnostics_group_selector<-renderUI({
     choices<-qc_library_group_choices(active())
     if(!length(choices))return(NULL)
@@ -1480,6 +1594,8 @@ server <- function(input, output, session) {
       write.csv(data, file, row.names = FALSE)
     }
   )
+
+  screen_coverage_server(input, output, session, repo_root, active, active_project_path, python_bin)
 
   go_analysis_server(input, output, session, repo_root, active,
                      active_project_path, jobs, python_bin,

@@ -15,12 +15,15 @@ stopifnot(
   grepl("navigation_history_restore <- reactiveVal(FALSE)",app,fixed=TRUE),
   grepl("!isTRUE(navigation_history_restore())",app,fixed=TRUE),
   grepl("sync_navigation_url(session, location, replace = TRUE",app,fixed=TRUE),
-  grepl("ytab_nav_menus.js?v=20260909_1",app,fixed=TRUE),
+  grepl("ytab_nav_menus.js?v=20260917_1",app,fixed=TRUE),
   grepl("function restoreFromBrowserHistory()",nav_js,fixed=TRUE),
   grepl('window.addEventListener("popstate", restoreFromBrowserHistory)',nav_js,fixed=TRUE),
   grepl('window.addEventListener("hashchange", restoreFromBrowserHistory)',nav_js,fixed=TRUE),
   grepl('sendShinyValue("ytab_nav_hash", target);',nav_js,fixed=TRUE),
+  grepl('window.setTimeout(function () {\n      clientNavigate(target.top, target.nested_value);\n    }, 180);',nav_js,fixed=TRUE),
   !grepl('clientNavigate(target.top, target.nested_value);\n    sendShinyValue("ytab_nav_hash", target);',nav_js,fixed=TRUE),
+  grepl("initial_navigation_probe <- reactiveVal(0L)",app,fixed=TRUE),
+  grepl("invalidateLater(100, session)",app,fixed=TRUE),
   !grepl("state$load(active_project_path(),repo_root);go_to",app,fixed=TRUE)
 )
 landing<-navigation_state_defaults("overview");stopifnot(landing$active_top_tab=="overview",landing$active_preprocessing_subtab=="samples")

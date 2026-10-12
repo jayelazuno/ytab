@@ -58,7 +58,7 @@ invisible(must_exist("app/shiny/www/ytab_release_ui.css"))
 must_contain("app/shiny/app.R", "ytab_release_ui\\.css", "release CSS reference")
 must_contain("app/shiny/app.R", "igv@3/dist/igv\\.min\\.js", "IGV.js dependency")
 must_contain("app/shiny/app.R", "ytab_igv_browser\\.js", "YTAB IGV bridge")
-must_contain("app/shiny/app.R", "ytab_nav_menus\\.js\\?v=20260909_1", "navigation menu cachebuster")
+must_contain("app/shiny/app.R", "ytab_nav_menus\\.js\\?v=20260917_1", "navigation menu cachebuster")
 must_contain("app/shiny/app.R", "navigation_history_restore <- reactiveVal\\(FALSE\\)", "browser-history restore guard")
 must_contain("app/shiny/app.R", "!isTRUE\\(navigation_history_restore\\(\\)\\)", "suppress URL push during browser-history restore")
 must_contain("app/shiny/app.R", "sync_navigation_url\\(session, location, replace = TRUE", "replace URL during browser-history restore")
@@ -67,6 +67,10 @@ must_contain("app/shiny/app.R", "plot_customization_helpers\\.R", "plot customiz
 must_contain("app/shiny/www/ytab_nav_menus.js", "function restoreFromBrowserHistory\\(\\)", "browser history restore handler")
 must_contain("app/shiny/www/ytab_nav_menus.js", "window\\.addEventListener\\(\"popstate\", restoreFromBrowserHistory\\)", "Back/Forward popstate handler")
 must_contain("app/shiny/www/ytab_nav_menus.js", "window\\.addEventListener\\(\"hashchange\", restoreFromBrowserHistory\\)", "hash navigation restore handler")
+must_contain("app/shiny/www/ytab_nav_menus.js", "sendShinyValue\\(\"ytab_nav_hash\", target\\);\\s*window\\.setTimeout", "Back/Forward sends state before client navigation")
+must_contain("app/shiny/www/ytab_nav_menus.js", "clientNavigate\\(target\\.top, target\\.nested_value\\);", "Back/Forward delayed visible tab restore")
+must_contain("app/shiny/app.R", "initial_navigation_probe <- reactiveVal\\(0L\\)", "initial hash wait guard")
+must_contain("app/shiny/app.R", "invalidateLater\\(100, session\\)", "initial URL hash probe")
 
 for (fn in c(
   "ytab_page_header", "ytab_result_card", "ytab_metric_card",

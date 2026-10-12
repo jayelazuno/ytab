@@ -1,4 +1,86 @@
-.ytab-entry-grid .ytab-card { height: 100%; }
+.ytab-landing {
+  background:
+    radial-gradient(circle at 80% 16%, rgba(41, 211, 194, .18), transparent 30rem),
+    linear-gradient(180deg, #071829 0 43%, #f4f7fa 43%);
+}
+
+.ytab-hero {
+  min-height: 45vh;
+  padding-top: 5rem;
+  padding-bottom: 6rem;
+}
+
+.ytab-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: .7rem;
+}
+
+.ytab-logo-mark {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid rgba(41, 211, 194, .75);
+  border-radius: .8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #29d3c2;
+  font-weight: 900;
+  letter-spacing: -.08em;
+  background: rgba(41, 211, 194, .08);
+  box-shadow: 0 0 28px rgba(41, 211, 194, .16);
+}
+
+.ytab-hero h1 {
+  text-shadow: 0 12px 34px rgba(0, 0, 0, .28);
+}
+
+.ytab-hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  margin-top: 1.35rem;
+}
+
+.ytab-hero-pills span {
+  border: 1px solid rgba(197, 216, 231, .24);
+  border-radius: 999px;
+  color: #d7e7f3;
+  background: rgba(255, 255, 255, .055);
+  padding: .38rem .7rem;
+  font-size: .86rem;
+}
+
+.ytab-entry-grid {
+  align-items: stretch;
+}
+
+.ytab-entry-grid .ytab-card {
+  height: 100%;
+  border-color: #d6e4ec;
+  box-shadow: 0 16px 42px rgba(7, 24, 41, .09);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.ytab-entry-grid .ytab-card:hover {
+  transform: translateY(-2px);
+  border-color: #b9d2df;
+  box-shadow: 0 20px 50px rgba(7, 24, 41, .12);
+}
+
+.ytab-entry-grid .ytab-card h3 {
+  display: grid;
+  gap: .3rem;
+}
+
+.ytab-card-eyebrow {
+  color: #087f85;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
 .ytab-actions { margin-top: .8rem; }
 .ytab-button { padding: .65rem 1rem; border-radius: 7px; font-weight: 600; }
 .btn-secondary { background: white; border: 1px solid #6c8495; color: #28475b; }
@@ -6,3 +88,12 @@
 .ytab-project-preview { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: 1rem; }
 .ytab-preview-badge { background: #e8f3f4; color: #18565c; border-radius: 999px; padding: .3rem .65rem; font-size: .84rem; }
 .ytab-test-badge { background: #fff0cf; color: #805200; }
+
+@media (max-width: 800px) {
+  .ytab-hero {
+    padding-bottom: 4rem;
+  }
+  .ytab-hero-pills {
+    gap: .4rem;
+  }
+}
