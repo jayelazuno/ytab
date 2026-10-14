@@ -1,0 +1,13 @@
+# Copy to the repository root and update project_config and analysis arguments.
+# When used in this examples directory, paths must be relative to this directory.
+version: 1
+project_config: ../../output/projects/H2O2_screen_v1/config/project.yaml
+steps:
+  - id: core
+    module: pipeline
+    args: ["--profile", "core"]
+  - id: fitness
+    module: pipeline
+    args: ["--profile", "fitness"]
+  # Optional analyses can be appended here, e.g. GO with an explicit gene list,
+  # gene-insertions with --gene, or mutants with --input.

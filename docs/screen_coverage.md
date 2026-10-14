@@ -1,5 +1,29 @@
 # Screen Coverage
 
+## Current UI: analytical Poisson only
+
+Screen Coverage planning exposes **Screen Planner** and **Methods & References**.
+**Mutant Identification** is a separate experimental-method/Sanger utility;
+see [individual mutant identification](mutant_identification.md). It does not
+reactivate the retired empirical planning models.
+The equal-gene Poisson calculation remains analytical: `C(K)=1-exp(-K/N)`
+and `K_q=ceil(-N*log(1-q))`. Changing the target updates the plot and K
+immediately. The default plot width is Standard. Targets describe expected
+recovery, not confidence guarantees or final experimental recommendations.
+
+The original parent-union audit supplies N and the library-summary cards:
+reference protein-coding genes, represented genes, observed representation
+ceiling, genomic insertion sites and coding insertion sites. Missing audits
+produce a validation message instead of changing the model's gene universe.
+No dataset totals are hardcoded. The original planner and analytical server are
+retained; the reduced UI only hides advanced models and their tabs/controls.
+
+Empirical Monte Carlo models, pool diagnostics and allocation controls are
+retired from the active UI. Their implementation is retained as
+`screen_coverage_advanced_ui` / `screen_coverage_advanced_server` for future work;
+the active UI has no inputs that launch an empirical worker. The sections
+below document that retained implementation and the earlier accepted audit.
+
 Screen Coverage separates observed library representation from colony-screen
 recovery. It does not change other YTAB analyses and does not recommend a final
 experimental screen size.

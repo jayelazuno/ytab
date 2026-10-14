@@ -8,6 +8,8 @@ repo_root <- normalizePath(file.path(app_dir, "../.."), winslash = "/", mustWork
 for (helper in c("project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "ui_qc.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_generated_plots.R", "fitness_condition_control_plot.R", "fitness_plot_utils.R", "ui_fitness.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "go_analysis.R", "ui_workspace.R"))
   source(file.path(app_dir, "R", helper), local = TRUE)
 source(file.path(app_dir, "R", "screen_coverage.R"), local = TRUE)
+source(file.path(app_dir, "R", "screen_coverage_active.R"), local = TRUE)
+source(file.path(app_dir, "R", "mutant_screen.R"), local = TRUE)
 
 detected_cpu <- parallel::detectCores(logical = TRUE)
 if (is.na(detected_cpu) || detected_cpu < 1L) detected_cpu <- 2L
@@ -23,7 +25,7 @@ ui <- tagList(
     tags$link(rel="stylesheet", href="ytab-landing.css?v=20260911_1"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20260903_1"),
     tags$script(src="https://cdn.jsdelivr.net/npm/igv@3/dist/igv.min.js"),
     tags$script(src="ytab_igv_browser.js?v=20260828_5"),
-    tags$script(src="ytab_nav_menus.js?v=20260917_1&screen_coverage=2")),
+    tags$script(src="ytab_nav_menus.js?v=20260917_1&screen_coverage=4")),
   uiOutput("app_shell")
 )
 
@@ -1596,6 +1598,7 @@ server <- function(input, output, session) {
   )
 
   screen_coverage_server(input, output, session, repo_root, active, active_project_path, python_bin)
+  mutant_screen_server(input, output, session, repo_root, active, active_project_path, python_bin, go_to)
 
   go_analysis_server(input, output, session, repo_root, active,
                      active_project_path, jobs, python_bin,

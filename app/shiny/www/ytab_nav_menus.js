@@ -59,10 +59,7 @@
     },
     screen_coverage: {
       nested_id: "screen_coverage_tabs",
-      items: [["Screen Planner", "planner"], ["Pool Contribution / QC", "pool_qc"],
-        ["Library QC", "representation"], ["Parent Sequencing", "parent_sequencing"],
-        ["Statistical Details", "statistics"],
-        ["Methods & references", "methods"]]
+      items: [["Screen Planner", "planner"], ["Mutant Identification", "mutants"], ["Methods & References", "methods"]]
     },
     comparative_species: {
       nested_id: "comparative_tabs",

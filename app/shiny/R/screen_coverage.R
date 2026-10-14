@@ -367,7 +367,9 @@ screen_coverage_server <- function(input,output,session,repo_root,active,active_
       actionButton("sc_run","Calculate Hermes coverage",class="btn-primary"),actionButton("sc_cancel","Cancel"),uiOutput("sc_status"))
   })
   output$sc_poisson_target<-renderUI({
-    audit<-jsonlite::fromJSON(file.path(audit_directory(),"parent_union_audit.json"))
+    path<-file.path(audit_directory(),"parent_union_audit.json")
+    validate(need(file.exists(path),"Accepted parent-union audit is required for Screen Coverage."))
+    audit<-jsonlite::fromJSON(path)
     n<-as.numeric(audit$union$protein_genes_with_coding_insertion)
     reference<-as.numeric(audit$gene_annotation$protein_coding_genes)
     q<-planner_target();k<-ceiling(-n*log1p(-q))
@@ -382,7 +384,7 @@ screen_coverage_server <- function(input,output,session,repo_root,active,active_
   })
   # Technical conditioning never changes the units of the primary pool planner.
   output$sc_manual_controls<-renderUI({
-    samples<-parent_catalogue();req(nrow(samples))
+    samples<-parent_catalogue();req(nrow(samples)>0L)
     if(length(input$sc_samples))samples<-samples[samples$key%in%input$sc_samples,,drop=FALSE]
     # Identity is verified independently by the Python worker. These metadata
     # keys let controls adapt to any number of audited physical pools.
@@ -392,7 +394,7 @@ screen_coverage_server <- function(input,output,session,repo_root,active,active_
     tagList(lapply(seq_len(nrow(pools)),function(j)numericInput(paste0("sc_manual_",j),pools$pool_label[j],input[[paste0("sc_manual_",j)]]%||%(base+as.integer(j<=rem)),min=0,step=100)))
   })
   request <- reactive({
-    catalogue<-parent_catalogue();req(nrow(catalogue))
+    catalogue<-parent_catalogue();req(nrow(catalogue)>0L)
     selected_sources<-input$sc_samples
     if(is.null(selected_sources)||!length(selected_sources))selected_sources<-catalogue$key
     chosen<-catalogue[match(selected_sources,catalogue$key),,drop=FALSE]
@@ -477,13 +479,17 @@ screen_coverage_server <- function(input,output,session,repo_root,active,active_
     output[[paste0("sc_frame_",id)]]<-renderUI({v<-ytab_plot_customization_values(input,"sc");ytab_plot_frame(plotly::plotlyOutput(paste0("sc_plot_",id),height=v$height),width=v$width)})
     output[[paste0("sc_plot_",id)]]<-plotly::renderPlotly({d<-result();v<-ytab_plot_customization_values(input,"sc")
       mode<-input$sc_model_mode%||%"poisson"
+      if(id=="primary"&&is.null(d)){
+        validate(need(file.exists(file.path(audit_directory(),"parent_union_audit.json")),
+          "Accepted parent-union audit is required for Screen Coverage."))
+      }
       if(id=="primary"&&identical(mode,"poisson")){
         n<-if(is.null(d))as.integer(jsonlite::fromJSON(file.path(audit_directory(),"parent_union_audit.json"))$union$protein_genes_with_coding_insertion)else pool_data(d)$summary$represented
         target<-planner_target();planned<-ceiling(-n*log1p(-target));target_k<-planned
         xmax<-max(25000,planned,target_k)*1.04;ks<-seq(0,xmax,length.out=101)
         preview<-data.frame(k=ks,mean=1-exp(-ks/n),r=1,method="Theoretical Poisson / Equal-Gene Benchmark")
         point<-data.frame(k=planned,mean=1-exp(-planned/n),text=sprintf("Planned K: %s<br>Expected recovery: %.2f%%",fmt(planned),100*(1-exp(-planned/n))))
-        p<-ggplot2::ggplot(preview,ggplot2::aes(x=k,y=100*mean))+ggplot2::geom_line(colour="#E76F64",linewidth=1.15)+
+        p<-ggplot2::ggplot(preview,ggplot2::aes(x=k,y=100*mean,group=1))+ggplot2::geom_line(colour="#E76F64",linewidth=1.15)+
           ggplot2::geom_hline(yintercept=100*target,colour="#B34A36",linetype="dashed",linewidth=.5)+
           ggplot2::geom_vline(xintercept=planned,colour="#2C7FB8",linetype="dotted",linewidth=.5)+
           ggplot2::geom_point(data=point,ggplot2::aes(x=k,y=100*mean),inherit.aes=FALSE,colour="#2C7FB8",size=2.5)+

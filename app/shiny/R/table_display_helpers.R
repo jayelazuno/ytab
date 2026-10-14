@@ -13,16 +13,16 @@ ytab_datatable <- function(data, page_length = 10L, filter = "top",
 
 ytab_gene_details_datatable <- function(data, page_length = 10L, filter = "none",
                                         options = list(), class = "compact stripe hover",
-                                        order = NULL, selection = "none") {
+                                        order = NULL, selection = "none", plugins = NULL) {
   if (!is.data.frame(data)) data <- data.frame()
   detail_cols <- c(".ytab_gene_detail_name", ".ytab_sgd_description", ".ytab_sgd_essentiality")
-  for (col in detail_cols) if (!col %in% names(data)) data[[col]] <- ""
+  for (col in detail_cols) if (!col %in% names(data)) data[[col]] <- rep("", nrow(data))
   clickable <- which(names(data) %in% c("CAGL ID", "Gene name")) - 1L
   hidden <- match(detail_cols, names(data)) - 1L
   if (!length(clickable)) {
     return(DT::datatable(data[, setdiff(names(data), detail_cols), drop = FALSE],
                          rownames = FALSE, filter = filter, selection = selection,
-                         class = class, options = options))
+                         class = class, options = options, plugins = plugins))
   }
   column_defs <- options$columnDefs %||% list()
   column_defs <- c(
@@ -80,7 +80,7 @@ ytab_gene_details_datatable <- function(data, page_length = 10L, filter = "none"
   ))
   DT::datatable(data, rownames = FALSE, filter = filter, selection = selection,
                 class = class, escape = TRUE, callback = callback,
-                options = options)
+                options = options, plugins = plugins)
 }
 
 ytab_file_label <- function(path) {

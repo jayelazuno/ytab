@@ -58,6 +58,8 @@ normalize_navigation_state <- function(value = NULL, top = NULL) {
   }
   if (identical(defaults$active_essentiality_subtab, "evaluate"))
     defaults$active_essentiality_subtab <- "normalize"
+  if (!defaults$active_screen_coverage_subtab %in% c("planner", "mutants", "methods"))
+    defaults$active_screen_coverage_subtab <- if (defaults$active_screen_coverage_subtab %in% c("math", "statistics")) "methods" else "planner"
   if (!is.null(top) && nzchar(top)) defaults$active_top_tab <- top
   defaults
 }
@@ -113,6 +115,8 @@ record_navigation_selection <- function(value, input_id, selected) {
   if (identical(input_id, "workspace_tabs")) {
     value$active_top_tab <- selected[[1L]]
   } else if (input_id %in% names(navigation_nested_fields)) {
+    if (identical(input_id, "screen_coverage_tabs") && !selected[[1L]] %in% c("planner", "mutants", "methods"))
+      selected <- if (selected[[1L]] %in% c("math", "statistics")) "methods" else "planner"
     value[[navigation_nested_fields[[input_id]]]] <- selected[[1L]]
   }
   value

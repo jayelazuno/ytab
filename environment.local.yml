@@ -19,6 +19,7 @@ dependencies:
   - matplotlib-venn
   - openpyxl
   - bowtie2
+  - cutadapt
   - samtools
   - r-base
   - r-shiny

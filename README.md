@@ -62,6 +62,12 @@ The Fitness Screen exposes generated comparison designs, temporary interactive s
 
 # YTAB application workflow
 
+For a unified modular CLI and extensible master workflows, see
+[Command-line analyses](docs/command_line.md). Discover modules with
+`python scripts/local/ytab.py modules`, run a module with `ytab.py <module> --help`,
+or chain analyses with `ytab.py run --workflow WORKFLOW.yaml`. Existing runners
+remain supported, and project outputs use the same backends/formats as Shiny.
+
 YTAB now opens on a local landing page. For low-memory computers or large FASTQ inputs, preprocess first with two threads and then open the app:
 
 ```bash
