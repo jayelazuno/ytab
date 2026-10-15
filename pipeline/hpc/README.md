@@ -1,12 +1,12 @@
-# Personal Argon alignment job
+# Personal Argon preprocessing jobs
 
 YTAB is primarily a desktop Shiny application. Its analysis modules and master
 workflow also have a scheduler-independent [CLI](../../docs/command_line.md).
-**No HPC account or scheduler is required to use YTAB.** Alignment is the optional
-offload represented here; this does not imply that all other analyses are cheap
-for every dataset.
+**No HPC account or scheduler is required to use YTAB.** Alignment and hit-file
+creation can optionally run on Argon before continuing with summaries locally.
 
-`ytab_mapFastq.txt` is Joshua's University of Iowa **Argon / SGE (`qsub`)** job,
+`ytab_mapFastq.txt` and `ytab_CreateHitFile.txt` are personal University of Iowa
+**Argon / SGE (`qsub`)** jobs,
 not a universal HPC interface. Queue `UI`, parallel environment `smp`, email,
 Conda initialization and scratch paths are personal site settings. Users of
 Slurm, PBS or other clusters should wrap the ordinary CLI in their own scripts.
@@ -85,7 +85,57 @@ qstat -u jayelazuno
 tail -f YTAB_MapFastq.log
 ```
 
-## Continue locally after alignment
+## Create hit files on Argon after successful alignment
+
+The second wrapper calls the existing `ytab.py hit-files` runner. It reads each
+included sample's `mapfastq/<sample>/<sample>.sorted.bam` and requires its BAM
+index, the configured reference FASTA and annotation. It does not realign reads
+or change BAMs. No FASTQ directory or Bowtie2 executable is needed for this stage.
+The default environment is the same `tnseq` environment; Conda/module overrides,
+`SAMPLES`, `FORCE`, `DRY_RUN` and `KEEP_GOING` work as for the mapping wrapper.
+
+```bash
+# Run after checking the mapping log for successful completion.
+qsub -v PROJECT_ID=Gale_2020 pipeline/hpc/ytab_CreateHitFile.txt
+
+# Optional preview; validates inputs and may write preview manifests.
+qsub -v PROJECT_ID=Gale_2020,DRY_RUN=1 pipeline/hpc/ytab_CreateHitFile.txt
+
+# If alignments were deliberately replaced, rebuild affected hit files.
+qsub -v PROJECT_ID=Gale_2020,FORCE=1 pipeline/hpc/ytab_CreateHitFile.txt
+
+tail -f YTAB_CreateHitFile.log
+```
+
+SGE can delay submission until a mapping job finishes using
+`qsub -hold_jid MAPPING_JOB_ID -v PROJECT_ID=Gale_2020 pipeline/hpc/ytab_CreateHitFile.txt`.
+Replace `MAPPING_JOB_ID` with the actual numeric job ID. **SGE holds wait for
+completion, not success**; missing BAMs/indices fail validation, but a hold is not
+a substitute for checking mapping logs and sample statuses.
+
+Final outputs remain in the configured project's `create_hit_file/`,
+`manifests/create_hit_file/` and `logs/create_hit_file/`, with tracks in
+`output/exports/<project>/browser_tracks/create_hit_file/`. SGE writes
+`YTAB_CreateHitFile.log`; a second `hit_files.log` is retained in a unique
+temporary directory under `/nfsscratch/jayelazuno/workspace/ytab_hit_files`
+(override with `SCRATCH_ROOT`). Submit only one hit-file job per project at a time.
+Neither wrapper submits the other or any downstream analysis automatically.
+
+## Continue locally after hit-file creation
+
+Transfer the matching project's `create_hit_file/`, `manifests/create_hit_file/`
+and `logs/create_hit_file/` directories, plus its exported browser tracks, back
+to the same project on the PC. Keep sample IDs and reference assembly/annotation
+consistent, and retain local configuration paths rather than overwriting them
+with HPC paths. These hit files are the inputs for local SummaryTable generation;
+the large BAMs are not required for that stage.
+
+```bash
+python scripts/local/ytab.py summary --project-config PATH/TO/project.yaml
+```
+
+Alternatively, open the project in Shiny and run **SummaryTable**. If hit files
+were not generated on Argon, transfer alignments and run Hit Files locally first:
 
 Transfer the matching project's `mapfastq/` directory (including sorted BAMs,
 indices, mapping statistics and Hermes cleanup reports) and `manifests/mapfastq/`
@@ -109,5 +159,6 @@ smoke wrappers were retired. Their tracked versions remain recoverable from Git;
 no scientific CLI modules or completed results were removed. General metadata and
 specialized diagnostic utilities in `scripts/hpc` are not a supported full-pipeline
 scheduler interface. Run subsequent stages through the desktop app or ordinary
-CLI/master runner. After intentionally replacing alignments, refresh the affected
+CLI/master runner. The two wrappers above replace only the alignment/hit-file
+parts of that historical chain. After intentionally replacing alignments, refresh the affected
 downstream outputs rather than reusing old hit tables/results.

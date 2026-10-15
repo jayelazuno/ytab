@@ -81,9 +81,9 @@ python scripts/local/ytab_run_pipeline.py \
 
 Alternatively, launch `./scripts/local/ytab_launch_app.sh`, choose **Create new project**, select a local FASTQ directory, initialize it, and continue preprocessing. FASTQs stay in place and are not uploaded. Mapping runs one sample at a time, can take substantial time, and can be resumed later; completed cached stages are skipped. Raw SummaryTable completion makes a project analysis-ready. MidLC belongs only to the essentiality-classifier branch, while treated-versus-parent fitness uses raw SummaryTables and performs CPM normalization inside its R analysis.
 
-YTAB is intended for everyday desktop use; HPC is optional. The single
-[Argon alignment job](pipeline/hpc/README.md) is a personal SGE submission example,
-not a universal HPC workflow. It uses the same project routes and mapping CLI as
+YTAB is intended for everyday desktop use; HPC is optional. The
+[Argon alignment and hit-file jobs](pipeline/hpc/README.md) are personal SGE submission examples,
+not a universal HPC workflow. They use the same project routes and analysis CLI as
 the app. Experienced users can wrap the portable CLI for their own scheduler.
 
 The workspace keeps an active-job banner visible across tabs. Persistent progress files record the current sample, confirmed completions, elapsed time, recent state, and an approximate ETA after the first non-cached item finishes. Estimates vary with storage and system load. Cancelling preserves completed outputs so later cache-aware runs can resume without repeating successful samples.

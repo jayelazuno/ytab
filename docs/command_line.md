@@ -20,8 +20,8 @@ source-checkout interface, not a claim that an installed `ytab` executable exist
 Existing `scripts/local/ytab_*.py` commands remain supported. CLI analyses run
 headlessly; opening the browser requires the explicit `app` command.
 
-HPC is optional, not required for the desktop app. The repository retains one
-[personal Argon/SGE alignment template](../pipeline/hpc/README.md), which uses this
+HPC is optional, not required for the desktop app. The repository provides
+[personal Argon/SGE alignment and hit-file templates](../pipeline/hpc/README.md), which use this
 same CLI and existing project/output routes. Other clusters can supply their own
 scheduler wrappers; no cluster-specific full-pipeline job chain is maintained.
 

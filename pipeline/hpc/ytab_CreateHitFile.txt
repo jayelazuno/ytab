@@ -1,0 +1,125 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_CreateHitFile
+#$ -q UI
+#$ -pe smp 8
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_CreateHitFile.log
+
+## Personal University of Iowa Argon / SGE job; submit after successful mapping.
+## qsub -v PROJECT_ID=Gale_2020 pipeline/hpc/ytab_CreateHitFile.txt
+## Optional: PROJECT_CONFIG=/absolute/path/project.yaml, FORCE=1, DRY_RUN=1,
+## SAMPLES=one_sample, KEEP_GOING=0. Override slots with qsub -pe smp 4.
+## Input BAMs, reference, sample selection and outputs come from the project.
+
+set -euo pipefail
+start=$(date +%s)
+trap 'rc=$?; echo "Finished: $(date); exit code=$rc; elapsed=$(( $(date +%s) - start )) seconds"' EXIT
+
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+YTAB_ENV_MODE="${YTAB_ENV_MODE:-conda}"
+YTAB_CONDA_SH="${YTAB_CONDA_SH:-/old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-tnseq}"
+PYTHON_BIN="${PYTHON_BIN:-python}"
+PROJECT_ID="${PROJECT_ID:-}"
+PROJECT_CONFIG="${PROJECT_CONFIG:-}"
+FORCE="${FORCE:-0}"
+DRY_RUN="${DRY_RUN:-0}"
+KEEP_GOING="${KEEP_GOING:-1}"
+SCRATCH_ROOT="${SCRATCH_ROOT:-/nfsscratch/jayelazuno/workspace/ytab_hit_files}"
+
+if [[ ! -d "$YTAB" ]]; then
+    echo "ERROR: YTAB checkout not found: $YTAB" >&2
+    exit 2
+fi
+YTAB="$(cd "$YTAB" && pwd -P)"
+if [[ -z "$PROJECT_CONFIG" ]]; then
+    if [[ -z "$PROJECT_ID" || ! "$PROJECT_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]]; then
+        echo "ERROR: Supply PROJECT_CONFIG or a valid PROJECT_ID with qsub -v." >&2
+        exit 2
+    fi
+    PROJECT_CONFIG="$YTAB/output/projects/$PROJECT_ID/config/project.yaml"
+elif [[ "$PROJECT_CONFIG" != /* ]]; then
+    PROJECT_CONFIG="$PWD/$PROJECT_CONFIG"
+fi
+if [[ ! -s "$PROJECT_CONFIG" || ! -f "$YTAB/scripts/local/ytab.py" ]]; then
+    echo "ERROR: Project configuration or unified CLI is missing." >&2
+    echo "Project: $PROJECT_CONFIG" >&2
+    exit 2
+fi
+THREADS="${NSLOTS:-}"
+if [[ ! "$THREADS" =~ ^[1-9][0-9]*$ ]]; then
+    echo "ERROR: Submit with qsub and allocate at least one smp slot." >&2
+    exit 2
+fi
+for value in "$FORCE" "$DRY_RUN" "$KEEP_GOING"; do
+    if [[ "$value" != 0 && "$value" != 1 ]]; then
+        echo "ERROR: FORCE, DRY_RUN and KEEP_GOING must be 0 or 1." >&2
+        exit 2
+    fi
+done
+
+case "$YTAB_ENV_MODE" in
+    conda)
+        if [[ ! -s "$YTAB_CONDA_SH" ]]; then
+            echo "ERROR: Conda initialization script missing: $YTAB_CONDA_SH" >&2
+            exit 2
+        fi
+        source "$YTAB_CONDA_SH"
+        conda activate "$YTAB_CONDA_ENV"
+        ;;
+    modules)
+        if ! type module >/dev/null 2>&1; then
+            if [[ -f /etc/profile.d/modules.sh ]]; then
+                source /etc/profile.d/modules.sh
+            elif [[ -f /usr/share/lmod/lmod/init/bash ]]; then
+                source /usr/share/lmod/lmod/init/bash
+            else
+                echo "ERROR: Environment modules unavailable in this batch shell." >&2
+                exit 2
+            fi
+        fi
+        if [[ -z "${YTAB_MODULES:-}" ]]; then
+            echo "ERROR: Set YTAB_MODULES to the space-separated module names for this installation." >&2
+            exit 2
+        fi
+        read -r -a requested_modules <<< "$YTAB_MODULES"
+        module load "${requested_modules[@]}"
+        module list 2>&1
+        ;;
+    *) echo "ERROR: YTAB_ENV_MODE must be conda or modules." >&2; exit 2 ;;
+esac
+command -v "$PYTHON_BIN" >/dev/null || {
+    echo "ERROR: Required executable missing: $PYTHON_BIN" >&2
+    exit 2
+}
+"$PYTHON_BIN" -c 'import numpy, pandas, pysam, yaml'
+
+mkdir -p "$SCRATCH_ROOT"
+scratch_job=$(mktemp -d "$SCRATCH_ROOT/create_hit_file.${JOB_ID:-manual}.XXXXXX")
+export TMPDIR="$scratch_job"
+exec > >(tee -a "$scratch_job/hit_files.log") 2>&1
+echo "Started: $(date)"
+echo "Host: $(hostname)"
+echo "Job: ${JOB_ID:-manual}; NSLOTS=$THREADS"
+echo "YTAB: $YTAB"
+echo "Project: $PROJECT_CONFIG"
+echo "Temporary files/job log: $scratch_job"
+df -h "$SCRATCH_ROOT"
+"$PYTHON_BIN" --version
+
+args=("$YTAB/scripts/local/ytab.py" hit-files
+      --project-config "$PROJECT_CONFIG" --threads "$THREADS")
+[[ -n "${SAMPLES:-}" ]] && args+=(--samples "$SAMPLES")
+[[ "$FORCE" == 1 ]] && args+=(--force)
+[[ "$DRY_RUN" == 1 ]] && args+=(--dry-run)
+[[ "$KEEP_GOING" == 1 ]] && args+=(--keep-going)
+printf 'Command: '; printf '%q ' "$PYTHON_BIN" "${args[@]}"; printf '\n'
+cd "$YTAB"
+"$PYTHON_BIN" "${args[@]}"
+echo "SUCCESS: hit-file stage completed (or previewed when DRY_RUN=1)."
+echo "Hit files, browser tracks and manifests use the existing project configuration's output paths."
+echo "Input sorted BAMs are unchanged. No mapping, summary or downstream jobs were submitted."

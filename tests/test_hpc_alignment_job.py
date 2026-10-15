@@ -9,6 +9,7 @@ import pytest
 
 ROOT=Path(__file__).resolve().parents[1]
 JOB=ROOT/'pipeline/hpc/ytab_mapFastq.txt'
+HIT_JOB=ROOT/'pipeline/hpc/ytab_CreateHitFile.txt'
 
 
 @pytest.fixture
@@ -33,8 +34,8 @@ def environment(tmp_path):
     return env,tmp_path
 
 
-def execute(env,cwd):
-    return subprocess.run(['bash',str(JOB)],cwd=cwd,env=env,capture_output=True,text=True)
+def execute(env,cwd,job=JOB):
+    return subprocess.run(['bash',str(job)],cwd=cwd,env=env,capture_output=True,text=True)
 
 
 def test_bash_syntax_and_sge_header():
@@ -100,3 +101,62 @@ def test_module_mode_uses_declared_modules(environment):
     assert result.returncode==0,result.stdout+result.stderr
     assert 'test module: load python/test bowtie2/test samtools/test' in result.stdout
     assert Path(env['CAPTURE']).is_file()
+
+
+def test_hit_job_header_and_syntax():
+    assert HIT_JOB.read_text().startswith('#!/bin/bash\n')
+    assert '#$ -N YTAB_CreateHitFile' in HIT_JOB.read_text()
+    subprocess.run(['bash','-n',str(HIT_JOB)],check=True)
+
+
+def test_hit_job_uses_shared_cli_and_project_routes(environment):
+    env,cwd=environment
+    result=execute(env,cwd,HIT_JOB)
+    assert result.returncode==0,result.stdout+result.stderr
+    captured=json.loads(Path(env['CAPTURE']).read_text())
+    assert captured['args']==['hit-files','--project-config',
+        str(Path(env['YTAB'])/'output/projects/example/config/project.yaml'),
+        '--threads','8','--keep-going']
+    assert captured['cwd']==env['YTAB']
+    assert Path(captured['tmpdir']).parent==Path(env['SCRATCH_ROOT'])
+    assert not (Path(env['YTAB'])/'output/projects/example/create_hit_file').exists()
+
+
+def test_hit_job_explicit_settings_and_single_slot(environment):
+    env,cwd=environment
+    cfg=cwd/'other project.yaml';cfg.write_text('project_id: other\n')
+    env.update(PROJECT_ID='',PROJECT_CONFIG=cfg.name,NSLOTS='1',FORCE='1',
+               DRY_RUN='1',SAMPLES='a,b',KEEP_GOING='0')
+    result=execute(env,cwd,HIT_JOB)
+    assert result.returncode==0,result.stdout+result.stderr
+    assert json.loads(Path(env['CAPTURE']).read_text())['args']==[
+        'hit-files','--project-config',str(cfg),'--threads','1',
+        '--samples','a,b','--force','--dry-run']
+
+
+def test_hit_job_failure_propagates(environment):
+    env,cwd=environment;env['FAKE_EXIT']='7'
+    result=execute(env,cwd,HIT_JOB)
+    assert result.returncode==7
+    assert 'SUCCESS:' not in result.stdout
+
+
+@pytest.mark.parametrize('overrides',[
+    {'PROJECT_ID':''},{'PROJECT_ID':'../bad'},{'NSLOTS':'0'},
+    {'NSLOTS':'invalid'},{'FORCE':'yes'},{'DRY_RUN':'maybe'},
+    {'KEEP_GOING':'yes'},{'YTAB_ENV_MODE':'unknown'},
+])
+def test_hit_job_bad_configuration(environment,overrides):
+    env,cwd=environment;env.update(overrides)
+    result=execute(env,cwd,HIT_JOB)
+    assert result.returncode==2,result.stdout+result.stderr
+    assert not Path(env['CAPTURE']).exists()
+
+
+def test_hit_job_module_mode(environment):
+    env,cwd=environment
+    init=cwd/'module-init.sh';init.write_text('module() { echo "test module: $*"; }\n')
+    env.update(YTAB_ENV_MODE='modules',YTAB_MODULES='python/test',BASH_ENV=str(init))
+    result=execute(env,cwd,HIT_JOB)
+    assert result.returncode==0,result.stdout+result.stderr
+    assert 'test module: load python/test' in result.stdout
