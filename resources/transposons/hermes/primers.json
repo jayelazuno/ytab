@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "source": "Gale et al. 2020, doi:10.1534/g3.120.401595, Supplemental Table S3 (doi:10.25387/g3.12445373)",
+  "reference": "L34807.1.fasta",
+  "coordinate_convention": "1-based inclusive; natural Hermes reference, not the full engineered launchpad",
+  "primers": {
+    "HR-1": "AATACTTGCACTCAAAAGGCTTGACACC",
+    "HR-2-PCR": "AATGATACGGCGACCACCGAGATCTACACCACACTTGTGCTTATCTATGTGGC",
+    "SplAP1": "GTTCCCATGGTACTACTCATA",
+    "P7-SplAP2": "CAAGCAGAAGACGGCATACGAGATCGGTTAATACGACTCACTATAGG",
+    "P7-sequencing": "TACGACTCACTATAGGTGACAGCGAGCGCT",
+    "P7-index-sequencing": "TACGACTCACTATAGGTGACAGCGAGCGC",
+    "Hermes-sequencing": "CGGCGACCACCGAGATCTACACCACACTTGTGCTTATCTATGTGGCTTACGTTTGCCTGTGGCTTGTTGAAGTTCTCTG"
+  },
+  "adaptors": {
+    "Spl-Top": "GTTCCCATGGTACTACTCATATAATACGACTCACTATAGGTGACAGCGAGCGCT",
+    "Spl-Bot": "GCGCTCGCTGTCACCTATAGTGAGTCGTATTATAATTTTTTTTTCAAAAAAA",
+    "Spl-Top-index-core": "GTTCCCATGGTACTACTCATATAATACGACTCACTATAGGTGACAGCGAGCGC",
+    "Illumina-R1": "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
+    "Illumina-R2": "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT",
+    "Illumina-P5": "AATGATACGGCGACCACCGAGATCTACAC",
+    "Illumina-P7": "CAAGCAGAAGACGGCATACGAGAT"
+  },
+  "splinkerette_indices": {
+    "I1": "CGTGAT", "I2": "ACATCG", "I3": "GCCTAA",
+    "I4": "TGGTCA", "I5": "CACTGT", "I6": "ATTGGC"
+  },
+  "sequencing_design": {
+    "junction_mate_default": "R1",
+    "junction_read_end_default": "start",
+    "Hermes-sequencing": {"hermes_matching_suffix_length": 56, "reference_start": 2694, "reference_end": 2749, "remaining_hermes_bases": 0},
+    "HR-2-PCR": {"reference_matching_suffix_start": 2694, "reference_matching_suffix_end": 2716, "remaining_hermes_bases": 33},
+    "note": "Sequencing-primer binding sequence is not normally sequenced. No mandatory Hermes match, fixed 33-bp clipping, TA filtering, or automatic 6-bp index removal. Indices are metadata, not standalone clipping anchors."
+  }
+}

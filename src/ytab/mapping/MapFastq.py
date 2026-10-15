@@ -13,6 +13,8 @@ import sys
 import gzip
 import shutil
 import argparse
+import json
+import tempfile
 from pathlib import Path
 from subprocess import PIPE, run
 
@@ -173,10 +175,11 @@ def AlignFastq_SE(BowtiePath: str, bt2_index: str, CleanfName: str, SamfName: st
         raise RuntimeError(f"bowtie2 failed (exit {rc}). See log for details.")
 
 
-def AlignFastq_PE(BowtiePath: str, bt2_index: str, R1: str, R2: str, SamfName: str, threads: int, LogFile):
+def AlignFastq_PE(BowtiePath: str, bt2_index: str, R1: str, R2: str, SamfName: str, threads: int, LogFile, require_mate_alignment=False):
+    concordance = " --no-mixed --no-discordant" if require_mate_alignment else ""
     cmd = (
         f'{BowtiePath} -p {threads} -x "{bt2_index}" '
-        f'-1 "{R1}" -2 "{R2}" -S "{SamfName}"'
+        f'-1 "{R1}" -2 "{R2}" -S "{SamfName}"{concordance}'
     )
     rc, out, err = run_cmd(cmd)
     log = "\r\n\r\n=== Sequence alignment ===\r\n" + err.replace("\n", "\r\n")
@@ -236,6 +239,7 @@ def main():
     parser.add_argument("--r1", default=None)
     parser.add_argument("--r2", default=None)
     parser.add_argument("--junction-mate", default="R1", choices=["R1", "R2", "both"])
+    parser.add_argument("--source-junction-mate", choices=["R1","R2"], help="Original selected mate when passed as single-end input")
 
     parser.add_argument("-a", "--clean-adapters", nargs="?", const="", default=None)
     parser.add_argument("-r", "--reverse-strand", action="store_true")
@@ -249,11 +253,23 @@ def main():
     parser.add_argument("--trim-5p-seq-r2", default=None)
     parser.add_argument("--trim-5p-overlap", type=int, default=None)
     parser.add_argument("--discard-untrimmed", action="store_true")
+    parser.add_argument("--hermes-preprocess", action="store_true", help="Trim detected Hermes terminal sequence and adapters; no mandatory Hermes match")
+    parser.add_argument("--primer-catalogue", type=Path)
+    parser.add_argument("--hermes-reference", type=Path)
+    parser.add_argument("--hermes-overlap", type=int, default=16)
+    parser.add_argument("--adapter-error-rate", type=float, default=.1)
+    parser.add_argument("--min-read-length", type=int, default=25)
+    parser.add_argument("--junction-read-end", choices=("start","end"), default="start")
+    parser.add_argument("--require-mate-alignment", action="store_true", help="Retain only concordant pairs; emit only the designated junction mate")
 
     parser.add_argument("--mapq", type=int, default=20)
     parser.add_argument("--drop-flags", default="0xD04")
 
     args = parser.parse_args()
+    if args.require_mate_alignment and not (args.r1 and args.r2):
+        raise ValueError("Requiring mate agreement needs both --r1 and --r2")
+    if args.require_mate_alignment and args.junction_mate == "both":
+        raise ValueError("Select R1 or R2 as the junction mate; both would double-count insertion endpoints")
 
     pe_mode = (args.r1 is not None) or (args.r2 is not None)
     if pe_mode:
@@ -288,6 +304,33 @@ def main():
     else:
         prefix = derive_prefix(args.input_file_name)
 
+    cleanup_directory = None
+    if args.hermes_preprocess:
+        from ytab.mapping.hermes_preprocess import DEFAULT_CATALOGUE, prepare_fastqs
+        if args.trim_5p_seq is not None or args.clean_adapters is not None or args.delete_originals:
+            raise ValueError("Automatic Hermes cleanup cannot be combined with legacy trimming/deletion flags")
+        if args.junction_mate == "both":
+            raise ValueError("Automatic Hermes cleanup requires one designated junction mate")
+        cleanup_directory = tempfile.TemporaryDirectory(prefix="hermes-cleanup-",dir=os.environ.get("TMPDIR") or args.out_dir)
+        inputs = [args.r1,args.r2] if pe_mode else [args.input_file_name]
+        outputs = [str(Path(cleanup_directory.name)/f"read{i+1}.fastq") for i in range(len(inputs))]
+        print(f"Starting automatic Hermes/adaptor cleanup: {prefix}; junction mate={args.source_junction_mate or args.junction_mate}",flush=True)
+        report = prepare_fastqs(inputs,outputs,
+            junction_index=1 if pe_mode and args.junction_mate=="R2" else 0,
+            read_end=args.junction_read_end,catalogue=args.primer_catalogue or DEFAULT_CATALOGUE,
+            reference=args.hermes_reference,overlap=args.hermes_overlap,
+            error_rate=args.adapter_error_rate,min_length=args.min_read_length)
+        report["junction_mate"] = args.source_junction_mate or args.junction_mate
+        report["require_mate_alignment"] = args.require_mate_alignment
+        report_path = Path(args.out_dir)/f"{prefix}.hermes_preprocessing.json"
+        report_path.write_text(json.dumps(report,indent=2)+"\n")
+        print(f"Hermes preprocessing report: {report_path}",flush=True)
+        print(json.dumps(dict(junction_mate=report['junction_mate'],retained=report['retained_reads_or_pairs'],mates=report['mates'])),flush=True)
+        if pe_mode:
+            args.r1,args.r2=outputs
+        else:
+            args.input_file_name=outputs[0]
+
     log_path = os.path.join(args.out_dir, f"{prefix}_log.txt")
     LogFile = open(log_path, "w+", encoding="utf-8")
 
@@ -302,8 +345,11 @@ def main():
 
         if args.trim_5p_seq is None:
             LogFile.write("=== Trimming step skipped ===\r\n")
-            copy_to_clean_se(args.r1, CleanR1)
-            copy_to_clean_se(args.r2, CleanR2)
+            if cleanup_directory is not None and not args.keep_clean_fastqs:
+                CleanR1,CleanR2=args.r1,args.r2
+            else:
+                copy_to_clean_se(args.r1, CleanR1)
+                copy_to_clean_se(args.r2, CleanR2)
         else:
             trim_mate_mode = args.junction_mate
             if trim_mate_mode == "both":
@@ -360,7 +406,7 @@ def main():
         # mapping PE with bowtie2
 
         SamfName = os.path.join(args.out_dir, f"{prefix}.sam")
-        AlignFastq_PE(BowtiePath, args.bt2_index, CleanR1, CleanR2, SamfName, args.threads, LogFile)
+        AlignFastq_PE(BowtiePath, args.bt2_index, CleanR1, CleanR2, SamfName, args.threads, LogFile,args.require_mate_alignment)
         write_mapping_qc_from_sam(
             SamfName=SamfName,
             prefix=prefix,
@@ -378,6 +424,8 @@ def main():
             include_flag = " -f 0x40"
         elif args.junction_mate == "R2":
             include_flag = " -f 0x80"
+        if args.require_mate_alignment:
+            include_flag = " -f 0x42" if args.junction_mate=="R1" else " -f 0x82"
 
         cmd_view = (
             f'samtools view -@ {args.threads} -b -q {args.mapq} -F {args.drop_flags}'
@@ -420,7 +468,10 @@ def main():
 
         if args.trim_5p_seq is None:
             LogFile.write("=== Trimming step skipped ===\r\n")
-            copy_to_clean_se(args.input_file_name, CleanfName)
+            if cleanup_directory is not None and not args.keep_clean_fastqs:
+                CleanfName=args.input_file_name
+            else:
+                copy_to_clean_se(args.input_file_name, CleanfName)
         else:
             header = (
                 "Reserve strand primer removal (searched w/o Tn tail)"
@@ -518,6 +569,8 @@ def main():
     LogFile.seek(0)
     sys.stdout.write(LogFile.read())
     LogFile.close()
+    if cleanup_directory is not None:
+        cleanup_directory.cleanup()
 
     try:
         os.remove(SamfName)

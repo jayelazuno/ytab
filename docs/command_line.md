@@ -20,6 +20,11 @@ source-checkout interface, not a claim that an installed `ytab` executable exist
 Existing `scripts/local/ytab_*.py` commands remain supported. CLI analyses run
 headlessly; opening the browser requires the explicit `app` command.
 
+HPC is optional, not required for the desktop app. The repository retains one
+[personal Argon/SGE alignment template](../pipeline/hpc/README.md), which uses this
+same CLI and existing project/output routes. Other clusters can supply their own
+scheduler wrappers; no cluster-specific full-pipeline job chain is maintained.
+
 ## Individual modules
 
 Use `modules --json` for the machine-readable registry and `<module> --help` for
@@ -28,6 +33,10 @@ mapping, hit files, summaries, library QC, existing MidLC normalization, combine
 parents, essentiality classification, fitness, GO enrichment, gene/domain insertion
 plots, Poisson coverage, mutant identification, project status, reports and exports.
 Initialization and hit-file import are also available.
+
+Hermes mapping defaults to automatic sequence cleanup and the designated R1 read;
+R2 and explicit concordant-pair requirements are supported. See
+[Hermes alignment](hermes_alignment.md) for shared CLI/Shiny settings and reports.
 
 ```sh
 python scripts/local/ytab.py fitness \

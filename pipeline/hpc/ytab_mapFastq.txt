@@ -1,250 +1,146 @@
-## Title: script to map fastq samples using bowtie2; assumes user has already generated ref genome indexes 
-## author: Joshua Ayelazuno
-## usage:
- ## qsub ytab_mapFastq.txt
- ## force rerun: qsub -v FORCE=1 ytab_mapFastq.txt
- ## use different project folder qsub -v PROJECT_ID=H2O2_screen_v1,FORCE=1 ytab_mapFastq.txt 
 #!/bin/bash
 #$ -S /bin/bash
 #$ -cwd
-#$ -N YTAB_MapFastq_All
+#$ -N YTAB_MapFastq
 #$ -q UI
-#$ -pe smp 56
+#$ -pe smp 8
 #$ -M jayelazuno@uiowa.edu
 #$ -m e
 #$ -j y
-#$ -o YTAB_MapFastq_All.log
+#$ -o YTAB_MapFastq.log
+
+## Personal University of Iowa Argon / SGE alignment job, not a portable scheduler interface.
+## qsub -v PROJECT_ID=H2O2_screen_v1 pipeline/hpc/ytab_mapFastq.txt
+## qsub -v PROJECT_CONFIG=/absolute/path/project.yaml pipeline/hpc/ytab_mapFastq.txt
+## qsub -v PROJECT_ID=Gale_2020,JUNCTION_MATE=R1 pipeline/hpc/ytab_mapFastq.txt
+## Optional: FORCE=1, DRY_RUN=1, SAMPLES=one_sample, REQUIRE_MATE_ALIGNMENT=1
+## Change CPU allocation with qsub -pe smp 16; the CLI uses NSLOTS.
 
 set -euo pipefail
-
 start=$(date +%s)
-date
-echo "Using NSLOTS=${NSLOTS:-NA}"
+trap 'rc=$?; echo "Finished: $(date); exit code=$rc; elapsed=$(( $(date +%s) - start )) seconds"' EXIT
 
-# -----------------------
-# Activate tnseq conda env
-# -----------------------
-source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
-conda activate tnseq
-
-# -----------------------
-# Project paths
-# -----------------------
-YTAB="/Users/jayelazuno/workspace/ytab"
-DATA_DIR="/Users/jayelazuno/workspace/HermesTnseq/data"
-BOWTIE2_INDEX="/Users/jayelazuno/workspace/HermesTnseq/transposon-pipeline/dependencies/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic"
-
-# Permanent project/version name for app-facing analysis
-PROJECT_ID="${PROJECT_ID:-H2O2_screen_v1}"
-
-# Permanent pipeline stage output
-RUN_DIR="$YTAB/output/projects/$PROJECT_ID/mapfastq"
-
-# App-facing export dir
-EXPORT_DIR="$YTAB/output/exports/$PROJECT_ID"
-MAPPING_EXPORT_DIR="$EXPORT_DIR/qc/mapping"
-
-mkdir -p "$RUN_DIR"
-mkdir -p "$EXPORT_DIR"
-mkdir -p "$MAPPING_EXPORT_DIR"
-
-THREADS=${NSLOTS:-56}
-export PYTHONPATH="$YTAB/src"
-
-# -----------------------
-# Optional manual sample list
-# -----------------------
-# Leave empty to automatically discover all *.fastq.gz and *.fq.gz in DATA_DIR.
-#
-# You may list either:
-#   1) sample names without extension:
-#        "yH298-parent-pool1"
-#   2) FASTQ filenames:
-#        "yH298-parent-pool1.fastq.gz"
-#
-# Example manual list:
-# MANUAL_SAMPLES=(
-#   "yH298-parent-pool1"
-#  "yH298-parent-pool2"
-#   "yH299-parent-pool3"
-#   "yH299-parent-pool4"
-#   "yH298-H2O2-treated-facs-pool1"
-#   "yH298-H2O2-treated-facs-pool2"
-#   "yH299-H2O2-treated-facs-pool3"
-#   "yH299-H2O2-treated-facs-pool4"
-# )
-
-MANUAL_SAMPLES=()
-
-# Set FORCE=1 to rerun samples even if sorted BAM and mapping stats already exist.
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+YTAB_ENV_MODE="${YTAB_ENV_MODE:-conda}"
+YTAB_CONDA_SH="${YTAB_CONDA_SH:-/old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh}"
+YTAB_CONDA_ENV="${YTAB_CONDA_ENV:-tnseq}"
+PYTHON_BIN="${PYTHON_BIN:-python}"
+PROJECT_ID="${PROJECT_ID:-}"
+PROJECT_CONFIG="${PROJECT_CONFIG:-}"
+JUNCTION_MATE="${JUNCTION_MATE:-}"
+REQUIRE_MATE_ALIGNMENT="${REQUIRE_MATE_ALIGNMENT:-}"
 FORCE="${FORCE:-0}"
+DRY_RUN="${DRY_RUN:-0}"
+KEEP_GOING="${KEEP_GOING:-1}"
+SCRATCH_ROOT="${SCRATCH_ROOT:-/nfsscratch/jayelazuno/workspace/ytab_alignment}"
 
-echo "YTAB repo:          $YTAB"
-echo "Project ID:         $PROJECT_ID"
-echo "Input FASTQ dir:    $DATA_DIR"
-echo "Run dir:            $RUN_DIR"
-echo "Export dir:         $EXPORT_DIR"
-echo "Mapping export dir: $MAPPING_EXPORT_DIR"
-echo "Index prefix:       $BOWTIE2_INDEX"
-echo "THREADS:            $THREADS"
-echo "FORCE:              $FORCE"
-echo
+if [[ ! -d "$YTAB" ]]; then
+    echo "ERROR: YTAB checkout not found: $YTAB" >&2
+    exit 2
+fi
+YTAB="$(cd "$YTAB" && pwd -P)"
 
-# -----------------------
-# Resolve FASTQ files
-# -----------------------
-
-FASTQ_FILES=()
-
-resolve_fastq() {
-  local item="$1"
-  local fq=""
-
-  if [[ "$item" == *.fastq.gz || "$item" == *.fq.gz ]]; then
-    fq="$DATA_DIR/$item"
-  else
-    if [[ -s "$DATA_DIR/${item}.fastq.gz" ]]; then
-      fq="$DATA_DIR/${item}.fastq.gz"
-    elif [[ -s "$DATA_DIR/${item}.fq.gz" ]]; then
-      fq="$DATA_DIR/${item}.fq.gz"
-    else
-      fq="$DATA_DIR/${item}.fastq.gz"
+if [[ -z "$PROJECT_CONFIG" ]]; then
+    if [[ -z "$PROJECT_ID" || ! "$PROJECT_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]]; then
+        echo "ERROR: Supply PROJECT_CONFIG or a valid PROJECT_ID with qsub -v." >&2
+        exit 2
     fi
-  fi
-
-  echo "$fq"
-}
-
-if [[ ${#MANUAL_SAMPLES[@]} -gt 0 ]]; then
-  echo "Using manual sample list."
-  for item in "${MANUAL_SAMPLES[@]}"; do
-    FASTQ_FILES+=( "$(resolve_fastq "$item")" )
-  done
-else
-  echo "No manual sample list provided. Discovering FASTQs in DATA_DIR."
-
-  while IFS= read -r -d '' fq; do
-    FASTQ_FILES+=( "$fq" )
-  done < <(
-    find "$DATA_DIR" -maxdepth 1 -type f \
-      \( -name "*.fastq.gz" -o -name "*.fq.gz" \) \
-      -print0 | sort -z
-  )
+    PROJECT_CONFIG="$YTAB/output/projects/$PROJECT_ID/config/project.yaml"
+elif [[ "$PROJECT_CONFIG" != /* ]]; then
+    PROJECT_CONFIG="$PWD/$PROJECT_CONFIG"
 fi
 
-if [[ ${#FASTQ_FILES[@]} -eq 0 ]]; then
-  echo "ERROR: no FASTQ files found." >&2
-  echo "DATA_DIR=$DATA_DIR" >&2
-  exit 1
+if [[ ! -s "$PROJECT_CONFIG" || ! -f "$YTAB/scripts/local/ytab.py" ]]; then
+    echo "ERROR: Project configuration or unified CLI is missing." >&2
+    echo "Project: $PROJECT_CONFIG" >&2
+    exit 2
 fi
 
-echo "FASTQ files to process (${#FASTQ_FILES[@]}):"
-printf '  %s\n' "${FASTQ_FILES[@]}"
-echo
-
-# -----------------------
-# Run MapFastq
-# -----------------------
-
-for fq in "${FASTQ_FILES[@]}"; do
-  if [[ ! -s "$fq" ]]; then
-    echo "ERROR: missing input FASTQ: $fq" >&2
-    exit 1
-  fi
-
-  fq_base="$(basename "$fq")"
-
-  sample="$fq_base"
-  sample="${sample%.fastq.gz}"
-  sample="${sample%.fq.gz}"
-
-  sample_out="$RUN_DIR/$sample"
-  mkdir -p "$sample_out"
-
-  expected_bam="$sample_out/${sample}.sorted.bam"
-  expected_bai="$sample_out/${sample}.sorted.bam.bai"
-  expected_stats="$sample_out/${sample}.mapping_stats.csv"
-
-  echo "============================================================"
-  echo "[$(date)] sample=$sample"
-  echo "  input=$fq"
-  echo "  output=$sample_out"
-  echo "============================================================"
-
-  if [[ "$FORCE" != "1" && -s "$expected_bam" && -s "$expected_stats" ]]; then
-    echo "[SKIP] Existing outputs found for $sample."
-    echo "       BAM:   $expected_bam"
-    echo "       stats: $expected_stats"
-    echo "       Set FORCE=1 to rerun."
-  else
-    python3 "$YTAB/src/ytab/mapping/MapFastq.py" \
-      -i "$fq" \
-      -o "$sample_out" \
-      -x "$BOWTIE2_INDEX" \
-      -t "$THREADS"
-  fi
-
-  if [[ ! -s "$expected_bam" ]]; then
-    echo "ERROR: expected BAM was not produced: $expected_bam" >&2
-    exit 1
-  fi
-
-  if [[ ! -s "$expected_stats" ]]; then
-    echo "ERROR: expected mapping stats were not produced: $expected_stats" >&2
-    exit 1
-  fi
-
-  # -----------------------
-  # Copy app-facing mapping assets
-  # -----------------------
-  cp -f "$expected_stats" "$MAPPING_EXPORT_DIR/${sample}.mapping_stats.csv"
-
-  if [[ -s "$expected_bai" ]]; then
-    cp -f "$expected_bai" "$MAPPING_EXPORT_DIR/${sample}.sorted.bam.bai"
-  else
-    echo "[WARN] expected BAM index missing: $expected_bai"
-  fi
-
-  echo
+THREADS="${NSLOTS:-}"
+if [[ ! "$THREADS" =~ ^[1-9][0-9]*$ ]] || (( THREADS < 2 )); then
+    echo "ERROR: Submit with qsub and allocate at least two smp slots." >&2
+    exit 2
+fi
+for value in "$FORCE" "$DRY_RUN" "$KEEP_GOING"; do
+    if [[ "$value" != 0 && "$value" != 1 ]]; then
+        echo "ERROR: FORCE, DRY_RUN and KEEP_GOING must be 0 or 1." >&2
+        exit 2
+    fi
 done
+case "$JUNCTION_MATE" in ""|R1|R2) ;; *) echo "ERROR: JUNCTION_MATE must be R1 or R2." >&2; exit 2 ;; esac
+case "$REQUIRE_MATE_ALIGNMENT" in ""|0|1) ;; *) echo "ERROR: REQUIRE_MATE_ALIGNMENT must be 0 or 1." >&2; exit 2 ;; esac
 
-# -----------------------
-# Build combined app-facing mapping stats table
-# -----------------------
+case "$YTAB_ENV_MODE" in
+    conda)
+        if [[ ! -s "$YTAB_CONDA_SH" ]]; then
+            echo "ERROR: Conda initialization script missing: $YTAB_CONDA_SH" >&2
+            exit 2
+        fi
+        source "$YTAB_CONDA_SH"
+        conda activate "$YTAB_CONDA_ENV"
+        ;;
+    modules)
+        if ! type module >/dev/null 2>&1; then
+            if [[ -f /etc/profile.d/modules.sh ]]; then
+                source /etc/profile.d/modules.sh
+            elif [[ -f /usr/share/lmod/lmod/init/bash ]]; then
+                source /usr/share/lmod/lmod/init/bash
+            else
+                echo "ERROR: Environment modules unavailable in this batch shell." >&2
+                exit 2
+            fi
+        fi
+        if [[ -z "${YTAB_MODULES:-}" ]]; then
+            echo "ERROR: Set YTAB_MODULES to the space-separated module names for this installation." >&2
+            exit 2
+        fi
+        read -r -a requested_modules <<< "$YTAB_MODULES"
+        module load "${requested_modules[@]}"
+        module list 2>&1
+        ;;
+    *) echo "ERROR: YTAB_ENV_MODE must be conda or modules." >&2; exit 2 ;;
+esac
 
-combined_stats="$MAPPING_EXPORT_DIR/mapping_stats.all_samples.csv"
+for tool in "$PYTHON_BIN" bowtie2 samtools; do
+    command -v "$tool" >/dev/null || {
+        echo "ERROR: Required executable missing: $tool" >&2
+        exit 2
+    }
+done
+"$PYTHON_BIN" -c 'import cutadapt, dnaio, Bio, pysam, yaml, pandas'
 
-shopt -s nullglob
-stats_files=( "$MAPPING_EXPORT_DIR"/*.mapping_stats.csv )
-shopt -u nullglob
+mkdir -p "$SCRATCH_ROOT"
+scratch_job=$(mktemp -d "$SCRATCH_ROOT/mapfastq.${JOB_ID:-manual}.XXXXXX")
+export TMPDIR="$scratch_job"
+exec > >(tee -a "$scratch_job/alignment.log") 2>&1
 
-if [[ ${#stats_files[@]} -gt 0 ]]; then
-  echo "Building combined mapping stats:"
-  echo "  $combined_stats"
+echo "Started: $(date)"
+echo "Host: $(hostname)"
+echo "Job: ${JOB_ID:-manual}; NSLOTS=$THREADS"
+echo "YTAB: $YTAB"
+echo "Project: $PROJECT_CONFIG"
+echo "Temporary files/job log: $scratch_job"
+echo "Junction mate: ${JUNCTION_MATE:-project settings; default R1}"
+echo "Mate agreement: ${REQUIRE_MATE_ALIGNMENT:-project settings; default no}"
+df -h "$SCRATCH_ROOT"
+"$PYTHON_BIN" --version
+bowtie2 --version
+samtools --version
 
-  first=1
-  : > "$combined_stats"
+args=("$YTAB/scripts/local/ytab.py" mapfastq
+      --project-config "$PROJECT_CONFIG" --threads "$THREADS")
+[[ -n "${SAMPLES:-}" ]] && args+=(--samples "$SAMPLES")
+[[ -n "$JUNCTION_MATE" ]] && args+=(--junction-mate "$JUNCTION_MATE")
+[[ "$REQUIRE_MATE_ALIGNMENT" == 1 ]] && args+=(--require-mate-alignment)
+[[ "$REQUIRE_MATE_ALIGNMENT" == 0 ]] && args+=(--no-require-mate-alignment)
+[[ "$FORCE" == 1 ]] && args+=(--force)
+[[ "$DRY_RUN" == 1 ]] && args+=(--dry-run)
+[[ "$KEEP_GOING" == 1 ]] && args+=(--keep-going)
 
-  for f in "${stats_files[@]}"; do
-    if [[ "$first" -eq 1 ]]; then
-      cat "$f" >> "$combined_stats"
-      first=0
-    else
-      tail -n +2 "$f" >> "$combined_stats"
-    fi
-  done
-else
-  echo "[WARN] no per-sample mapping stats found in $MAPPING_EXPORT_DIR"
-fi
+printf 'Command: '; printf '%q ' "$PYTHON_BIN" "${args[@]}"; printf '\n'
+cd "$YTAB"
+"$PYTHON_BIN" "${args[@]}"
 
-echo
-echo "Final MapFastq outputs:"
-echo "  Pipeline stage outputs: $RUN_DIR/<sample>/"
-echo "  App-facing exports:     $MAPPING_EXPORT_DIR/"
-echo
-
-date
-end=$(date +%s)
-runtime=$((end-start))
-echo "runtime=$runtime secs"
-echo "Done."
+echo "SUCCESS: alignment stage completed (or previewed when DRY_RUN=1)."
+echo "Final BAMs, mapping QC and manifests use the existing project configuration's output paths."
+echo "No hit-file, summary, normalization, classifier or fitness jobs were submitted."

@@ -28,6 +28,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--keep-going", action="store_true")
     parser.add_argument("--job-id")
     parser.add_argument("--progress-file", type=Path)
+    parser.add_argument("--junction-mate", choices=("R1","R2"), help="Override the designated Hermes/junction read for selected samples (default R1)")
+    parser.add_argument("--require-mate-alignment", action=argparse.BooleanOptionalAction, default=None, help="Require concordant pairs; default uses only the designated junction mate")
+    parser.add_argument("--hermes-cleanup", action=argparse.BooleanOptionalAction, default=None, help="Automatically trim observed Hermes/adaptor sequence (default enabled)")
     return parser.parse_args()
 
 
@@ -48,6 +51,8 @@ def main() -> int:
             args.project_config, samples=selected, threads=args.threads,
             force=args.force, dry_run=args.dry_run, keep_going=args.keep_going,
             job_id=args.job_id, progress_file=args.progress_file,
+            junction_mate=args.junction_mate, require_mate_alignment=args.require_mate_alignment,
+            hermes_cleanup=args.hermes_cleanup,
         )
     except (FileNotFoundError, OSError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

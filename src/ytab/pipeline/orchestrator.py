@@ -57,7 +57,8 @@ def validate_pipeline_plan(plan,context):
 def execute_pipeline_stage(stage,context,threads,force,dry_run,keep_going,target="recommended",analysis_id="treated_vs_parent_raw_cpm",log=None):
     command=_command(stage["stage"],context,target,analysis_id,threads,force,dry_run,keep_going)
     if dry_run: return {"stage":stage["stage"],"status":"dry-run","command":command,"returncode":0}
-    if stage.get("current_status")=="success" and not force:
+    # Mapping has a settings/read/resource-aware cache; let its runner validate it.
+    if stage.get("current_status")=="success" and not force and stage["stage"]!="mapfastq":
         return {"stage":stage["stage"],"status":"skipped","command":command,"returncode":0,
                 "message":"Successful project status found; existing stage outputs reused."}
     completed=subprocess.run(command,cwd=context["root"],stdout=log or subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
