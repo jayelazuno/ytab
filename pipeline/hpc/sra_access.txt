@@ -1,0 +1,316 @@
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Gale_SRA
+#$ -q UI
+#$ -pe smp 8
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_Gale_SRA.log
+
+## Download Gale 2020 Hermes sequencing libraries.
+## Submit: qsub sra_access.txt
+## Resubmit the same script to resume incomplete work.
+## Submit only one copy at a time.
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "JOB_ID=${JOB_ID:-NA}"
+echo "Host: $(hostname)"
+echo "NSLOTS=${NSLOTS:-NA}"
+
+# -----------------------
+# Conda: Python and pigz
+# -----------------------
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate /old_Users/jayelazuno/miniforge3/envs/ytab-sra-tools
+
+# -----------------------
+# Cluster-compatible SRA Toolkit
+# Load AFTER Conda so its binaries take precedence.
+# -----------------------
+if ! type module >/dev/null 2>&1; then
+    if [[ -f /etc/profile.d/modules.sh ]]; then
+        source /etc/profile.d/modules.sh
+    elif [[ -f /usr/share/lmod/lmod/init/bash ]]; then
+        source /usr/share/lmod/lmod/init/bash
+    else
+        echo "ERROR: Environment modules are unavailable." >&2
+        exit 1
+    fi
+fi
+
+module load sratoolkit/2.10.9_gcc-9.3.0
+hash -r
+
+for tool in python pigz prefetch fasterq-dump vdb-validate; do
+    command -v "$tool" || {
+        echo "ERROR: Required tool missing: $tool" >&2
+        exit 1
+    }
+done
+
+# -----------------------
+# Data and temporary files: scratch only
+# -----------------------
+BASE="/nfsscratch/jayelazuno/workspace/gale_data"
+THREADS="${NSLOTS:-4}"
+
+[[ "$THREADS" =~ ^[1-9][0-9]*$ ]] || {
+    echo "ERROR: Invalid thread count: $THREADS" >&2
+    exit 1
+}
+
+mkdir -p "$BASE"/{sra,fastq,tmp,metadata,logs}
+export TMPDIR="$BASE/tmp"
+
+exec > >(tee -a "$BASE/logs/download.${JOB_ID:-manual}.log") 2>&1
+
+trap 'rc=$?; echo "Finished: $(date); exit code=$rc; elapsed=$(( $(date +%s) - start )) seconds"' EXIT
+
+echo "Destination: $BASE"
+echo "Threads: $THREADS"
+getconf GNU_LIBC_VERSION
+df -h "$BASE"
+
+module list 2>&1
+prefetch --version
+fasterq-dump --version
+
+# Record both Conda packages and the SRA binaries actually used.
+conda list --explicit > "$BASE/metadata/conda_environment.explicit.txt"
+
+{
+    date
+    module list 2>&1
+    command -v prefetch
+    prefetch --version
+    command -v fasterq-dump
+    fasterq-dump --version
+    command -v vdb-validate
+} > "$BASE/metadata/sra_toolkit.txt" 2>&1
+
+# -----------------------
+# Resolve experiment accessions to run accessions
+# Preserve independent pool and assay-condition labels.
+# -----------------------
+python - "$BASE" <<'PY'
+import csv
+import io
+import re
+import sys
+import time
+import urllib.parse
+import urllib.request
+from pathlib import Path
+
+base = Path(sys.argv[1])
+
+experiments = [
+    ("SRX8130913", "Cg1_parent",   "Cg1", "parent"),
+    ("SRX8130914", "Cg2_parent",   "Cg2", "parent"),
+    ("SRX8130915", "Cg3_parent",   "Cg3", "parent"),
+    ("SRX8130916", "Cg1_control1", "Cg1", "no_drug"),
+    ("SRX8130917", "Cg1_control2", "Cg1", "no_drug"),
+    ("SRX8130918", "Cg1_FLU1",     "Cg1", "fluconazole"),
+    ("SRX8130919", "Cg1_FLU2",     "Cg1", "fluconazole"),
+]
+
+resolved = []
+seen = set()
+
+for experiment, sample, pool, condition in experiments:
+    query = urllib.parse.urlencode({
+        "accession": experiment,
+        "result": "read_run",
+        "fields": "experiment_accession,run_accession,library_layout",
+        "format": "tsv",
+        "download": "false",
+    })
+    url = "https://www.ebi.ac.uk/ena/portal/api/filereport?" + query
+
+    for attempt in range(1, 4):
+        try:
+            request = urllib.request.Request(
+                url,
+                headers={"User-Agent": "YTAB-Gale-download"},
+            )
+            with urllib.request.urlopen(request, timeout=120) as response:
+                text = response.read().decode("utf-8")
+
+            records = list(csv.DictReader(io.StringIO(text), delimiter="\t"))
+            if not records:
+                raise ValueError(f"No sequencing runs returned for {experiment}")
+            break
+        except Exception as error:
+            if attempt == 3:
+                raise SystemExit(
+                    f"Could not resolve {experiment}: {error}"
+                )
+            time.sleep(5 * attempt)
+
+    (base / "metadata" / f"{experiment}.ena.tsv").write_text(text)
+
+    for record in records:
+        run = record.get("run_accession", "")
+
+        if record.get("experiment_accession") != experiment:
+            raise SystemExit(f"Unexpected experiment in response: {record}")
+        if not re.fullmatch(r"SRR[0-9]+", run):
+            raise SystemExit(f"Invalid run accession: {run!r}")
+        if run in seen:
+            raise SystemExit(f"Duplicate run assignment: {run}")
+
+        seen.add(run)
+        resolved.append([
+            experiment,
+            sample,
+            pool,
+            condition,
+            run,
+            record.get("library_layout") or "UNKNOWN",
+        ])
+        print(f"{experiment} -> {run} ({sample})", flush=True)
+
+manifest = base / "metadata" / "runs.tsv"
+pending = manifest.with_suffix(".tsv.pending")
+
+with pending.open("w", newline="") as handle:
+    writer = csv.writer(handle, delimiter="\t")
+    writer.writerow([
+        "experiment", "sample", "pool", "condition", "run", "layout"
+    ])
+    writer.writerows(resolved)
+
+pending.replace(manifest)
+PY
+
+# -----------------------
+# Download, validate and convert each run sequentially
+# -----------------------
+cd "$BASE/sra"
+
+while IFS=$'\t' read -r experiment sample pool condition run layout; do
+    [[ "$experiment" == "experiment" ]] && continue
+
+    final="$BASE/fastq/$sample/$run"
+
+    echo
+    echo "=== $sample | $experiment | $run | $layout ==="
+
+    # Reuse completed outputs only after gzip-integrity validation.
+    if [[ -f "$final/.complete" ]]; then
+        existing=()
+
+        for file in "$final"/*.fastq.gz; do
+            [[ -f "$file" ]] && existing+=("$file")
+        done
+
+        if (( ${#existing[@]} == 0 )); then
+            echo "ERROR: Completion marker exists without FASTQs: $final" >&2
+            exit 1
+        fi
+
+        pigz -t "${existing[@]}"
+        echo "Already completed and validated; skipping $run."
+        continue
+    fi
+
+    # Repeated prefetch calls reuse/resume downloaded data.
+    downloaded=0
+
+    for attempt in 1 2 3; do
+        if prefetch "$run" \
+            --max-size u \
+            --output-directory "$BASE/sra/$run"; then
+            downloaded=1
+            break
+        fi
+
+        echo "Prefetch attempt $attempt failed for $run."
+
+        if (( attempt < 3 )); then
+            sleep 10
+        fi
+    done
+
+    if (( downloaded == 0 )); then
+        echo "ERROR: Download failed for $run; resubmit to resume." >&2
+        exit 1
+    fi
+
+    # Use the actual archive file, NOT the accession directory.
+    sra_file="$BASE/sra/$run/$run.sra"
+
+    # Accommodate a nested directory created by an older prefetch.
+    if [[ ! -s "$sra_file" ]]; then
+        candidates=()
+
+        while IFS= read -r -d '' candidate; do
+            [[ -s "$candidate" ]] && candidates+=("$candidate")
+        done < <(
+            find "$BASE/sra/$run" -maxdepth 3 \
+                -type f -name "$run.sra" -print0
+        )
+
+        if (( ${#candidates[@]} != 1 )); then
+            echo "ERROR: Expected exactly one nonempty $run.sra archive." >&2
+            find "$BASE/sra/$run" -maxdepth 3 -type f -print
+            exit 1
+        fi
+
+        sra_file="${candidates[0]}"
+    fi
+
+    echo "Validating archive: $sra_file"
+    ls -lh "$sra_file"
+    vdb-validate "$sra_file"
+
+    # A fresh conversion directory avoids overwriting partial FASTQs.
+    stage=$(mktemp -d "$BASE/tmp/${run}.XXXXXX")
+    mkdir -p "$stage/fastq" "$stage/work"
+
+    echo "Converting: $run"
+
+    fasterq-dump "$sra_file" \
+        --split-3 \
+        --threads "$THREADS" \
+        --outdir "$stage/fastq" \
+        --temp "$stage/work"
+
+    fastqs=()
+
+    for file in "$stage/fastq"/*.fastq; do
+        [[ -s "$file" ]] && fastqs+=("$file")
+    done
+
+    if (( ${#fastqs[@]} == 0 )); then
+        echo "ERROR: No nonempty FASTQs produced for $run." >&2
+        exit 1
+    fi
+
+    echo "Compressing and checking FASTQs: $run"
+    pigz -p "$THREADS" "${fastqs[@]}"
+    pigz -t "$stage/fastq"/*.fastq.gz
+
+    # Preserve any incomplete prior output; do not delete it.
+    if [[ -e "$final" ]]; then
+        previous=$(mktemp -d "$BASE/tmp/${run}.previous.XXXXXX")
+        mv "$final" "$previous/output"
+        echo "Previous incomplete output preserved: $previous/output"
+    fi
+
+    mkdir -p "$BASE/fastq/$sample"
+    mv "$stage/fastq" "$final"
+
+    date -u '+%Y-%m-%dT%H:%M:%SZ' > "$final/.complete"
+
+    echo "Completed: $final"
+    ls -lh "$final"/*.fastq.gz
+
+done < "$BASE/metadata/runs.tsv"
+
