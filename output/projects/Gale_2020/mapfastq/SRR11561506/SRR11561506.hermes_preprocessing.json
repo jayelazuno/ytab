@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "mode": "designated-junction-mate",
+  "junction_index": 0,
+  "junction_read_end": "start",
+  "retained_reads_or_pairs": 12651365,
+  "input_files": [
+    "/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg3_parent/SRR11561506/SRR11561506_1.fastq.gz"
+  ],
+  "mates": [
+    {
+      "input_reads": 12728621,
+      "adapter_3p_reads": 1157299,
+      "trimmed_3p_bases": 38482500,
+      "signature:P7-SplAP2:rc": 409226,
+      "signature:Spl-Bot:forward": 254945,
+      "signature:Spl-Top:rc": 355744,
+      "signature:P7-sequencing:rc": 67120,
+      "too_short": 77256,
+      "signature:P7-index-sequencing:rc": 47610,
+      "signature:Hermes_left:rc": 3724,
+      "signature:Spl-Top-index-core:rc": 17604,
+      "signature:Illumina-P7:rc": 647,
+      "signature:Hermes_left:forward": 286,
+      "hermes_5p_reads": 205,
+      "hermes_overlap_bases": 7635,
+      "trimmed_5p_bases": 7656,
+      "signature:Hermes_left": 191,
+      "signature:Hermes_right:forward": 208,
+      "signature:SplAP1:rc": 22,
+      "signature:HR-1:forward": 97,
+      "signature:Spl-Bot:rc": 55,
+      "signature:Hermes_right": 14,
+      "signature:SplAP1:forward": 3,
+      "signature:Hermes-sequencing:rc": 8,
+      "adapter_5p_reads": 1,
+      "signature:SplAP1": 1
+    }
+  ],
+  "cutadapt_version": "5.2",
+  "parameters": {
+    "overlap": 16,
+    "error_rate": 0.1,
+    "min_length": 25
+  },
+  "catalogue": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/primers.json",
+  "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
+  "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
+  "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
+  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "junction_mate": "R1",
+  "require_mate_alignment": false
+}

@@ -1,0 +1,22 @@
+=== Trimming step skipped ===
+
+
+=== Sequence alignment ===
+12147603 reads; of these:
+  12147603 (100.00%) were unpaired; of these:
+    504822 (4.16%) aligned 0 times
+    11407915 (93.91%) aligned exactly 1 time
+    234866 (1.93%) aligned >1 times
+95.84% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 12147603
+primary_records: 12147603
+primary_mapped: 11642781
+primary_unmapped: 504822
+percent_mapped: 95.844
+mapq_ge_threshold: 10813576
+percent_mapq_ge_threshold: 92.878
+avg_mapq_mapped_primary: 38.81
+mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/mapfastq/SRR11561505/SRR11561505.mapping_stats.csv

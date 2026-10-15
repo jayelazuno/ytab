@@ -1,159 +1,65 @@
 
-# Local troubleshooting / HPC-only files
-/codex/
-/blast/
-/tmp/
-/.cache/
-*.tmp
-*.bak
-*.bak_*
-*.log
-
-
-# OS
-docs/codex/
+#OS, editors and local notes
 .DS_Store
-**/.DS_Store
+._*
 *.swp
 *.swo
+*~
+*.bak
+*.bak_*
 .vscode/
 .idea/
+/codex/
+/docs/codex/
 
-# Python
+# Environments and language caches
+# Keep envs/*.yml and environment.local.yml trackable
 __pycache__/
-*.pyc
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .venv/
-env/
-
-# R
+/venv/
+/.conda/
 .Rhistory
 .RData
 .Rproj.user/
+.Renviron
+.env
+.env.*
+!.env.example
 
-# Nextflow
-work/
-.nextflow/
-.nextflow.log
-.timeline.html
-.report.html
-.trace.txt
-.dag.html
+# Temporary files, scheduler logs and scratch
+*.tmp
+*.partial
+*.part
+*.log
+*.o[0-9]*
+*.e[0-9]*
+/tmp/
+/.cache/
+/blast/
+*.sif
+*.simg
 
-# -----------------------
-# # YTAB species resources
-# # Track curated metadata and small support tables
-# # Ignore bulky reference assets and aligner indexes
-# # -----------------------
-#
-# # Keep documentation / manifests
-!resources/
-!resources/species/
-!resources/species/**/
-!resources/species/**/README.md
-!resources/species/**/*.md
-!resources/species/**/*.json
-!resources/species/**/*.yaml
-!resources/species/**/*.yml
-!resources/species/**/*.tsv
-!resources/species/**/*.csv
-!resources/species/**/*.bed
-!resources/species/**/*ortholog*.txt
-!resources/species/**/*feature_count*.txt
+# Large sequencing and alignment files
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.bam
+*.bai
 
-# # Ignore large reference genome assets
-resources/species/**/*.fna
-resources/species/**/*.fa
-resources/species/**/*.fasta
-resources/species/**/*.faa
-resources/species/**/*.gff
-resources/species/**/*.gff3
-resources/species/**/*.gtf
+# Species references and normal outputs remain trackable.
+# No blanket resources/ or output/ exclusions.
 
-# # Ignore aligner indexes
-resources/species/**/*.bt2
-resources/species/**/*.bt2l
+# Machine-specific runtime state
+/output/**/logs/
+/output/**/cache/
+/output/**/tmp/
+/output/**/manifests/jobs/
+/output/**/manifests/argon/
+/output/**/manifests/orchestrator/current_job.json
+/output/**/config/argon_fastq_inputs/
 
-# # Optional: ignore common sequence index byproducts
-resources/species/**/*.fai
-resources/species/**/*.dict
-resources/species/**/*.nhr
-resources/species/**/*.nin
-resources/species/**/*.nsq
-
-# InterProScan outputs
-resources/species/**/interproscan6/*.json
-resources/species/**/interproscan6/*.jsonl
-resources/species/**/interproscan6/*.tsv
-resources/species/**/interproscan6/*.xml
-
-# Outputs / generated project artifacts
-# Ignore generated project/export outputs by default. Curated hosted deployment
-# bundles can be explicitly unignored by path later when they are intentionally
-# prepared for release.
-output/**
-!output/
-!output/projects/
-!output/exports/
-!output/**/.gitkeep
-
-# App-development/demo projects intentionally committed for local collaboration.
-# Keep these available after clone so collaborators can open the Shiny app with
-# real project state without regenerating the full pipeline.
-!output/projects/H2O2_screen_v1/
-!output/projects/H2O2_screen_v1/**
-!output/projects/local_glabrata_smoke_v1/
-!output/projects/local_glabrata_smoke_v1/**
-!output/exports/H2O2_screen_v1/
-!output/exports/H2O2_screen_v1/**
-!output/exports/local_glabrata_smoke_v1/
-!output/exports/local_glabrata_smoke_v1/**
-
-# # ignore heavy sequencing / alignment files
-output/**/*.fastq
-output/**/*.fastq.gz
-output/**/*.fq
-output/**/*.fq.gz
-output/**/*.bam
-output/**/*.bai
-output/**/*.sam
-output/**/*.cram
-
-# # optional: also ignore other heavy intermediates if needed later
-output/**/*.sorted
-output/**/*.tmp
-output/**/*.log
-
-# Keep OS metadata ignored even inside explicitly unignored project/export trees.
-.DS_Store
-**/.DS_Store
-
-# pipeline log files
-pipeline/**/*.log
-
-# Containers / temp
-tmp/
-.cache/
-blast/
-
-# notes
-codex/
-docs/codex/
-docs/setup_local.md
-docs/ui_reference_research_step14F1.md
-docs/reports/fitness_candidate_ranking_inventory.md
-codex/ui_references/
-codex/ui_references/**
-
-# Generated local YTAB projects and exports
-#output/projects/
-#output/exports/
-#resources/species/*/reference_genome/reference_prepare_manifest.json
-
-# Local-only R2/Hermes BLAST diagnostic scripts kept on HPC but not in repo
-/pipeline/hpc/zn_toxicity_screen/08_r2_hermes_blast_array.sge
-/pipeline/hpc/zn_toxicity_screen/09_r2_hermes_blast_summary.sge
-/scripts/hpc/ytab_make_r2_hermes_blast_manifest.py
-/scripts/hpc/ytab_plot_r2_hermes_blast_summary.R
-/scripts/hpc/ytab_summarize_r2_hermes_blast.py
-/envs/ytab-hermes-blast.yml
-/docs/codex/Hermes-cds.txt

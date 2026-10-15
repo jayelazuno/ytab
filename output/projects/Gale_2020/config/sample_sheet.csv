@@ -1,0 +1,8 @@
+sample,fastq_1,fastq_2,layout,guessed_condition,guessed_background,guessed_pool,include,warnings
+SRR11561502,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_FLU2/SRR11561502/SRR11561502_1.fastq.gz,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_FLU2/SRR11561502/SRR11561502_2.fastq.gz,paired,,,,True,
+SRR11561503,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_FLU1/SRR11561503/SRR11561503_1.fastq.gz,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_FLU1/SRR11561503/SRR11561503_2.fastq.gz,paired,,,,True,
+SRR11561504,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_control2/SRR11561504/SRR11561504_1.fastq.gz,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_control2/SRR11561504/SRR11561504_2.fastq.gz,paired,,,,True,
+SRR11561505,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_control1/SRR11561505/SRR11561505_1.fastq.gz,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_control1/SRR11561505/SRR11561505_2.fastq.gz,paired,,,,True,
+SRR11561506,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg3_parent/SRR11561506/SRR11561506_1.fastq.gz,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg3_parent/SRR11561506/SRR11561506_2.fastq.gz,paired,,,,True,
+SRR11561507,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg2_parent/SRR11561507/SRR11561507_1.fastq.gz,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg2_parent/SRR11561507/SRR11561507_2.fastq.gz,paired,,,,True,
+SRR11561508,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_parent/SRR11561508/SRR11561508_1.fastq.gz,/nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_parent/SRR11561508/SRR11561508_2.fastq.gz,paired,,,,True,

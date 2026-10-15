@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR11561503,13513292,13513292,13028188,485104,96.41,0,0.0,12247129,94.005,39.28,/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/mapfastq/SRR11561503/SRR11561503.sam

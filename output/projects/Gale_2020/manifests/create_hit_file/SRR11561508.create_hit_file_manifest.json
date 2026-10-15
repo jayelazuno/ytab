@@ -1,0 +1,47 @@
+{
+  "project_id": "Gale_2020",
+  "sample": "SRR11561508",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/mapfastq/SRR11561508/SRR11561508.sorted.bam",
+  "species": "glabrata",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/create_hit_file/SRR11561508",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/create_hit_file/SRR11561508/SRR11561508_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/logs/create_hit_file/SRR11561508.log",
+  "status": "success",
+  "start_time": "2026-10-15T16:09:19.915672+00:00",
+  "end_time": "2026-10-15T16:11:38.237072+00:00",
+  "elapsed_seconds": 138.321,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/mapfastq/SRR11561508/SRR11561508.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/create_hit_file/SRR11561508",
+    "--out-prefix",
+    "SRR11561508",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/create_hit_file/SRR11561508/SRR11561508.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/create_hit_file/SRR11561508/SRR11561508.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/create_hit_file/SRR11561508/SRR11561508.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/create_hit_file/SRR11561508/SRR11561508_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gale_2020/create_hit_file/SRR11561508/SRR11561508_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}

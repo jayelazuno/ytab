@@ -1,0 +1,93 @@
+project_id: Gale_2020
+repo_root: /old_Users/jayelazuno/workspace/ytab
+fastq_dir: /nfsscratch/jayelazuno/workspace/gale_data/alignment_fastq
+output_project_dir: output/projects/Gale_2020
+output_export_dir: output/exports/Gale_2020
+species: glabrata
+threads: 8
+reference:
+  species: glabrata
+  species_dir: resources/species/glabrata
+  reference_dir: resources/species/glabrata/reference_genome
+  fasta: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna
+  feature_table: resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab
+  gff: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff
+  gtf: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf
+  gffutils_db: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/glabrata/reference_genome/centromeres.NCBI.bed
+  trna_bed: resources/species/glabrata/reference_genome/tRNAs.bed
+  orthology_file: resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+  warnings:
+  - Multiple feature table candidates found; selected C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab.
+  - Multiple centromere BED candidates found; selected centromeres.NCBI.bed.
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: SRR11561502
+  fastq_1: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_FLU2/SRR11561502/SRR11561502_1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_FLU2/SRR11561502/SRR11561502_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR11561503
+  fastq_1: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_FLU1/SRR11561503/SRR11561503_1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_FLU1/SRR11561503/SRR11561503_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR11561504
+  fastq_1: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_control2/SRR11561504/SRR11561504_1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_control2/SRR11561504/SRR11561504_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR11561505
+  fastq_1: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_control1/SRR11561505/SRR11561505_1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_control1/SRR11561505/SRR11561505_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR11561506
+  fastq_1: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg3_parent/SRR11561506/SRR11561506_1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg3_parent/SRR11561506/SRR11561506_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR11561507
+  fastq_1: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg2_parent/SRR11561507/SRR11561507_1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg2_parent/SRR11561507/SRR11561507_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR11561508
+  fastq_1: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_parent/SRR11561508/SRR11561508_1.fastq.gz
+  fastq_2: /nfsscratch/jayelazuno/workspace/gale_data/fastq/Cg1_parent/SRR11561508/SRR11561508_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+sample_sheet: output/projects/Gale_2020/config/sample_sheet.csv
+created_at: '2026-10-15T04:51:18.593195+00:00'
+ytab_version_or_git_commit_if_available: e074e24
