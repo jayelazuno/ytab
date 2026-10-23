@@ -364,7 +364,9 @@ and a monotone, converged EM. All passed.
 
 `output/essentiality/hermes_hmm/benchmark_v3/RESULT.md`; frozen before any v3 code ran.
 - **Rediscovery without labels:** on Gale Cg1–Cg3 the learned model's two most informative offsets are +1 (T, 72% of
-  sites) and +6 (A, 73%), 5 bp apart: Hermes' nTnnnnAn, found from the data alone.
+  sites) and +6 (A, 73%), 5 bp apart: Hermes' nTnnnnAn, found from the data alone. Offsets count from the hit
+  coordinate, the first base of the 8-bp target-site duplication, so +1 and +6 are TSD positions 2 and 7 (the
+  bases of YTAB's +2/+7 sequence-bias QC).
 - **Label-free gates:** determinism, EM convergence and synthetic recovery all pass (AUC 0.979–1.000); agreement with
   v2 on Gale: Spearman of P_ES_run 0.998, κ of ES calls 0.956 (1,391 vs 1,382 ES genes).
 - **Labels (S. cerevisiae orthologs, 3,290 genes):** AUC 0.926 vs v2's 0.922; difference +0.003, 95% CI
