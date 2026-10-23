@@ -15,7 +15,8 @@ ytab_glabrata_key <- function(x) {
 
 # Gene annotation of the other species (resources/species/<species>/annotation/gene_annotation.tsv, built by
 # scripts/local/ytab_build_species_resources.py) in the lookup's columns. Gene IDs are species-specific, so one lookup
-# serves every project: a feature ID matches only its own species' rows.
+# serves every project: a feature ID matches only its own species' rows. These species are named by their own common
+# names (name_source "own"); C. glabrata, through the ortholog lookup, by S. cerevisiae names (name_source "scer").
 ytab_species_annotation_lookup <- function(repo_root) {
   paths <- Sys.glob(file.path(repo_root, "resources", "species", "*", "annotation", "gene_annotation.tsv"))
   rows <- lapply(paths, function(path) {
@@ -25,7 +26,7 @@ ytab_species_annotation_lookup <- function(repo_root) {
     data.frame(cagl_id = col("systematic_id"), gwk60_id_clean = col("gene_id"), qng_id = "", cgla_common_name = col("gene_name"),
                cg_to_sc_relationship = col("scer_relationship"), pre_WGD_Ancestor = "", scer_gene_id = col("scer_gene_id"),
                scer_gene_name = col("scer_gene_name"), SGD_essentiality = col("scer_essentiality"), SGD_description = col("description"),
-               stringsAsFactors = FALSE)
+               name_source = "own", stringsAsFactors = FALSE)
   })
   do.call(rbind, Filter(Negate(is.null), rows)) %||% data.frame(stringsAsFactors = FALSE)
 }
@@ -36,6 +37,7 @@ ytab_load_glabrata_annotation_lookup <- function(repo_root) {
   required <- ytab_glabrata_annotation_required_columns()
   data <- if (file.exists(path)) tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) empty) else empty
   if (nrow(data) && !all(required %in% names(data))) data <- empty
+  if (nrow(data)) data$name_source <- "scer"
   other <- ytab_species_annotation_lookup(repo_root)
   if (nrow(other)) data <- if (nrow(data)) { other[setdiff(names(data), names(other))] <- ""; rbind(data, other[names(data)]) } else other
   if (!nrow(data)) return(empty)
@@ -86,10 +88,13 @@ ytab_join_glabrata_display <- function(data, repo_root, id_col,
     joined[[col]] <- ifelse(is.na(match_ix), "", as.character(lookup[[col]][match_ix]))
   }
   joined$cagl_display_id <- ytab_first_nonempty(joined$cagl_id, original_id)
-  joined$gene_display_name <- ytab_first_nonempty(joined$scer_gene_name,
-                                                  joined$cgla_common_name,
-                                                  joined$cagl_display_id,
-                                                  original_id)
+  # Common name first, the gene ID when there is none: S. cerevisiae names for C. glabrata, the species' own otherwise.
+  own <- joined$name_source == "own"
+  joined$gene_display_name <- ifelse(own,
+                                     ytab_first_nonempty(joined$cgla_common_name, joined$cagl_display_id, original_id),
+                                     ytab_first_nonempty(joined$scer_gene_name, joined$cgla_common_name,
+                                                         joined$cagl_display_id, original_id))
+  joined$name_source <- NULL
   joined$cg_to_sc_relationship_display <- ytab_first_nonempty(joined$cg_to_sc_relationship, "")
   joined
 }

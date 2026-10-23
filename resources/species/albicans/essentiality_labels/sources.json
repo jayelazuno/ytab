@@ -1,6 +1,6 @@
 {
-  "built": "2026-10-21",
-  "script_sha256": "f0ef28fc7a85b4010cf05b0c8bc5874148e1f5a6aaf5188c2e3d4d86296294c5",
+  "built": "2026-10-23",
+  "script_sha256": "8175619a48ec7c55b9b734fb8022c0e45883398697aad4865aba1838ea2c9f57",
   "urls": {
     "sgd_phenotypes": "https://downloads.yeastgenome.org/curation/literature/phenotype_data.tab",
     "cgd_phenotypes": "http://www.candidagenome.org/download/phenotype/C_albicans_SC5314_phenotype_data.tab",

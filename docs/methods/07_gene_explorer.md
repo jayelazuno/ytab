@@ -9,14 +9,23 @@ from one pipeline step, `ytab browser-tracks`, which the app runs when the brows
 input changed. It writes to `<project>/genome_browser/`:
 - **Reference:** the reference FASTA with display chromosome names (e.g. Chr A for CP048230.1), its index, and a
   chromosome alias table, so tracks using any chromosome name load.
-- **Genes:** `genes.bed.gz`. Labels are the S. cerevisiae name when an ortholog is known, otherwise the gene's own name
-  or ID. Genes are never dropped for lack of a name.
+- **Genes:** `genes.bed.gz`, labelled by the gene names below. Genes are never dropped for lack of a name.
 - **Insertion tracks:** one per library, made from its CreateHitFile hit table with each insertion site listed once.
 - **IGV session:** `igv_session.xml`, which opens everything in IGV desktop.
 
 **Open in IGV** sends the reference, the genes and the selected tracks at the current locus to IGV desktop on the same
 computer (batch port 60151, enabled in View > Preferences > Advanced). **Download for IGV** zips the files with the
 session.
+
+## Gene names
+
+Every table, plot label and track uses the same rule: the common name first, and the standard gene ID when there is
+none.
+- **C. glabrata:** the S. cerevisiae ortholog name (e.g. ECM22 for UPC2A), since most C. glabrata genes are named by
+  their S. cerevisiae ortholog. Without one, the C. glabrata name, then the gene ID (CAGL0…).
+- **S. cerevisiae, C. albicans and other species:** the species' own common name from its genome annotation (e.g. PHR2
+  in C. albicans, not its S. cerevisiae ortholog GAS1), then the gene ID (e.g. C1_00010W).
+- The S. cerevisiae ortholog stays available in its own column and in search.
 
 ## Gene & Domain Insertions
 

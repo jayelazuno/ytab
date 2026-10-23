@@ -37,6 +37,10 @@ from the command line appears in the app.
 **Help**
 - A Methods menu, a tutorial (Gale 2020), these release notes, and search across them and the tabs.
 
+**Gene names**
+- The common name first, then the gene ID. C. glabrata uses S. cerevisiae ortholog names; S. cerevisiae, C. albicans
+  and other species use their own names (C. albicans names now come from CGD's annotation).
+
 **Projects**
 - No project depends on an external drive.
 - Saved gene queries are limited to the 500 most recent per project.

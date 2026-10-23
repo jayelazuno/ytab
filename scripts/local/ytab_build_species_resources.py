@@ -219,7 +219,8 @@ def build(species: str, args) -> dict:
             annotation.append(dict(gene_id=g["id"], systematic_id=g["id"], gene_name=name, scer_relationship="self", scer_gene_id=g["id"],
                                    scer_gene_name=name, scer_essentiality=call, description=scg.get(g["id"], {}).get("description", g["description"])))
     else:
-        (raw/"C_albicans_SC5314_phenotype_data.tab.gz").write_bytes(gzip.compress(Path(args.cgd_phenotypes).read_bytes()))
+        shutil.copyfile(args.cgd_phenotypes, raw/"C_albicans_SC5314_phenotype_data.tab.gz") if str(args.cgd_phenotypes).endswith(".gz") else \
+            (raw/"C_albicans_SC5314_phenotype_data.tab.gz").write_bytes(gzip.compress(Path(args.cgd_phenotypes).read_bytes()))
         ortho_path = base/"C_albicans_SC5314_S_cerevisiae_orthologs.txt"
         sources["urls"] |= dict(cgd_phenotypes=URLS["cgd_phenotypes"], cgd_orthologs=URLS["cgd_orthologs"])
         sources["files"] |= {"C_albicans_SC5314_phenotype_data.tab.gz":sha256(raw/"C_albicans_SC5314_phenotype_data.tab.gz"), ortho_path.name:sha256(ortho_path),

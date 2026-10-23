@@ -270,7 +270,7 @@ def _load_gff_gene_records(reference: dict[str, Any]) -> list[GeneRecord]:
             gene_id = attrs.get("locus_tag") or attrs.get("gene_id") or attrs.get("ID") or attrs.get("Name")
             if not gene_id:
                 continue
-            name = attrs.get("gene") or attrs.get("Name") or gene_id
+            name = attrs.get("gene") or attrs.get("Gene") or attrs.get("Name") or gene_id
             product = attrs.get("product") or attrs.get("description") or ""
             aliases = _uniq([gene_id, name, attrs.get("ID", ""), attrs.get("Alias", "")])
             records.append(

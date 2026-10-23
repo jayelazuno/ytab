@@ -117,7 +117,7 @@ def annotations(path):
             if parent["chrom"]!=record["chrom"] or parent["strand"]!=record["strand"]:
                 raise ValueError("CDS and gene disagree on chromosome/strand")
             identifier=parent["attrs"].get("locus_tag",gid)
-            gene=genes.setdefault(gid,dict(id=identifier,gff_id=gid,name=parent["attrs"].get("Name",identifier),
+            gene=genes.setdefault(gid,dict(id=identifier,gff_id=gid,name=parent["attrs"].get("gene") or parent["attrs"].get("Gene") or parent["attrs"].get("Name",identifier),
                 description=parent["attrs"].get("description",parent["attrs"].get("Note","")),
                 chrom=parent["chrom"],strand=parent["strand"],blocks=[]))
             gene["blocks"].append((record["start"],record["end"]))

@@ -62,7 +62,8 @@ normalization (BGC from the latest Site Normalization run by default). **Results
 
 In Gale's fluconazole data:
 - **The top depleted gene is UPC2A,** the transcriptional regulator of ergosterol genes and the strongest hit in Gale's
-  own analysis. It is labelled ECM22, its S. cerevisiae ortholog name.
+  own analysis. It is labelled ECM22, its S. cerevisiae ortholog name: C. glabrata genes are shown by their S.
+  cerevisiae names, while S. cerevisiae, C. albicans and other species use their own (see *Gene names* in Methods).
 - **Which method to use:** the z-score ranks genes best. For a hit list with false-discovery control, use resampling
   (BGC) or the control-conditioned Gumbel (TTR, depletion only). See *Condition comparisons* in Methods.
 

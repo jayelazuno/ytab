@@ -3,7 +3,7 @@
 Writes <project>/genome_browser/:
   reference/reference.fna (+ .fai)     the reference FASTA with display chromosome names, 80 bases per line
   reference/chromosome_aliases.tsv     display name, then every other name of each chromosome (for loaded tracks)
-  reference/genes.bed.gz               genes from the GFF; label: S. cerevisiae name, then gene ID, then GFF name/locus/ID
+  reference/genes.bed.gz               genes from the GFF; label: common name (see gene_labels), then gene ID, then GFF name/locus/ID
   tracks/<sample>.insertions.bed.gz    one interval per insertion site, from each sample's CreateHitFile hit table
   tracks/<sample>.insertions.bedgraph.gz  the sample's insertion bedGraph, renamed to display chromosome names (if present)
   igv_session.xml                      an IGV desktop session of all of the above (paths relative to this folder)
@@ -53,7 +53,8 @@ def chromosome_map(repo_root: Path, species: str) -> list[dict]:
 
 
 def gene_labels(repo_root: Path, species: str) -> dict[str, str]:
-    """feature ID (lower case) -> display label from the annotation lookups (S. cerevisiae name, else gene ID)."""
+    """feature ID (lower case) -> display label: the S. cerevisiae name for C. glabrata (ortholog lookup), the species' own
+    common name for species with their own annotation; the gene ID when there is no name."""
     labels = {}
     lookup = Path(repo_root)/LOOKUP
     if lookup.is_file():
@@ -64,7 +65,7 @@ def gene_labels(repo_root: Path, species: str) -> dict[str, str]:
     if other.is_file():
         for r in csv.DictReader(open(other, newline=""), delimiter="\t"):
             key = _clean(r.get("gene_id")).lower()
-            if key and key not in labels:labels[key] = _first(r.get("scer_gene_name"), r.get("systematic_id"))
+            if key and key not in labels:labels[key] = _first(r.get("gene_name"), r.get("systematic_id"))
     return {k:v for k, v in labels.items() if v}
 
 

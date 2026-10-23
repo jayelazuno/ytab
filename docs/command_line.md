@@ -92,7 +92,7 @@ python scripts/local/ytab.py browser-tracks --project-config output/projects/P/c
 
 Writes `<project>/genome_browser/`:
 - the reference with display chromosome names (and its index) and chromosome aliases;
-- `genes.bed`, labelled with the S. cerevisiae name when known, else the gene's own name or ID;
+- `genes.bed.gz`, labelled by common name, then gene ID (S. cerevisiae names for C. glabrata, the species' own otherwise);
 - one insertion-site BED per sample with a CreateHitFile hit table;
 - `igv_session.xml`, which opens all of them in IGV desktop.
 
