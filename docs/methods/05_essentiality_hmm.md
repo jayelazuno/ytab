@@ -2,6 +2,9 @@
 
 *Copied from `output/essentiality/hermes_hmm/hermes_hmm_methods.md` (the full methods write-up, with a PDF version).*
 
+![Essentiality results in the app: chromosome track of insertions and HMM states (Gale 2020)](img/05_essentiality_track.png)
+
+
 # Summary
 
 YTAB offers two gene-essentiality models for Hermes Tn-seq, each defined by which data it needs.

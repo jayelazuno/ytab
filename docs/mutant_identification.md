@@ -7,6 +7,9 @@ sequencing. References are Das et al. 2005 (10.1016/j.mimet.2005.02.011),
 Martínez-García et al. 2014 (10.3389/fbioe.2014.00046), and Alejaldre et al. 2026
 (10.1186/s44330-025-00054-3). Gel lane and read identities are not inferred.
 
+![Mutant identification in the app](methods/img/08_mutant_identification.png)
+
+
 Inputs: local files/folders, uploads, TAR/TAR.GZ/TGZ/ZIP archives, gzip-compressed
 sequence files, FASTA/vendor `.seq`, plain DNA text, FASTQ and ABI/AB1 traces.
 Archives are read in memory, with member/total-size limits and no extraction or

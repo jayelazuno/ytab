@@ -1,6 +1,7 @@
 # Making a Hermes Tn-seq pool in yeast
 
-*Status: draft from the lab protocol `docs/20251016-Hermes-Tn-seq-Induction .docx`. Day-by-day notes and QC values
+*This page is the editable version of the lab protocol (converted from `docs/20251016-Hermes-Tn-seq-Induction .docx`);
+edit it here and the app shows the change. Day-by-day notes and QC values
 are to be added from the current induction (started 2026-10-19/20). Items marked **[to confirm]** need a check by the
 bench scientist before publication.*
 

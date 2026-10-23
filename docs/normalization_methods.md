@@ -8,6 +8,9 @@ The app's Normalization tab now uses this interface (see "App Normalization tab"
 z-score defaults to total reads (CPM) and accepts any method; the hybrid essentiality model's gene features can use
 any method, MidLC being one of them (see "Hybrid gene features" below).
 
+![Site Normalization in the app: BGC before and after (Gale 2020)](methods/img/03_normalization_bgc.png)
+
+
 ## Availability and input scope
 
 | Method | State | What it changes / important caveat |

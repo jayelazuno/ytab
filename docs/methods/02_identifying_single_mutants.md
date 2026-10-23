@@ -1,7 +1,7 @@
 # Identifying single Hermes mutants by nested arbitrary PCR
 
-*Status: draft from the lab protocol `docs/20261016-hermes-mutant-screen.docx`, to be polished for the manuscript.
-Items marked **[to confirm]** need a check at the bench.*
+*This page is the editable version of the lab protocol (converted from `docs/20261016-hermes-mutant-screen.docx`); edit it
+here and the app shows the change. To be polished for the manuscript.*
 
 After a phenotypic screen, individual mutants are picked and their Hermes insertion site is found by two rounds of
 nested arbitrary PCR (AP-PCR) followed by Sanger sequencing. This replaces the sonication and splinkerette-adaptor
@@ -19,11 +19,9 @@ in the C. glabrata Tn-seq workflow.
 |---|---|---|
 | HR-1 | Hermes-specific outer primer (PCR1) | AATACTTGCACTCAAAAGGCTTGACACC |
 | ARB6 | degenerate arbitrary primer (PCR1) | GGCACGCGTCGACTAGTACNNNNNNNNNNACGCC |
-| HR-2 (= "Sequencing_F1" in the protocol) | Hermes-specific nested primer (PCR2) and the Sanger sequencing primer | ACACTTGTGCTTATCTATGTGGC |
+| HR-2 | Hermes-specific nested primer (PCR2) and the Sanger sequencing primer | ACACTTGTGCTTATCTATGTGGC |
 | ARB2 | nested arbitrary primer (PCR2); matches the 5′ tail of ARB6 | GGCACGCGTCGACTAGTAC |
-Sanger sequencing uses **HR-2**, which the protocol also calls Sequencing_F1 (confirmed by the bench scientist,
-2026-10-23). **[to confirm]** The protocol's draft lists a different sequence under Sequencing_F1
-(GGCTTACGTTTGCCTGTGGCTTGTTGAAGTTCTCTG); remove or correct that line in the docx.
+Sanger sequencing uses **HR-2**, which reads outward from the Hermes end into the adjacent genomic sequence.
 
 ## Template
 

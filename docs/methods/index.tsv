@@ -9,8 +9,9 @@ order	section	title	file
 8	Essentiality	Hermes window HMM and hybrid	docs/methods/05_essentiality_hmm.md
 9	Condition comparisons	Treated vs control: z-score, resampling, Gumbel	docs/methods/06_condition_comparisons.md
 10	Condition comparisons	Control-conditioned Gumbel (details)	docs/control_conditioned_gumbel.md
-11	Screen planning	Coverage planning	docs/screen_coverage.md
-12	Screen planning	Identifying single mutants (bench protocol)	docs/methods/02_identifying_single_mutants.md
-13	Screen planning	Mutant identification	docs/mutant_identification.md
-14	Reference	Command line	docs/command_line.md
-15	Reference	References	docs/references.md
+11	Gene Explorer	Genome browser, gene insertions, GO, across species	docs/methods/07_gene_explorer.md
+12	Screen planning	Coverage planning	docs/screen_coverage.md
+13	Screen planning	Identifying single mutants (bench protocol)	docs/methods/02_identifying_single_mutants.md
+14	Screen planning	Mutant identification	docs/mutant_identification.md
+15	Reference	Command line	docs/command_line.md
+16	Reference	References	docs/references.md

@@ -4,6 +4,9 @@ YTAB compares treated libraries with their matched controls to find genes whose 
 survive the treatment) or enriched (losing the gene helps). Three methods are offered. They answer slightly different
 questions and were validated in a pre-registered benchmark.
 
+![z-score results for Gale fluconazole (BGC): MA plot with the top hits](img/04_condition_comparisons_ma.png)
+
+
 | method | what it gives | normalization (default) | use it for |
 |---|---|---|---|
 | **Local-abundance z-score** | one z per gene, depleted/enriched calls by threshold; no p-values | BGC | ranking genes, comparison with published z-score screens |

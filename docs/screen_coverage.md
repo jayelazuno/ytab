@@ -2,6 +2,9 @@
 
 ## Current UI: analytical Poisson only
 
+![The coverage planner in the app (Gale 2020)](methods/img/07_screen_planner.png)
+
+
 Screen Coverage planning exposes **Screen Planner** and **Methods & References**.
 **Mutant Identification** is a separate experimental-method/Sanger utility;
 see [individual mutant identification](mutant_identification.md). It does not

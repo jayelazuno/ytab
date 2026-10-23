@@ -4,6 +4,9 @@ One table with every per-library QC metric of a project, each flagged green / ye
 commented, so users can judge their libraries and choose a normalization. It runs on its own and the app's
 **Quality Control** tab only displays its output.
 
+![The library QC table in the app (Gale 2020)](methods/img/02_quality_control.png)
+
+
 ```sh
 python scripts/local/ytab.py qc --project-config output/projects/PROJECT/config/project.yaml \
     --output output/projects/PROJECT/qc/RUN
