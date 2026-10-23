@@ -1,0 +1,26 @@
+{
+  "species": "pombe",
+  "fasta": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+  "index_prefix": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome",
+  "bowtie2_index_complete_before": false,
+  "bowtie2_index_complete_after": true,
+  "fasta_index_created": true,
+  "commands_run": [
+    [
+      "samtools",
+      "faidx",
+      "/Users/joshuaayelazuno/Desktop/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa"
+    ],
+    [
+      "bowtie2-build",
+      "--threads",
+      "4",
+      "/Users/joshuaayelazuno/Desktop/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+      "/Users/joshuaayelazuno/Desktop/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome"
+    ]
+  ],
+  "warnings": [
+    "No complete Bowtie2 index found. Run reference preparation before alignment."
+  ],
+  "timestamp": "2026-10-23T15:31:13.230625+00:00"
+}

@@ -266,3 +266,41 @@ def test_real_unified_cli_project_overrides_use_r2_without_r1(tmp_path,index):
     with pysam.AlignmentFile(tmp_path/'project/mapfastq/test/test.sorted.bam','rb') as bam:
         rows=list(bam)
     assert len(rows)==1 and rows[0].reference_start==300
+
+
+def test_transposon_designs_set_trimming_and_hermes_default_is_unchanged(tmp_path):
+    cfg=config(tmp_path);s=sample(tmp_path)
+    default=build_mapfastq_command(dict(s),cfg)
+    assert build_mapfastq_command(dict(s,transposon='hermes',library_design='splinkerette_pcr'),cfg)==default
+    cmd=build_mapfastq_command(dict(s,transposon='ac_ds',library_design='ds_primer_tail'),cfg)
+    assert '--hermes-preprocess' not in cmd and '--discard-untrimmed' in cmd
+    assert cmd[cmd.index('--trim-5p-seq')+1]=='GTATTTTACCGACCGTTACCGACCGTTTTCATCCCTA'
+    cmd=build_mapfastq_command(dict(s,transposon='ac_ds',library_design='satay_restriction'),cfg)
+    assert '--trim-5p-seq' not in cmd and cmd.count('--trim-3p-seq')==3
+    cfg['mapping']={'transposon':'hermes','library_design':'terminal_10bp'}
+    cmd=build_mapfastq_command(dict(s),cfg)
+    assert cmd[cmd.index('--trim-5p-seq')+1]=='^AAGTTCTCTG'
+    # an explicit setting overrides the design's
+    cmd=build_mapfastq_command(dict(s,discard_untrimmed=False),cfg)
+    assert '--discard-untrimmed' not in cmd
+
+
+def test_unknown_transposon_or_design_fails_clearly(tmp_path):
+    cfg=config(tmp_path);s=sample(tmp_path)
+    with pytest.raises(ValueError,match='Unknown transposon'):
+        build_mapfastq_command(dict(s,transposon='himar1'),cfg)
+    with pytest.raises(ValueError,match='Unknown library design'):
+        build_mapfastq_command(dict(s,transposon='ac_ds',library_design='nope'),cfg)
+
+
+def test_mapfastq_trims_every_3prime_sequence_in_one_pass(tmp_path):
+    if not shutil.which('cutadapt'):
+        pytest.skip('cutadapt not installed')
+    sys.path.insert(0,str(ROOT/'src/ytab/mapping'))
+    import MapFastq
+    source=tmp_path/'in.fq';out=tmp_path/'out.fq'
+    reads=['ACGTACGTACGTACGTGATCGTATCGGTTTTCGATTACCGTATTTATCC','TTTTGGGGCCCCAAAACATGTGTGATTTTACCGAACAAAAATACCGG']
+    source.write_text(''.join(f'@r{i}\n{r}\n+\n{"I"*len(r)}\n' for i,r in enumerate(reads)))
+    MapFastq.TrimAdapter3_SE(str(source),['GTATCGGTTTTCGATTACCGTATTTATCCCGTTCG','TGTGATTTTACCGAACAAAAATACCGGTTCCCGTCCG'],str(out),shutil.which('cutadapt'))
+    seqs=out.read_text().splitlines()[1::4]
+    assert seqs==['ACGTACGTACGTACGTGATC','TTTTGGGGCCCCAAAACATG']

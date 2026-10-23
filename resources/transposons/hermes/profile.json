@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "transposon": "hermes",
+  "description": "Hermes (hAT family, Musca domestica); 8-bp target-site duplication, weak nTnnnnAn target preference.",
+  "default_design": "splinkerette_pcr",
+  "designs": {
+    "splinkerette_pcr": {
+      "description": "Reads start inside the Hermes end and run into the genome (e.g. ...TTGAAGTTCTCTG|genome). Terminal Hermes and adaptor sequence is detected and trimmed automatically from primers.json and the Hermes reference.",
+      "used_by": [
+        "Gale et al. 2020 (C. glabrata)",
+        "Levin lab 2020 (S. pombe, PRJNA517661)"
+      ],
+      "mapping": {
+        "hermes_cleanup": true
+      }
+    },
+    "terminal_10bp": {
+      "description": "Short reads that begin with only the last 10 bp of the Hermes end (AAGTTCTCTG|genome) and may end in the ligated adapter (GTCCCTTAAGCGGAG). The end is trimmed when anchored at the read start; reads without it are discarded; the adapter and Illumina read-through are trimmed from the 3' end.",
+      "used_by": [
+        "Guo et al. 2013 (S. pombe, SRR327340; 50-bp Genome Analyzer II reads)"
+      ],
+      "mapping": {
+        "hermes_cleanup": false,
+        "trim_5p_seq": "^AAGTTCTCTG",
+        "trim_5p_overlap": 10,
+        "discard_untrimmed": true,
+        "trim_3p_seq": [
+          "GTCCCTTAAGCGGAG",
+          "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+        ]
+      }
+    },
+    "end_ligated_adapter": {
+      "description": "Reads start inside the Hermes end (...TTGAAGTTCTCTG), continue into the genome and end in a ligated adapter (GTCCCTTAAGCGGAG, then a short tag and Illumina adaptor). The Hermes end is trimmed wherever it occurs; reads without it are discarded; the adapter and Illumina read-through are trimmed from the 3' end.",
+      "used_by": [
+        "Grech et al. 2019 (S. pombe, PRJEB27324)"
+      ],
+      "mapping": {
+        "hermes_cleanup": false,
+        "trim_5p_seq": "GTGGCTTGTTGAAGTTCTCTG",
+        "trim_5p_overlap": 21,
+        "discard_untrimmed": true,
+        "trim_3p_seq": [
+          "GTCCCTTAAGCGGAG",
+          "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+        ]
+      }
+    }
+  }
+}

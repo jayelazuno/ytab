@@ -31,6 +31,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--junction-mate", choices=("R1","R2"), help="Override the designated Hermes/junction read for selected samples (default R1)")
     parser.add_argument("--require-mate-alignment", action=argparse.BooleanOptionalAction, default=None, help="Require concordant pairs; default uses only the designated junction mate")
     parser.add_argument("--hermes-cleanup", action=argparse.BooleanOptionalAction, default=None, help="Automatically trim observed Hermes/adaptor sequence (default enabled)")
+    parser.add_argument("--transposon", help="Transposon profile in resources/transposons (default: the project's, else hermes)")
+    parser.add_argument("--library-design", help="Library design within the transposon profile (default: the profile's default)")
     return parser.parse_args()
 
 
@@ -53,6 +55,7 @@ def main() -> int:
             job_id=args.job_id, progress_file=args.progress_file,
             junction_mate=args.junction_mate, require_mate_alignment=args.require_mate_alignment,
             hermes_cleanup=args.hermes_cleanup,
+            transposon=args.transposon, library_design=args.library_design,
         )
     except (FileNotFoundError, OSError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

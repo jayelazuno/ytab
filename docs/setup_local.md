@@ -49,7 +49,7 @@ Future species can be added dynamically under:
 resources/species/<species>/reference_genome/
 ```
 
-A species becomes selectable when this directory contains at least one recognized reference file. Kornmann is legacy/resource data and is not a selectable species.
+A species becomes selectable when this directory contains at least one recognized reference file. Published insertion data (`<species>/tnseq_data/`) is an input, not a species. See `resources/species/README.md` for the layout.
 
 The placeholder resource manager reports how to supply resources until a release manifest is available:
 

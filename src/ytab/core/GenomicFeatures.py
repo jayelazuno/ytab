@@ -733,7 +733,7 @@ class CerevisiaeFeature(_Feature):
 
 @Shared.memoized
 def default_cer_db():
-    return CerevisiaeFeatureDB(Shared.get_dependency("cerevisiae/SGD_features.tab"))
+    return CerevisiaeFeatureDB(Shared.get_dependency("cerevisiae/reference_genome/SGD_features.tab"))
 
 
 @Shared.memoized
@@ -758,8 +758,8 @@ def default_alb_db():
 @Shared.memoized
 def default_pom_db():
     return PombeFeatureDB(
-        Shared.get_dependency("pombe/schizosaccharomyces_pombe.chr.gff3"),
-        Shared.get_dependency("pombe/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa"),
+        Shared.get_dependency("pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3"),
+        Shared.get_dependency("pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa"),
     )
 
 

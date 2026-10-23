@@ -1,0 +1,8 @@
+sample,study,library_role,condition,background,pool,culture_replicate,display_name,transposon,library_design,include,notes
+ERR1533147,Michel2017,parent,parent,BY4741_ade2,WT1,1,SATAY WT1,ac_ds,satay_restriction,True,Wild-type SATAY library 1 (Michel et al. 2017); published track in resources/species/cerevisiae/tnseq_data/michel_2017_satay
+ERR1533148,Michel2017,parent,parent,BY4741_ade2,WT2,2,SATAY WT2,ac_ds,satay_restriction,True,Wild-type SATAY library 2 (Michel et al. 2017)
+ERR1533149,Michel2017,treated,rapamycin,BY4741_ade2,WT2,1,SATAY WT + rapamycin,ac_ds,satay_restriction,True,"Wild-type 2 library regrown on rapamycin (Michel et al. 2017, Table 1); its control is WT2 (same pool)"
+ERR1533143,Michel2017,treated,dpl1del,BY4741_ade2,dpl1del,1,SATAY dpl1Δ,ac_ds,satay_restriction,True,"Single mutant; with dpl1Δ psd2Δ, a genetic-interaction set (Michel et al. 2017). Compare with WT1/WT2."
+ERR1533144,Michel2017,treated,dpl1del_psd2del,BY4741_ade2,dpl1del_psd2del,1,SATAY dpl1Δ psd2Δ,ac_ds,satay_restriction,True,"Double mutant; with dpl1Δ and WT, a genetic-interaction set (Michel et al. 2017). Compare with WT1/WT2."
+ERR1533146,Michel2017,treated,VPS13_D716H,BY4741_ade2,VPS13_D716H,1,SATAY VPS13(D716H),ac_ds,satay_restriction,True,Suppressor allele of VPS13 (Michel et al. 2017). Compare with WT1/WT2.
+ERR1533145,Michel2017,treated,mmm1del_VPS13_D716H,BY4741_ade2,mmm1del_VPS13_D716H,1,SATAY mmm1Δ VPS13(D716H),ac_ds,satay_restriction,True,"mmm1Δ rescued by VPS13(D716H); with VPS13(D716H) and WT, a genetic-interaction set (Michel et al. 2017). Compare with WT1/WT2."

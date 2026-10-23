@@ -49,11 +49,11 @@ GLABRATA NOTES (Sc inference)
 -----------------------------
 If --feature-db glabrata is used, <lib>_analysis.csv will include:
   - Glabrata feature info
-  - Sc ortholog (from dependencies/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+  - Sc ortholog (from resources/species/glabrata/orthologs/C_glabrata_BG2_S_cerevisiae_orthologs.txt
     OR an override via --scer-orthologs)
-  - Sc essentiality (from dependencies/cerevisiae/*viable/*inviable annotations)
-  - Sc synthetic lethal flag (dependencies/cerevisiae/duplicatesSl_011116.txt)
-  - Sc fitness (dependencies/cerevisiae/neFitnessStandard.txt)
+  - Sc essentiality (from resources/species/cerevisiae/essentiality_labels/raw/*viable/*inviable annotations)
+  - Sc synthetic lethal flag (resources/species/cerevisiae/annotation/duplicatesSl_011116.txt)
+  - Sc fitness (resources/species/cerevisiae/annotation/neFitnessStandard.txt)
 
 This is for inference only; no albicans/pombe enrichment is performed.
 
@@ -904,10 +904,11 @@ def write_data_to_data_frame(data, cols_config):
 def _default_cglab_to_scer_orthologs():
     """
     Default ortholog table under the YTAB species resource tree:
-      resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+      resources/species/glabrata/orthologs/C_glabrata_BG2_S_cerevisiae_orthologs.txt
     """
     path = Shared.get_dependency(
         "glabrata",
+        "orthologs",
         "C_glabrata_BG2_S_cerevisiae_orthologs.txt",
     )
     return _load_ortholog_table(path)
@@ -921,8 +922,8 @@ def _load_scer_essential_sets():
 
     Assumes: first whitespace token is the ORF systematic name.
     """
-    inv_path = Shared.get_dependency("cerevisiae", "cerevisiae_inviable_annotations.txt")
-    via_path = Shared.get_dependency("cerevisiae", "cerevisiae_viable_annotations.txt")
+    inv_path = Shared.get_dependency("cerevisiae", "essentiality_labels", "raw", "cerevisiae_inviable_annotations.txt")
+    via_path = Shared.get_dependency("cerevisiae", "essentiality_labels", "raw", "cerevisiae_viable_annotations.txt")
 
     def _read_first_token(p):
         s = set()
@@ -944,10 +945,10 @@ def _load_scer_essential_sets():
 @Shared.memoized
 def _load_scer_synthetic_lethal_flags():
     """
-    dependencies/cerevisiae/duplicatesSl_011116.txt
+    resources/species/cerevisiae/annotation/duplicatesSl_011116.txt
     Legacy format: columns with f1 f2 ... is_double_lethal
     """
-    path = Shared.get_dependency("cerevisiae", "duplicatesSl_011116.txt")
+    path = Shared.get_dependency("cerevisiae", "annotation", "duplicatesSl_011116.txt")
     sl = {}
     with open(path, "r") as fh:
         _ = fh.readline()  # header
@@ -965,10 +966,10 @@ def _load_scer_synthetic_lethal_flags():
 @Shared.memoized
 def _load_scer_fitness():
     """
-    dependencies/cerevisiae/neFitnessStandard.txt
+    resources/species/cerevisiae/annotation/neFitnessStandard.txt
     Format: <orf> <fitness>
     """
-    path = Shared.get_dependency("cerevisiae", "neFitnessStandard.txt")
+    path = Shared.get_dependency("cerevisiae", "annotation", "neFitnessStandard.txt")
     fitness = {}
     with open(path, "r") as fh:
         for line in fh:

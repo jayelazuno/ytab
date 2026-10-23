@@ -221,7 +221,7 @@ def build(species: str, args) -> dict:
     else:
         shutil.copyfile(args.cgd_phenotypes, raw/"C_albicans_SC5314_phenotype_data.tab.gz") if str(args.cgd_phenotypes).endswith(".gz") else \
             (raw/"C_albicans_SC5314_phenotype_data.tab.gz").write_bytes(gzip.compress(Path(args.cgd_phenotypes).read_bytes()))
-        ortho_path = base/"C_albicans_SC5314_S_cerevisiae_orthologs.txt"
+        ortho_path = base/"orthologs/C_albicans_SC5314_S_cerevisiae_orthologs.txt"
         sources["urls"] |= dict(cgd_phenotypes=URLS["cgd_phenotypes"], cgd_orthologs=URLS["cgd_orthologs"])
         sources["files"] |= {"C_albicans_SC5314_phenotype_data.tab.gz":sha256(raw/"C_albicans_SC5314_phenotype_data.tab.gz"), ortho_path.name:sha256(ortho_path),
                              gff.name:sha256(gff), Path(sgd_gff).name:sha256(Path(sgd_gff))}

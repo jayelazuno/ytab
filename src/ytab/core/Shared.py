@@ -70,7 +70,7 @@ def get_dependency(*path_components):
 
     Examples
     --------
-    get_dependency("glabrata", "C_glabrata_BG2_S_cerevisiae_orthologs.txt")
+    get_dependency("glabrata", "orthologs", "C_glabrata_BG2_S_cerevisiae_orthologs.txt")
     get_dependency("glabrata", "reference_genome",
                    "GCA_014217725.1_ASM1421772v1_genomic.fna")
     """

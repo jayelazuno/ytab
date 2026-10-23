@@ -14,6 +14,7 @@ from pathlib import Path
 
 import yaml
 from .progress_tracker import ProgressTracker, make_job_id
+from ytab.mapping.transposons import resolve_design
 
 
 STATUS_FIELDS = [
@@ -208,7 +209,8 @@ def build_mapfastq_command(sample: dict, config: dict, threads: int | None = Non
         sys.executable, str(script), "--out-dir", str(output), "--bt2-index",
         str(prefix), "--threads", str(selected_threads), "--sample-name", name,
     ]
-    if _as_bool(sample.get("hermes_cleanup",True)):
+    design = resolve_design(sample, root)["mapping"]
+    if _as_bool(design.get("hermes_cleanup", True)):
         command.append("--hermes-preprocess")
         for field, flag in (("primer_catalogue","--primer-catalogue"),("hermes_reference","--hermes-reference")):
             if sample.get(field):
@@ -216,6 +218,16 @@ def build_mapfastq_command(sample: dict, config: dict, threads: int | None = Non
         for field, flag in (("hermes_overlap","--hermes-overlap"),("adapter_error_rate","--adapter-error-rate"),("min_read_length","--min-read-length"),("junction_read_end","--junction-read-end")):
             if sample.get(field) not in (None, ""):
                 command.extend([flag,str(sample[field])])
+    else:
+        # Profile-defined trimming for transposons and library designs without automatic Hermes cleanup.
+        if design.get("trim_5p_seq"):
+            command.extend(["--trim-5p-seq", str(design["trim_5p_seq"])])
+            if design.get("trim_5p_overlap") not in (None, ""):
+                command.extend(["--trim-5p-overlap", str(design["trim_5p_overlap"])])
+            if _as_bool(design.get("discard_untrimmed", False)):
+                command.append("--discard-untrimmed")
+        for sequence in design.get("trim_3p_seq") or []:
+            command.extend(["--trim-3p-seq", str(sequence)])
     for field,flag in (("mapq","--mapq"),("drop_flags","--drop-flags")):
         if sample.get(field) not in (None, ""):
             command.extend([flag,str(sample[field])])
@@ -259,6 +271,9 @@ def mapping_fingerprint(command: list[str]) -> str:
     for path in Path(prefix).parent.glob(Path(prefix).name+"*.bt2*"):
         payload["files"][str(path)]=[path.stat().st_size,path.stat().st_mtime_ns]
     files=[Path(__file__),root/"src/ytab/mapping/MapFastq.py"]
+    if "--trim-5p-seq" in command or "--trim-3p-seq" in command:
+        import cutadapt
+        payload["tools"]["cutadapt_version"]=cutadapt.__version__
     if "--hermes-preprocess" in command:
         import cutadapt
         payload["tools"]["cutadapt_version"]=cutadapt.__version__
@@ -327,6 +342,9 @@ def run_mapfastq_sample(
     manifest.update(mapping_strategy="paired_genome" if "--require-mate-alignment" in command else "single_mate",
         junction_mate=command[command.index(mate_flag)+1],genome_mapping_mate=command[command.index(mate_flag)+1],
         require_mate_alignment="--require-mate-alignment" in command,hermes_cleanup="--hermes-preprocess" in command)
+    design = resolve_design({**(config.get("mapping") or {}), **{k:v for k,v in sample.items() if v not in (None, "")}}, root)
+    manifest.update(transposon=design["transposon"], library_design=design["library_design"],
+                    transposon_profile=str(design["profile"].relative_to(root)) if design["profile"].is_relative_to(root) else str(design["profile"]))
 
     if not force and paths["manifest"].is_file() and _expected_outputs(paths["output"], name):
         try:
@@ -408,12 +426,14 @@ def run_mapfastq_project(
     progress_file: Path | None = None,
     junction_mate: str | None = None, require_mate_alignment: bool | None = None,
     hermes_cleanup: bool | None = None,
+    transposon: str | None = None, library_design: str | None = None,
 ) -> dict:
     config = load_project_for_mapping(project_config)
     if threads is not None:
         config["threads"] = threads
     for sample in config.get("samples",[]):
-        for key,value in (("junction_mate",junction_mate),("require_mate_alignment",require_mate_alignment),("hermes_cleanup",hermes_cleanup)):
+        for key,value in (("junction_mate",junction_mate),("require_mate_alignment",require_mate_alignment),("hermes_cleanup",hermes_cleanup),
+                          ("transposon",transposon),("library_design",library_design)):
             if value is not None:
                 sample[key]=value
     errors = validate_mapping_inputs(config, samples)

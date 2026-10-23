@@ -71,6 +71,10 @@ def FindHitsPerSample(SamAlign, ChrFeatMap, Sep0N = 2,MapQ=10):
             print('{} not found in Chromosome feature file'.format(Chr))
             continue
             
+        if Chr not in ChrHitList:
+            ChrHitList[Chr] = []
+        if Chr not in hit_map:   # a chromosome with features but no insertion above the MAPQ cutoff
+            continue
         PosCount = hit_map[Chr][source]
         HitsPos = np.where(PosCount>0)[0]
         TotalHits += len(HitsPos)

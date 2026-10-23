@@ -1,0 +1,146 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_download
+#$ -q UI
+#$ -pe smp 4
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+
+## Download the sequencing runs of one public dataset (pipeline/hpc/datasets/<DATASET>/samples.csv).
+## Submit:   qsub -v DATASET=segal_2018_albicans -N YTAB_dl_segal pipeline/hpc/ytab_download_public.txt
+##           (or: bash pipeline/hpc/ytab_public_dataset.sh <dataset> download)
+## Resubmit the same command to resume; completed runs are verified and skipped. One copy per dataset at a time.
+##
+## Each `sample` in samples.csv is a run accession (SRR/ERR/DRR) or an experiment (SRX/ERX), resolved through ENA.
+## FASTQs are downloaded from ENA over HTTPS and checked against ENA's MD5:
+##   $DATA_ROOT/<DATASET>/fastq/<study>/<run>/<run>.fastq.gz           single-end
+##   $DATA_ROOT/<DATASET>/fastq/<study>/<run>/<run>_1|_2.fastq.gz      paired-end (unpaired orphan files are skipped)
+## Sample IDs therefore follow the run accession, which is the `sample` the manifest describes.
+
+set -euo pipefail
+
+start=$(date +%s)
+date
+echo "JOB_ID=${JOB_ID:-NA}  Host: $(hostname)  NSLOTS=${NSLOTS:-NA}"
+
+YTAB="${YTAB:-$(pwd -P)}"
+DATASET="${DATASET:?Set DATASET, e.g. qsub -v DATASET=segal_2018_albicans}"
+MANIFEST="$YTAB/pipeline/hpc/datasets/$DATASET/samples.csv"
+DATA_ROOT="${DATA_ROOT:-/nfsscratch/jayelazuno/workspace/public_data}"
+BASE="$DATA_ROOT/$DATASET"
+
+[[ -f "$MANIFEST" ]] || { echo "ERROR: No manifest: $MANIFEST (run from the YTAB checkout or set YTAB)" >&2; exit 1; }
+
+source /old_Users/jayelazuno/miniforge3/etc/profile.d/conda.sh
+conda activate /old_Users/jayelazuno/miniforge3/envs/ytab-sra-tools
+for tool in python pigz curl md5sum; do
+    command -v "$tool" >/dev/null || { echo "ERROR: Required tool missing: $tool" >&2; exit 1; }
+done
+
+mkdir -p "$BASE"/{fastq,tmp,metadata,logs}
+export TMPDIR="$BASE/tmp"
+exec > >(tee -a "$BASE/logs/download.${JOB_ID:-manual}.log") 2>&1
+trap 'rc=$?; echo "Finished: $(date); exit code=$rc; elapsed=$(( $(date +%s) - start )) seconds"' EXIT
+
+echo "Dataset: $DATASET"
+echo "Manifest: $MANIFEST"
+echo "Destination: $BASE"
+df -h "$BASE"
+cp "$MANIFEST" "$BASE/metadata/samples.csv"
+
+# -----------------------
+# Resolve every manifest accession to its runs and FASTQ files (ENA filereport)
+# -----------------------
+python - "$MANIFEST" "$BASE" <<'PY'
+import csv, io, re, sys, time, urllib.parse, urllib.request
+from pathlib import Path
+
+manifest, base = Path(sys.argv[1]), Path(sys.argv[2])
+fields = "run_accession,experiment_accession,library_layout,fastq_ftp,fastq_md5,fastq_bytes,read_count"
+rows, seen = [], set()
+for sample in csv.DictReader(manifest.open()):
+    accession, study = sample["sample"].strip(), (sample.get("study") or "data").strip()
+    if not re.fullmatch(r"[SED]R[RX][0-9]+", accession):
+        raise SystemExit(f"Not a run or experiment accession: {accession!r}")
+    url = "https://www.ebi.ac.uk/ena/portal/api/filereport?" + urllib.parse.urlencode(
+        dict(accession=accession, result="read_run", fields=fields, format="tsv", download="false"))
+    for attempt in range(1, 4):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "YTAB-download"}), timeout=120) as r:
+                text = r.read().decode()
+            records = list(csv.DictReader(io.StringIO(text), delimiter="\t"))
+            if not records:
+                raise ValueError("no runs returned")
+            break
+        except Exception as error:
+            if attempt == 3:
+                raise SystemExit(f"Could not resolve {accession}: {error}")
+            time.sleep(5 * attempt)
+    (base/"metadata"/f"{accession}.ena.tsv").write_text(text)
+    for record in records:
+        run = record["run_accession"]
+        if run in seen:
+            raise SystemExit(f"Run listed twice: {run}")
+        seen.add(run)
+        urls, md5s = record["fastq_ftp"].split(";"), record["fastq_md5"].split(";")
+        if not record["fastq_ftp"] or len(urls) != len(md5s):
+            raise SystemExit(f"ENA lists no FASTQ for {run}; use the SRA Toolkit for this run")
+        files = list(zip(urls, md5s))
+        if record["library_layout"] == "PAIRED":
+            # ENA may add an unpaired orphan file (<run>.fastq.gz); keep only the mates.
+            files = [(u, m) for u, m in files if re.search(r"_[12]\.fastq\.gz$", u)]
+            if len(files) != 2:
+                raise SystemExit(f"Expected two mate files for paired run {run}: {record['fastq_ftp']}")
+        elif len(files) != 1:
+            raise SystemExit(f"Expected one file for single-end run {run}: {record['fastq_ftp']}")
+        for u, m in files:
+            rows.append([study, run, record["library_layout"], "https://" + u, m])
+        print(f"{accession} -> {run} ({record['library_layout']}, {record['read_count']} reads)", flush=True)
+pending = base/"metadata"/"files.tsv.pending"
+with pending.open("w", newline="") as handle:
+    w = csv.writer(handle, delimiter="\t", lineterminator="\n"); w.writerow(["study", "run", "layout", "url", "md5"]); w.writerows(rows)
+pending.replace(base/"metadata"/"files.tsv")
+PY
+
+# -----------------------
+# Download, verify and place each file
+# -----------------------
+while IFS=$'\t' read -r study run layout url md5; do
+    [[ "$study" == "study" ]] && continue
+    md5="${md5%$'\r'}"   # tolerate CRLF line endings
+    final="$BASE/fastq/$study/$run"
+    name=$(basename "$url")
+    target="$final/$name"
+    if [[ -f "$target.complete" ]]; then
+        echo "Verified earlier; skipping $name"
+        continue
+    fi
+    echo
+    echo "=== $study | $run | $name ==="
+    mkdir -p "$final"
+    part="$BASE/tmp/$name.part"
+    ok=0
+    for attempt in 1 2 3 4 5; do
+        # -C - resumes a partial download.
+        if curl -fL --retry 3 --retry-delay 10 -C - -o "$part" "$url"; then
+            got=$(md5sum "$part" | cut -d' ' -f1)
+            if [[ "$got" == "$md5" ]]; then ok=1; break; fi
+            echo "MD5 mismatch for $name ($got, expected $md5); downloading again."
+            mv "$part" "$part.bad.$attempt"
+        else
+            echo "Download attempt $attempt failed for $name."
+        fi
+        sleep 15
+    done
+    (( ok == 1 )) || { echo "ERROR: $name could not be downloaded and verified; resubmit to resume." >&2; exit 1; }
+    pigz -t "$part"
+    mv "$part" "$target"
+    date -u '+%Y-%m-%dT%H:%M:%SZ' > "$target.complete"
+    echo "Completed: $target ($(du -h "$target" | cut -f1))"
+done < "$BASE/metadata/files.tsv"
+
+echo
+echo "All files verified. FASTQ directory for the project: $BASE/fastq"
+find "$BASE/fastq" -name '*.fastq.gz' | wc -l

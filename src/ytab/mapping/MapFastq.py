@@ -11,6 +11,7 @@ MapFastq.py
 import os
 import sys
 import gzip
+import shlex
 import shutil
 import argparse
 import json
@@ -48,6 +49,8 @@ usage = """MapFastq.py
    --trim-5p-seq-r2        [str]   (PE only) 5' sequence for R2 (only used when trimming both mates)
    --trim-5p-overlap       [int]   cutadapt --overlap for 5' trimming (default 24 if -p else 37)
    --discard-untrimmed             If set, discard reads lacking the 5' sequence match.
+   --trim-3p-seq           [str]   3' sequence to trim (repeatable); with -a, all are trimmed in one pass.
+                                   A transposon profile (resources/transposons/<name>/profile.json) sets these.
 
    --mapq                  [int]   MAPQ cutoff for BAM QC filtering (default 20)
    --drop-flags            [str]   samtools -F flags to drop (default 0xD04)
@@ -114,7 +117,7 @@ def RemoveTn_SE(InputFName: str, Trim5Seq: str, overlap: int, CleanfName: str,
                 CutAdaptPath: str, discard_untrimmed: bool):
     discard_flag = " --discard-untrimmed" if discard_untrimmed else ""
     cmd = (
-        f'{CutAdaptPath} -m 2 -g {Trim5Seq} '
+        f'{CutAdaptPath} -m 2 -g {shlex.quote(Trim5Seq)} '
         f'-o "{CleanfName}" "{InputFName}"{discard_flag} --overlap {overlap}'
     )
     rc, out, err = run_cmd(cmd)
@@ -131,19 +134,19 @@ def RemoveTn_PE(R1: str, R2: str,
     discard_flag = " --discard-untrimmed" if discard_untrimmed else ""
     if trim_mate_mode == "R1":
         cmd = (
-            f'{CutAdaptPath} -m 2 -g {Trim5Seq_R1} '
+            f'{CutAdaptPath} -m 2 -g {shlex.quote(Trim5Seq_R1)} '
             f'-o "{CleanR1}" -p "{CleanR2}" "{R1}" "{R2}"'
             f'{discard_flag} --overlap {overlap}'
         )
     elif trim_mate_mode == "R2":
         cmd = (
-            f'{CutAdaptPath} -m 2 -G {Trim5Seq_R2} '
+            f'{CutAdaptPath} -m 2 -G {shlex.quote(Trim5Seq_R2)} '
             f'-o "{CleanR1}" -p "{CleanR2}" "{R1}" "{R2}"'
             f'{discard_flag} --overlap {overlap}'
         )
     else:
         cmd = (
-            f'{CutAdaptPath} -m 2 -g {Trim5Seq_R1} -G {Trim5Seq_R2} '
+            f'{CutAdaptPath} -m 2 -g {shlex.quote(Trim5Seq_R1)} -G {shlex.quote(Trim5Seq_R2)} '
             f'-o "{CleanR1}" -p "{CleanR2}" "{R1}" "{R2}"'
             f'{discard_flag} --overlap {overlap}'
         )
@@ -151,14 +154,21 @@ def RemoveTn_PE(R1: str, R2: str,
     return CutAdaptOutput(out + "\n" + err), out, err, rc
 
 
-def TrimAdapter3_SE(InputFName: str, Adapter: str, CleanfName: str, CutAdaptPath: str):
-    cmd = f'{CutAdaptPath} -m 2 -a {Adapter} -o "{CleanfName}" "{InputFName}"'
+def _adapter_flags(flag: str, adapters) -> str:
+    """One cutadapt flag per 3' sequence (a single string or a list); each read is cut at the first one found."""
+    adapters = [adapters] if isinstance(adapters, str) else list(adapters)
+    return " ".join(f"{flag} {shlex.quote(a)}" for a in adapters)
+
+
+def TrimAdapter3_SE(InputFName: str, Adapter, CleanfName: str, CutAdaptPath: str):
+    cmd = f'{CutAdaptPath} -m 2 {_adapter_flags("-a", Adapter)} -o "{CleanfName}" "{InputFName}"'
     rc, out, err = run_cmd(cmd)
     return CutAdaptOutput(out + "\n" + err), out, err, rc
 
 
-def TrimAdapter3_PE(R1: str, R2: str, Adapter: str, CleanR1: str, CleanR2: str, CutAdaptPath: str):
-    cmd = f'{CutAdaptPath} -m 2 -a {Adapter} -A {Adapter} -o "{CleanR1}" -p "{CleanR2}" "{R1}" "{R2}"'
+def TrimAdapter3_PE(R1: str, R2: str, Adapter, CleanR1: str, CleanR2: str, CutAdaptPath: str):
+    cmd = (f'{CutAdaptPath} -m 2 {_adapter_flags("-a", Adapter)} {_adapter_flags("-A", Adapter)} '
+           f'-o "{CleanR1}" -p "{CleanR2}" "{R1}" "{R2}"')
     rc, out, err = run_cmd(cmd)
     return CutAdaptOutput(out + "\n" + err), out, err, rc
 
@@ -253,6 +263,8 @@ def main():
     parser.add_argument("--trim-5p-seq-r2", default=None)
     parser.add_argument("--trim-5p-overlap", type=int, default=None)
     parser.add_argument("--discard-untrimmed", action="store_true")
+    parser.add_argument("--trim-3p-seq", action="append", default=[],
+                        help="3' sequence to trim (repeatable; a transposon profile's restriction-site or adaptor sequences)")
     parser.add_argument("--hermes-preprocess", action="store_true", help="Trim detected Hermes terminal sequence and adapters; no mandatory Hermes match")
     parser.add_argument("--primer-catalogue", type=Path)
     parser.add_argument("--hermes-reference", type=Path)
@@ -289,7 +301,7 @@ def main():
 
     CutAdaptPath = (
         which_or_die("cutadapt")
-        if args.trim_5p_seq is not None or args.clean_adapters not in (None, "")
+        if args.trim_5p_seq is not None or args.clean_adapters not in (None, "") or args.trim_3p_seq
         else None
     )
     BowtiePath = which_or_die("bowtie2")
@@ -307,7 +319,7 @@ def main():
     cleanup_directory = None
     if args.hermes_preprocess:
         from ytab.mapping.hermes_preprocess import DEFAULT_CATALOGUE, prepare_fastqs
-        if args.trim_5p_seq is not None or args.clean_adapters is not None or args.delete_originals:
+        if args.trim_5p_seq is not None or args.clean_adapters is not None or args.trim_3p_seq or args.delete_originals:
             raise ValueError("Automatic Hermes cleanup cannot be combined with legacy trimming/deletion flags")
         if args.junction_mate == "both":
             raise ValueError("Automatic Hermes cleanup requires one designated junction mate")
@@ -385,15 +397,16 @@ def main():
                 LogFile.write(out.replace("\n", "\r\n") + "\r\n")
                 LogFile.write(err.replace("\n", "\r\n") + "\r\n")
 
-        if args.clean_adapters is not None:
-            if args.clean_adapters == "":
+        adapters_3p = ([args.clean_adapters] if args.clean_adapters else []) + args.trim_3p_seq
+        if args.clean_adapters is not None or args.trim_3p_seq:
+            if not adapters_3p:
                 LogFile.write("\r\n\r\n=== Adapter removal skipped ===\r\n")
                 LogFile.write("No adapter sequence provided with -a/--clean-adapters.\r\n")
             else:
                 tmpR1 = CleanR1 + ".no_adapters.fq"
                 tmpR2 = CleanR2 + ".no_adapters.fq"
                 CurrRes2, out, err, rc = TrimAdapter3_PE(
-                    CleanR1, CleanR2, args.clean_adapters, tmpR1, tmpR2, CutAdaptPath
+                    CleanR1, CleanR2, adapters_3p, tmpR1, tmpR2, CutAdaptPath
                 )
                 LogFile.write(
                     "\r\n\r\n=== Adapter removal ===\r\n"
@@ -502,15 +515,16 @@ def main():
                 LogFile.write(out.replace("\n", "\r\n") + "\r\n")
                 LogFile.write(err.replace("\n", "\r\n") + "\r\n")
 
-        if args.clean_adapters is not None:
-            if args.clean_adapters == "":
+        adapters_3p = ([args.clean_adapters] if args.clean_adapters else []) + args.trim_3p_seq
+        if args.clean_adapters is not None or args.trim_3p_seq:
+            if not adapters_3p:
                 LogFile.write("\r\n\r\n=== Adapter removal skipped ===\r\n")
                 LogFile.write("No adapter sequence provided with -a/--clean-adapters.\r\n")
             else:
                 temp_fq = CleanfName + ".no_adapters.fq"
                 CurrRes2, out, err, rc = TrimAdapter3_SE(
                     CleanfName,
-                    args.clean_adapters,
+                    adapters_3p,
                     temp_fq,
                     CutAdaptPath
                 )

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "transposon": "ac_ds",
+  "description": "Maize Ac/Ds (hAT family): a Ds element mobilised by Ac transposase; 8-bp target-site duplication, no strong target motif.",
+  "default_design": "ds_primer_tail",
+  "designs": {
+    "ds_primer_tail": {
+      "description": "Reads carry a short tag, then the Ds primer and Ds end (GTATTTTACCGACCGTTACCGACCGTTTTCATCCCTA), then the genome. The primer and end are trimmed wherever they occur at full length; reads without them are discarded; Illumina adaptor read-through is trimmed from the 3' end.",
+      "used_by": ["Segal et al. 2018 (C. albicans Ds-NAT1, PRJNA490565)"],
+      "source": "berman-lab/transposon-pipeline MapFastq.py (TnPrimerAndTail, AdapterSeq)",
+      "mapping": {"hermes_cleanup": false, "trim_5p_seq": "GTATTTTACCGACCGTTACCGACCGTTTTCATCCCTA", "trim_5p_overlap": 37,
+                  "discard_untrimmed": true, "trim_3p_seq": ["AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"]}
+    },
+    "satay_restriction": {
+      "description": "SATAY: reads start in the genome at the MiniDs junction and run to the first DpnII (GATC) or NlaIII (CATG) site, after which the circularised Ds sequence follows. The Ds sequence after the site is trimmed from the 3' end, together with Illumina adaptor read-through.",
+      "used_by": ["Michel et al. 2017 (S. cerevisiae MiniDs, ArrayExpress E-MTAB-4885 / ENA ERP016475)"],
+      "mapping": {"hermes_cleanup": false,
+                  "trim_3p_seq": ["GTATCGGTTTTCGATTACCGTATTTATCCCGTTCG", "TGTGATTTTACCGAACAAAAATACCGGTTCCCGTCCG",
+                                  "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"]}
+    }
+  }
+}

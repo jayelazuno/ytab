@@ -10,8 +10,36 @@ The scripts in this directory are personal University of Iowa
 not a universal HPC interface. Queue `UI`, parallel environment `smp`, email,
 Conda initialization and scratch paths are personal site settings. Users of
 Slurm, PBS or other clusters should wrap the ordinary CLI in their own scripts.
-The separate personal `sra_access.txt` download utility is retained; it is not an
-analysis stage and is not called by the analysis jobs.
+Public datasets are downloaded by `ytab_download_public.txt` (below); downloading is not an analysis stage and
+is not called by the analysis jobs.
+
+## Public datasets: download, then submit
+
+Each folder in `datasets/` describes one public dataset: `samples.csv` (one row per sequencing run, keyed by its
+accession, with role, pool, transposon and library design) and `dataset.env` (project ID and species).
+
+| dataset | species | runs | transposon / library design |
+|---|---|---|---|
+| `segal_2018_albicans` | albicans | 11 | `ac_ds` / `ds_primer_tail` |
+| `pombe_hermes` | pombe | 26 (25 included) | `hermes` / `terminal_10bp` (Guo 2013), `end_ligated_adapter` (Grech 2019, Levin 2020) |
+| `michel_2017_satay` | cerevisiae | 7 (WT ×2, rapamycin, 4 mutants) | `ac_ds` / `satay_restriction` |
+| `gale_2020_glabrata` | glabrata | 7 | `hermes` / `splinkerette_pcr` (re-download only; the project exists) |
+
+```bash
+cd /Users/jayelazuno/workspace/ytab
+# 1. One download job per dataset (resumable; MD5-checked against ENA):
+bash pipeline/hpc/ytab_public_dataset.sh segal_2018_albicans download
+bash pipeline/hpc/ytab_public_dataset.sh pombe_hermes download
+bash pipeline/hpc/ytab_public_dataset.sh michel_2017_satay download
+bash pipeline/hpc/ytab_public_dataset.sh pombe_hermes status       # files verified so far
+# 2. When a download has finished, create its project and submit the stage chain
+#    (reference, mapping, hit files, SummaryTable, library diagnostics, report, export):
+bash pipeline/hpc/ytab_public_dataset.sh segal_2018_albicans submit --profile core --threads 8
+```
+
+FASTQs go to `/nfsscratch/jayelazuno/workspace/public_data/<dataset>/fastq` (`DATA_ROOT` overrides the base). The
+export stage bundles each project's summaries, hit files and logs under `output/exports/<project>` for pulling back.
+Transposon profiles are in `resources/transposons/<transposon>/profile.json`; see `docs/hermes_alignment.md`.
 
 ## One-command master submission
 

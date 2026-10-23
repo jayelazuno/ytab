@@ -1,0 +1,12 @@
+sample,study,library_role,condition,background,pool,culture_replicate,display_name,transposon,library_design,include,notes
+SRR7824842,Segal2018,parent,parent,YJB-T1081,Ca01,1,Ca library 01,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824845,Segal2018,parent,parent,YJB-T1081,Ca02,1,Ca library 02,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824843,Segal2018,parent,parent,YJB-T1081,Ca03,1,Ca library 03,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824844,Segal2018,parent,parent,YJB-T1081,Ca04,1,Ca library 04,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824839,Segal2018,parent,parent,YJB-T1081,Ca05,1,Ca library 05,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824840,Segal2018,parent,parent,YJB-T1081,Ca06,1,Ca library 06,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824841,Segal2018,parent,parent,YJB-T1081,Ca07,1,Ca library 07,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824846,Segal2018,parent,parent,YJB-T1081,Ca08,1,Ca library 08,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824847,Segal2018,parent,parent,YJB-T1081,Ca09,1,Ca library 09,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824848,Segal2018,parent,parent,YJB-T1081,Ca10,1,Ca library 10,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"
+SRR7824838,Segal2018,parent,parent,YJB-T1081,Ca11,1,Ca library 11,ac_ds,ds_primer_tail,True,"Ds-NAT1 library, haploid C. albicans"

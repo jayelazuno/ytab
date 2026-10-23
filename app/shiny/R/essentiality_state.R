@@ -114,8 +114,9 @@ essentiality_classifier_resources <- function(project, repo_root, target_tag = "
     if (!nzchar(path)) return("")
     ytab_resolve_path(path, repo_root)
   }
-  kornmann <- if (dir.exists(file.path(repo_root, "resources", "species", "Kornmann"))) {
-    list.files(file.path(repo_root, "resources", "species", "Kornmann"),
+  satay <- file.path(repo_root, "resources", "species", "cerevisiae", "tnseq_data", "michel_2017_satay")
+  kornmann <- if (dir.exists(satay)) {
+    list.files(satay,
                pattern = "WildType.*\\.wig$", full.names = TRUE)
   } else character()
   feature <- if (nzchar(target_tag)) file.path(project$project_root, "summary_combined", target_tag,
@@ -125,10 +126,10 @@ essentiality_classifier_resources <- function(project, repo_root, target_tag = "
   resources <- list(
     `S. cerevisiae orthology map` = if (file.exists(annotation)) annotation else resolve(reference$orthology_file),
     `Kornmann WildType WIG tracks` = kornmann,
-    `SGD feature table` = file.path(repo_root, "resources", "species", "cerevisiae", "SGD_features.tab"),
-    `Viable annotations` = file.path(repo_root, "resources", "species", "cerevisiae", "cerevisiae_viable_annotations.txt"),
-    `Inviable annotations` = file.path(repo_root, "resources", "species", "cerevisiae", "cerevisiae_inviable_annotations.txt"),
-    `S. cerevisiae paralog annotations` = file.path(repo_root, "resources", "species", "cerevisiae", "hasParalogs_sc.txt"),
+    `SGD feature table` = file.path(repo_root, "resources", "species", "cerevisiae", "reference_genome", "SGD_features.tab"),
+    `Viable annotations` = file.path(repo_root, "resources", "species", "cerevisiae", "essentiality_labels", "raw", "cerevisiae_viable_annotations.txt"),
+    `Inviable annotations` = file.path(repo_root, "resources", "species", "cerevisiae", "essentiality_labels", "raw", "cerevisiae_inviable_annotations.txt"),
+    `S. cerevisiae paralog annotations` = file.path(repo_root, "resources", "species", "cerevisiae", "annotation", "hasParalogs_sc.txt"),
     `Combined parent feature table` = feature
   )
   rows <- lapply(names(resources), function(name) {

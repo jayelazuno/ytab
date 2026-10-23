@@ -20,24 +20,24 @@ These resources are treated as **inputs** to the pipeline and app, not generated
 
 ## Directory layout
 
+Every species uses the same subdirectories; code resolves files only through them.
+
 ```text
 resources/species/
 ├── README.md
-├── glabrata/
-│   ├── C_glabrata_BG2_S_cerevisiae_orthologs.txt
-│   └── reference_genome/
-│       ├── GCA_014217725.1_ASM1421772v1_feature_table.txt
-│       ├── GCA_014217725.1_ASM1421772v1_genomic.fna
-│       ├── GCA_014217725.1_ASM1421772v1_genomic.gff
-│       ├── GCA_014217725.1_ASM1421772v1_genomic.gtf
-│       ├── GCA_014217725.1_ASM1421772v1_protein.faa
-│       ├── GCA_014217725.1_ASM1421772v1_genomic.1.bt2
-│       ├── GCA_014217725.1_ASM1421772v1_genomic.2.bt2
-│       ├── GCA_014217725.1_ASM1421772v1_genomic.3.bt2
-│       ├── GCA_014217725.1_ASM1421772v1_genomic.4.bt2
-│       ├── GCA_014217725.1_ASM1421772v1_genomic.rev.1.bt2
-│       └── GCA_014217725.1_ASM1421772v1_genomic.rev.2.bt2
-├── cerevisiae/
-├── pombe/
-├── albicans/
-└── Kornmann/
+├── orthologs/                 cross-species 1:1 ortholog groups (glabrata, cerevisiae, pombe, albicans)
+└── <species>/                 albicans, cerevisiae, glabrata, pombe, or any new species
+    ├── reference_genome/      FASTA, GFF/GTF, feature tables, Bowtie2 index, chromosome_names.tsv,
+    │                          centromere and tRNA BEDs (resolved by ytab.pipeline.reference_registry)
+    ├── annotation/            gene_annotation.tsv (names, S. cerevisiae orthologs, descriptions), GO files,
+    │                          paralogs, repeated/deleted regions, genetic-interaction and fitness tables
+    ├── orthologs/             the species' ortholog tables (S. cerevisiae first; S. pombe where available)
+    ├── essentiality_labels/   labels.tsv, sources.json, summary.json, README.md; raw/ holds the source files
+    │                          (phenotype downloads, viability annotations, published essential-gene lists)
+    └── tnseq_data/            published transposon insertion data, one folder per study
+                               (e.g. cerevisiae/tnseq_data/michel_2017_satay, pombe/tnseq_data/guo_2013_hermes)
+```
+
+Only the folders a species needs exist. A species becomes selectable when `reference_genome/` contains at least one
+recognized reference file. Files are inputs to the pipelines and app, never outputs.
+

@@ -127,7 +127,7 @@ def resolve_reference(species: str, repo_root: Path | None = None) -> ReferenceI
     centromere = _select_centromere_bed(reference_dir, species, warnings)
     trna = _select(_glob_many(reference_dir, ("*tRNA*.bed", "tRNAs.bed")), "tRNA BED", species, warnings)
     # S. cerevisiae is the reference species for orthology-based annotation.
-    orthologs = _glob_many(species_dir, ("*orthologs*.txt",))
+    orthologs = _glob_many(species_dir / "orthologs", ("*orthologs*.txt",))
     orthology = _select([p for p in orthologs if "cerevisiae" in p.name.lower()] or orthologs, "orthology file", species, warnings)
 
     if fasta is None:

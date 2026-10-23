@@ -146,7 +146,7 @@ def _default_scer_orthology_file(species=None):
         return _default_bg2_scer_orthology_file()
     base = Shared.get_dependency(species)
     candidates = [os.path.join(base, "annotation", "gene_annotation.tsv")]
-    candidates += sorted(glob.glob(os.path.join(base, "*S_cerevisiae_orthologs*.txt")))
+    candidates += sorted(glob.glob(os.path.join(base, "orthologs", "*S_cerevisiae_orthologs*.txt")))
     return _first_existing_file(candidates, label=f"S. cerevisiae orthology file for {species}")
 
 
@@ -155,8 +155,7 @@ def _default_bg2_scer_orthology_file():
     Default BG2↔S. cerevisiae orthology file under the YTAB resource tree.
     """
     candidates = [
-        Shared.get_dependency("glabrata", "C_glabrata_BG2_S_cerevisiae_orthologs.txt"),
-        Shared.get_dependency("glabrata", "orthology", "C_glabrata_BG2_S_cerevisiae_orthologs.txt"),
+        Shared.get_dependency("glabrata", "orthologs", "C_glabrata_BG2_S_cerevisiae_orthologs.txt"),
     ]
     return _first_existing_file(candidates, label="BG2↔Scer orthology file")
 
@@ -167,10 +166,7 @@ def _default_kornmann_wig_files():
     Locate S. cerevisiae WildType WIG tracks used for legacy/training mode.
     """
     patterns = [
-        Shared.get_dependency("Kornmann", "*WildType*.wig"),
-        Shared.get_dependency("cerevisiae", "Kornmann", "*WildType*.wig"),
-        Shared.get_dependency("cerevisiae", "experiment data", "Kornmann", "*WildType*.wig"),
-        Shared.get_dependency("cerevisiae", "experiment_data", "Kornmann", "*WildType*.wig"),
+        Shared.get_dependency("cerevisiae", "tnseq_data", "michel_2017_satay", "*WildType*.wig"),
     ]
     return _glob_existing(patterns, label="Kornmann WildType WIG tracks")
 
@@ -181,9 +177,7 @@ def _default_albicans_post_evo_dir():
     Locate the legacy C. albicans post-evolution hit-table directory.
     """
     candidates = [
-        Shared.get_dependency("albicans", "experiment data", "post evo", "q20m2"),
-        Shared.get_dependency("albicans", "experiment_data", "post_evo", "q20m2"),
-        Shared.get_dependency("albicans", "post_evo", "q20m2"),
+        Shared.get_dependency("albicans", "tnseq_data", "segal_2018_acds", "q20m2"),
     ]
     return _first_existing_dir(candidates, label="albicans post-evo hit directory")
 
@@ -194,10 +188,7 @@ def _default_pombe_hit_file():
     Locate the legacy S. pombe Hermes hit table.
     """
     candidates = [
-        Shared.get_dependency("pombe", "hermes_hits.csv"),
-        Shared.get_dependency("pombe", "hits", "hermes_hits.csv"),
-        Shared.get_dependency("pombe", "experiment data", "hermes_hits.csv"),
-        Shared.get_dependency("pombe", "experiment_data", "hermes_hits.csv"),
+        Shared.get_dependency("pombe", "tnseq_data", "guo_2013_hermes", "hermes_hits.csv"),
     ]
     return _first_existing_file(candidates, label="pombe Hermes hit file")
 

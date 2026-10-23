@@ -1,0 +1,26 @@
+{
+  "species": "cerevisiae",
+  "fasta": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta",
+  "index_prefix": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529",
+  "bowtie2_index_complete_before": false,
+  "bowtie2_index_complete_after": true,
+  "fasta_index_created": true,
+  "commands_run": [
+    [
+      "samtools",
+      "faidx",
+      "/Users/joshuaayelazuno/Desktop/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta"
+    ],
+    [
+      "bowtie2-build",
+      "--threads",
+      "4",
+      "/Users/joshuaayelazuno/Desktop/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta",
+      "/Users/joshuaayelazuno/Desktop/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529"
+    ]
+  ],
+  "warnings": [
+    "No complete Bowtie2 index found. Run reference preparation before alignment."
+  ],
+  "timestamp": "2026-10-23T15:30:57.542204+00:00"
+}

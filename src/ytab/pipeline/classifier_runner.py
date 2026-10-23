@@ -103,11 +103,11 @@ def resolve_classifier_resources(config: dict) -> dict:
     orthology = annotation if annotation.is_file() else _resolve(resolved.get("orthology_file") or reference.get("orthology_file"), root)
     resources = {
         "orthology_file": orthology,
-        "kornmann_wig_files": sorted((species_root / "Kornmann").glob("*WildType*.wig")),
-        "cerevisiae_feature_table": species_root / "cerevisiae" / "SGD_features.tab",
-        "cerevisiae_viable_annotations": species_root / "cerevisiae" / "cerevisiae_viable_annotations.txt",
-        "cerevisiae_inviable_annotations": species_root / "cerevisiae" / "cerevisiae_inviable_annotations.txt",
-        "cerevisiae_paralogs": species_root / "cerevisiae" / "hasParalogs_sc.txt",
+        "kornmann_wig_files": sorted((species_root / "cerevisiae" / "tnseq_data" / "michel_2017_satay").glob("*WildType*.wig")),
+        "cerevisiae_feature_table": species_root / "cerevisiae" / "reference_genome" / "SGD_features.tab",
+        "cerevisiae_viable_annotations": species_root / "cerevisiae" / "essentiality_labels" / "raw" / "cerevisiae_viable_annotations.txt",
+        "cerevisiae_inviable_annotations": species_root / "cerevisiae" / "essentiality_labels" / "raw" / "cerevisiae_inviable_annotations.txt",
+        "cerevisiae_paralogs": species_root / "cerevisiae" / "annotation" / "hasParalogs_sc.txt",
     }
     return resources
 
