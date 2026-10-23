@@ -2,42 +2,43 @@
   "use strict";
 
   const menus = {
-    project_data: {
-      nested_id: "project_data_tabs",
+    project: {
+      nested_id: "project_tabs",
       items: [
-        ["Project", "project"],
         ["Samples", "samples"],
-        ["Reference", "reference"],
-        ["Files", "files"]
+        ["Logs & Provenance", "provenance"],
+        ["Help", "help"]
       ]
     },
-    preprocessing: {
-      nested_id: "preprocessing_tabs",
+    run: {
+      nested_id: "run_tabs",
       items: [
         ["Samples", "samples"],
         ["Reference", "reference"],
         ["Mapping", "mapping"],
-        ["Hit Files", "hit_files"],
-        ["Summary Tables", "summary_tables"],
-        ["Status", "status"]
+        ["Run Profiles", "profiles"]
       ]
     },
     quality_control: {
       nested_id: "qc_tabs",
       items: [
-        ["Mapping QC", "mapping_qc"],
-        ["Summary QC", "summary_qc"],
-        ["Library Diagnostics", "library_diagnostics"],
-        ["Diagnostic Files", "diagnostic_files"]
+        ["Overview", "overview"],
+        ["Reads & Mapping", "reads_mapping"],
+        ["Insertions & Genes", "insertions"],
+        ["Saturation & Bias", "saturation_bias"],
+        ["Library Agreement", "agreement"]
+      ]
+    },
+    normalization: {
+      nested_id: "normalization_tabs",
+      items: [
+        ["Site Normalization", "site"]
       ]
     },
     essentiality: {
       nested_id: "essentiality_tabs",
       items: [
-        ["Normalize & Choose Target", "normalize"],
-        ["Combine Parents", "combine"],
-        ["Combined Summary", "combined_summary"],
-        ["Classifier", "classifier"],
+        ["Run", "run"],
         ["Results", "results"]
       ]
     },
@@ -45,30 +46,25 @@
       nested_id: "fitness_tabs",
       items: [
         ["Design", "fitness_design"],
-        ["Run Analysis", "fitness_run"],
-        ["Results", "fitness_results"]
+        ["Treated vs Control: Run", "fitness_run"],
+        ["Treated vs Control: Results", "fitness_results"],
+        ["Multi-condition", "multicondition"],
+        ["Genetic Interactions", "gi"]
       ]
     },
-    go_analysis: {
-      nested_id: "go_analysis_tabs",
+    gene_explorer: {
+      nested_id: "gene_explorer_tabs",
       items: [
-        ["Gene set", "gene_set"],
-        ["GO enrichment", "enrichment"],
-        ["Semantic reduction", "semantic_reduction"]
+        ["Genome Browser", "browser"],
+        ["Gene & Domain Insertions", "gene_domain"],
+        ["GO Enrichment", "go"],
+        ["Across Species", "comparative"]
       ]
     },
     screen_coverage: {
       nested_id: "screen_coverage_tabs",
-      items: [["Screen Planner", "planner"], ["Mutant Identification", "mutants"], ["Methods & References", "methods"]]
+      items: [["Coverage Planner", "planner"], ["Mutant Identification", "mutants"]]
     },
-    comparative_species: {
-      nested_id: "comparative_tabs",
-      items: [
-        ["Single Species View", "single_species"],
-        ["Comparative View", "comparative"],
-        ["Gene Group Analysis", "gene_group"]
-      ]
-    }
   };
 
   const nestedByTop = {};
@@ -203,7 +199,9 @@
       if (!host || host.dataset.ytabMenuReady === "true") return;
 
       host.dataset.ytabMenuReady = "true";
-      host.classList.add("dropdown", "ytab-nav-menu-host");
+      // Not "dropdown": Shiny's tab input reads the active tab with li:not(.dropdown).active, so a top tab marked
+      // as a dropdown would report no value and the server would never see which module is open.
+      host.classList.add("ytab-nav-menu-host");
 
       const caret = document.createElement("button");
       caret.type = "button";

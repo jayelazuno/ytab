@@ -1,7 +1,16 @@
 fitness_ma_numeric <- function(x) suppressWarnings(as.numeric(as.character(x)))
-fitness_ma_lfc_support_threshold <- function() 0
 fitness_ma_candidate_lfc_threshold <- function() 1
 fitness_ma_candidate_cpm_threshold <- function() 1
+
+# Results are read as the pipeline wrote them (ytab.fitness.contract); the app derives nothing. Gene values and
+# abundances are in the result's value_unit (CPM, or the normalization's reads per million).
+fitness_abundance_unit <- function(result) if (nzchar(result$value_unit %||% "")) result$value_unit else "CPM"
+fitness_gene_values <- function(result) {
+  path <- file.path(result$output_dir %||% "", "tables", "gene_values.long.csv")
+  x <- if (!is.null(result) && file.exists(path)) tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame()) else data.frame()
+  if (nrow(x) && "value" %in% names(x)) x$cpm <- fitness_ma_numeric(x$value)
+  x
+}
 
 fitness_ma_first_nonempty <- function(...) {
   values <- list(...)
@@ -69,7 +78,6 @@ fitness_ma_data <- function(result, mode = "combined", pair = "") {
   root <- file.path(result$output_dir, "tables")
   summary_path <- file.path(root, "treated_vs_parent.summary_by_feature.csv")
   pool_path <- file.path(root, "treated_vs_parent.by_pool.log2fc_z.csv")
-  cpm_path <- file.path(root, "feature_reads_cpm.long.csv")
   if (!file.exists(summary_path)) return(empty)
   summary <- tryCatch(read.csv(summary_path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame())
   if (!nrow(summary) || !all(c("feature_id", "mean_log2FC") %in% names(summary))) return(empty)
@@ -94,108 +102,66 @@ fitness_ma_data <- function(result, mode = "combined", pair = "") {
     out$label[is.na(out$label) | !nzchar(trimws(out$label))] <- out$feature_id[is.na(out$label) | !nzchar(trimws(out$label))]
     return(out[, c("feature_id", "label", "mean_abundance", "log2fc", "call"), drop = FALSE])
   }
-  if (!file.exists(cpm_path)) return(empty)
-  cpm <- tryCatch(read.csv(cpm_path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame())
-  if (!nrow(cpm) || !all(c("feature_id", "cpm") %in% names(cpm))) return(empty)
-  abundance <- aggregate(fitness_ma_numeric(cpm$cpm), list(feature_id = as.character(cpm$feature_id)), mean, na.rm = TRUE)
-  names(abundance)[2] <- "mean_abundance"
-  out <- data.frame(feature_id = id, label = labels, mean_abundance = abundance$mean_abundance[match(id, abundance$feature_id)],
-                    log2fc = fitness_ma_numeric(summary$mean_log2FC),
+  if (!"mean_abundance" %in% names(summary)) return(empty)
+  out <- data.frame(feature_id = id, label = labels, mean_abundance = fitness_ma_numeric(summary$mean_abundance),
+                    log2fc = fitness_ma_numeric(if ("call_log2FC" %in% names(summary)) summary$call_log2FC else summary$mean_log2FC),
                     call = if ("final_call" %in% names(summary)) as.character(summary$final_call) else "none",
                     stringsAsFactors = FALSE)
   out
 }
 
+# Top hits as ranked by the pipeline (tables/top_hit_evidence*.csv, ytab.fitness.zscore.hit_evidence). The app only
+# applies the viewer's choices: direction, minimum supporting pools and how many hits (fitness_ma_highlight_rows).
 fitness_ma_rank_data <- function(result, mode = "combined", pair = "", direction = "both", min_support = 0L) {
   data <- fitness_ma_data(result, mode, pair)
   if (!nrow(data)) return(data)
-  min_support <- suppressWarnings(as.integer(min_support %||% 0L))
-  if (is.na(min_support) || min_support < 0L) min_support <- 0L
-  data$depleted_support_n <- 0L; data$enriched_support_n <- 0L; data$depleted_stored_call_n <- 0L; data$enriched_stored_call_n <- 0L; data$valid_pool_n <- 1L
-  data$rank_z_strength <- 0; data$rank_lfc_strength <- abs(fitness_ma_numeric(data$log2fc)); data$rank_cpm_support <- fitness_ma_numeric(data$mean_abundance)
-  data$rank_support_n <- 0L; data$ranking_basis <- "ranked by directional log2FC magnitude, CPM/read support, local z-score support, and stable feature ID"
-  if (identical(mode, "combined")) {
-    path <- file.path(result$output_dir, "tables", "treated_vs_parent.by_pool.log2fc_z.csv")
-    by_pool <- if (file.exists(path)) tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame()) else data.frame()
-    if (!nrow(by_pool) || !all(c("feature_id", "log2FC", "z", "call") %in% names(by_pool))) {
-      data$ranking_warning <- "Stored local z-score evidence is unavailable for this comparison."
-      data$support_pass <- FALSE
-      data$selected_min_support_pools <- min_support
-      return(data)
-    }
-    by_pool$feature_id <- as.character(by_pool$feature_id); by_pool$log2FC <- fitness_ma_numeric(by_pool$log2FC); by_pool$z <- fitness_ma_numeric(by_pool$z)
-    by_pool$call <- tolower(as.character(by_pool$call))
-    cpm_ok <- rep(TRUE, nrow(by_pool))
-    if (all(c("parent_cpm", "treated_cpm") %in% names(by_pool))) {
-      cpm_pair <- cbind(fitness_ma_numeric(by_pool$parent_cpm), fitness_ma_numeric(by_pool$treated_cpm))
-      cpm_ok <- is.finite(rowMeans(cpm_pair, na.rm = TRUE)) & rowSums(is.finite(cpm_pair)) > 0L & rowSums(pmax(cpm_pair, 0), na.rm = TRUE) > 0
-    }
-    valid <- by_pool[is.finite(by_pool$log2FC) & is.finite(by_pool$z) & cpm_ok, , drop = FALSE]
-    count_by <- function(x, name) { if (!nrow(x)) return(data.frame(feature_id = character(), value = integer())); out <- aggregate(x$feature_id, list(feature_id = x$feature_id), length); names(out)[2] <- name; out }
-    lfc_threshold <- fitness_ma_lfc_support_threshold()
-    dep <- valid[valid$z < 0 & valid$log2FC < -lfc_threshold, , drop = FALSE]; enr <- valid[valid$z > 0 & valid$log2FC > lfc_threshold, , drop = FALSE]
-    dep_stored <- valid[valid$call == "depleted", , drop = FALSE]; enr_stored <- valid[valid$call == "enriched", , drop = FALSE]
-    valid$pool_cpm <- if (all(c("parent_cpm", "treated_cpm") %in% names(valid))) rowMeans(cbind(fitness_ma_numeric(valid$parent_cpm), fitness_ma_numeric(valid$treated_cpm)), na.rm = TRUE) else NA_real_
-    evidence <- merge(count_by(valid, "valid_pool_n"), count_by(dep, "depleted_support_n"), by = "feature_id", all = TRUE)
-    evidence <- merge(evidence, count_by(enr, "enriched_support_n"), by = "feature_id", all = TRUE)
-    evidence <- merge(evidence, count_by(dep_stored, "depleted_stored_call_n"), by = "feature_id", all = TRUE)
-    evidence <- merge(evidence, count_by(enr_stored, "enriched_stored_call_n"), by = "feature_id", all = TRUE)
-    combined_lfc <- aggregate(valid$log2FC, list(feature_id = valid$feature_id), mean, na.rm = TRUE); names(combined_lfc)[2] <- "combined_log2FC_valid"
-    combined_cpm <- aggregate(valid$pool_cpm, list(feature_id = valid$feature_id), mean, na.rm = TRUE); names(combined_cpm)[2] <- "combined_CPM_valid"
-    evidence <- merge(evidence, combined_lfc, by = "feature_id", all = TRUE)
-    evidence <- merge(evidence, combined_cpm, by = "feature_id", all = TRUE)
-    if (nrow(evidence)) { for (nm in c("valid_pool_n", "depleted_support_n", "enriched_support_n", "depleted_stored_call_n", "enriched_stored_call_n")) evidence[[nm]][is.na(evidence[[nm]])] <- 0L }
-    evidence$feature_id <- as.character(evidence$feature_id)
-    metric <- function(x, label, fun = max) { if (!nrow(x)) return(data.frame(feature_id = character(), value = numeric())); x$abs_z <- abs(x$z); x$abs_lfc <- abs(x$log2FC); x$cpm_support <- if (all(c("parent_cpm", "treated_cpm") %in% names(x))) rowMeans(cbind(fitness_ma_numeric(x$parent_cpm), fitness_ma_numeric(x$treated_cpm)), na.rm = TRUE) else NA_real_; x$value <- if (label == "z") x$abs_z else if (label == "lfc") x$abs_lfc else x$cpm_support; aggregate(value ~ feature_id, x, fun, na.rm = TRUE) }
-    selected <- if (identical(direction, "depleted")) valid[valid$z < 0, , drop = FALSE] else if (identical(direction, "enriched")) valid[valid$z > 0, , drop = FALSE] else valid
-    for (spec in list(c("z", "rank_z_strength"))) { m <- metric(selected, spec[[1]], max); names(m)[2] <- spec[[2]]; evidence <- merge(evidence, m, by = "feature_id", all = TRUE) }
-    evidence$rank_support_n <- if (identical(direction, "depleted")) evidence$depleted_support_n else if (identical(direction, "enriched")) evidence$enriched_support_n else pmax(evidence$depleted_support_n, evidence$enriched_support_n)
-    data <- data[, setdiff(names(data), setdiff(names(evidence), "feature_id")), drop = FALSE]
-    data <- merge(data, evidence, by = "feature_id", all.x = TRUE, sort = FALSE)
-    for (nm in c("depleted_support_n", "enriched_support_n", "depleted_stored_call_n", "enriched_stored_call_n", "valid_pool_n", "rank_support_n")) data[[nm]][is.na(data[[nm]])] <- 0L
-    data$log2fc <- ifelse(is.finite(data$combined_log2FC_valid), data$combined_log2FC_valid, data$log2fc)
-    data$mean_abundance <- ifelse(is.finite(data$combined_CPM_valid), data$combined_CPM_valid, data$mean_abundance)
-    data$rank_lfc_strength <- abs(fitness_ma_numeric(data$log2fc))
-    data$rank_cpm_support <- fitness_ma_numeric(data$mean_abundance)
-    data$rank_z_strength <- ifelse(is.finite(data$rank_z_strength), data$rank_z_strength, 0)
-  } else {
-    path <- file.path(result$output_dir, "tables", "treated_vs_parent.by_pool.log2fc_z.csv")
-    by_pool <- if (file.exists(path)) tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame()) else data.frame()
-    row <- by_pool[as.character(by_pool$contrast) == pair & as.character(by_pool$feature_id) %in% as.character(data$feature_id), , drop = FALSE]
-    if (nrow(row)) { row <- row[match(as.character(data$feature_id), as.character(row$feature_id)), , drop = FALSE]; z <- fitness_ma_numeric(row$z); lfc <- fitness_ma_numeric(row$log2FC); call <- tolower(as.character(row$call)); cpm <- if (all(c("parent_cpm", "treated_cpm") %in% names(row))) rowMeans(cbind(fitness_ma_numeric(row$parent_cpm), fitness_ma_numeric(row$treated_cpm)), na.rm = TRUE) else rep(NA_real_, length(z)); usable <- is.finite(lfc) & is.finite(cpm) & cpm > 0; z_usable <- usable & is.finite(z); lfc_threshold <- fitness_ma_lfc_support_threshold(); dep_evidence <- z_usable & z < 0 & lfc < -lfc_threshold; enr_evidence <- z_usable & z > 0 & lfc > lfc_threshold; data$depleted_support_n <- as.integer(dep_evidence); data$enriched_support_n <- as.integer(enr_evidence); data$depleted_stored_call_n <- as.integer(call == "depleted"); data$enriched_stored_call_n <- as.integer(call == "enriched"); data$valid_pool_n <- as.integer(usable); data$rank_z_strength <- if (direction == "enriched") ifelse(z > 0 & is.finite(z), z, 0) else if (direction == "depleted") ifelse(z < 0 & is.finite(z), abs(z), 0) else ifelse(is.finite(z), abs(z), 0); data$rank_lfc_strength <- ifelse(usable, abs(lfc), NA); if (all(c("parent_cpm", "treated_cpm") %in% names(row))) data$rank_cpm_support <- ifelse(usable, cpm, NA); data$rank_support_n <- pmax(data$depleted_support_n, data$enriched_support_n); data$ranking_basis <- "ranked by directional log2FC magnitude, CPM/read support, local z-score support, and stable feature ID" }
+  individual <- identical(mode, "individual")
+  if (individual && !nzchar(pair)) pair <- unname(fitness_ma_pair_choices(result)[[1]] %||% "")
+  path <- file.path(result$output_dir %||% "", "tables", if (individual) "top_hit_evidence.by_pair.csv" else "top_hit_evidence.csv")
+  hits <- if (file.exists(path)) tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame()) else data.frame()
+  if (individual && nrow(hits)) hits <- hits[as.character(hits$contrast) == pair, , drop = FALSE]
+  min_support <- suppressWarnings(as.integer(min_support %||% 0L)); if (is.na(min_support) || min_support < 0L) min_support <- 0L
+  if (!nrow(hits)) {
+    data$ranking_warning <- "This result has no top-hit ranking; it was made by an earlier version of the pipeline. Run it again."
+    data$support_pass <- FALSE; data$candidate_rank_order <- NA_integer_; data$selected_min_support_pools <- min_support
+    return(data)
   }
-  data$candidate_log2FC_threshold <- fitness_ma_candidate_lfc_threshold()
-  data$candidate_CPM_threshold <- fitness_ma_candidate_cpm_threshold()
-  lfc_value <- fitness_ma_numeric(data$log2fc)
-  data$passes_log2FC_threshold <- if (identical(direction, "depleted")) {
-    is.finite(lfc_value) & lfc_value <= -data$candidate_log2FC_threshold
-  } else if (identical(direction, "enriched")) {
-    is.finite(lfc_value) & lfc_value >= data$candidate_log2FC_threshold
-  } else if (identical(direction, "both")) {
-    is.finite(lfc_value) & abs(lfc_value) >= data$candidate_log2FC_threshold
-  } else {
-    FALSE
-  }
-  data$passes_CPM_threshold <- is.finite(data$rank_cpm_support) & data$rank_cpm_support >= data$candidate_CPM_threshold
-  direction_support <- if (identical(direction, "depleted")) data$depleted_support_n else if (identical(direction, "enriched")) data$enriched_support_n else ifelse(lfc_value < 0, data$depleted_support_n, data$enriched_support_n)
-  data$rank_support_n <- direction_support
-  data$support_pass <- data$passes_log2FC_threshold & data$passes_CPM_threshold
-  if (min_support > 0L) data$support_pass <- data$support_pass & direction_support >= min_support
+  hits <- hits[match(as.character(data$feature_id), as.character(hits$feature_id)), , drop = FALSE]
+  key <- if (direction %in% c("depleted", "enriched")) direction else "both"
+  num <- function(x) fitness_ma_numeric(x)
+  data$log2fc <- num(hits$log2FC); data$mean_abundance <- num(hits$mean_abundance)
+  data$valid_pool_n <- as.integer(hits$n_pairs_valid); data$depleted_support_n <- as.integer(hits$n_pairs_depleted_support)
+  data$enriched_support_n <- as.integer(hits$n_pairs_enriched_support); data$depleted_stored_call_n <- as.integer(hits$n_pairs_depleted_called)
+  data$enriched_stored_call_n <- as.integer(hits$n_pairs_enriched_called)
+  data$rank_lfc_strength <- abs(data$log2fc); data$rank_cpm_support <- data$mean_abundance
+  data$rank_z_strength <- num(hits[[paste0("z_strength_", key)]])
+  data$supporting_pool_ids <- ifelse(data$log2fc < 0, hits$pools_depleted_support, hits$pools_enriched_support)
+  data$supporting_pool_ids[is.na(data$supporting_pool_ids)] <- ""
+  data$ranking_basis <- "ranked by the pipeline: called genes with at least a 2-fold change, by |z|, then |log2FC|, then feature ID (Gale et al. 2020)"
+  settings <- result$settings %||% list()
+  data$candidate_log2FC_threshold <- as.numeric(settings$hit_min_log2FC %||% fitness_ma_candidate_lfc_threshold())
+  data$candidate_CPM_threshold <- as.numeric(settings$hit_min_abundance %||% fitness_ma_candidate_cpm_threshold())
+  lfc <- data$log2fc
+  data$passes_log2FC_threshold <- if (identical(direction, "none")) FALSE else is.finite(lfc) &
+    (if (key == "depleted") lfc <= -data$candidate_log2FC_threshold else if (key == "enriched") lfc >= data$candidate_log2FC_threshold else abs(lfc) >= data$candidate_log2FC_threshold)
+  data$passes_CPM_threshold <- hits$passes_abundance %in% c(TRUE, "True", "TRUE")
+  support <- if (key == "depleted") data$depleted_support_n else if (key == "enriched") data$enriched_support_n else ifelse(lfc < 0, data$depleted_support_n, data$enriched_support_n)
+  support[is.na(support)] <- 0L; data$rank_support_n <- support
+  rank <- num(hits[[paste0("rank_", key)]]); if (identical(direction, "none")) rank[] <- NA_real_
+  data$overall_candidate_rank <- as.integer(rank); data$candidate_rank_order <- as.integer(rank); data$candidate_rank_score <- rank
+  data$support_pass <- is.finite(rank) & (min_support == 0L | support >= min_support)
   data$selected_min_support_pools <- min_support
   data$concordance_filter <- if (min_support > 0L) paste0(">=", min_support, " supporting pool", ifelse(min_support == 1L, "", "s")) else "All support classes"
+  # words for the pipeline's counts (display only)
   mixed <- data$depleted_support_n > 0L & data$enriched_support_n > 0L
-  support_label <- ifelse(direction_support >= 2L, "multi-pool concordant", ifelse(direction_support == 1L, "single-pool directional", "no directional pool support"))
-  support_label[mixed] <- paste(support_label[mixed], "mixed-direction", sep = "; ")
+  label <- ifelse(support >= 2L, "multi-pool concordant", ifelse(support == 1L, "single-pool directional", "no directional pool support"))
+  label[mixed %in% TRUE] <- paste(label[mixed %in% TRUE], "mixed-direction", sep = "; ")
   none_call <- tolower(as.character(data$call %||% "")) %in% c("", "none", "not_called", "not called")
-  support_label[none_call] <- paste(support_label[none_call], "stored-call none", sep = "; ")
-  weak_z <- !is.finite(data$rank_z_strength) | data$rank_z_strength <= 0
-  support_label[weak_z] <- paste(support_label[weak_z], "statistically weak / near-background", sep = "; ")
-  data$support_class <- support_label
-  data$candidate_rank_score <- NA_real_; data$candidate_rank_order <- NA_integer_; data$overall_candidate_rank <- NA_integer_
-  data$rank_z_strength <- ifelse(is.finite(data$rank_z_strength), data$rank_z_strength, 0)
-  eligible <- which(data$passes_log2FC_threshold & data$passes_CPM_threshold)
-  eligible <- eligible[is.finite(data$rank_lfc_strength[eligible]) & is.finite(data$rank_cpm_support[eligible])]
-  if (length(eligible)) { ord <- eligible[order(-data$rank_lfc_strength[eligible], -data$rank_cpm_support[eligible], -data$rank_z_strength[eligible], as.character(data$feature_id[eligible]))]; data$overall_candidate_rank[ord] <- seq_along(ord); data$candidate_rank_order[ord] <- data$overall_candidate_rank[ord]; data$candidate_rank_score[ord] <- seq_along(ord) }
+  label[none_call] <- paste(label[none_call], "stored-call none", sep = "; ")
+  weak <- !is.finite(data$rank_z_strength) | data$rank_z_strength <= 0
+  label[weak] <- paste(label[weak], "statistically weak / near-background", sep = "; ")
+  data$support_class <- label
+  data$rank_z_strength[!is.finite(data$rank_z_strength)] <- 0
   data
 }
 
@@ -265,18 +231,41 @@ fitness_ma_pack_label_y <- function(target_y, labels, cex, y_min, y_max, yr) {
   }
   ord <- order(target_y)
   y <- target_y[ord]
-  for (i in seq.int(2L, n)) {
-    y[[i]] <- max(y[[i]], y[[i - 1L]] + min_gap)
-  }
-  if (y[[n]] > y_max) y <- y - (y[[n]] - y_max)
-  for (i in seq.int(n - 1L, 1L)) {
-    y[[i]] <- min(y[[i]], y[[i + 1L]] - min_gap)
-  }
-  if (y[[1L]] < y_min) y <- y + (y_min - y[[1L]])
-  y <- pmin(pmax(y, y_min), y_max)
+  # Push each label only as far as it must: upward from the lower edge, then downward from the upper edge. (Shifting
+  # the whole side at once coupled labels near the top with labels near the bottom and clamped some onto each other.)
+  y[[1L]] <- max(y[[1L]], y_min)
+  for (i in seq.int(2L, n)) y[[i]] <- max(y[[i]], y[[i - 1L]] + min_gap)
+  y[[n]] <- min(y[[n]], y_max)
+  for (i in seq.int(n - 1L, 1L)) y[[i]] <- min(y[[i]], y[[i + 1L]] - min_gap)
   out <- target_y
   out[ord] <- y
   out
+}
+
+# Separates labels whose text boxes overlap, whichever side of their point they are on (the side packing only sees
+# one side): each overlapping pair moves apart vertically, kept inside [y_min, y_max]; repeats until none overlap.
+fitness_ma_resolve_overlaps <- function(label_data, cex, y_min, y_max, yr, iterations = 300L) {
+  n <- nrow(label_data); if (n < 2L) return(label_data)
+  w <- vapply(as.character(label_data$display_label), strwidth, numeric(1), cex = cex, font = 2)
+  h <- max(vapply(as.character(label_data$display_label), strheight, numeric(1), cex = cex, font = 2), 0.025 * yr) * 1.35
+  left <- ifelse(label_data$side > 0, label_data$x_label, label_data$x_label - w); right <- left + w
+  pad <- 0.01 * diff(range(c(left, right)))
+  y <- label_data$y_label
+  for (k in seq_len(iterations)) {
+    moved <- FALSE
+    for (i in seq_len(n - 1L)) for (j in seq.int(i + 1L, n)) {
+      if (left[[i]] - pad >= right[[j]] || left[[j]] - pad >= right[[i]]) next
+      gap <- abs(y[[i]] - y[[j]]); if (gap >= h) next
+      push <- (h - gap) / 2 + 1e-9 * yr; up <- if (y[[i]] > y[[j]] || (y[[i]] == y[[j]] && i < j)) i else j; down <- if (up == i) j else i
+      y[[up]] <- y[[up]] + push; y[[down]] <- y[[down]] - push
+      if (y[[up]] > y_max) { y[[down]] <- y[[down]] - (y[[up]] - y_max); y[[up]] <- y_max }
+      if (y[[down]] < y_min) { y[[up]] <- y[[up]] + (y_min - y[[down]]); y[[down]] <- y_min }
+      moved <- TRUE
+    }
+    if (!moved) break
+  }
+  label_data$y_label <- pmin(pmax(y, y_min), y_max)
+  label_data
 }
 
 fitness_ma_place_labels <- function(label_data, cex = 1) {
@@ -326,7 +315,7 @@ fitness_ma_place_labels <- function(label_data, cex = 1) {
       )
     }
   }
-  label_data
+  fitness_ma_resolve_overlaps(label_data, cex, usr[[3L]] + edge_y, usr[[4L]] - edge_y, yr)
 }
 
 fitness_ma_top_hits_table <- function(result, mode = "combined", pair = "", direction = "both", n = 10L,
@@ -349,18 +338,7 @@ fitness_ma_top_hits_table <- function(result, mode = "combined", pair = "", dire
   out$pair <- if (nzchar(pair)) pair else NA_character_
   out$hit_direction <- direction
   out$stored_call_or_final_call <- out$call
-  if (identical(mode, "combined")) {
-    pool_path <- file.path(result$output_dir, "tables", "treated_vs_parent.by_pool.log2fc_z.csv")
-    pool_data <- if (file.exists(pool_path)) tryCatch(read.csv(pool_path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame()) else data.frame()
-    if (nrow(pool_data)) {
-      pz <- fitness_ma_numeric(pool_data$z); pl <- fitness_ma_numeric(pool_data$log2FC)
-      pkeep <- if (identical(direction, "depleted")) pz < 0 & pl < 0 else if (identical(direction, "enriched")) pz > 0 & pl > 0 else pz * pl > 0
-      plabel <- if ("pool" %in% names(pool_data)) paste0("pool", pool_data$pool) else as.character(pool_data$contrast)
-      pool_data$.support_label <- plabel; pool_data$.support_keep <- pkeep
-      support_map <- tapply(pool_data$.support_label[pool_data$.support_keep], pool_data$feature_id[pool_data$.support_keep], function(v) paste(unique(v), collapse = ";"))
-      out$supporting_pool_ids <- unname(support_map[as.character(out$feature_id)]); out$supporting_pool_ids[is.na(out$supporting_pool_ids)] <- ""
-    } else out$supporting_pool_ids <- ""
-  } else out$supporting_pool_ids <- "Current pair only"
+  if (!identical(mode, "combined")) out$supporting_pool_ids <- "Current pair only"
   out$direction_specific_lfc_strength <- out$rank_lfc_strength
   out$direction_specific_cpm_support <- out$rank_cpm_support
   out$direction_specific_z_support <- out$rank_z_strength
@@ -373,16 +351,13 @@ fitness_ma_top_hits_table <- function(result, mode = "combined", pair = "", dire
 }
 
 fitness_ma_supporting_pool_ids <- function(result, feature_id, direction = "both") {
-  path <- file.path(result$output_dir, "tables", "treated_vs_parent.by_pool.log2fc_z.csv")
+  path <- file.path(result$output_dir %||% "", "tables", "top_hit_evidence.csv")
   if (!file.exists(path)) return("")
   x <- tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame())
-  if (!nrow(x)) return("")
   x <- x[as.character(x$feature_id) == as.character(feature_id), , drop = FALSE]
   if (!nrow(x)) return("")
-  z <- fitness_ma_numeric(x$z); lfc <- fitness_ma_numeric(x$log2FC)
-  keep <- if (identical(direction, "depleted")) z < 0 & lfc < 0 else if (identical(direction, "enriched")) z > 0 & lfc > 0 else z * lfc > 0
-  label <- if ("pool" %in% names(x)) paste0("pool", x$pool) else as.character(x$contrast)
-  paste(unique(label[keep & !is.na(label) & nzchar(label)]), collapse = ";")
+  ids <- c(if (direction %in% c("depleted", "both")) x$pools_depleted_support, if (direction %in% c("enriched", "both")) x$pools_enriched_support)
+  paste(unique(unlist(strsplit(ids[!is.na(ids)], ";"))), collapse = ";")
 }
 
 plot_fitness_ma <- function(result, mode = "combined", pair = "", direction = "both", n = 10L,
@@ -410,10 +385,11 @@ plot_fitness_ma <- function(result, mode = "combined", pair = "", direction = "b
   if (nrow(label_table$data)) xlim <- xlim + c(-0.16, 0.16) * diff(xlim)
   plot(plot_x, data$log2fc, pch = 16, cex = display_point_size, col = adjustcolor("grey70", alpha.f = 0.7),
        xlim = xlim,
-       xlab = "M: mean abundance, log10(CPM + 1)", ylab = "A: fitness effect, log2FC treated/control",
+       xlab = sprintf("A: mean abundance, log10(%s + 1)", fitness_abundance_unit(result)), ylab = "M: fitness effect, log2FC treated/control",
        main = if (identical(mode, "individual")) "MA plot — individual treated-control pair" else "MA plot — combined across pools",
        cex.main = scales$title, cex.lab = scales$axis, cex.axis = scales$sample)
   if (isTRUE(grid)) grid(col = "grey85", lty = 1)
+  ytab_base_axes()
   if (length(highlighted)) points(log10(data$mean_abundance[highlighted] + 1), data$log2fc[highlighted], pch = 21, bg = selected_hit_colors[highlighted], col = "black", lwd = qc_plot_lwd, cex = display_point_size + qc_plot_point_cex(0.55))
   if (nrow(label_table$data)) {
     label_table$data <- fitness_ma_place_labels(label_table$data, cex = scales$key)
@@ -430,10 +406,6 @@ plot_fitness_ma <- function(result, mode = "combined", pair = "", direction = "b
   note_line <- 5.75
   if (length(highlighted)) {
     mtext("Depleted/enriched colors reflect stored calls from local-abundance z-scores.", side = 1, line = note_line, cex = scales$key, col = "#666666")
-    note_line <- note_line + 0.9
-  }
-  if (length(highlighted) > 10L && nrow(label_table$data)) {
-    mtext("More than 10 labels may overlap; reduce Number of hits for cleaner labels.", side = 1, line = note_line, cex = scales$key, col = "#666666")
     note_line <- note_line + 0.9
   }
   if (length(label_table$unmatched)) {

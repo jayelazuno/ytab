@@ -1,7 +1,7 @@
 mutant_screen_controls <- function(){
   tagList(tags$h4("Identify individual mutants"),
     radioButtons("ms_input_mode","Sequence input",c("Local file or folder"="path","Upload files"="upload"),inline=TRUE),
-    conditionalPanel("input.ms_input_mode !== 'upload'",textAreaInput("ms_paths","Paths (one per line)","data/mutant_screen/pfasta-Oct13-9-18-48.tar",rows=3)),
+    conditionalPanel("input.ms_input_mode !== 'upload'",textAreaInput("ms_paths","Paths (one per line)","",rows=3,placeholder=".seq/.ab1 files, folders or .tar archives")),
     conditionalPanel("input.ms_input_mode === 'upload'",fileInput("ms_files","Sanger files or archive",multiple=TRUE,
       accept=c(".seq",".fa",".fasta",".fna",".fastq",".fq",".ab1",".abi",".tar",".tgz",".gz",".zip"))),
     textInput("ms_condition","Screen condition (optional)",""),textInput("ms_pool","Pool / clone group (optional)",""),
@@ -19,8 +19,8 @@ mutant_screen_controls <- function(){
       numericInput("ms_error","Allowed Hermes mismatch fraction",.15,min=0,max=.3,step=.01),
       textInput("ms_hermes","Complete Hermes / construct FASTA (blank uses bundled reference)","")),
     actionButton("ms_run","Identify mutants",class="btn-primary"),actionButton("ms_cancel","Cancel"),uiOutput("ms_status"),
-    tags$details(tags$summary("Current saved identification"),uiOutput("ms_saved_control")),
-    tags$details(tags$summary("Downloads"),downloadButton("ms_download_table","Identification CSV"),
+    tags$details(class="ytab-more-options",tags$summary("Current saved identification"),uiOutput("ms_saved_control")),
+    tags$details(class="ytab-more-options",tags$summary("Downloads"),downloadButton("ms_download_table","Identification CSV"),
       downloadButton("ms_download_json","Results and provenance JSON"),downloadButton("ms_download_flanks","Trimmed genomic FASTA")))
 }
 
@@ -89,7 +89,7 @@ ms_reference_label <- function(project){
 # Keep native IDs in saved results and explorer queries; reuse Fitness display annotations.
 ms_gene_display <- function(ids,repo_root){
   x<-ytab_glabrata_regular_display_columns(data.frame(gene_id=ids),repo_root,"gene_id",include_details=TRUE)
-  x[,setdiff(names(x),"Cg-to-Sc relationship"),drop=FALSE]
+  x[,setdiff(names(x),"S. cerevisiae orthology"),drop=FALSE]
 }
 
 ms_identification_table <- function(reads,repo_root,project){
@@ -97,7 +97,7 @@ ms_identification_table <- function(reads,repo_root,project){
   rows<-lapply(reads,function(r){
     ids<-if(length(r$candidates))vapply(r$candidates,function(g)g$gene_id,"")else""
     display<-ms_gene_display(ids,repo_root)
-    row<-list(Mutant=r$mutant,`CAGL ID`=paste(display[["CAGL ID"]],collapse="; "),
+    row<-list(Mutant=r$mutant,`Gene ID`=paste(display[["Gene ID"]],collapse="; "),
       `Gene name`=paste(display[["Gene name"]],collapse="; "),
       Chromosome=qc_plot_chromosome_display(r$chromosome%||%"",project),
       `Aligned bases after QC (bp)`=r$aligned_bases%||%NA_real_,
@@ -109,10 +109,10 @@ ms_identification_table <- function(reads,repo_root,project){
         if(identical(r$status,"No alignment passes thresholds"))"No passing alignment" else
         if(grepl("Ambiguous mapping",r$status,fixed=TRUE))"Ambiguous mapping" else"Unassigned"
     }
-    for(col in setdiff(names(display),c("CAGL ID","Gene name"))){
+    for(col in setdiff(names(display),c("Gene ID","Gene name"))){
       row[[col]]<-paste(vapply(seq_len(nrow(display)),function(i){
         value<-display[[col]][i]
-        if(nrow(display)>1L)paste0(display[["CAGL ID"]][i],": ",value)else value
+        if(nrow(display)>1L)paste0(display[["Gene ID"]][i],": ",value)else value
       },""),collapse="\n\n")
     }
     row
@@ -143,10 +143,10 @@ ms_candidate_table <- function(r,repo_root,project){
     if(!is.null(g$gene_start)&&!is.null(g$gene_end))paste0(format(g$gene_start,big.mark=","),"–",format(g$gene_end,big.mark=","))
     else if(!is.null(g$distance_bp))paste(format(g$distance_bp,big.mark=","),"bp from mapped flank")else""
   },"")
-  cbind(display[c("CAGL ID","Gene name")],data.frame(
+  cbind(display[c("Gene ID","Gene name")],data.frame(
     Chromosome=rep(qc_plot_chromosome_display(r$chromosome%||%"",project),nrow(x)),
     Location=location,Interpretation=gsub("; (exact )?junction unconfirmed","",x$context),check.names=FALSE),
-    display[setdiff(names(display),c("CAGL ID","Gene name"))])
+    display[setdiff(names(display),c("Gene ID","Gene name"))])
 }
 
 ms_linked_table <- function(r,repo_root,kind="Fitness screen"){
@@ -160,7 +160,7 @@ ms_linked_table <- function(r,repo_root,kind="Fitness screen"){
   else data.frame(Sample=x$analysis_or_sample,
     `Insertion hits`=vapply(rows,function(z)as.character(z$hits%||%"Not available"),""),
     Reads=vapply(rows,function(z)as.character(z$reads%||%"Not available"),""),check.names=FALSE)
-  cbind(display[c("CAGL ID","Gene name")],metrics,display[setdiff(names(display),c("CAGL ID","Gene name"))])
+  cbind(display[c("Gene ID","Gene name")],metrics,display[setdiff(names(display),c("Gene ID","Gene name"))])
 }
 
 mutant_screen_server <- function(input,output,session,repo_root,active,active_project_path,python_bin,go_to,
@@ -177,7 +177,10 @@ mutant_screen_server <- function(input,output,session,repo_root,active,active_pr
     keys<-vapply(refs,function(p)paste(p$species,p$reference$fasta%||%""),"")
     refs<-refs[!duplicated(keys)]
     choices<-setNames(vapply(refs,function(p)p$project_config,""),make.unique(vapply(refs,ms_reference_label,"")))
-    selectInput("ms_reference_config","Alignment reference genome",choices)})
+    # default: the reference of the open project (same species and FASTA), else the first
+    open<-tryCatch(active(),error=function(e)NULL);key<-if(is.null(open))"" else paste(open$species,open$reference$fasta%||%"")
+    selected<-if(key%in%keys[!duplicated(keys)])choices[[match(key,keys[!duplicated(keys)])]] else choices[[1]]
+    selectInput("ms_reference_config","Alignment reference genome",choices,selected=isolate(input$ms_reference_config)%||%selected)})
   reference_config<-reactive({input$ms_reference_config%||%active_project_path()})
   display_reference<-reactive({d<-results()
     if(!is.null(d$reference_species))return(list(species=d$reference_species,repo_root=repo_root))
@@ -295,13 +298,13 @@ mutant_screen_server <- function(input,output,session,repo_root,active,active_pr
     tagList(p("Screen associations are gene-level results; nearby intergenic genes and uncertain junctions are not confirmed disrupted genes."),
       selectInput("ms_explorer_gene","Gene to inspect",{
         ids<-vapply(r$candidates,function(g)g$gene_id,"");d<-ms_gene_display(ids,repo_root)
-        setNames(ids,paste(d[["CAGL ID"]],d[["Gene name"]],sep=" — "))
+        setNames(ids,paste(d[["Gene ID"]],d[["Gene name"]],sep=" — "))
       }),if(!is.null(results()$linked_project_id)&&identical(results()$linked_project_id,active()$project_id))
         actionButton("ms_open_explorer","View gene & domain insertions")
       else p(class="help-block","Insertion tracks require an explicitly linked project; open that project to inspect its tracks."))})
   observeEvent(input$ms_open_explorer,{req(input$ms_explorer_gene,results()$linked_project_id)
     req(identical(results()$linked_project_id,active()$project_id))
-    go_to("gene_domain_explorer");updateTextInput(session,"gene_domain_query",value=input$ms_explorer_gene)},ignoreInit=TRUE)
+    go_to("gene_explorer","gene_explorer_tabs","gene_domain");updateTextInput(session,"gene_domain_query",value=input$ms_explorer_gene)},ignoreInit=TRUE)
   output$ms_provenance<-renderText({d<-results();if(is.null(d))return("No identification run selected.")
     jsonlite::toJSON(d[c("created","project_id","linked_project_id","reference","reference_sha256","annotation_metadata","hermes_reference","hermes_sha256","parameters","versions","limitations")],auto_unbox=TRUE,pretty=TRUE)})
   download<-function(id,name){output[[id]]<-downloadHandler(filename=function()name,content=function(file){d<-results();req(d);path<-file.path(d$output_dir,name);req(file.exists(path));file.copy(path,file)})}

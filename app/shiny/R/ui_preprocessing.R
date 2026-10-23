@@ -1,5 +1,5 @@
 keep_going_supported_stage <- function(stage) stage %in% c(
-  "mapfastq", "create_hit_file", "summary", "sample_normalization",
+  "preprocessing", "mapfastq", "create_hit_file", "summary", "sample_normalization",
   "summary_normalized", "fitness_analysis"
 )
 
@@ -42,14 +42,25 @@ stage_status_details <- function(label, output_id) {
   )
 }
 
-preprocessing_ui <- function() navset_tab(id="preprocessing_tabs",
+run_profiles_ui <- function(detected_cpu) panel_card("Run profiles",
+  tags$p(class="text-muted","Run several stages in order with one command."),
+  selectInput("pipeline_profile","Profile",c("core","classifier","fitness","all"),"all"), sliderInput("pipeline_threads","Threads",1,max(2,detected_cpu),2),
+  textInput("pipeline_target","Classifier target","recommended"), textInput("pipeline_analysis_id","Fitness analysis ID","treated_vs_parent_raw_cpm"),
+  actionButton("preview_pipeline","Preview plan"), actionButton("run_pipeline","Run selected profile",class="btn-primary"), actionButton("cancel_pipeline","Cancel current job"), tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("pipeline_job_text")))
+
+run_module_ui <- function(detected_cpu = 2L) navset_tab(id="run_tabs",
   nav_panel("Samples",value="samples",panel_card("Preprocessing samples",uiOutput("project_created_card"),sample_selector_ui("preprocessing_samples"))),
   nav_panel("Reference",value="reference",panel_card("Reference readiness",uiOutput("reference_readiness_ui"),uiOutput("reference_actions_ui"))),
-  nav_panel("Mapping",value="mapping",panel_card("Mapping",job_progress_ui("mapping_job"),numericInput("preprocessing_threads","CPU threads",2,min=2,step=1),tags$p(class="text-muted","Use two threads on systems with approximately 4–8 GB RAM."),
+  # Mapping, hit files and SummaryTable run as one step (ytab_run_preprocessing.py); stages already done are skipped.
+  nav_panel("Mapping",value="mapping",panel_card("Mapping",
+    tags$p(class="text-muted","Maps reads, creates hit files and builds SummaryTables for the selected samples in one run. ",
+      "Stages already done are skipped, including ones run elsewhere: a hit file or SummaryTable made on the HPC counts as done."),
+    uiOutput("preprocessing_progress_ui"),job_progress_ui("mapping_job"),
+    numericInput("preprocessing_threads","CPU threads",2,min=2,step=1),tags$p(class="text-muted","Use two threads on systems with approximately 4–8 GB RAM."),
     selectInput("mapping_junction_mate","Hermes/junction read",c("Use project settings (default R1)"="project","Read 1"="R1","Read 2"="R2")),
     selectInput("mapping_mate_agreement","Require both mates to agree",c("Use project settings (default no)"="project","No — junction read only"="no","Yes — concordant pairs"="yes")),
     tags$p(class="text-muted","Detected Hermes and adaptor sequence is trimmed automatically. Reads already starting in genomic DNA are retained without requiring a Hermes match."),
-    stage_run_controls("mapfastq","Run all included samples"),stage_status_details("Review mapping status by sample","mapping_status_table"))),
-  nav_panel("Hit Files",value="hit_files",panel_card("Create hit files",stage_run_controls("create_hit_file","Run all mapped samples"),stage_status_details("Review hit-file status by sample","hits_status_table"))),
-  nav_panel("Summary Tables",value="summary_tables",panel_card("Raw SummaryTable",stage_run_controls("summary_table","Run all samples with hit files"),uiOutput("analysis_ready_action"),stage_status_details("Review SummaryTable status by sample","summary_status_table"))),
-  nav_panel("Status",value="status",panel_card("Core preprocessing status",uiOutput("preprocessing_progress_ui"),DT::DTOutput("pipeline_matrix"),uiOutput("next_ready_action_ui"),tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("pipeline_job_text_preprocessing"),verbatimTextOutput("command_output")))))
+    stage_run_controls("preprocess","Run all included samples"),uiOutput("analysis_ready_action"),
+    stage_status_details("Review status by sample","mapping_status_table"),
+    tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("pipeline_job_text_preprocessing"),verbatimTextOutput("command_output")))),
+  nav_panel("Run Profiles",value="profiles",run_profiles_ui(detected_cpu)))

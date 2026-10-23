@@ -201,6 +201,43 @@ def count_hit_sites_and_reads(hits_file: Path) -> dict:
     return {"hit_sites": sites, "total_reads": reads}
 
 
+def site_counts(hits_file: Path) -> list[int]:
+    """Reads per insertion site (W and C rows of a position summed)."""
+    sites: dict[tuple[str, str], int] = {}
+    with Path(hits_file).open(encoding="utf-8") as handle:
+        for row in csv.DictReader(handle, delimiter="\t"):
+            try:
+                count = int(float(row["Hit count"]))
+            except (KeyError, TypeError, ValueError):
+                continue
+            if count > 0:
+                key = (row["Chromosome"], row["Hit position"])
+                sites[key] = sites.get(key, 0) + count
+    return list(sites.values())
+
+
+def library_saturation(config: dict, selected_samples: list[dict]) -> dict[str, dict]:
+    """Per library: total reads, MidLC (exact, ytab.normalization.midlc) and the depth/MidLC saturation ratio."""
+    from ytab.normalization.midlc import midlc
+    out = {}
+    for sample in selected_samples:
+        counts = site_counts(find_sample_hits_file(sample, config))
+        total = float(sum(counts))
+        est = midlc(counts)[0] if counts else 0.0
+        out[str(sample["sample"])] = {"total_reads": total, "midlc": est, "ratio": total / est if est else 0.0}
+    return out
+
+
+def check_target_units(target: float, saturation: dict[str, dict]) -> None:
+    """TARGET is a multiple of MidLC. One at or above every library's depth/MidLC ratio thins nothing (the earlier
+    automatic targets, e.g. T409600, were read counts passed as multiples)."""
+    ratios = [row["ratio"] for row in saturation.values() if row["ratio"] > 0]
+    if ratios and target >= max(ratios):
+        raise ValueError(f"Target {target:g} is a multiple of MidLC and is at or above every library's depth/MidLC ratio "
+                         f"(largest {max(ratios):.3g}), so no library would be thinned. Use auto (common saturation, "
+                         f"{min(ratios):.3g}) or a smaller multiple.")
+
+
 def build_normalization_command(
     config: dict, target: float, selected_samples: list[dict], threads: int | None = None
 ) -> list[str]:
@@ -370,99 +407,41 @@ def collect_normalization_comparison(config: dict) -> Path | None:
     return paths["comparison"]
 
 
-def _observed_midlc(config: dict, selected_samples: list[dict]) -> tuple[dict[str, float], list[str]]:
-    summary = _paths(config)["project"] / "library_diagnostics" / "library_diagnostics.summary.csv"
-    warnings: list[str] = []
-    values: dict[str, float] = {}
-    if summary.is_file():
-        with summary.open(newline="", encoding="utf-8") as handle:
-            for row in csv.DictReader(handle):
-                if row.get("sample") in {str(sample["sample"]) for sample in selected_samples}:
-                    try:
-                        value = float(row["midlc_est"])
-                    except (KeyError, TypeError, ValueError):
-                        continue
-                    if math.isfinite(value) and value > 0:
-                        values[str(row["sample"])] = value
-    if len(values) != len(selected_samples):
-        warnings.append("MidLC estimates were not available; using fallback candidate targets.")
-        return {}, warnings
-    return values, warnings
-
-
-def _candidate_targets(
-    observed: dict[str, float], minimum: float | None, maximum: float | None, step: float
-) -> list[float]:
-    step = float(_target_decimal(step))
-    if not observed and minimum is None and maximum is None:
-        return [20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0]
-    min_target = float(_target_decimal(minimum)) if minimum is not None else max(1.0, math.floor(min(observed.values()) * 0.25))
-    max_target = float(_target_decimal(maximum)) if maximum is not None else float(math.floor(min(observed.values())))
-    if max_target < min_target:
-        raise ValueError("Auto maximum target must be greater than or equal to auto minimum target.")
-    values: list[float] = []
-    current = Decimal(str(min_target))
-    end = Decimal(str(max_target))
-    increment = Decimal(str(step))
-    while current <= end:
-        values.append(float(current))
-        current += increment
-    if values[-1] != max_target:
-        values.append(max_target)
-    return values
-
-
-def _simulate_retention(raw: dict, midlc: float | None, target: float) -> float:
-    if not midlc or raw["total_reads"] <= 0 or raw["hit_sites"] <= 0:
-        return 1.0
-    p = min(1.0, (target * midlc) / raw["total_reads"])
-    # Conservative singletons bound: every retained site survives with at least p.
-    return p
-
-
 def recommend_normalization_target(
     config: dict, selected_samples: list[dict], min_site_retention: float = 0.95,
     auto_min_target: float | None = None, auto_max_target: float | None = None,
     auto_step: float = 5.0, threads: int | None = None, force: bool = False,
     dry_run: bool = False,
 ) -> dict:
+    """Common saturation: thin every selected library to the smallest depth/MidLC ratio among them (the least
+    saturated library is unchanged; never upsamples). auto_min_target/auto_max_target/auto_step are accepted for
+    older callers and ignored; min_site_retention only adds a warning when a library keeps fewer sites."""
     if not math.isfinite(min_site_retention) or not 0 < min_site_retention <= 1:
         raise ValueError("Minimum site retention must be greater than 0 and at most 1.")
-    observed, warnings = _observed_midlc(config, selected_samples)
-    candidates = _candidate_targets(observed, auto_min_target, auto_max_target, auto_step)
-    raw_counts = {
-        str(sample["sample"]): count_hit_sites_and_reads(find_sample_hits_file(sample, config))
-        for sample in selected_samples
-    }
-    scored: list[tuple[float, float, float]] = []
-    for target in candidates:
-        retained = [
-            _simulate_retention(
-                raw_counts[str(sample["sample"])],
-                observed.get(str(sample["sample"])), target,
-            )
-            for sample in selected_samples
-        ]
-        scored.append((target, min(retained), sum(retained) / len(retained)))
-    feasible = [row for row in scored if row[1] >= min_site_retention]
-    if feasible:
-        recommended, min_observed, mean_observed = feasible[-1]
-        reason = "Highest candidate target satisfying the insertion-site retention threshold across selected samples."
-    else:
-        recommended, min_observed, mean_observed = scored[0]
-        reason = "No candidate satisfied the insertion-site retention threshold; selected the least aggressive target tested."
-        warnings.append(reason)
+    saturation = library_saturation(config, selected_samples)
+    ratios = {name: row["ratio"] for name, row in saturation.items() if row["ratio"] > 0}
+    if not ratios:
+        raise ValueError("No selected library has insertions; cannot compute MidLC.")
+    warnings: list[str] = []
+    # Rounded down to 3 decimals so the target tag is exact and the least saturated library is (almost) unchanged.
+    recommended = math.floor(min(ratios.values()) * 1000) / 1000
+    reason = "Common saturation: the smallest depth/MidLC ratio among the selected libraries."
+    observed = {name: row["midlc"] for name, row in saturation.items()}
+    candidates = [recommended]
+    min_observed = mean_observed = 1.0
     target_result = run_normalization_target(
         config, recommended, selected_samples, threads, force=force, dry_run=dry_run
     )
     if target_result["comparison_rows"]:
         actual = [float(row["hit_site_retention_fraction"]) for row in target_result["comparison_rows"]]
         min_observed, mean_observed = min(actual), sum(actual) / len(actual)
+        if min_observed < min_site_retention:
+            warnings.append(f"A library keeps {min_observed:.1%} of its insertion sites (below {min_site_retention:.0%}).")
     recommendation = {
         "project_id": config.get("project_id"), "species": config.get("species"),
         "selected_samples": [str(row["sample"]) for row in selected_samples],
         "sample_mode": config.get("_sample_mode", "parents"),
-        "observed_midlc_values": observed, "candidate_targets": candidates,
+        "observed_midlc_values": observed, "saturation_ratios": ratios, "candidate_targets": candidates,
         "candidate_target_tags": [normalize_target_tag(value) for value in candidates],
         "recommended_target": recommended, "recommended_target_tag": normalize_target_tag(recommended),
         "retention_threshold": min_site_retention,
@@ -506,6 +485,9 @@ def run_normalization_project(
         )
         results.append(recommendation["target_result"])
     else:
+        saturation = library_saturation(config, selected)
+        for target in parsed:
+            check_target_units(target, saturation)
         for target in parsed:
             result = run_normalization_target(config, target, selected, threads, force, dry_run)
             results.append(result)

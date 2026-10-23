@@ -170,7 +170,8 @@ comparative_availability_display <- function(availability) {
   )
 }
 
-comparative_server <- function(input, output, session, repo_root) {
+comparative_server <- function(input, output, session, repo_root, active = function() list()) {
+  keep_or <- function(value, fallback) if (length(value) && nzchar(value[[1]])) value else fallback
   species_manifest <- reactive(load_comparative_species_manifest(repo_root))
   project_inventory <- reactive(list_ytab_projects_by_species(repo_root))
   gene_lookup <- reactive(load_comparative_gene_lookup(repo_root))
@@ -181,13 +182,15 @@ comparative_server <- function(input, output, session, repo_root) {
     species <- species_manifest()
     enabled <- species[species$enabled, , drop = FALSE]
     choices <- as.list(setNames(enabled$species, enabled$label))
-    selected <- input$comparative_single_species %||%
-      if (length(choices)) unname(unlist(choices, use.names = FALSE))[[1]] else ""
+    # default: the open project's species, else the first enabled species
+    current <- tolower(as.character(tryCatch(active()$species, error = function(e) "") %||% ""))
+    first <- if (current %in% enabled$species) current else if (length(choices)) unname(unlist(choices, use.names = FALSE))[[1]] else ""
+    selected <- keep_or(isolate(input$comparative_single_species), first)
     updateSelectInput(session, "comparative_single_species",
                       choices = choices, selected = selected)
     updateSelectInput(session, "comparative_group_species",
                       choices = choices,
-                      selected = input$comparative_group_species %||% selected)
+                      selected = keep_or(isolate(input$comparative_group_species), selected))
     updateCheckboxGroupInput(
       session, "comparative_species_set", choices = choices,
       selected = intersect(input$comparative_species_set %||% enabled$species,
@@ -201,8 +204,11 @@ comparative_server <- function(input, output, session, repo_root) {
     subset <- projects[projects$species == species, , drop = FALSE]
     choices <- if (nrow(subset))
       as.list(setNames(subset$project_config, subset$display_name)) else list()
-    updateSelectInput(session, "comparative_single_project", choices = choices,
-                      selected = if (length(choices)) choices[[1]] else character())
+    # default: the open project when it is of this species
+    open_config <- tryCatch(normalizePath(as.character(active()$project_config %||% ""), mustWork = FALSE), error = function(e) "")
+    configs <- vapply(choices, function(x) normalizePath(x, mustWork = FALSE), "")
+    selected <- if (nzchar(open_config) && open_config %in% configs) choices[[match(open_config, configs)]] else if (length(choices)) choices[[1]] else character()
+    updateSelectInput(session, "comparative_single_project", choices = choices, selected = selected)
   })
 
   output$comparative_species_checks <- renderUI(comparative_species_checkbox_ui())

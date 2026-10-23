@@ -1,0 +1,16 @@
+{
+  "built": "2026-10-21",
+  "script_sha256": "f0ef28fc7a85b4010cf05b0c8bc5874148e1f5a6aaf5188c2e3d4d86296294c5",
+  "urls": {
+    "sgd_phenotypes": "https://downloads.yeastgenome.org/curation/literature/phenotype_data.tab",
+    "cgd_phenotypes": "http://www.candidagenome.org/download/phenotype/C_albicans_SC5314_phenotype_data.tab",
+    "cgd_orthologs": "CGD C_albicans_SC5314_S_cerevisiae_orthologs.txt (repository copy; header records its date)"
+  },
+  "files": {
+    "SGD_phenotype_data.tab.gz": "691f81bedc14fa7f1638f8e073ecbe3f98f9d270622fe43b69cd0d9a7ee1381a",
+    "C_albicans_SC5314_phenotype_data.tab.gz": "f711b8ac530e7692ff211d17cd7d9e16d72edcda7f54f960ab5015ac7cf0ade9",
+    "C_albicans_SC5314_S_cerevisiae_orthologs.txt": "938f688c0091570ee4c49191673a6c725783e32a65e39c9e53aa9ea779b20fe2",
+    "C_albicans_SC5314_version_A22-s07-m01-r08_features.gff": "f4588c874c755e375737d44fa2937fb6a05894549b9657e2a749ebfb8ef42c9f",
+    "saccharomyces_cerevisiae_R64-5-1_20240529.gff": "10d0d6a22bbb3425da8f1544a61756db644afb9ab30868f979e712ef8df0b7db"
+  }
+}

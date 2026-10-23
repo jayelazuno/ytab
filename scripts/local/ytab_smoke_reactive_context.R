@@ -7,7 +7,7 @@ app_env<-new.env(parent=.GlobalEnv);source(file.path(root,"app/shiny/app.R"),loc
 landing<-app_env$landing_ui(character(),2L,FALSE);workspace<-app_env$workspace_ui(2L)
 landing_html<-htmltools::renderTags(landing)$html;workspace_html<-htmltools::renderTags(workspace)$html
 stopifnot(grepl("Open an existing YTAB project",landing_html,fixed=TRUE),grepl("workspace_tabs",workspace_html,fixed=TRUE))
-for(label in c("Overview","Preprocessing","Quality Control","Essentiality","Fitness Screen","Results &amp; Exports"))stopifnot(grepl(label,workspace_html,fixed=TRUE))
+for(label in c("Project","Logs &amp; Provenance","Run","Run Profiles","Quality Control","Normalization","Essentiality","Condition Comparisons","Multi-condition","Genetic Interactions","Reports &amp; exports"))stopifnot(grepl(label,workspace_html,fixed=TRUE))
 static_code<-paste(deparse(body(app_env$workspace_ui)),deparse(body(app_env$landing_ui)),collapse="\n")
 stopifnot(!grepl("active\\(\\)|active_project\\(\\)|state\\$values|input\\$",static_code))
 
@@ -15,12 +15,12 @@ server_text<-paste(readLines(file.path(root,"app/shiny/app.R"),warn=FALSE),colla
 stopifnot(!grepl("onFlushed\\(function\\(\\) navigation_location",server_text),!grepl("onFlushed\\(function\\(\\)[^{]*\\{[^}]*navigation_location\\(",server_text,perl=TRUE))
 
 testServer(function(input,output,session){
-  project_state<-app_env$new_project_state();location<-reactiveVal(app_env$navigation_state_defaults("overview"))
+  project_state<-app_env$new_project_state();location<-reactiveVal(app_env$navigation_state_defaults("project"))
   observeEvent(input$open,{project_state$load(config,root);project_state$enter();snapshot<-app_env$navigation_state_defaults(isolate(project_state$values$workspace_tab));location(snapshot);session$onFlushed(function()app_env$restore_navigation_state(session,snapshot),once=TRUE)})
-  observeEvent(input$switch,{project_state$clear();location(app_env$navigation_state_defaults("overview"))})
+  observeEvent(input$switch,{project_state$clear();location(app_env$navigation_state_defaults("project"))})
   session$userData$project_state<-project_state;session$userData$location<-location
 },{
   session$setInputs(open=1);session$flushReact();stopifnot(session$userData$project_state$values$view=="workspace",!is.null(session$userData$project_state$values$project))
-  session$setInputs(switch=1);session$flushReact();stopifnot(session$userData$project_state$values$view=="landing",is.null(session$userData$project_state$values$project),session$userData$location()$active_top_tab=="overview")
+  session$setInputs(switch=1);session$flushReact();stopifnot(session$userData$project_state$values$view=="landing",is.null(session$userData$project_state$values$project),session$userData$location()$active_top_tab=="project")
 })
 cat("PASS\n")

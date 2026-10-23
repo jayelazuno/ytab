@@ -24,6 +24,12 @@ genome_browser_ui <- function() {
       tags$div(class = "ytab-actions",
                actionButton("genome_browser_reload", "Reload browser"),
                actionButton("genome_browser_clear_tracks", "Clear tracks")),
+      tags$hr(),
+      tags$div(class = "ytab-actions",
+               actionButton("genome_browser_open_igv", "Open in IGV"),
+               downloadButton("genome_browser_download_igv", "Download for IGV")),
+      tags$p(class = "text-muted ytab-control-help",
+             "Open in IGV sends the reference, genes and the selected tracks to IGV desktop running on this computer (its port must be enabled: View > Preferences > Advanced). Download for IGV gives a folder with an IGV session; open igv_session.xml in IGV."),
       tags$details(
         class = "ytab-technical-details",
         tags$summary("Technical details"),

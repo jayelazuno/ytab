@@ -1,0 +1,12 @@
+{
+  "glabrata_cerevisiae_1to1": 3602,
+  "pombe_cerevisiae_1to1": 2747,
+  "all_three": 2491,
+  "sources": {
+    "resources/species/glabrata/essentiality_labels/labels.tsv": "3fdfa524435d7790429902480d789e8b0259fe45ea765a12f6bbf8a72d36150f",
+    "resources/species/pombe/orthologs/pombe_cerevisiae_orthologs.txt": "ed65beb4ecd6ab60f0d6e36d0635763d667fa0f1fb69db334ae8949862ddb48b"
+  },
+  "output_sha256": "1ce110ff3465f69b43ad22182ee935f536b2c298c7e6b5c58ada8e4ab339f654",
+  "pombe_source": "PomBase curated orthologs, release 2025-10-01 (https://www.pombase.org/monthly_releases/2025/pombase-2025-10-01/curated_orthologs/)",
+  "script": "scripts/local/ytab_build_ortholog_groups.py"
+}

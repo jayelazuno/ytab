@@ -1,0 +1,19 @@
+{
+  "cgd": {
+    "url": "http://www.candidagenome.org/download/phenotype/C_glabrata_CBS138_phenotype_data.tab",
+    "retrieved": "2026-10-19"
+  },
+  "sgd": {
+    "url": "https://downloads.yeastgenome.org/curation/literature/phenotype_data.tab",
+    "retrieved": "2026-10-19",
+    "stored": "gzip of the downloaded file"
+  },
+  "files": {
+    "C_glabrata_CBS138_phenotype_data.tab": "6dfd70410cd2773482237cfb5bb585cf904ae699d7046c036c0d1597d3fe6caf",
+    "SGD_phenotype_data.tab.gz": "691f81bedc14fa7f1638f8e073ecbe3f98f9d270622fe43b69cd0d9a7ee1381a",
+    "C_glabrata_BG2_S_cerevisiae_orthologs.txt": "2a869b00f071b3d9659cfd64c5ba0ec5cee0b2a8b1581218bb970ad71b338840",
+    "GCA_014217725.1_ASM1421772v1_genomic.gff": "324ea1d8eae54f7ad6be4f5d924c1f0e611139383e3e5ebac40fe0b42c0d9c60"
+  },
+  "built": "2026-10-19",
+  "script_sha256": "90907930600db1b046b654696370538061fcb77689fb195a7889cb5140e49d16"
+}

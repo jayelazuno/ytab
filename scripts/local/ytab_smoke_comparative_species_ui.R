@@ -28,12 +28,17 @@ source(file.path(root, "app/shiny/R/comparative_project_data.R"))
 source(file.path(root, "app/shiny/R/ui_comparative.R"))
 source(file.path(root, "app/shiny/R/qc_library_diagnostics_plots.R"))
 source(file.path(root, "app/shiny/R/ui_qc.R"))
+source(file.path(root, "app/shiny/R/qc_module.R"))
 source(file.path(root, "app/shiny/R/ui_landing.R"))
 source(file.path(root, "app/shiny/R/ui_preprocessing.R"))
 source(file.path(root, "app/shiny/R/qc_result_state.R"))
 source(file.path(root, "app/shiny/R/ui_fitness.R"))
 source(file.path(root, "app/shiny/R/ui_essentiality.R"))
 source(file.path(root, "app/shiny/R/ui_gene_domain_explorer.R"))
+# The workspace now also uses these modules (GO, genome browser, screen coverage, analysis panels).
+for (name in c("go_analysis.R", "genome_browser_state.R", "ui_genome_browser.R", "screen_planning.R", "mutant_screen.R",
+               "analysis_runs.R", "qc_library_correlation.R", "normalization_module.R", "essentiality_module.R", "treated_vs_control.R", "comparisons_module.R"))
+  source(file.path(root, "app/shiny/R", name))
 source(file.path(root, "app/shiny/R/ui_workspace.R"))
 
 project <- read_project_summary(args[[1L]], root)
@@ -44,8 +49,8 @@ workspace_html <- htmltools::renderTags(workspace_ui(2L))$html
 for (label in c("Single Species View", "Comparative View",
                 "Gene Group Analysis"))
   stopifnot(grepl(label, comparative_html, fixed = TRUE))
-stopifnot(grepl("Comparative Species", workspace_html, fixed = TRUE),
-          grepl("Fitness Screen", workspace_html, fixed = TRUE),
+stopifnot(grepl("Across Species", workspace_html, fixed = TRUE), grepl("Gene Explorer", workspace_html, fixed = TRUE),
+          grepl("Condition Comparisons", workspace_html, fixed = TRUE),
           grepl("Genome Browser", workspace_html, fixed = TRUE),
           grepl("Search for one gene to view available Tn-seq results for one species.",
                 comparative_html, fixed = TRUE),

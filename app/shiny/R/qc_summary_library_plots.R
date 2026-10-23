@@ -26,7 +26,7 @@ plot_qc_summary_metric <- function(project, metric = "complexity") {
   data <- qc_summary_stats_plot_data(project)
   if (!nrow(data)) return(qc_plot_empty("SummaryTable statistics are not available."))
   raw_labels <- as.character(data$sample)
-  display_labels <- qc_plot_display_labels(raw_labels)
+  display_labels <- qc_plot_display_labels(raw_labels, project)
   horizontal <- qc_plot_bar_horizontal(display_labels)
   has_key <- identical(metric, "feature_intergenic")
   old <- par(no.readonly = TRUE)
@@ -171,7 +171,7 @@ qc_summary_project_samples <- function(project) {
 qc_summary_role_from_values <- function(values) {
   values <- tolower(paste(stats::na.omit(as.character(values)), collapse = " "))
   if (!nzchar(values)) return(NA_character_)
-  if (grepl("\\btreated\\b|zn-treated|h2o2-treated|1_5mm|h2o2", values)) return("treated")
+  if (grepl("\\btreated\\b", values)) return("treated")
   if (grepl("\\bcontrol\\b|\\bmock\\b|\\bparent\\b|classifier_control", values)) return("control")
   NA_character_
 }
@@ -192,10 +192,7 @@ qc_summary_combined_feature_sample_roles <- function(project) {
         if (!is.na(role)) return(role)
       }
     }
-    sample_lower <- tolower(sample)
-    if (grepl("treated|h2o2|zn-treated|1_5mm", sample_lower)) return("treated")
-    if (grepl("mock|control|parent", sample_lower)) return("control")
-    NA_character_
+    switch(qc_plot_condition(sample), parent = "control", treated = "treated", NA_character_)
   }, character(1))
   data.frame(sample = samples, role = roles, stringsAsFactors = FALSE)
 }
@@ -223,15 +220,14 @@ qc_summary_combined_feature_group_labels <- function(project) {
     labels <- unique(as.character(unlist(treated[, label_cols, drop = FALSE])))
     labels <- labels[nzchar(labels) & !is.na(labels)]
     if (length(labels)) {
-      if (any(grepl("H2O2", labels, ignore.case = TRUE))) {
-        treated_label <- "H2O2-treated combined"
-      } else {
-        preferred <- labels[grepl("treated", labels, ignore.case = TRUE) &
-                              !tolower(labels) %in% c("treated", "zn-treated")]
+      {
+        preferred <- labels[grepl("treated", labels, ignore.case = TRUE) & !tolower(labels) %in% c("treated")]
         if (length(preferred)) treated_label <- paste0(preferred[[1]], " combined")
         else {
           specific <- labels[!tolower(labels) %in% c("treated", "control", "mock", "parent")]
-          treated_label <- paste0(specific[[1]] %||% "Treated", "-treated combined")
+          # A generic role such as "treated" need not name a treatment.
+          # Check length before indexing: %||% cannot catch an invalid [[1]].
+          if (length(specific)) treated_label <- paste0(specific[[1]], "-treated combined")
         }
       }
     }
@@ -265,7 +261,7 @@ qc_summary_combined_feature_group_choices <- function(project) {
 
 qc_summary_combined_feature_default_group <- function(project) {
   choices <- unname(unlist(qc_summary_combined_feature_group_choices(project), use.names = FALSE))
-  if ("both" %in% choices) "both" else choices[[1]] %||% "control"
+  if ("both" %in% choices) "both" else if (length(choices)) choices[[1]] else "control"
 }
 
 plot_qc_summary_combined_features_hit <- function(project, group = "both") {
@@ -431,7 +427,7 @@ plot_qc_summary_pairwise_correlations <- function(project) {
   corr <- concordance$correlation
   if (!length(corr) || nrow(corr) < 2L) return(qc_plot_empty("Feature-table correlations are not available."))
   samples <- concordance$samples
-  labels <- qc_plot_horizontal_axis_labels(qc_plot_display_labels(samples))
+  labels <- qc_plot_horizontal_axis_labels(qc_plot_display_labels(samples, project))
   n <- length(samples)
 
   bottom_margin <- qc_plot_label_margin_lines(labels, angle = qc_plot_label_angle(45L),

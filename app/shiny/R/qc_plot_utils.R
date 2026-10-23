@@ -31,8 +31,14 @@ qc_plot_glabrata_chromosome_map <- function(project = NULL) {
     stringsAsFactors = FALSE
   )
   species <- tolower(as.character((project %||% list())$species %||% ""))
-  if (nzchar(species) && !identical(species, "glabrata")) return(data.frame())
   repo_root <- qc_plot_repo_root(project)
+  # Other species: reference_genome/chromosome_names.tsv (contig, display, order; ytab_build_species_resources.py).
+  if (nzchar(species) && !identical(species, "glabrata")) {
+    path <- file.path(repo_root, "resources", "species", species, "reference_genome", "chromosome_names.tsv")
+    map <- if (file.exists(path)) tryCatch(utils::read.delim(path, stringsAsFactors = FALSE), error = function(e) data.frame()) else data.frame()
+    if (!nrow(map) || !all(c("contig", "display", "order") %in% names(map))) return(data.frame())
+    return(map[order(map$order), c("contig", "display", "order"), drop = FALSE])
+  }
   path <- file.path(repo_root, "resources", "species", "glabrata", "reference_genome", "chr_to_cp.tsv")
   if (!file.exists(path)) return(fallback)
   map <- tryCatch(read.delim(path, header = FALSE, stringsAsFactors = FALSE,
@@ -73,20 +79,21 @@ qc_plot_chromosome_order <- function(chrom, project = NULL) {
   c(known, sort(setdiff(unique(display), known)))
 }
 
-qc_plot_sample_order <- function(samples) {
-  canonical <- c(
-    "yH298-parent-pool1", "yH298-parent-pool2",
-    "yH299-parent-pool3", "yH299-parent-pool4",
-    "yH298-H2O2-treated-facs-pool1", "yH298-H2O2-treated-facs-pool2",
-    "yH299-H2O2-treated-facs-pool3", "yH299-H2O2-treated-facs-pool4"
-  )
-  c(intersect(canonical, samples), sort(setdiff(samples, canonical)))
+# Libraries keep the order they are given in (sample-sheet or file order); no project-specific ordering.
+qc_plot_sample_order <- function(samples) unique(as.character(samples))
+
+# Role from the sample name alone, only as a last resort (the sample sheet's roles come first wherever a project is known).
+qc_plot_condition <- function(sample) {
+  ifelse(grepl("parent|control|mock", sample, ignore.case = TRUE), "parent",
+         ifelse(grepl("treated", sample, ignore.case = TRUE), "treated", "other"))
 }
 
-qc_plot_condition <- function(sample) {
-  ifelse(grepl("parent", sample, ignore.case = TRUE), "parent",
-         ifelse(grepl("treated|H2O2|facs", sample, ignore.case = TRUE),
-                "H2O2-treated-facs", "other"))
+# Compact labels for any project: drop the words every label shares, keep the ones that tell libraries apart.
+ytab_compact_labels <- function(labels) {
+  parts <- strsplit(as.character(labels), "[-_ ]+"); common <- Reduce(intersect, parts)
+  if (length(labels) < 2L || !length(common)) return(as.character(labels))
+  short <- vapply(parts, function(p) paste(setdiff(p, common), collapse = "-"), "")
+  ifelse(nzchar(short) & !duplicated(short) & !duplicated(short, fromLast = TRUE), short, as.character(labels))
 }
 
 qc_plot_pool <- function(sample) {
@@ -159,31 +166,17 @@ qc_plot_label_mode <- function() {
   as.character(getOption("ytab.plot.label_mode", "full"))
 }
 
-qc_plot_display_labels <- function(labels) {
-  labels <- as.character(labels)
+qc_plot_display_labels <- function(labels, project = NULL) {
+  labels <- ytab_sample_labels(labels, project)
   mode <- qc_plot_label_mode()
   if (identical(mode, "hide")) return(rep("", length(labels)))
   if (!identical(mode, "compact")) return(labels)
-  compact <- labels
-  compact <- sub("^yH[0-9]+-", "", compact)
-  compact <- gsub("H2O2-treated-facs", "H2O2", compact, fixed = TRUE)
-  compact <- gsub("parent", "parent", compact, fixed = TRUE)
-  compact <- gsub("-pool", " p", compact, fixed = TRUE)
-  compact
+  ytab_compact_labels(labels)
 }
 
 qc_plot_horizontal_axis_labels <- function(labels) {
   labels <- qc_plot_display_labels(labels)
-  if (identical(qc_plot_label_mode(), "hide")) return(labels)
-  labels <- gsub("-parent-", " ", labels, fixed = TRUE)
-  labels <- gsub("^parent-", "", labels)
-  labels <- gsub("-pool([0-9]+)-", " p\\1 ", labels)
-  labels <- gsub("-pool([0-9]+)$", " p\\1", labels)
-  labels <- gsub("1_5mM-Zn-treated", "Zn-treated", labels, fixed = TRUE)
-  labels <- gsub("1.5mM-Zn-treated", "Zn-treated", labels, fixed = TRUE)
-  labels <- gsub("H2O2-treated-facs", "H2O2-treated", labels, fixed = TRUE)
-  labels <- gsub("\\s+", " ", labels)
-  trimws(labels)
+  trimws(gsub("\\s+", " ", labels))
 }
 
 qc_plot_wrapped_labels <- function(labels, width = NULL) {
@@ -398,10 +391,34 @@ qc_plot_metric_key_row <- function(labels, fill = NULL, col = NULL, border = NUL
   )
 }
 
+qc_plot_axis_labels <- function(values) {
+  format(values, big.mark = ",", scientific = FALSE, trim = TRUE)
+}
+
+qc_plot_count_display <- function(values, scale = "thousands") {
+  if (identical(scale, "log10")) {
+    return(list(values = log10(values + 1), divisor = 1,
+                suffix = ", log10(count + 1)"))
+  }
+  list(values = values, divisor = 1000, suffix = " (\u00d71,000)")
+}
+
+# House style for base-R plots, matching ytab_style_ggplot (analysis_runs.R): black bold labels, x and y axis lines
+# (ytab_base_axes, drawn after the plot; the default full frame is off), black bar borders (ytab_base_bar_lwd).
+ytab_mm_lwd <- function(mm) mm * 96 / 25.4   # R line width 1 = 1/96 inch
+ytab_base_bar_lwd <- function() ytab_mm_lwd(get0("YTAB_BAR_BORDER_MM", ifnotfound = .8))
+ytab_base_axes <- function(ticks = c(1, 2)) {
+  box(bty = "l", lwd = ytab_mm_lwd(get0("YTAB_AXIS_LINE_MM", ifnotfound = .8)), col = "black")
+  for (side in ticks) axis(side, at = axTicks(side), labels = FALSE, lwd = 0, lwd.ticks = ytab_mm_lwd(get0("YTAB_TICK_MM", ifnotfound = .6)), col.ticks = "black")
+}
+
 qc_plot_par <- function(mar = c(5, 5, 3, 1), ...) {
   sizes <- qc_plot_text_sizes()
   par(
     mar = qc_plot_style_margins(mar),
+    bty = "n",
+    col.axis = "black",
+    col.lab = "black",
     font.axis = 2,
     font.lab = 2,
     font.main = 2,

@@ -80,7 +80,7 @@ essentiality_smoke_project <- function(project) {
   id <- tolower(as.character(project$project_id %||% ""))
   type <- tolower(as.character(project$project_type %||% ""))
   fastq <- tolower(as.character(project$fastq_directory %||% ""))
-  identical(id, "h2o2-test2") || type %in% c("test", "temporary") ||
+  type %in% c("test", "temporary") ||
     grepl("smoke|test", id) || grepl("small_fastq_subset|smoke", fastq)
 }
 
@@ -120,8 +120,10 @@ essentiality_classifier_resources <- function(project, repo_root, target_tag = "
   } else character()
   feature <- if (nzchar(target_tag)) file.path(project$project_root, "summary_combined", target_tag,
                                                paste0("combined_feature_table.", target_tag, ".txt")) else ""
+  # S. cerevisiae orthologs only annotate the output: the species' gene_annotation.tsv, else the project's orthology file.
+  annotation <- file.path(repo_root, "resources", "species", as.character(project$species %||% ""), "annotation", "gene_annotation.tsv")
   resources <- list(
-    `BG2–S. cerevisiae orthology map` = resolve(reference$orthology_file),
+    `S. cerevisiae orthology map` = if (file.exists(annotation)) annotation else resolve(reference$orthology_file),
     `Kornmann WildType WIG tracks` = kornmann,
     `SGD feature table` = file.path(repo_root, "resources", "species", "cerevisiae", "SGD_features.tab"),
     `Viable annotations` = file.path(repo_root, "resources", "species", "cerevisiae", "cerevisiae_viable_annotations.txt"),
@@ -139,7 +141,8 @@ essentiality_classifier_resources <- function(project, repo_root, target_tag = "
                stringsAsFactors = FALSE, check.names = FALSE)
   })
   result <- do.call(rbind, rows)
-  attr(result, "supported_species") <- identical(as.character(project$species %||% ""), "glabrata")
+  # The classifier trains on S. cerevisiae and scores any species' SummaryTable features.
+  attr(result, "supported_species") <- TRUE
   result
 }
 

@@ -11,12 +11,21 @@ and `K_q=ceil(-N*log(1-q))`. Changing the target updates the plot and K
 immediately. The default plot width is Standard. Targets describe expected
 recovery, not confidence guarantees or final experimental recommendations.
 
-The original parent-union audit supplies N and the library-summary cards:
-reference protein-coding genes, represented genes, observed representation
-ceiling, genomic insertion sites and coding insertion sites. Missing audits
-produce a validation message instead of changing the model's gene universe.
-No dataset totals are hardcoded. The original planner and analytical server are
-retained; the reduced UI only hides advanced models and their tabs/controls.
+The **active project** supplies N and the library-summary cards. Included explicit
+parent libraries are selected from its sample sheet; only when none are defined
+are included untreated/control libraries used. Treatment cultures are excluded.
+The existing raw-coordinate/CDS adapter counts represented protein-coding genes,
+distinct genomic and coding sites, and genes with multiple distinct coding sites;
+explicit pseudogenes/non-protein-coding biotypes are excluded from gene counts.
+No dataset totals or sample accessions are hardcoded. Missing parent metadata or
+catalogues produce a validation message, never a fallback to another library.
+
+A background inventory worker caches results beneath the active project's
+`screen_coverage/project_summary/`, keyed by project/input/code revisions. Switching
+projects clears the displayed inventory and stops the old worker. A result must
+match the active project path before it can supply the summary, N or Poisson plot.
+The old repository-wide parent-union audit is used only by the retained advanced
+implementation; it does not supply the active planner.
 
 Empirical Monte Carlo models, pool diagnostics and allocation controls are
 retired from the active UI. Their implementation is retained as

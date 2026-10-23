@@ -1,17 +1,195 @@
-# Personal Argon preprocessing jobs
+# Reusable YTAB jobs for Argon
 
 YTAB is primarily a desktop Shiny application. Its analysis modules and master
 workflow also have a scheduler-independent [CLI](../../docs/command_line.md).
-**No HPC account or scheduler is required to use YTAB.** Alignment and hit-file
-creation can optionally run on Argon before continuing with summaries locally.
+**No HPC account or scheduler is required to use YTAB.** The standard pipeline
+can optionally run on Argon, either stage by stage or through the master submitter.
 
-`ytab_mapFastq.txt` and `ytab_CreateHitFile.txt` are personal University of Iowa
+The scripts in this directory are personal University of Iowa
 **Argon / SGE (`qsub`)** jobs,
 not a universal HPC interface. Queue `UI`, parallel environment `smp`, email,
 Conda initialization and scratch paths are personal site settings. Users of
 Slurm, PBS or other clusters should wrap the ordinary CLI in their own scripts.
 The separate personal `sra_access.txt` download utility is retained; it is not an
-analysis stage and is not called by the alignment job.
+analysis stage and is not called by the analysis jobs.
+
+## One-command master submission
+
+Run this launcher with **bash on the login node**, not with `qsub`:
+
+```bash
+cd /Users/jayelazuno/workspace/ytab
+
+# New project: the same standard routes are derived from the project ID.
+bash pipeline/hpc/submit_pipeline.sh \
+  --project-id My_screen --species glabrata \
+  --fastq-dir /nfsscratch/jayelazuno/workspace/my_reads \
+  --profile core --threads 8
+
+# Existing Gale project: preserve its configuration and sample metadata.
+bash pipeline/hpc/submit_pipeline.sh \
+  --project-config output/projects/Gale_2020/config/project.yaml \
+  --profile core --threads 8
+
+# Full existing pipeline, including classifier and fitness branches.
+# Review parent/control roles, independent pools and comparisons first.
+bash pipeline/hpc/submit_pipeline.sh \
+  --project-config output/projects/My_screen/config/project.yaml \
+  --profile all --threads 8 --stage-threads mapfastq=16
+```
+
+The launcher activates `tnseq`, initializes a new project if requested, and submits
+one job per stage with `qsub -terse` and a serial `-hold_jid` chain. It returns after
+submission; **the jobs keep running without the terminal remaining open**. Each
+stage uses the existing scientific CLI and canonical project outputs; no new
+normalization or classifier logic is introduced.
+
+Profiles follow the local master:
+
+- `core` (default): reference preparation, alignment, hit files, raw summaries and QC.
+- `classifier`: core plus existing parent MidLC normalization, normalized/combined
+  summaries and the existing random-forest essentiality classifier, unchanged.
+- `fitness`: core plus comparison design and raw-summary/CPM fitness.
+- `all`: both existing analysis branches.
+
+Every profile finishes with report and compact export jobs. The export explicitly
+includes hit files, browser tracks and logs but not FASTQs or BAMs. It remains a
+compact bundle, not a copy of every raw/normalized feature table: transfer complete
+`summary/` and analysis directories as well when needed for app browsing, or
+regenerate raw summaries locally from the included hit files.
+
+`--stages mapfastq,create_hit_file,summary,library_diagnostics,report,export`
+selects a subset in standard order; excluded prerequisites must already exist.
+`--stage-threads STAGE=N` may be repeated. The default is eight slots for each job;
+reference/alignment need at least two, other stages permit one. Override queue,
+parallel environment or email with `--queue`, `--parallel-env` and `--email`.
+`--junction-mate R2` and `--require-mate-alignment` /
+`--no-require-mate-alignment` affect mapping only; omitted options preserve the
+project's existing defaults. `--target` selects the existing classifier target;
+`--analysis-id` identifies fitness results. Fitness always uses raw-summary inputs.
+
+### FASTQ discovery and experimental metadata
+
+New projects accept flat or nested FASTQ folders, including SRA download trees.
+Nested inputs get a small symlink-only flat view in `config/argon_fastq_inputs/`;
+read files are never copied or modified. Sample IDs follow FASTQ basenames through
+the ordinary YTAB discovery rules. Duplicate basenames are rejected rather than
+silently overwriting or merging libraries. Accession-only filenames remain
+accession IDs; the submitter does **not** infer biological identities from SRR IDs
+or folder names. Use one consistently named R1/R2 pair per sample under the
+existing discovery convention; prepare multi-lane inputs using the normal pipeline
+conventions rather than silently treating lanes as independent biological pools.
+
+For a new project, `--sample-sheet /path/metadata.csv` can supply reviewed metadata.
+It must have a `sample` column matching every discovered sample exactly once;
+sequencing paths/layout come from discovery, while conditions, roles, pool IDs,
+background and inclusion flags come from the supplied sheet. If `include` is
+absent all samples are included. For an existing project, edit its own sample
+sheet first and use `--project-config`; initialization never overwrites it.
+
+New configurations store the repository root relative to `project.yaml`, standard
+downstream routes relative to the checkout, and FASTQ filenames relative to
+`fastq_dir`. To relocate the same reads for an existing FASTQ project:
+
+```bash
+bash pipeline/hpc/submit_pipeline.sh \
+  --project-config output/projects/My_screen/config/project.yaml \
+  --fastq-dir /new/location/of/the/same/reads --profile core
+```
+
+This changes the FASTQ base without rediscovering samples or changing roles,
+comparisons, references or output routes. Legacy absolute FASTQ paths are converted
+only if they are inside the declared old base; unrelated paths are rejected.
+Relative subdirectory structure must be preserved; keep an existing symlink view
+or point to an equivalent view. A different experiment should get a new project.
+Active master jobs must finish or be cancelled before changing the base.
+
+Imported-hit projects such as the H2O2 release retain their entry mode and need no
+FASTQs. Their default master profiles skip reference indexing, mapping and hit
+creation and begin with existing hit files. A FASTQ-base override cannot convert
+an imported-hit project into a sequencing project.
+
+Only the FASTQ location normally changes for core processing on this installation.
+However, **parent/treated roles, independent pool identities and comparisons are
+experiment-specific**. Review these before selecting `classifier`, `fitness` or
+`all`. The existing runners retain their validation and will fail on invalid
+designs rather than inventing biological replication. The configured reference
+FASTA/annotation must be available; missing reference indexes are prepared by the
+reference job. There are no new scientific defaults for accession-only experiments.
+
+### Preview, monitoring, failure handling and resubmission
+
+Add `--dry-run` to either master command for a read-only preview: no project is
+created, no files are written and no jobs are submitted. This is a submission
+preview, not a guarantee that every downstream analysis has valid biological data.
+
+Each actual submission has a unique directory under
+`output/projects/<project>/manifests/argon/<run>/`, containing `plan.json`, job IDs
+and per-stage JSON receipts. Scheduler logs are under the matching
+`output/projects/<project>/logs/argon/<run>/`. The master prints both locations.
+
+```bash
+qstat -u jayelazuno
+tail -f output/projects/My_screen/logs/argon/RUN_ID/mapfastq.log
+qdel JOB_ID
+```
+
+`hold_jid` waits for completion, not success. Therefore each worker additionally
+requires successful receipts from **this submission's** earlier stages. Failures,
+missing receipts after `qdel`, and configuration/sample-sheet edits block downstream
+work, even if old scientific outputs happen to exist. Where SGE delivers SIGTERM,
+the worker stops its child process group and records cancellation; abrupt kills
+may leave a running/missing receipt, which also blocks subsequent stages.
+Queued downstream jobs are not automatically deleted: they start when their hold
+releases, record a blocked result and exit without scientific execution. Cancel
+the remaining job IDs in `plan.json` if you do not want those brief jobs to start.
+
+Do not edit project configuration/sample sheets while jobs are queued/running.
+Only one master chain per project is allowed; a submission lock prevents
+simultaneous submissions. A still-queued/running or partially submitted chain
+requires checking/cancelling its jobs before using `--replace-active`. This option
+does not cancel anything itself. Partial `qsub` failures record already-submitted
+IDs in the plan and do not silently delete jobs. The guard applies to master
+submissions, so do not run separate standalone/app jobs on the same project at the
+same time. After a completed or failed chain, submit a new run using
+`--project-config`; existing backend caches apply. `--force` forwards the normal
+force/overwrite options (including comparison-design regeneration); use it only
+when intentionally refreshing the requested stages and their downstream results.
+
+## Individual jobs for every standard stage
+
+`ytab_stage.txt` is a reusable job template for every stage; no copied scientific
+scripts are needed. Submit, for example:
+
+```bash
+qsub -N YTAB_Summary -v PROJECT_ID=Gale_2020,STAGE=summary pipeline/hpc/ytab_stage.txt
+qsub -N YTAB_QC -v PROJECT_ID=Gale_2020,STAGE=library_diagnostics pipeline/hpc/ytab_stage.txt
+qsub -N YTAB_Classifier -v PROJECT_ID=My_screen,STAGE=classifier pipeline/hpc/ytab_stage.txt
+qsub -N YTAB_Export -v PROJECT_ID=My_screen,STAGE=export pipeline/hpc/ytab_stage.txt
+```
+
+Supported `STAGE` values are:
+
+```text
+reference               mapfastq                create_hit_file
+summary                 library_diagnostics     sample_normalization
+summary_normalized      combined_hits           summary_combined
+classifier              comparison_design       treated_vs_parent
+report                  export
+```
+
+These standalone jobs require existing upstream outputs; they do not create a
+dependency chain. Use the master for success-gated chaining. `PROJECT_CONFIG` can
+replace `PROJECT_ID`. `FORCE=1`, `TARGET`, `ANALYSIS_ID`, `JUNCTION_MATE` and
+`REQUIRE_MATE_ALIGNMENT=0|1` provide the corresponding settings. The master uses
+explicit plan options instead of inheriting these standalone scientific overrides.
+Use master `--dry-run` for previews. The older standalone mapping/hit-file wrappers
+below retain their existing `DRY_RUN`, `SAMPLES` and `KEEP_GOING` options.
+
+Optional analyses needing separate inputs (GO enrichment, individual Sanger mutant
+identification, gene-specific plots and Poisson calculations) are not automatically
+part of a project profile. Their ordinary modular CLI/custom workflow interfaces
+remain available; this is not a new scientific workflow definition.
 
 ## Same pipeline and same outputs
 
@@ -154,11 +332,8 @@ python scripts/local/ytab.py summary --project-config PATH/TO/project.yaml
 Do not rerun the mapping stage merely to load HPC results; mapping cache keys can
 legitimately differ between machines. No scheduler is needed for the local steps.
 
-The older multi-stage jobs, project-specific Zn submission chain and HPC-only job
-smoke wrappers were retired. Their tracked versions remain recoverable from Git;
-no scientific CLI modules or completed results were removed. General metadata and
-specialized diagnostic utilities in `scripts/hpc` are not a supported full-pipeline
-scheduler interface. Run subsequent stages through the desktop app or ordinary
-CLI/master runner. The two wrappers above replace only the alignment/hit-file
-parts of that historical chain. After intentionally replacing alignments, refresh the affected
-downstream outputs rather than reusing old hit tables/results.
+The old hardcoded multi-stage/Zn scripts remain retired and recoverable from Git.
+The master and shared stage template above replace that submission logic without
+copying the scientific pipeline. General metadata and specialized diagnostics in
+`scripts/hpc` are separate utilities. After intentionally replacing alignments,
+refresh affected downstream outputs rather than reusing old hit tables/results.

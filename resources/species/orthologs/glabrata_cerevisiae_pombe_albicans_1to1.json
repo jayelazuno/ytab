@@ -1,0 +1,18 @@
+{
+  "glabrata_cerevisiae_1to1": 3602,
+  "pombe_cerevisiae_1to1": 2747,
+  "albicans_cerevisiae_1to1": 4012,
+  "glabrata_albicans": 3117,
+  "glabrata_pombe": 2491,
+  "pombe_albicans": 2556,
+  "all_four": 2355,
+  "sources": {
+    "resources/species/glabrata/essentiality_labels/labels.tsv": "3fdfa524435d7790429902480d789e8b0259fe45ea765a12f6bbf8a72d36150f",
+    "resources/species/pombe/orthologs/pombe_cerevisiae_orthologs.txt": "ed65beb4ecd6ab60f0d6e36d0635763d667fa0f1fb69db334ae8949862ddb48b",
+    "resources/species/albicans/C_albicans_SC5314_S_cerevisiae_orthologs.txt": "938f688c0091570ee4c49191673a6c725783e32a65e39c9e53aa9ea779b20fe2"
+  },
+  "output_sha256": "fc6e30150378f3a5650a867b4d615e967365833b9b7909d3043d3aab421bd833",
+  "pombe_source": "PomBase curated orthologs, release 2025-10-01 (https://www.pombase.org/monthly_releases/2025/pombase-2025-10-01/curated_orthologs/)",
+  "albicans_source": "CGD C_albicans_SC5314_S_cerevisiae_orthologs.txt (genome A22-s07-m01-r18, created 2017-01-18); haplotype A gene IDs",
+  "script": "scripts/local/ytab_build_ortholog_groups.py"
+}

@@ -80,12 +80,25 @@ def create_project_config(project_id, fastq_dir, species, repo_root=None, thread
     sample_path = config_dir / "sample_sheet.csv"
     reference_path = config_dir / "reference_resolved.json"
     config_path = config_dir / "project.yaml"
+    # Only the external FASTQ base is machine-specific. Keep filenames relative
+    # to that base, including files exposed through the Argon symlink view.
+    for column in ("fastq_1", "fastq_2"):
+        for index, value in samples[column].items():
+            if value:
+                path = Path(value)
+                try:
+                    samples.loc[index, column] = str(path.relative_to(fastq_path))
+                except ValueError:
+                    candidate = fastq_path / path.name
+                    if candidate.resolve() == path.resolve():
+                        samples.loc[index, column] = path.name
     write_sample_sheet(samples, sample_path)
     reference_data = _reference_dict(reference, root)
     reference_path.write_text(json.dumps(reference_data, indent=2) + "\n", encoding="utf-8")
     sample_records = samples.where(pd.notnull(samples), None).to_dict(orient="records")
     config = {
-        "project_id": str(project_id), "repo_root": str(root), "fastq_dir": _portable(fastq_path, root),
+        "project_id": str(project_id), "repo_root": os.path.relpath(root, config_dir),
+        "fastq_dir": _portable(fastq_path, root), "fastq_paths_relative_to": "fastq_dir",
         "output_project_dir": _portable(project_dir, root), "output_export_dir": _portable(export_dir, root),
         "species": str(species), "threads": selected_threads, "reference": reference_data,
         "samples": sample_records, "sample_sheet": _portable(sample_path, root),
@@ -93,6 +106,7 @@ def create_project_config(project_id, fastq_dir, species, repo_root=None, thread
         "ytab_version_or_git_commit_if_available": _version(root),
     }
     config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+    config["_repo_root"] = str(root)
     return config
 
 
@@ -101,6 +115,8 @@ def load_project_config(config_path: Path) -> dict:
         loaded = yaml.safe_load(handle)
     if not isinstance(loaded, dict):
         raise ValueError(f"Project config is not a YAML mapping: {config_path}")
+    root = Path(loaded.get("repo_root") or _root(None)).expanduser()
+    loaded["_repo_root"] = str((Path(config_path).resolve().parent / root).resolve())
     return loaded
 
 
@@ -111,9 +127,63 @@ def _resolve_config_path(value: str | None, root: Path) -> Path | None:
     return path if path.is_absolute() else root / path
 
 
+def update_fastq_base(config_path: Path, fastq_dir: Path) -> None:
+    """Move sequencing inputs without changing sample identities or analysis routes.
+
+    Legacy absolute paths are converted only when they lie under the declared old
+    FASTQ base. Never guess a filename or reinterpret an imported-hit project.
+    Call only when no jobs for this project are queued/running.
+    """
+    config_path = Path(config_path).expanduser().resolve()
+    config = yaml.safe_load(config_path.read_text())
+    root = Path(load_project_config(config_path)["_repo_root"])
+    target = Path(fastq_dir).expanduser().resolve()
+    if not target.is_dir():
+        raise ValueError(f"FASTQ directory does not exist: {target}")
+    if str(config.get("start_stage", "fastq")) == "create_hit_file":
+        raise ValueError("Imported-hit project does not need a FASTQ base; preserve its entry mode.")
+    old = _resolve_config_path(config.get("fastq_dir"), root)
+    if old is None:
+        raise ValueError("Cannot rebase a project without a declared old fastq_dir.")
+    relative_mode = config.get("fastq_paths_relative_to") == "fastq_dir"
+
+    def convert(value):
+        if not value:
+            return ""
+        source = Path(str(value)).expanduser()
+        if relative_mode and not source.is_absolute():
+            result = source
+        else:
+            source = source if source.is_absolute() else root / source
+            try:
+                result = source.relative_to(old)
+            except ValueError as exc:
+                raise ValueError(f"FASTQ path is outside the declared old base: {value}") from exc
+        if ".." in result.parts:
+            raise ValueError(f"FASTQ path escapes its base: {value}")
+        return str(result)
+
+    sheet_path = _resolve_config_path(config.get("sample_sheet"), root)
+    sheet = pd.read_csv(sheet_path, dtype=str, keep_default_na=False) if sheet_path else None
+    if sheet is not None:
+        for column in ("fastq_1", "fastq_2"):
+            if column in sheet:
+                sheet[column] = sheet[column].map(convert)
+    for sample in config.get("samples", []):
+        for column in ("fastq_1", "fastq_2"):
+            if column in sample:
+                sample[column] = convert(sample[column])
+    config["repo_root"] = os.path.relpath(root, config_path.parent)
+    config["fastq_dir"] = _portable(target, root)
+    config["fastq_paths_relative_to"] = "fastq_dir"
+    if sheet is not None:
+        sheet.to_csv(sheet_path, index=False)
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False))
+
+
 def validate_project_config(config: dict) -> list[str]:
     messages: list[str] = []
-    root = Path(config.get("repo_root") or _root(None)).expanduser().resolve()
+    root = Path(config.get("_repo_root") or config.get("repo_root") or _root(None)).expanduser().resolve()
     detected = detected_cpu_count()
     if detected < 2:
         messages.append("ERROR: YTAB local pipeline requires at least 2 CPU threads.")

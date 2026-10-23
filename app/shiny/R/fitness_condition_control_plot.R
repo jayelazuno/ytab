@@ -1,36 +1,26 @@
 fitness_condition_control_plot_data <- function(result, mode = "combined", pair = "") {
   if (is.null(result) || !nzchar(result$output_dir %||% "")) return(data.frame())
-  path <- file.path(result$output_dir, "tables", "treated_vs_parent.by_pool.log2fc_z.csv")
-  if (!file.exists(path)) return(data.frame())
-  by_pool <- tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame())
-  required <- c("feature_id", "parent_cpm", "treated_cpm", "log2FC")
-  if (!nrow(by_pool) || !all(required %in% names(by_pool))) return(data.frame())
+  read <- function(name) { path <- file.path(result$output_dir, "tables", name)
+    if (file.exists(path)) tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame()) else data.frame() }
   if (identical(mode, "individual")) {
+    # one control-treated pair, as written per pair by the pipeline
+    out <- read("treated_vs_parent.by_pool.log2fc_z.csv")
+    if (!nrow(out) || !all(c("feature_id", "contrast", "parent_cpm", "treated_cpm", "log2FC") %in% names(out))) return(data.frame())
     if (!nzchar(pair)) pair <- fitness_ma_pair_choices(result)[[1]] %||% ""
-    by_pool <- by_pool[as.character(by_pool$contrast) == pair, , drop = FALSE]
-  }
-  if (!nrow(by_pool)) return(data.frame())
-  by_pool$feature_id <- as.character(by_pool$feature_id)
-  by_pool$control_abundance <- qc_plot_numeric(by_pool$parent_cpm)
-  by_pool$treated_abundance <- qc_plot_numeric(by_pool$treated_cpm)
-  by_pool$log2fc <- qc_plot_numeric(by_pool$log2FC)
-  valid <- by_pool[is.finite(by_pool$control_abundance) & is.finite(by_pool$treated_abundance) &
-                     is.finite(by_pool$log2fc), , drop = FALSE]
-  if (!nrow(valid)) return(data.frame())
-  if (identical(mode, "individual")) {
-    out <- valid
-    out$valid_pool_n <- 1L
+    out <- out[as.character(out$contrast) == pair, , drop = FALSE]
+    out$control_abundance <- qc_plot_numeric(out$parent_cpm); out$treated_abundance <- qc_plot_numeric(out$treated_cpm)
+    out$log2fc <- qc_plot_numeric(out$log2FC); out$valid_pool_n <- 1L
   } else {
-    control <- aggregate(valid$control_abundance, list(feature_id = valid$feature_id), mean, na.rm = TRUE)
-    treated <- aggregate(valid$treated_abundance, list(feature_id = valid$feature_id), mean, na.rm = TRUE)
-    valid_n <- aggregate(valid$feature_id, list(feature_id = valid$feature_id), length)
-    names(control)[2] <- "control_abundance"; names(treated)[2] <- "treated_abundance"; names(valid_n)[2] <- "valid_pool_n"
-    out <- merge(control, treated, by = "feature_id", all = TRUE)
-    out <- merge(out, valid_n, by = "feature_id", all = TRUE)
-    meta_cols <- intersect(c("feature_id", "call", "standard_name", "common_name"), names(valid))
-    meta <- valid[!duplicated(valid$feature_id), meta_cols, drop = FALSE]
-    out <- merge(out, meta, by = "feature_id", all.x = TRUE, sort = FALSE)
+    # replicate means and the call, as written per gene by the pipeline
+    out <- read("treated_vs_parent.summary_by_feature.csv")
+    if (!nrow(out) || !all(c("feature_id", "control_mean", "treated_mean", "call_log2FC", "final_call") %in% names(out))) return(data.frame())
+    out$control_abundance <- qc_plot_numeric(out$control_mean); out$treated_abundance <- qc_plot_numeric(out$treated_mean)
+    out$log2fc <- qc_plot_numeric(out$call_log2FC); out$mean_log2FC <- out$log2fc; out$call <- out$final_call
+    out$valid_pool_n <- if ("n_pairs" %in% names(out)) out$n_pairs else 1L
   }
+  out$feature_id <- as.character(out$feature_id)
+  out <- out[is.finite(out$control_abundance) & is.finite(out$treated_abundance) & is.finite(out$log2fc), , drop = FALSE]
+  if (!nrow(out)) return(data.frame())
   out$call <- as.character(out$call %||% "")
   out$label <- if ("common_name" %in% names(out)) as.character(out$common_name) else rep("", nrow(out))
   if ("standard_name" %in% names(out)) out$label[is.na(out$label) | !nzchar(trimws(out$label))] <- as.character(out$standard_name[is.na(out$label) | !nzchar(trimws(out$label))])
@@ -92,11 +82,12 @@ plot_fitness_condition_control_scatter <- function(result, mode = "combined", pa
   display_point_size <- qc_plot_point_cex(point_size)
   plot(x[keep], y[keep], pch = 16, cex = display_point_size, col = adjustcolor("grey70", alpha.f = 0.7),
        xlim = lim, ylim = lim,
-       xlab = "Control abundance, log10(CPM + 1)",
-       ylab = "Treated abundance, log10(CPM + 1)",
+       xlab = sprintf("Control abundance, log10(%s + 1)", fitness_abundance_unit(result)),
+       ylab = sprintf("Treated abundance, log10(%s + 1)", fitness_abundance_unit(result)),
        main = if (identical(mode, "individual") && nzchar(pair)) paste("Condition-control log-log scatter —", pair) else "Condition-control log-log scatter — combined across pools",
        cex.main = scales$title, cex.lab = scales$axis, cex.axis = scales$sample)
   if (isTRUE(grid)) grid(col = "grey85", lty = 1)
+  ytab_base_axes()
   abline(0, 1, lwd = qc_plot_lwd, lty = 2, col = adjustcolor("black", alpha.f = 0.45))
   if (length(highlight)) {
     depleted_col <- "#2f6fb5"; enriched_col <- "#c83f3f"
@@ -119,7 +110,6 @@ plot_fitness_condition_control_scatter <- function(result, mode = "combined", pa
   }
   note_line <- 5.75
   mtext("Below diagonal = depleted in treatment; above diagonal = enriched in treatment.", side = 1, line = note_line, cex = scales$key, col = "#666666")
-  if (length(highlight) > 10L && nrow(label_data)) mtext("More than 10 labels may overlap; reduce Number of hits for cleaner labels.", side = 1, line = note_line + 0.9, cex = scales$key, col = "#666666")
 }
 
 fitness_condition_control_plot_file <- function(result) {

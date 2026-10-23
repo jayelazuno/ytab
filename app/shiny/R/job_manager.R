@@ -23,6 +23,30 @@ job_terminal_statuses <- function() c(
 )
 job_active_statuses <- function() c("queued", "starting", "running")
 job_status_is_terminal <- function(status) as.character(status %||% "") %in% job_terminal_statuses()
+# Close a progress record whose script never wrote progress events (the analysis scripts report only on exit): the
+# exit status decides every unfinished item, and the elapsed time comes from the recorded start.
+job_progress_close <- function(p, status, now = Sys.time()) {
+  n <- as.integer(p$total_items %||% length(p$items %||% list()))
+  done <- identical(status, "success")
+  started <- suppressWarnings(as.POSIXct(p$job_started_at %||% "", tz = "UTC", format = "%Y-%m-%d %H:%M:%S"))
+  p$status <- status
+  p$items <- lapply(p$items %||% list(), function(x) { if (job_status_is_active(x$status %||% "queued")) x$status <- status; x })
+  p$processed_items <- n; p$remaining_items <- 0L
+  p$successful_items <- if (done) n else as.integer(p$successful_items %||% 0L)
+  p$failed_items <- if (done) as.integer(p$failed_items %||% 0L) else n - as.integer(p$successful_items %||% 0L) - as.integer(p$skipped_items %||% 0L)
+  p$current_phase <- status; p$progress_fraction <- 1; p$progress_percent <- 100
+  if (!is.na(started)) p$job_elapsed_seconds <- round(as.numeric(difftime(now, started, units = "secs")), 1)
+  p$message <- if (done) "Finished." else "Failed; see the job log."
+  p$updated_at <- format(now, tz = "UTC", usetz = TRUE)
+  p
+}
+
+# Records closed before job_progress_close existed kept their queued counters and zero elapsed time.
+job_progress_display <- function(p) {
+  if (is.null(p) || !identical(p$message, "Process ended before a final progress event.") || !job_status_is_terminal(p$status)) return(p)
+  job_progress_close(p, p$status, as.POSIXct(p$updated_at %||% "", tz = "UTC", format = "%Y-%m-%d %H:%M:%S"))
+}
+
 job_status_is_active <- function(status) as.character(status %||% "") %in% job_active_statuses()
 job_process_exists <- function(pid) {
   pid <- suppressWarnings(as.integer(pid %||% NA_integer_))
@@ -104,7 +128,7 @@ new_job_manager <- function() {
       recovered_progress<-raw_progress();if(is.null(state$process)&&!is.null(recovered_progress)&&job_status_is_active(recovered_progress$status)&&job_process_exists(state$pid))stop("A pipeline job is already running.")
       stamp<-format(Sys.time(),"%Y%m%dT%H%M%SZ",tz="UTC");random<-paste(sample(c(letters,0:9),6,replace=TRUE),collapse="");state$job_id<-job_id%||%paste(stage_or_profile,stamp,random,sep="_")
       project_root<-dirname(dirname(project_config));state$progress_file<-progress_file%||%file.path(project_root,"manifests","jobs",paste0(state$job_id,".progress.json"))
-      progress_args<-if(stage_or_profile%in%c("mapfastq","create_hit_file","summary","library_diagnostics","fitness_analysis","sample_normalization","summary_normalized","combined_hits","summary_combined","classifier","go_analysis"))c("--job-id",state$job_id,"--progress-file",state$progress_file)else character()
+      progress_args<-if(stage_or_profile%in%c("preprocessing","mapfastq","create_hit_file","summary","library_diagnostics","fitness_analysis","sample_normalization","summary_normalized","combined_hits","summary_combined","classifier","go_analysis"))c("--job-id",state$job_id,"--progress-file",state$progress_file)else character()
       state$command<-command;state$args<-c(args,progress_args);state$display_command<-format_command_for_display(command,state$args);state$started<-Sys.time();state$stdout<-state$stderr<-character();state$project_config<-project_config;state$stage<-stage_or_profile;state$selected_items<-selected_items;state$status<-"starting";state$recovered<-FALSE;state$dismissed<-FALSE
       dir.create(dirname(state$progress_file),recursive=TRUE,showWarnings=FALSE)
       initial<-c(list(schema_version=1,job_id=state$job_id,project_id=basename(project_root),stage=state$stage,status="queued",selected_items=unname(as.character(selected_items)),total_items=length(selected_items),processed_items=0,successful_items=0,skipped_items=0,failed_items=0,remaining_items=length(selected_items),current_item=NULL,current_item_index=NULL,current_phase="queued",job_started_at=format(Sys.time(),tz="UTC",usetz=TRUE),updated_at=format(Sys.time(),tz="UTC",usetz=TRUE),job_elapsed_seconds=0,current_item_elapsed_seconds=0,progress_fraction=0,progress_percent=0,eta_seconds=NULL,estimated_completion_time=NULL,eta_confidence="unavailable",message="Command submitted",cancel_requested=FALSE,items=lapply(unname(as.character(selected_items)),function(x)list(item=x,status="queued"))),json_safe_value(metadata))
@@ -121,7 +145,7 @@ new_job_manager <- function() {
         alive<-state$process$is_alive()
         if(!alive&&job_status_is_active(state$status)){
           exit<-state$process$get_exit_status();state$status<-if(identical(exit,0L))"success"else"failed"
-          p<-raw_progress();if(!is.null(p)&&job_status_is_active(p$status)){p$status<-state$status;p$message<-"Process ended before a final progress event.";p$updated_at<-format(Sys.time(),tz="UTC",usetz=TRUE);atomic_json_write(state$progress_file,p)}
+          p<-raw_progress();if(!is.null(p)&&job_status_is_active(p$status))atomic_json_write(state$progress_file,job_progress_close(p,state$status))
           persist_current(paste("Process exited",exit))
         }else if(alive&&job_status_is_active(state$status))persist_current("Process running")
       }

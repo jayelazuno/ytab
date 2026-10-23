@@ -34,7 +34,7 @@ stopifnot(!any(vapply(visible, function(column)
   any(grepl(project$project_root, as.character(column), fixed = TRUE)), logical(1))))
 visible_mapped <- essentiality_visible_results(data, root)
 stopifnot(nrow(visible_mapped) == nrow(visible),
-          all(c("CAGL ID", "Gene name", "Cg-to-Sc relationship") %in% names(visible_mapped)),
+          all(c("Gene ID", "Gene name", "S. cerevisiae orthology") %in% names(visible_mapped)),
           !"C. glabrata DESeq gene name" %in% names(visible_mapped))
 downloads <- essentiality_download_paths(project$project_root, result)
 stopifnot(file.exists(downloads$predictions), file.exists(downloads$combined_feature),

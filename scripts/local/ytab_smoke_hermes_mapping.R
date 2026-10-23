@@ -5,7 +5,7 @@ library(shiny);library(bslib)
 `%||%`<-function(x,y)if(is.null(x)||!length(x))y else x
 for(name in c("ui_helpers.R","ui_components.R","sample_selector.R","job_progress.R","ui_preprocessing.R"))
   source(file.path(root,"app/shiny/R",name))
-html<-as.character(preprocessing_ui())
+html<-as.character(run_module_ui())
 stopifnot(grepl('mapping_junction_mate',html,fixed=TRUE),grepl('mapping_mate_agreement',html,fixed=TRUE),
           grepl('Read 1',html,fixed=TRUE),grepl('Read 2',html,fixed=TRUE))
 stopifnot(length(mapping_read_arguments())==0L,

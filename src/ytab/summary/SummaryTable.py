@@ -18,7 +18,8 @@ SummaryTable.py
    --strict-hit-table            Strict validation of hit_table rows (OFF by default).
 
    --feature-db          [str]   Internal feature DB selector:
-                                albicans | pombe | cerevisiae | glabrata
+                                gff (any species: --feature-gff and --reference-fasta) |
+                                albicans | pombe | cerevisiae | glabrata (built-in databases)
                                 (REQUIRED for feature-level outputs; and by default we write all outputs)
 
    -f  --read-depth-filter        [int]   Minimum reads per hit to include (default: 1)
@@ -756,7 +757,9 @@ def write_insertion_vs_neighborhood_correlations(analysis_labels, analyses, outp
             s1 = np.array([r.get("insertion_index", 0.0) for r in analysis.values()], dtype=float)
             s2 = np.array([r.get("neighborhood_index", 0.0) for r in analysis.values()], dtype=float)
 
-            if scipy is not None:
+            if len(s1) < 2:
+                out_fh.write(f"{label}\nPearson: nan (fewer than two features)\nSpearman: nan\n")
+            elif scipy is not None:
                 pearson = scipy.stats.pearsonr(s1, s2)
                 spearman = scipy.stats.spearmanr(s1, s2)
                 out_fh.write(f"{label}\nPearson: {pearson}\nSpearman: {spearman}\n")
@@ -1072,6 +1075,10 @@ def _write_analyzed_gla_records(records, output_file, cglab2scer, overwrite=Fals
 
 # Feature DB 
 def load_feature_db(kind, feature_gff=None, reference_fasta=None):
+    if kind == "gff":
+        if not feature_gff:
+            raise ValueError("--feature-db gff needs --feature-gff (and --reference-fasta to keep the mapped sequences only)")
+        return GenomicFeatures.GffFeatureDB(feature_gff, reference_fasta)
     if kind == "albicans":
         return GenomicFeatures.default_alb_db()
     if kind == "pombe":
@@ -1120,7 +1127,7 @@ def main():
     parser.add_argument("--hit-format", default="hit_table", choices=["hit_table", "pombe_csv", "wig"])
     parser.add_argument("--strict-hit-table", action="store_true", default=False)
 
-    parser.add_argument("--feature-db", default=None, choices=["albicans", "pombe", "cerevisiae", "glabrata"])
+    parser.add_argument("--feature-db", default=None, choices=["gff", "albicans", "pombe", "cerevisiae", "glabrata"])
     parser.add_argument("--feature-gff", default=None,
                         help="Optional explicit GFF/GTF override for the feature database.")
     parser.add_argument("--reference-fasta", default=None,

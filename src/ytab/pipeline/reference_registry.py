@@ -114,15 +114,21 @@ def resolve_reference(species: str, repo_root: Path | None = None) -> ReferenceI
     if not reference_dir.is_dir():
         warnings.append(f"Reference genome directory not found: {reference_dir}")
 
-    fasta = _select(_glob_many(reference_dir, ("*.fna", "*.fa", "*.fasta")), "FASTA", species, warnings)
+    prefix, complete, index_type = find_bowtie2_index_prefix(reference_dir)
+    fastas = _glob_many(reference_dir, ("*.fna", "*.fa", "*.fasta"))
+    # The FASTA an existing Bowtie2 index was built from is the one reads are mapped to (e.g. one haplotype of a
+    # diploid assembly), so it wins over other FASTA files in the folder.
+    indexed = [path for path in fastas if prefix and path.with_suffix("") == Path(prefix)]
+    fasta = indexed[0] if indexed else _select(fastas, "FASTA", species, warnings)
     gff = _select(_glob_many(reference_dir, ("*.gff", "*.gff3")), "GFF", species, warnings)
     gtf = _select(_glob_many(reference_dir, ("*.gtf",)), "GTF", species, warnings)
     feature = _select(_glob_many(reference_dir, ("*feature_table*.txt", "*chromosomal_feature*.tab")), "feature table", species, warnings)
     database = _select(_glob_many(reference_dir, ("*.gffutils_db.sqlite",)), "gffutils DB", species, warnings)
     centromere = _select_centromere_bed(reference_dir, species, warnings)
     trna = _select(_glob_many(reference_dir, ("*tRNA*.bed", "tRNAs.bed")), "tRNA BED", species, warnings)
-    orthology = _select(_glob_many(species_dir, ("*orthologs*.txt",)), "orthology file", species, warnings)
-    prefix, complete, index_type = find_bowtie2_index_prefix(reference_dir)
+    # S. cerevisiae is the reference species for orthology-based annotation.
+    orthologs = _glob_many(species_dir, ("*orthologs*.txt",))
+    orthology = _select([p for p in orthologs if "cerevisiae" in p.name.lower()] or orthologs, "orthology file", species, warnings)
 
     if fasta is None:
         warnings.append("Reference FASTA missing. Cannot build Bowtie2 index.")

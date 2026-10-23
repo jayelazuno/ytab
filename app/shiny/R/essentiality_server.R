@@ -144,7 +144,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
         tags$p("Choose a normalization target before continuing."),
         if (isTRUE(include_action))
           actionButton("essentiality_go_normalize_choose",
-                       "Go to Normalize & Choose Target", class = "btn-primary")
+                       "Go to MidLC normalization", class = "btn-primary")
       ))
     }
     tagList(
@@ -156,7 +156,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
     )
   }
   observeEvent(input$essentiality_go_normalize_choose,
-               go_to("essentiality", "essentiality_tabs", "normalize"),
+               go_to("normalization", "normalization_tabs", "site"),
                ignoreInit = TRUE)
 
   register_stage_job_disclosure <- function(prefix, expected_stage, module_id) {
@@ -540,7 +540,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
   }, ignoreInit = TRUE)
   observeEvent(input$continue_to_combine, {
     req(nzchar(selected_target_tag()))
-    go_to("essentiality", "essentiality_tabs", "combine")
+    go_to("essentiality", "essentiality_tabs", "run")
   }, ignoreInit = TRUE)
 
   selected_evaluated_passes <- reactive({
@@ -617,7 +617,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
       if (length(missing)) tags$div(class = "alert alert-warning",
         "Select a target with normalized outputs for every parent library.",
         actionButton("combine_back_to_normalize",
-                     "Go to Normalize & Choose Target"))
+                     "Go to MidLC normalization"))
     )
   })
   output$combine_parent_inputs <- DT::renderDT({
@@ -632,7 +632,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
                   options = list(dom = "t", paging = FALSE, scrollX = TRUE))
   })
   observeEvent(input$combine_back_to_normalize,
-               go_to("essentiality", "essentiality_tabs", "normalize"),
+               go_to("normalization", "normalization_tabs", "site"),
                ignoreInit = TRUE)
   combined_hits_path <- reactive(if (nzchar(selected_target_tag()))
     file.path(active()$project_root, "combined_hits", selected_target_tag(),
@@ -729,7 +729,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
     )
   })
   observeEvent(input$combine_continue_summary,
-               go_to("essentiality", "essentiality_tabs", "combined_summary"),
+               go_to("essentiality", "essentiality_tabs", "run"),
                ignoreInit = TRUE)
 
   combined_feature_path <- reactive(if (nzchar(selected_target_tag()))
@@ -834,7 +834,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
     )
   })
   observeEvent(input$combined_summary_continue_classifier,
-               go_to("essentiality", "essentiality_tabs", "classifier"),
+               go_to("essentiality", "essentiality_tabs", "run"),
                ignoreInit = TRUE)
 
   classifier_target <- reactive({
@@ -1348,7 +1348,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
   observeEvent(input$classifier_view_predictions, {
     target <- tryCatch(classifier_target(), error = function(e) NULL)
     if (!is.null(target)) selected_result_tag(target$tag)
-    go_to("essentiality", "essentiality_tabs", "results")
+    go_to("essentiality", "essentiality_tabs", "run")
   }, ignoreInit = TRUE)
   observeEvent(input$classifier_set_final_target, {
     target <- tryCatch(classifier_target(), error = function(e) NULL)

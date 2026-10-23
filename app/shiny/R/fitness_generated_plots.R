@@ -2,10 +2,11 @@ fitness_generated_plot_inventory <- function(project) {
   root <- file.path(project$project_root, "treated_vs_parent")
   files <- if (dir.exists(root)) list.files(root, pattern = "\\.png$", recursive = TRUE, full.names = TRUE) else character()
   files <- files[grepl("/plots/", files) & file.exists(files)]
+  # MA views are rendered from the selected result and current app controls.
+  # Exclude the entire static MA family, regardless of strain/background name.
+  # Keep the saved images on disk for provenance and ordinary file exports.
+  files <- files[!grepl("^MA([_.-]|$)", basename(files), ignore.case = TRUE)]
   files <- files[!basename(files) %in% c(
-    "MA_treated_vs_parent_all_pools.png",
-    "MA_y_298_labeled_top_hits.png",
-    "MA_y_299_labeled_top_hits.png",
     "top_features_log2FC_heatmap.png",
     "control_control_z_histogram.png",
     "library_sizes_feature_reads.png",
@@ -33,7 +34,8 @@ fitness_mean_log2fc_data <- function(result) {
   if (!nrow(data) || !"mean_log2FC" %in% names(data)) return(data.frame())
   if (!"feature_id" %in% names(data)) data$feature_id <- seq_len(nrow(data))
   data$feature_id <- as.character(data$feature_id)
-  data$mean_log2FC <- qc_plot_numeric(data$mean_log2FC)
+  # The effect each call is based on (contract column call_log2FC); results made before the contract have only the pair mean.
+  data$mean_log2FC <- qc_plot_numeric(if ("call_log2FC" %in% names(data)) data$call_log2FC else data$mean_log2FC)
   data <- data[is.finite(data$mean_log2FC), , drop = FALSE]
   if (!nrow(data)) return(data.frame())
   data <- data[order(data$mean_log2FC, data$feature_id), , drop = FALSE]
@@ -43,7 +45,7 @@ fitness_mean_log2fc_data <- function(result) {
 
 plot_fitness_ranked_mean_log2fc <- function(result) {
   data <- fitness_mean_log2fc_data(result)
-  if (!nrow(data)) return(qc_plot_empty("Mean log2FC values are unavailable for this fitness result."))
+  if (!nrow(data)) return(qc_plot_empty("log2FC values are unavailable for this fitness result."))
   scales <- qc_plot_text_sizes()
   old <- qc_plot_par(mar = c(5.6, 6.0, 4.3, 2.2), mgp = c(3.2, 0.9, 0))
   on.exit(par(old), add = TRUE)
@@ -57,9 +59,9 @@ plot_fitness_ranked_mean_log2fc <- function(result) {
     pch = 16,
     cex = qc_plot_point_cex(0.65),
     col = adjustcolor("#3f566c", alpha.f = 0.48),
-    xlab = "Genes/features ranked by mean log2FC",
-    ylab = "Mean log2FC",
-    main = "Ranked treated-versus-control mean log2FC",
+    xlab = "Genes ranked by log2FC",
+    ylab = "log2FC (treated / control)",
+    main = "Ranked treated-versus-control log2FC",
     ylim = ylim,
     cex.main = scales$title,
     cex.lab = scales$axis,
@@ -69,13 +71,13 @@ plot_fitness_ranked_mean_log2fc <- function(result) {
   abline(h = c(-1, 1), lty = 2, lwd = qc_plot_lwd, col = adjustcolor("black", alpha.f = 0.55))
   text(max(x, na.rm = TRUE), 1, "+1", pos = 3, xpd = NA, cex = scales$key, font = 2, col = "#666666")
   text(max(x, na.rm = TRUE), -1, "-1", pos = 1, xpd = NA, cex = scales$key, font = 2, col = "#666666")
-  box()
+  ytab_base_axes()
   invisible(data)
 }
 
 plot_fitness_mean_log2fc_distribution <- function(result) {
   data <- fitness_mean_log2fc_data(result)
-  if (!nrow(data)) return(qc_plot_empty("Mean log2FC values are unavailable for this fitness result."))
+  if (!nrow(data)) return(qc_plot_empty("log2FC values are unavailable for this fitness result."))
   scales <- qc_plot_text_sizes()
   old <- qc_plot_par(mar = c(5.6, 6.0, 4.3, 2.2), mgp = c(3.2, 0.9, 0))
   on.exit(par(old), add = TRUE)
@@ -84,23 +86,25 @@ plot_fitness_mean_log2fc_distribution <- function(result) {
     breaks = 80,
     plot = FALSE
   )
+  border_par <- par(lwd = ytab_base_bar_lwd())  # rect() borders take par("lwd"), not the lwd argument
   plot(
     h,
     col = qc_plot_fill,
-    border = qc_plot_border,
-    lwd = qc_plot_lwd,
+    border = "black",
+    lwd = ytab_base_bar_lwd(),
     main = "Distribution of mean treated-versus-control log2FC",
-    xlab = "Mean log2FC",
+    xlab = "log2FC (treated / control)",
     ylab = "Number of genes/features",
     cex.main = scales$title,
     cex.lab = scales$axis,
     cex.axis = scales$sample
   )
+  par(border_par)
   if (qc_plot_grid_enabled()) abline(h = pretty(par("usr")[3:4]), col = "#e3e9ee", lty = 3, lwd = 1)
   abline(v = c(-1, 1), lty = 2, lwd = qc_plot_lwd, col = adjustcolor("black", alpha.f = 0.55))
   text(1, par("usr")[[4L]], "+1", pos = 1, xpd = NA, cex = scales$key, font = 2, col = "#666666")
   text(-1, par("usr")[[4L]], "-1", pos = 1, xpd = NA, cex = scales$key, font = 2, col = "#666666")
-  box()
+  ytab_base_axes()
   invisible(data)
 }
 
@@ -117,8 +121,9 @@ fitness_library_size_data <- function(result) {
   if (!"pool" %in% names(data)) data$pool <- NA
   condition <- tolower(as.character(data$condition))
   sample <- tolower(data$sample)
-  role <- ifelse(grepl("treated|zn|h2o2|1_5mm|1\\.5mm", sample), "Treated",
-                 ifelse(grepl("mock|control|parent", sample) | condition %in% c("parent", "control", "mock"), "Parent/mock", "Other"))
+  # Role from the sample sheet's condition, else generic words in the sample name (no project-specific names).
+  role <- ifelse(condition %in% c("treated", "treatment") | (is.na(condition) | !nzchar(condition)) & grepl("treated", sample), "Treated",
+                 ifelse(condition %in% c("parent", "control", "mock") | grepl("mock|control|parent", sample), "Parent/mock", "Other"))
   data$display_condition <- role
   data <- data[is.finite(data$total_feature_reads) & nzchar(data$sample), , drop = FALSE]
   pool_num <- suppressWarnings(as.numeric(as.character(data$pool)))
@@ -140,7 +145,7 @@ plot_fitness_library_sizes_feature_reads <- function(result, scope = "combined")
   if (!identical(scope, "combined")) data <- data[as.character(data$background) == scope, , drop = FALSE]
   if (!nrow(data)) return(qc_plot_empty("No feature-level library-size values match the selected background."))
   data <- data[order(data$background, data$.pool_order, data$display_condition, data$sample), , drop = FALSE]
-  labels <- qc_plot_display_labels(data$sample)
+  labels <- qc_plot_display_labels(data$sample, dirname(dirname(result$output_dir)))
   values <- data$total_feature_reads
   groups <- unique(data$display_condition)
   palette <- c("Parent/mock" = "#4b728f", "Treated" = "#b45f45", "Other" = "grey55")
@@ -159,6 +164,7 @@ plot_fitness_library_sizes_feature_reads <- function(result, scope = "combined")
   }
   qc_plot_par(mar = plot_margins)
   limit <- max(values, na.rm = TRUE) * 1.12
+  border_par <- par(lwd = ytab_base_bar_lwd())  # rect() borders take par("lwd"), not the lwd argument
   at <- barplot(
     values,
     names.arg = rep("", length(values)),
@@ -167,19 +173,20 @@ plot_fitness_library_sizes_feature_reads <- function(result, scope = "combined")
     xlim = if (horizontal) c(0, limit) else NULL,
     ylim = if (horizontal) NULL else c(0, limit),
     col = fills,
-    border = qc_plot_border,
-    lwd = qc_plot_lwd,
+    border = "black",
+    lwd = ytab_base_bar_lwd(),
     main = if (identical(scope, "combined")) "Feature-level library sizes — combined backgrounds" else paste("Feature-level library sizes —", scope),
     xlab = if (horizontal) "Total feature reads" else "",
     ylab = ""
   )
+  par(border_par)
   if (!horizontal) title(ylab = "Total feature reads", line = 7.0)
   qc_plot_add_grid(horizontal)
   if (horizontal) {
-    axis(1, labels = format(pretty(c(0, limit)), big.mark = ",", scientific = FALSE), at = pretty(c(0, limit)))
+    axis(1, labels = format(pretty(c(0, limit)), big.mark = ",", scientific = FALSE), at = pretty(c(0, limit)), lwd = 0, lwd.ticks = ytab_mm_lwd(get0("YTAB_TICK_MM", ifnotfound = .6)))
     qc_plot_draw_horizontal_labels(at, labels)
   } else {
-    axis(2, labels = format(pretty(c(0, limit)), big.mark = ",", scientific = FALSE), at = pretty(c(0, limit)), las = 1)
+    axis(2, labels = format(pretty(c(0, limit)), big.mark = ",", scientific = FALSE), at = pretty(c(0, limit)), las = 1, lwd = 0, lwd.ticks = ytab_mm_lwd(get0("YTAB_TICK_MM", ifnotfound = .6)))
     qc_plot_draw_vertical_labels(at, labels)
   }
   if (qc_plot_show_value_labels()) {
@@ -187,10 +194,10 @@ plot_fitness_library_sizes_feature_reads <- function(result, scope = "combined")
     if (horizontal) text(values, at, labels = value_labels, pos = 4, xpd = NA, font = 2, cex = qc_plot_value_cex(0.72))
     else text(at, values + max(values, na.rm = TRUE) * 0.018, labels = value_labels, pos = 3, xpd = NA, font = 2, cex = qc_plot_value_cex(0.72), srt = 30)
   }
-  box()
+  ytab_base_axes(ticks = integer())
   par(mar = c(0.2, 0.5, 0.2, 0.5))
   plot.new()
-  text(0.5, 0.82, "Values are total reads assigned to genomic features before CPM scaling.",
+  text(0.5, 0.82, paste0("Reads per library before normalization", if (nzchar(result$library_sizes_source %||% "")) paste0(" (", result$library_sizes_source, ")") else "", "."),
        cex = qc_plot_key_cex(0.82), col = "#666666", font = 2)
   legend(
     "bottom",
@@ -218,89 +225,10 @@ fitness_control_z_saved_data <- function(result) {
   data[is.finite(data$z) & nzchar(data$background), , drop = FALSE]
 }
 
-fitness_control_z_make_running <- function(cpm_wide, ctrl1, ctrl2, w = 40, minA = 0.1) {
-  c1 <- qc_plot_numeric(cpm_wide[[ctrl1]])
-  c2 <- qc_plot_numeric(cpm_wide[[ctrl2]])
-  ctrl_tab <- data.frame(
-    feature_id = as.character(cpm_wide$feature_id),
-    A_ctrl = (c1 + c2) / 2,
-    M_ctrl = log2((c1 + 1) / (c2 + 1)),
-    stringsAsFactors = FALSE
-  )
-  ctrl_tab <- ctrl_tab[order(ctrl_tab$A_ctrl, decreasing = TRUE), , drop = FALSE]
-  ctrl_tab$run_A <- slider::slide_dbl(ctrl_tab$A_ctrl, mean, .before = floor(w / 2), .after = floor(w / 2), .complete = TRUE)
-  ctrl_tab$run_SD <- slider::slide_dbl(ctrl_tab$M_ctrl, stats::sd, .before = floor(w / 2), .after = floor(w / 2), .complete = TRUE)
-  fit_dat <- ctrl_tab[is.finite(ctrl_tab$run_A) & is.finite(ctrl_tab$run_SD) & ctrl_tab$run_A >= minA & ctrl_tab$run_SD > 0, , drop = FALSE]
-  if (nrow(fit_dat) < 20) return(NULL)
-  lm0 <- stats::lm(log(run_SD) ~ log(run_A), data = fit_dat)
-  m3_start <- max(min(as.numeric(stats::coef(lm0)[[2]]), 0.3), -2.5)
-  m1_start <- as.numeric(stats::quantile(fit_dat$run_SD, 0.02, na.rm = TRUE))
-  x_ref <- as.numeric(stats::median(fit_dat$run_A, na.rm = TRUE))
-  y_ref <- as.numeric(stats::median(fit_dat$run_SD, na.rm = TRUE))
-  m2_start <- max((y_ref - m1_start) / (x_ref ^ m3_start), 1e-6)
-  fit <- minpack.lm::nlsLM(
-    run_SD ~ m1 + m2 * (run_A ^ m3),
-    data = fit_dat,
-    start = list(m1 = m1_start, m2 = m2_start, m3 = m3_start),
-    lower = c(m1 = 0, m2 = 0, m3 = -5),
-    upper = c(m1 = Inf, m2 = Inf, m3 = 0.5),
-    control = minpack.lm::nls.lm.control(maxiter = 500)
-  )
-  list(ctrl_tab = ctrl_tab, fit = fit)
-}
-
-fitness_control_z_sd_from_fit <- function(fit_obj, A) {
-  cf <- stats::coef(fit_obj)
-  pmax(cf[["m1"]] + cf[["m2"]] * (A ^ cf[["m3"]]), 1e-8)
-}
-
-fitness_control_z_derived_data <- function(result) {
-  if (!requireNamespace("slider", quietly = TRUE) || !requireNamespace("minpack.lm", quietly = TRUE)) return(data.frame())
-  path <- file.path(result$output_dir %||% "", "tables", "feature_reads_cpm.long.csv")
-  if (!file.exists(path)) return(data.frame())
-  data <- tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame())
-  required <- c("feature_id", "sample", "condition", "background", "cpm")
-  if (!nrow(data) || !all(required %in% names(data))) return(data.frame())
-  parents <- data[tolower(as.character(data$condition)) %in% c("parent", "control", "mock"), , drop = FALSE]
-  parents <- parents[nzchar(as.character(parents$background)) & nzchar(as.character(parents$sample)), , drop = FALSE]
-  if (!nrow(parents)) return(data.frame())
-  parent_controls <- split(parents$sample, as.character(parents$background))
-  parent_controls <- lapply(parent_controls, function(x) unique(as.character(x)))
-  parent_controls <- parent_controls[lengths(parent_controls) >= 2L]
-  if (!length(parent_controls)) return(data.frame())
-  wide <- reshape(
-    parents[, c("feature_id", "sample", "cpm"), drop = FALSE],
-    idvar = "feature_id",
-    timevar = "sample",
-    direction = "wide"
-  )
-  names(wide) <- sub("^cpm\\.", "", names(wide))
-  out <- lapply(names(parent_controls), function(background) {
-    controls <- parent_controls[[background]][seq_len(2L)]
-    if (!all(controls %in% names(wide))) return(data.frame())
-    model <- tryCatch(fitness_control_z_make_running(wide, controls[[1]], controls[[2]]), error = function(e) NULL)
-    if (is.null(model)) return(data.frame())
-    z <- model$ctrl_tab$M_ctrl / fitness_control_z_sd_from_fit(model$fit, model$ctrl_tab$A_ctrl)
-    data.frame(
-      background = background,
-      parent_comparison = paste(controls, collapse = "_vs_"),
-      feature_id = model$ctrl_tab$feature_id,
-      A_ctrl = model$ctrl_tab$A_ctrl,
-      M_ctrl = model$ctrl_tab$M_ctrl,
-      z = z,
-      stringsAsFactors = FALSE
-    )
-  })
-  out <- do.call(rbind, out)
-  if (is.null(out) || !nrow(out)) return(data.frame())
-  out[is.finite(out$z), , drop = FALSE]
-}
-
+# The pipeline's own control-control z (the noise model behind the call threshold); never refitted in the app.
 fitness_control_z_data <- function(result) {
   if (is.null(result) || !nzchar(result$output_dir %||% "")) return(data.frame())
-  saved <- fitness_control_z_saved_data(result)
-  if (nrow(saved)) return(saved)
-  fitness_control_z_derived_data(result)
+  fitness_control_z_saved_data(result)
 }
 
 fitness_control_z_scope_choices <- function(result) {
@@ -323,12 +251,13 @@ plot_fitness_control_control_z_histogram <- function(result, scope = "combined")
   scales <- qc_plot_text_sizes()
   old <- qc_plot_par(mar = c(5.5, 5.8, 4.4, 1.8))
   on.exit(par(old), add = TRUE)
+  border_par <- par(lwd = ytab_base_bar_lwd())  # rect() borders take par("lwd"), not the lwd argument
   hist(
     z,
     breaks = 100,
     col = qc_plot_fill,
-    border = qc_plot_border,
-    lwd = qc_plot_lwd,
+    border = "black",
+    lwd = ytab_base_bar_lwd(),
     main = if (identical(scope, "combined")) "Control-control z histogram — combined backgrounds" else paste("Control-control z histogram —", scope),
     xlab = "Control-control z-score",
     ylab = "Number of genes/features",
@@ -336,7 +265,9 @@ plot_fitness_control_control_z_histogram <- function(result, scope = "combined")
     cex.lab = scales$axis,
     cex.axis = scales$sample
   )
+  par(border_par)
   if (qc_plot_grid_enabled()) abline(h = pretty(par("usr")[3:4]), col = "#e3e9ee", lty = 3, lwd = 1)
+  ytab_base_axes()
   if (identical(scope, "combined")) {
     mtext("Combined view pools control-control z-scores across backgrounds; background-specific views remain available for model diagnostics.", side = 1, line = 4.2, cex = scales$key, col = "#666666")
   } else {

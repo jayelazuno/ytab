@@ -1,0 +1,25 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -N YTAB_Stage
+#$ -q UI
+#$ -pe smp 8
+#$ -M jayelazuno@uiowa.edu
+#$ -m e
+#$ -j y
+#$ -o YTAB_Stage.log
+
+# All standard pipeline stages use this shared batch entry point.
+# qsub -v PROJECT_ID=Gale_2020,STAGE=summary pipeline/hpc/ytab_stage.txt
+# The master supplies --plan/--stage and unique per-stage scheduler logs.
+set -euo pipefail
+YTAB="${YTAB:-/Users/jayelazuno/workspace/ytab}"
+source "$YTAB/pipeline/hpc/argon_environment.sh"
+SCRATCH_ROOT="${SCRATCH_ROOT:-/nfsscratch/jayelazuno/workspace/ytab_pipeline}"
+mkdir -p "$SCRATCH_ROOT"
+export TMPDIR
+TMPDIR=$(mktemp -d "$SCRATCH_ROOT/stage.${JOB_ID:-manual}.XXXXXX")
+export MPLBACKEND=Agg
+echo "Started: $(date); host=$(hostname); job=${JOB_ID:-manual}; slots=${NSLOTS:-unset}"
+echo "Temporary directory: $TMPDIR"
+exec "$PYTHON_BIN" "$YTAB/pipeline/hpc/argon_pipeline.py" execute "$@"

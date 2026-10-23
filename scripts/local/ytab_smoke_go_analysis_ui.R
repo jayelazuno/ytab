@@ -53,7 +53,7 @@ for (fn in c(
 
 ui <- paste(as.character(go_analysis_ui()), collapse = "\n")
 for (needle in c("Gene set", "GO enrichment", "Semantic reduction",
-                 "Current Fitness selected top hits", "Pasted genes",
+                 "Top hits from Condition Comparisons", "Pasted genes",
                  "Upload gene list CSV/TXT", "Comparison view", "Hit direction",
                  "Number of genes", "Run GO analysis",
                  "Download selected GO genes CSV", "Download topGO results CSV",
@@ -64,15 +64,15 @@ if (grepl("nav_panel(\"Downloads\"", ui, fixed = TRUE))
   fail("GO downloads should be embedded in result tabs, not a separate Downloads subtab")
 
 state <- navigation_state_defaults("go_analysis")
-stopifnot(state$active_go_analysis_subtab == "gene_set")
+stopifnot(state$active_top_tab == "gene_explorer", state$active_go_analysis_subtab == "gene_set")
 state <- record_navigation_selection(state, "go_analysis_tabs", "semantic_reduction")
 stopifnot(state$active_go_analysis_subtab == "semantic_reduction")
-stopifnot(navigation_nested_id_for_top("go_analysis") == "go_analysis_tabs")
+stopifnot(navigation_nested_id_for_top("gene_explorer") == "gene_explorer_tabs", "go_analysis_tabs" %in% names(navigation_inner_navsets))
 
 must_contain("app/shiny/app.R", "go_analysis.R", "GO source file")
 must_contain("app/shiny/app.R", "go_analysis_server(input, output, session", "GO server call")
-must_contain("app/shiny/R/ui_workspace.R", "GO Analysis", "GO workspace tab")
-must_contain("app/shiny/www/ytab_nav_menus.js", "go_analysis", "GO navigation menu")
+must_contain("app/shiny/R/ui_workspace.R", "GO Enrichment", "GO subtab of Gene Explorer")
+must_contain("app/shiny/www/ytab_nav_menus.js", "GO Enrichment", "GO navigation menu")
 must_contain("app/shiny/R/job_manager.R", "\"go_analysis\"", "GO progress job support")
 must_contain("app/shiny/R/go_analysis.R", "Concordance filter", "GO selected-hit concordance label")
 must_contain("app/shiny/R/go_analysis.R", "go_fitness_min_support", "GO selected-hit concordance control")

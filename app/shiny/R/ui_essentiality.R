@@ -1,5 +1,5 @@
 essentiality_stage_labels <- c(
-  normalize = "Normalize & Choose Target",
+  normalize = "MidLC normalization",
   evaluate = "Evaluate",
   combine = "Combine",
   combined_summary = "Combined Summary",
@@ -132,14 +132,13 @@ essentiality_classifier_configuration_ui <- function() {
 essentiality_normalize_ui <- function() {
   tagList(
     panel_card(
-      "Normalize & Choose Target",
+      "MidLC",
       tags$p(class = "ytab-stage-purpose",
              title = "The normalization target is a MidLC depth target, not a percent. YTAB down-samples libraries only when needed and never upsamples.",
-             "Choose the recommended MidLC target, then continue."),
+             "MidLC down-samples each library to a common depth target. It is one normalization among the others: choose it where a normalization is chosen (for example the hybrid essentiality model), and its recommended target is used."),
       tags$section(
         class = "ytab-review-section",
-        uiOutput("normalization_recommendation_card"),
-        uiOutput("essentiality_target_selection")
+        uiOutput("normalization_recommendation_card")
       ),
       tags$details(class="ytab-more-options",tags$summary("Run workflow steps"),
         uiOutput("normalization_run_panel"),
@@ -280,11 +279,12 @@ essentiality_results_ui <- function() {
   )
 }
 
-essentiality_ui <- function() {
+# Superseded by essentiality_module_ui() (Run / Results / Hybrid Inputs); kept as an alias.
+essentiality_ui <- function() essentiality_module_ui()
+
+essentiality_ui_classifier_layout <- function() {
   navset_tab(
     id = "essentiality_tabs",
-    nav_panel("Normalize & Choose Target", value = "normalize",
-              essentiality_normalize_ui()),
     nav_panel("Combine Parents", value = "combine", essentiality_combine_ui()),
     nav_panel("Combined Summary", value = "combined_summary",
               essentiality_combined_summary_ui()),

@@ -67,15 +67,15 @@ go_analysis_gene_set_table <- function(selected_hits = data.frame(),
       if ("feature_id" %in% names(x)) x$feature_id else "",
       if ("Original feature ID" %in% names(x)) x[["Original feature ID"]] else "",
       if ("cagl_display_id" %in% names(x)) x$cagl_display_id else "",
-      if ("CAGL ID" %in% names(x)) x[["CAGL ID"]] else "",
+      if ("Gene ID" %in% names(x)) x[["Gene ID"]] else "",
       if ("gene_display_name" %in% names(x)) x$gene_display_name else "",
       if ("Gene name" %in% names(x)) x[["Gene name"]] else ""
     )
-    out <- data.frame(input_gene = id, source = "Current Fitness selected top hits",
+    out <- data.frame(input_gene = id, source = "Top hits from Condition Comparisons",
                       stringsAsFactors = FALSE)
     if ("selected_rank" %in% names(x)) out$Rank <- x$selected_rank
     if ("hit_direction" %in% names(x)) out$`Hit direction` <- x$hit_direction
-    if ("cagl_display_id" %in% names(x)) out$`CAGL ID` <- x$cagl_display_id
+    if ("cagl_display_id" %in% names(x)) out$`Gene ID` <- x$cagl_display_id
     if ("gene_display_name" %in% names(x)) out$`Gene name` <- x$gene_display_name
     out <- out[nzchar(trimws(out$input_gene)), , drop = FALSE]
     return(out[!duplicated(out$input_gene), , drop = FALSE])
@@ -120,15 +120,16 @@ go_analysis_selected_hit_display_table <- function(data) {
     out[[nm]] <- round(as.numeric(out[[nm]]), 3)
   }
   names(out)[names(out) == "selected_rank"] <- "Rank"
-  names(out)[names(out) == "cagl_display_id"] <- "CAGL ID"
+  names(out)[names(out) == "cagl_display_id"] <- "Gene ID"
   names(out)[names(out) == "gene_display_name"] <- "Gene name"
-  names(out)[names(out) == "cg_to_sc_relationship_display"] <- "Cg-to-Sc relationship"
+  names(out)[names(out) == "cg_to_sc_relationship_display"] <- "S. cerevisiae orthology"
   names(out)[names(out) == "hit_direction"] <- "Hit direction"
   names(out)[names(out) == "pair"] <- "Pair"
-  names(out)[names(out) == "log2fc"] <- "Directional log2FC"
-  names(out)[names(out) == "mean_abundance"] <- "CPM/read support"
-  names(out)[names(out) == "rank_z_strength"] <- "Local z-score support"
+  names(out)[names(out) == "log2fc"] <- "log2FC"
+  names(out)[names(out) == "mean_abundance"] <- "Abundance (per million)"
+  names(out)[names(out) == "rank_z_strength"] <- "|z|"
   names(out)[names(out) == "supporting_pool_ids"] <- "Supporting pool IDs"
+  if ("Pair" %in% names(out) && all(is.na(out$Pair) | !nzchar(as.character(out$Pair)))) out$Pair <- NULL   # combined view: no pair
   out
 }
 
@@ -317,6 +318,7 @@ go_analysis_plot_top_terms <- function(data, ontology = "BP", top_n = 15L,
       ) +
       ggplot2::theme_bw(base_size = text_size) +
       ggplot2::theme(
+        plot.title.position = "plot",
         panel.grid.major.y = ggplot2::element_blank(),
         panel.grid.minor = ggplot2::element_blank(),
         panel.grid.major.x = if (show_grid) ggplot2::element_line(color = grid_color, linewidth = 0.35) else ggplot2::element_blank(),
@@ -326,6 +328,8 @@ go_analysis_plot_top_terms <- function(data, ontology = "BP", top_n = 15L,
         axis.text.y = ggplot2::element_text(face = "bold", color = "black", size = max(9, text_size - 2), margin = ggplot2::margin(r = 10)),
         plot.margin = ggplot2::margin(t = 14, r = 34, b = 18, l = 46)
       )
+    # House style (black bar borders, bold black axis labels, axis lines; none on the heatmap) when the app defines it.
+    if (exists("ytab_style_ggplot", mode = "function")) p <- ytab_style_ggplot(p)
     print(p)
     return(invisible(p))
   }
@@ -406,6 +410,8 @@ go_analysis_plot_semantic_heatmap <- function(data, text_size = 13L, top_n = 35L
         legend.position = "right",
         plot.margin = ggplot2::margin(t = 14, r = 34, b = 18, l = 52)
       )
+    # House style (black bar borders, bold black axis labels, axis lines; none on the heatmap) when the app defines it.
+    if (exists("ytab_style_ggplot", mode = "function")) p <- ytab_style_ggplot(p)
     print(p)
     return(invisible(p))
   }
@@ -442,7 +448,7 @@ go_analysis_ui <- function() {
       ytab_two_column_layout(
         controls = ytab_control_panel("GO analysis setup",
           radioButtons("go_gene_source", "Gene source",
-            choices = c("Current Fitness selected top hits" = "fitness",
+            choices = c("Top hits from Condition Comparisons" = "fitness",
                         "Paste gene list" = "paste",
                         "Upload gene list" = "upload"),
             selected = "fitness"),
@@ -468,7 +474,7 @@ go_analysis_ui <- function() {
           ),
           conditionalPanel("input.go_gene_source == 'paste'",
             textAreaInput("go_pasted_genes", "Pasted genes", rows = 5,
-                          placeholder = "CAGL IDs, GWK60 IDs, S. cerevisiae ORFs, or gene names")
+                          placeholder = "Gene IDs, S. cerevisiae ORFs or gene names")
           ),
           conditionalPanel("input.go_gene_source == 'upload'",
             fileInput("go_gene_file", "Upload gene list CSV/TXT", accept = c(".csv", ".tsv", ".txt"))
@@ -579,8 +585,8 @@ go_analysis_server <- function(input, output, session, repo_root, active,
 
   output$go_fitness_result_selector <- renderUI({
     result <- go_fitness_result()
-    if (is.null(result)) return(tags$p(class = "text-muted", "No Fitness result is available for selected-hit gene sets."))
-    tags$p(class = "text-muted", sprintf("Fitness result: %s", basename(result$output_dir %||% "")))
+    if (is.null(result)) return(tags$p(class = "text-muted", "No z-score result is available for a top-hit gene set; run one in Condition Comparisons."))
+    tags$p(class = "text-muted", sprintf("Result: %s", fitness_result_display_name(result)))
   })
 
   output$go_fitness_pair_control <- renderUI({
@@ -607,7 +613,7 @@ go_analysis_server <- function(input, output, session, repo_root, active,
     if (!identical(input$go_gene_source %||% "fitness", "fitness")) return(NULL)
     x <- go_fitness_selected_hits()
     if (!nrow(x)) return(tags$p(class = "text-muted", "No Fitness selected hits pass the current GO gene-set controls."))
-    tags$p(class = "text-muted", sprintf("%d Fitness selected hits will be used as GO target genes.", nrow(x)))
+    tags$p(class = "text-muted", sprintf("%d top hits will be used as GO target genes.", nrow(x)))
   })
 
   output$go_gene_set_summary <- renderUI({

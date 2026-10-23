@@ -1,0 +1,13 @@
+{
+  "built": "2026-10-21",
+  "script_sha256": "f0ef28fc7a85b4010cf05b0c8bc5874148e1f5a6aaf5188c2e3d4d86296294c5",
+  "urls": {
+    "reference": "http://sgd-archive.yeastgenome.org/sequence/S288C_reference/genome_releases/S288C_reference_genome_Current_Release.tgz",
+    "sgd_phenotypes": "https://downloads.yeastgenome.org/curation/literature/phenotype_data.tab"
+  },
+  "files": {
+    "S288C_current.tgz": "9a7961d7e95b354dbda344c95097676c4f501d15f02831afc770de96417350a1",
+    "SGD_phenotype_data.tab.gz": "691f81bedc14fa7f1638f8e073ecbe3f98f9d270622fe43b69cd0d9a7ee1381a"
+  },
+  "release": "R64-5-1_20240529"
+}

@@ -17,7 +17,7 @@ ytab_gene_details_datatable <- function(data, page_length = 10L, filter = "none"
   if (!is.data.frame(data)) data <- data.frame()
   detail_cols <- c(".ytab_gene_detail_name", ".ytab_sgd_description", ".ytab_sgd_essentiality")
   for (col in detail_cols) if (!col %in% names(data)) data[[col]] <- rep("", nrow(data))
-  clickable <- which(names(data) %in% c("CAGL ID", "Gene name")) - 1L
+  clickable <- which(names(data) %in% c("Gene ID", "Gene name")) - 1L
   hidden <- match(detail_cols, names(data)) - 1L
   if (!length(clickable)) {
     return(DT::datatable(data[, setdiff(names(data), detail_cols), drop = FALSE],
@@ -34,6 +34,10 @@ ytab_gene_details_datatable <- function(data, page_length = 10L, filter = "none"
   )
   if (!is.null(order)) options$order <- order
   options$columnDefs <- column_defs
+  # A row without a gene (intergenic, no alignment) has nothing to open: its name cells are not links.
+  id_col <- match("Gene ID", names(data)) - 1L
+  if (!is.na(id_col) && is.null(options$rowCallback)) options$rowCallback <- DT::JS(sprintf(
+    "function(row, data) { var id = data[%d]; if (id === null || id === undefined || !String(id).trim()) $(row).find('td.ytab-gene-detail-toggle').removeClass('ytab-gene-detail-toggle'); }", id_col))
   options$pageLength <- options$pageLength %||% page_length
   options$scrollX <- options$scrollX %||% TRUE
   callback <- DT::JS(sprintf(

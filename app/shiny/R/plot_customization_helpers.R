@@ -57,7 +57,8 @@ ytab_plot_customization_controls <- function(
     default_width = "standard",
     default_bar_orientation = "vertical",
     default_label_angle = "30",
-    default_show_value_labels = TRUE) {
+    default_show_value_labels = TRUE,
+    open = TRUE) {
   ns_id <- function(suffix) paste0(id, "_", suffix)
   controls <- list(
     selectInput(ns_id("plot_style"), "Plot style", as.list(ytab_plot_style_choices()), selected = "clean"),
@@ -102,7 +103,9 @@ ytab_plot_customization_controls <- function(
   }
   tags$details(
     class = "ytab-plot-controls",
-    open = "open",
+    open = if (isTRUE(open)) "open",
+    # reports open/closed as input$<id>_display_open, so a rebuilt panel can reopen as the viewer left it
+    ontoggle = sprintf("if (window.Shiny && Shiny.setInputValue) Shiny.setInputValue('%s', this.open);", ns_id("display_open")),
     tags$summary("Plot display options"),
     tags$div(class = "ytab-control-grid", controls),
     tags$p(class = "ytab-display-only-note",
@@ -135,6 +138,8 @@ ytab_plot_customization_values <- function(input, id) {
 ytab_with_plot_display_options <- function(input, id, expr) {
   get <- function(suffix, fallback = NULL) input[[paste0(id, "_", suffix)]] %||% fallback
   old <- options(
+    scipen = 999,
+    ytab.plot.count_scale = get("count_scale", "thousands"),
     ytab.plot.style = get("plot_style", "clean"),
     ytab.plot.text_size = get("text_size", "medium"),
     ytab.plot.label_angle = get("label_angle", "30"),

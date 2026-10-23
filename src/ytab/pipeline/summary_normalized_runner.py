@@ -18,7 +18,7 @@ from .normalization_runner import (
     load_project_for_normalization,
     normalize_target_tag,
 )
-from .summary_table_runner import STATS_MAP
+from .summary_table_runner import STATS_MAP, feature_db_args, feature_db_errors
 
 
 STATUS_FIELDS = [
@@ -181,11 +181,7 @@ def validate_summary_normalized_inputs(
     annotation = reference["gff"] or reference["gtf"] or reference["feature_table"]
     if annotation is None or not annotation.is_file():
         errors.append("No feature table, GFF, or GTF is available. Fix reference resources first.")
-    if config.get("species") == "glabrata":
-        if not reference["fasta"] or not reference["fasta"].is_file():
-            errors.append("Reference FASTA is missing. Fix reference resources first.")
-        if not reference["gff"] or not reference["gff"].is_file():
-            errors.append("Glabrata GFF is missing. Fix reference resources first.")
+    errors.extend(feature_db_errors(config, reference))
     for info in target_infos:
         for sample in selected_samples:
             path = find_normalized_hits_file(config, info["target_tag"], sample)
@@ -208,13 +204,9 @@ def build_summary_normalized_command(
     command = [
         sys.executable, str(root / "src" / "ytab" / "summary" / "SummaryTable.py"),
         "--input-dir", str(hits.parent), "--hit-glob", hits.name,
-        "--output-dir", str(output), "--feature-db", str(config["species"]),
+        "--output-dir", str(output), *feature_db_args(config, reference),
         "--threads", str(selected_threads), "--overwrite",
     ]
-    if config.get("species") == "glabrata":
-        command.extend(["--feature-gff", str(reference["gff"]), "--reference-fasta", str(reference["fasta"])])
-        if reference["orthology_file"] and reference["orthology_file"].is_file():
-            command.extend(["--scer-orthologs", str(reference["orthology_file"])])
     return command
 
 

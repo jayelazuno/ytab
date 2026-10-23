@@ -68,7 +68,8 @@ progress_stage_label <- function(stage) {
               summary_normalized="Normalized SummaryTable",
               combined_hits="Combine Parent Libraries",
               summary_combined="Combined SummaryTable",
-              classifier="Essentiality Classifier")
+              classifier="Essentiality Classifier",
+              `Fitness Analysis`="Z-score analysis")
   if (length(stage) == 1L && stage %in% names(labels)) unname(labels[[stage]]) else stage
 }
 progress_display_metrics <- function(progress) {dry<-isTRUE(progress$dry_run)||identical(progress$status,"dry_run_success");list(validated=if(dry)progress$processed_items%||%0 else 0,scientific_completed=if(dry)0 else (progress$successful_items%||%0)+(progress$skipped_items%||%0),executed=if(dry)0 else progress$successful_items%||%0,progress_label=if(dry)"Dry-run validation progress"else"Confirmed processing progress",cancel_active=progress$status%in%c("queued","starting","running"),dismiss_available=!progress$status%in%c("queued","starting","running"))}

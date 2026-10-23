@@ -66,6 +66,15 @@ def load_project_for_mapping(project_config: Path) -> dict:
         with sample_sheet.open(newline="", encoding="utf-8") as handle:
             config["samples"] = list(csv.DictReader(handle))
 
+    if config.get("fastq_paths_relative_to") == "fastq_dir":
+        base = _resolve(config.get("fastq_dir"), repo_root)
+        if base is None:
+            raise ValueError("FASTQ-relative sample paths require fastq_dir.")
+        for sample in config.get("samples", []):
+            for key in ("fastq_1", "fastq_2"):
+                if sample.get(key):
+                    sample[key] = str(_resolve(sample[key], base))
+
     reference_path = config_path.with_name("reference_resolved.json")
     if reference_path.is_file():
         with reference_path.open(encoding="utf-8") as handle:
@@ -81,7 +90,8 @@ def get_included_samples(config: dict) -> list[dict]:
     return [dict(sample) for sample in config.get("samples", []) if _as_bool(sample.get("include", True))]
 
 
-def validate_mapping_inputs(config: dict) -> list[str]:
+def validate_mapping_inputs(config: dict, samples: list[str] | None = None) -> list[str]:
+    """Check the project and the given samples (default: every included sample)."""
     errors: list[str] = []
     root = Path(config["_repo_root"])
     try:
@@ -96,10 +106,11 @@ def validate_mapping_inputs(config: dict) -> list[str]:
     if prefix is None or not _index_complete(prefix):
         errors.append("No complete Bowtie2 index found. Run reference preparation before alignment.")
 
-    samples = get_included_samples(config)
-    if not samples:
+    included = get_included_samples(config)
+    if not included:
         errors.append("No included samples were found in the sample sheet.")
-    for sample in samples:
+    # Only the samples being run need inputs here: others may have been processed elsewhere (e.g. on the HPC).
+    for sample in [s for s in included if samples is None or str(s.get("sample")) in samples]:
         settings = {**(config.get("mapping") or {}), **{k:v for k,v in sample.items() if v not in (None, "")}}
         name = str(sample.get("sample") or "")
         if not name:
@@ -405,7 +416,7 @@ def run_mapfastq_project(
         for key,value in (("junction_mate",junction_mate),("require_mate_alignment",require_mate_alignment),("hermes_cleanup",hermes_cleanup)):
             if value is not None:
                 sample[key]=value
-    errors = validate_mapping_inputs(config)
+    errors = validate_mapping_inputs(config, samples)
     if errors:
         raise ValueError("\n".join(errors))
     included = get_included_samples(config)

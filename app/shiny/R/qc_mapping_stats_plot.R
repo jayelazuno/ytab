@@ -24,7 +24,7 @@ plot_qc_mapping_stats_legacy_stacked <- function(project) {
   )
   mapped_mapq <- qc_plot_numeric(qc_plot_column(data, mapq_source))
   raw_labels <- as.character(data$sample)
-  labels <- qc_plot_display_labels(raw_labels)
+  labels <- qc_plot_display_labels(raw_labels, project)
   horizontal <- qc_plot_bar_horizontal(raw_labels)
   show_values <- qc_plot_show_value_labels()
   label_angle <- qc_plot_label_angle()
@@ -184,7 +184,7 @@ plot_qc_mapping_stats <- function(project, metric = "read_counts") {
   mapped_mapq <- qc_plot_numeric(qc_plot_column(data, mapq_source))
 
   raw_labels <- as.character(data$sample)
-  labels <- qc_plot_display_labels(raw_labels)
+  labels <- qc_plot_display_labels(raw_labels, project)
   horizontal <- qc_plot_bar_horizontal(raw_labels)
   show_values <- qc_plot_show_value_labels()
   label_angle <- qc_plot_label_angle()

@@ -1,0 +1,41 @@
+The phenotype_data.tab files contain the phenotype data for all the
+features in CGD.  Individual species have their own phenotype file in this 
+directory.  The format is a tab-delimited table with the following columns:
+
+1) Feature Name (Mandatory)		-The feature name of the gene
+2) Feature Type (Mandatory)		-The feature type of the gene	
+3) Gene Name (Optional)			-The standard name of the gene
+4) CGDID (Mandatory)			-The CGDID of the gene
+5) Reference (CGD_REF Required,         -PMID: ####|CGD_REF: #### (separated by pipe)(one reference per row)
+              PMID optional)				
+6) Experiment Type (Mandatory)		-The method used to detect and analyze the phenotype
+7) Mutant Type (Mandatory) 		-Description of the impact of the mutation on activity of the gene product
+8) Allele (Optional)			-Allele name and description, if applicable
+9) Strain background (mandatory) 	-Genetic background in which the phenotype was analyzed
+10) Phenotype (Mandatory)		-The feature observed and the direction of change relative to wild type
+11) Chemical (Optional)			-Any chemicals relevant to the phenotype
+12) Condition (Optional)		-Condition under which the phenotype was observed
+13) Details (Optional)			-Details about the phenotype
+14) Reporter (Optional)			-The protein(s) or RNA(s) used in an experiment to track a process
+15) Anatomical Structure (Optional)     -The Fungal Anatomy Ontology term
+                                         that denotes the affected structure for an anatomical phenotype
+16) Virulence Model (Optional)		-The model system used to assess the virulence of a mutant
+17) Species
+
+
+The content of the file is updated weekly. For further details about
+how phenotype information is recorded, please see:
+
+http://www.candidagenome.org/help/PhenoHelp.shtml
+
+Please note that prior to February 24, 2010, CGD mutant phenotype data
+were provided in a file named 'phenotypes_for_all_features.tab', whose
+format was as follows:
+
+- systematic name
+- standard name
+- primary CGDID
+- mutant type 
+- mutant phenotype
+- notes
+- reference (PMID)

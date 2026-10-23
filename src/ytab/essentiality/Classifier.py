@@ -9,20 +9,21 @@ This file is a Python3-compatible update of the original Levitan/Berman-lab
   unpacking in def, lambda arg unpacking, cPickle, sklearn.cross_validation).
 - A new **table mode** is added so you can:
     * Train on S. cerevisiae (resources / Organisms) and
-    * Classify one or more **C. glabrata BG2 feature tables** (e.g. *.feature_table.RDF_1.csv)
+    * Classify one or more SummaryTable feature tables of any species (e.g. *.feature_table.RDF_1.csv)
     * Output per-library tables.xlsx AND optionally a combined table across libraries
-    * Optionally join BG2↔Scer orthology (your C_glabrata_BG2_S_cerevisiae_orthologs.txt)
+    * Optionally join S. cerevisiae orthologs (the species' annotation/gene_annotation.tsv, glabrata's
+      C_glabrata_BG2_S_cerevisiae_orthologs.txt or a CGD ortholog table)
 
 USAGE 
 ------------------------------------------------------
 python3 Classifier.py \
-  --mode scer-train-gla-classify \
-  --gla-feature-glob "/path/to/04.summary/*/*.feature_table.RDF_1.csv" \
+  --mode scer-train-classify --species albicans \
+  --feature-glob "/path/to/04.summary/*/*.feature_table.RDF_1.csv" \
   --out-dir "/path/to/06.classifier" \
   --threads 32 \
   --target-fpr 0.10 \
   --combine \
-  --orthology-file "/path/to/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  --orthology-file "/path/to/resources/species/<species>/annotation/gene_annotation.tsv"
   --overwrite \
 
 USAGE in legacy paper mode; runs the original main() logic
@@ -31,7 +32,7 @@ python3 Classifier.py --mode legacy-paper
 
 NOTES
 -----
-1) Table mode expects glabrata feature tables with columns at least:
+1) Table mode expects SummaryTable feature tables (any species) with columns at least:
    standard_name, coding_length, hits, reads, neighborhood_index,
    freedom_index, upstream_hits_100
    (If coding_length is present, we map it to "length" used by feature groups.)
@@ -138,6 +139,17 @@ def _glob_existing(patterns, label="files"):
 
 
 @Shared.memoized
+def _default_scer_orthology_file(species=None):
+    """S. cerevisiae orthologs of a species: its annotation/gene_annotation.tsv (ytab_build_species_resources.py), else
+    its *S_cerevisiae_orthologs* file; without a species, glabrata's BG2 file (the earlier default)."""
+    if not species:
+        return _default_bg2_scer_orthology_file()
+    base = Shared.get_dependency(species)
+    candidates = [os.path.join(base, "annotation", "gene_annotation.tsv")]
+    candidates += sorted(glob.glob(os.path.join(base, "*S_cerevisiae_orthologs*.txt")))
+    return _first_existing_file(candidates, label=f"S. cerevisiae orthology file for {species}")
+
+
 def _default_bg2_scer_orthology_file():
     """
     Default BG2↔S. cerevisiae orthology file under the YTAB resource tree.
@@ -810,7 +822,7 @@ def write_ortholog_excel(orth_df, calb_fprs_df, scer_fprs_df, spom_fprs_df, outp
 
 
 # ============================================================
-# NEW: pipeline-agnostic "table mode" for glabrata classification
+# NEW: pipeline-agnostic "table mode": S. cerevisiae training, any species classified
 # ============================================================
 class TableFeature(object):
     """
@@ -876,6 +888,35 @@ def _read_any_table(path):
 
     return df
 
+def load_scer_orthology_map(orth_file):
+    """Gene ID -> S. cerevisiae orthologs, from any of three formats:
+    - species gene_annotation.tsv: gene_id, scer_gene_id, scer_gene_name (';'-separated when several);
+    - glabrata BG2 table: cglab_id, scer_id, scer_gene_name, Orthogroup, scer_sgdid;
+    - CGD ortholog table (no header): gene, gene name, CGDID, S. cerevisiae systematic name, gene name, SGDID.
+    Same output as load_bg2_scer_orthology_map."""
+    with open(orth_file) as fh:
+        header = next((line for line in fh if not line.startswith("#")), "").rstrip("\n").split("\t")
+    if "cglab_id" in header:
+        return load_bg2_scer_orthology_map(orth_file)
+    if "gene_id" in header and "scer_gene_id" in header:
+        table = pd.read_csv(orth_file, sep="\t", dtype=str, keep_default_na=False)
+        rows = ((r["gene_id"], r["scer_gene_id"].split(";"), r.get("scer_gene_name", "").split(";"), "") for _, r in table.iterrows())
+    else:
+        table = pd.read_csv(orth_file, sep="\t", comment="#", header=None, dtype=str, keep_default_na=False)
+        grouped = {}
+        for r in table.itertuples(index=False):
+            g = grouped.setdefault(r[0], ([], [], []))
+            g[0].append(r[3]); g[1].append(r[4]); g[2].append(r[5] if len(r) > 5 else "")
+        rows = ((gene, ids, names, ";".join(sgd)) for gene, (ids, names, sgd) in grouped.items())
+    out = {}
+    for gene, ids, names, sgdid in rows:
+        ids = [x for x in dict.fromkeys(i.strip() for i in ids) if x]
+        names = [n.strip() for n in names]
+        out[str(gene)] = {"scer_id": ids[0] if ids else "", "scer_id_list": ids,
+                          "scer_gene_name": names[0] if names and ids else "", "Orthogroup": "", "scer_sgdid": sgdid}
+    return out
+
+
 def load_bg2_scer_orthology_map(orth_file):
     """
     Expected columns (minimum): cglab_id, scer_id
@@ -907,9 +948,9 @@ def load_bg2_scer_orthology_map(orth_file):
     return out
 
 
-def read_glabrata_feature_table_as_records(feature_table_csv, orth_map=None):
+def read_feature_table_as_records(feature_table_csv, orth_map=None):
     """
-    Reads BG2 *.feature_table.RDF_1.csv into "record" dicts compatible with run_pipeline.
+    Reads a SummaryTable *.feature_table.RDF_1.csv (any species) into "record" dicts compatible with run_pipeline.
     """
     orth_map = orth_map or {}
     df = _read_any_table(feature_table_csv)
@@ -1134,32 +1175,32 @@ def _table_mode_scer_training_cols_config():
         cfg.append(c)
 
     return cfg
-def main_table_mode_scer_train_gla_classify(args):
+def main_table_mode_scer_train_classify(args):
     Shared.make_dir(args.out_dir)
 
     # Build Scer training from resources
     _cer_all, train_ess, train_non = build_scer_training_records_from_dependencies()
 
-    # Load orthology map: use explicit CLI path if provided, otherwise try the
-    # default file under resources/species/glabrata/.
+    # Load orthology map: use explicit CLI path if provided, otherwise the species' default
+    # (annotation/gene_annotation.tsv or its S. cerevisiae ortholog file; glabrata's BG2 file without --species).
     orth_map = {}
     orthology_file = args.orthology_file or None
     if orthology_file is None:
         try:
-            orthology_file = _default_bg2_scer_orthology_file()
+            orthology_file = _default_scer_orthology_file(getattr(args, "species", None))
         except FileNotFoundError:
             orthology_file = None
 
     if orthology_file:
-        orth_map = load_bg2_scer_orthology_map(orthology_file)
+        orth_map = load_scer_orthology_map(orthology_file)
 
-    # Collect glabrata feature tables
+    # Collect the feature tables to classify
     gla_tables = list(args.gla_feature_table or [])
     if args.gla_feature_glob:
         gla_tables.extend(glob.glob(args.gla_feature_glob))
     gla_tables = sorted(set(gla_tables))
     if not gla_tables:
-        raise RuntimeError("No glabrata feature tables found. Use --gla-feature-table or --gla-feature-glob")
+        raise RuntimeError("No feature tables found. Use --feature-table or --feature-glob")
 
     # Build datasets
     class_datasets = OrderedDict()
@@ -1168,7 +1209,7 @@ def main_table_mode_scer_train_gla_classify(args):
     for p in gla_tables:
         label = os.path.basename(p)
         label = re.sub(r"\.feature_table\.RDF_1\.csv$", "", label)
-        recs = read_glabrata_feature_table_as_records(p, orth_map=orth_map)
+        recs = read_feature_table_as_records(p, orth_map=orth_map)
         per_lib_records[label] = recs
         class_datasets[label] = (recs,)  # single dataset per label
 
@@ -1257,7 +1298,7 @@ def main_table_mode_scer_train_gla_classify(args):
             .agg(score_mean=("score", "mean"), n_libs=("library", "nunique"))
             .reset_index()
         )
-        comb.to_csv(os.path.join(args.out_dir, "combined_glabrata_RF-G4.tsv"), sep="\t", index=False)
+        comb.to_csv(os.path.join(args.out_dir, "combined_RF-G4.tsv"), sep="\t", index=False)
 
 
 # ============================================================
@@ -2059,7 +2100,8 @@ COLS_CONFIG = [
     {
         "field_name": "feature",
         "csv_name": "Sc std name",
-        "format": lambda f: Organisms.cer.feature_db.get_feature_by_name(sorted(f.cerevisiae_orthologs)[0]).standard_name
+        # empty when the ortholog is not in the SGD feature table (not the feature object's repr)
+        "format": lambda f: getattr(Organisms.cer.feature_db.get_feature_by_name(sorted(f.cerevisiae_orthologs)[0]), "standard_name", "")
         if len(getattr(f, "cerevisiae_orthologs", [])) > 0
         else "",
     },
@@ -2140,8 +2182,8 @@ def _parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "--mode",
-        default="scer-train-gla-classify",
-        choices=["scer-train-gla-classify", "legacy-paper"],
+        default="scer-train-classify",
+        choices=["scer-train-classify", "scer-train-gla-classify", "legacy-paper"],
         help="Run new table mode or the original hard-coded legacy main().",
     )
     ap.add_argument("--out-dir", default=None, help="Output directory (table mode).")
@@ -2150,13 +2192,15 @@ def _parse_args():
     ap.add_argument("--target-fpr", type=float, default=0.10, help="Target FPR used for verdict threshold selection.")
     ap.add_argument("--include-lr", action="store_true", help="Also run LogisticRegression in table mode.")
 
-    ap.add_argument("--gla-feature-table", action="append", default=[], help="Path to one glabrata feature_table.RDF_1.csv (repeatable).")
-    ap.add_argument("--gla-feature-glob", default=None, help="Glob for glabrata feature_table.RDF_1.csv files.")
-    ap.add_argument("--orthology-file", default=None, help="BG2↔Scer orthology TSV. If omitted, YTAB will look under resources/species/glabrata/ by default.")
+    ap.add_argument("--feature-table", "--gla-feature-table", dest="gla_feature_table", action="append", default=[],
+                    help="Path to one SummaryTable feature_table.RDF_1.csv of any species (repeatable).")
+    ap.add_argument("--feature-glob", "--gla-feature-glob", dest="gla_feature_glob", default=None, help="Glob for feature_table.RDF_1.csv files.")
+    ap.add_argument("--species", default=None, help="Species of the feature tables (resources/species/<species>); sets the default orthology file.")
+    ap.add_argument("--orthology-file", default=None, help="S. cerevisiae orthologs: gene_annotation.tsv, glabrata BG2 table or CGD ortholog table. Default: the species' file (glabrata's BG2 file without --species).")
     ap.add_argument("--calb-source-figure-dir", default=None, help="Optional legacy source-figure directory for Calb. If omitted, YTAB will try resources/figures/Calb and skip figure copying if absent.")
     ap.add_argument("--scer-source-figure-dir", default=None, help="Optional legacy source-figure directory for Scer. If omitted, YTAB will try resources/figures/Scer and skip figure copying if absent.")
     ap.add_argument("--spom-source-figure-dir", default=None, help="Optional legacy source-figure directory for Spom. If omitted, YTAB will try resources/figures/Spom and skip figure copying if absent.")
-    ap.add_argument("--combine", action="store_true", help="Also write combined_glabrata_RF-G4.tsv (mean score across libraries).")
+    ap.add_argument("--combine", action="store_true", help="Also write combined_RF-G4.tsv (mean score across libraries).")
     ap.add_argument("--overwrite", action="store_true", help="Allow overwriting an existing output directory / outputs.",)
 
     return ap.parse_args()
@@ -2175,6 +2219,10 @@ def prepare_out_dir(out_dir: str, overwrite: bool):
 
     os.makedirs(out_dir, exist_ok=True)
 
+# Earlier names, kept for callers that import them.
+read_glabrata_feature_table_as_records = read_feature_table_as_records
+main_table_mode_scer_train_gla_classify = main_table_mode_scer_train_classify
+
 if __name__ == "__main__":
     args = _parse_args()
 
@@ -2187,9 +2235,10 @@ if __name__ == "__main__":
 
         if not args.gla_feature_table and not args.gla_feature_glob:
             raise SystemExit(
-                "ERROR: provide at least one --gla-feature-table or --gla-feature-glob"
+                "ERROR: provide at least one --feature-table or --feature-glob"
             )
 
         prepare_out_dir(args.out_dir, args.overwrite)
 
-        main_table_mode_scer_train_gla_classify(args)
+        main_table_mode_scer_train_classify(args)
+

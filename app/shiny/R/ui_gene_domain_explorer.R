@@ -21,8 +21,6 @@ gene_domain_explorer_ui <- function() {
                                 "Matched pairs" = "matched_pairs",
                                 "Custom" = "custom"),
                     selected = "all"),
-        tags$p(class = "text-muted ytab-control-help",
-               "Choose which insertion tracks are displayed for the selected gene."),
         uiOutput("gene_domain_preset_message"),
         selectizeInput("gene_domain_samples", "Tracks to display",
                        choices = character(), multiple = TRUE,

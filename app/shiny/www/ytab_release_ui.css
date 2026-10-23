@@ -571,3 +571,49 @@ details.ytab-release-details {
     display: block;
   }
 }
+
+/* QC table flags */
+.ytab-metric-danger{border-left:4px solid #C5221F}.ytab-metric-warning{border-left:4px solid #B06000}.ytab-metric-success{border-left:4px solid #188038}
+.ytab-qc-cell{white-space:nowrap;cursor:help}
+
+.ytab-reference{font-size:.92em;color:#5f6368;border-top:1px solid #e3e8ec;padding-top:.4rem;margin-top:.6rem}
+
+/* QC table: no row highlight over the flag colours */
+#qc_table table.dataTable tbody tr.selected > *, #qc_table table.dataTable tbody tr:hover > * { box-shadow: none !important; background: transparent !important; color: inherit !important; }
+#qc_table .ytab-qc-cell { color: #1f2328; }
+
+/* QC table: visible column and row lines so each metric column can be followed */
+/* one table (no split header), scrolling sideways in its box */
+#qc_table .dataTables_wrapper { overflow-x: auto; }
+#qc_table table.dataTable.ytab-qc-grid th, #qc_table table.dataTable.ytab-qc-grid tbody td { border: 1px solid #b8c2cc !important; }
+#qc_table table.dataTable.ytab-qc-grid thead th { background: #f1f4f7; vertical-align: bottom; }
+#qc_table table.dataTable.ytab-qc-grid tbody td { padding: 0 !important; }
+#qc_table table.dataTable.ytab-qc-grid tbody td:not(:has(.ytab-qc-cell)) { padding: 4px 6px !important; }
+#qc_table .ytab-qc-cell { border-radius: 0 !important; padding: 5px 6px !important; text-align: right; }
+/* the scrolling table's hidden sizing header must not draw a bordered empty row */
+
+
+/* Main tabs spread evenly across the full bar, slightly larger text (wide screens; narrow screens keep the collapsed menu). */
+@media (min-width: 768px) {
+  #workspace_tabs.navbar-nav, .navbar-inverse .navbar-collapse > .navbar-nav {
+    display: flex;
+    float: none;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .navbar-inverse .navbar-collapse > .navbar-nav > li {
+    float: none;
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .navbar-inverse .navbar-collapse > .navbar-nav > li > a {
+    font-size: 16px;   /* Bootstrap 3 root is 10px, so px rather than rem */
+  }
+  /* the dropdown caret sits next to its label, not at the edge of the widened cell */
+  .navbar-inverse .navbar-collapse > .navbar-nav > li.ytab-nav-menu-host > a[data-value] { padding-right: .35rem; }
+  .navbar-inverse .navbar-collapse > .navbar-nav > li.ytab-nav-menu-host > .ytab-nav-menu-caret { position: static; transform: none; }
+  .navbar-inverse .navbar-collapse > .navbar-nav > li.active { background: #0a6574; }   /* highlight the whole tab, caret included */
+  .navbar-inverse .navbar-collapse { padding-left: 0; padding-right: 0; }
+}

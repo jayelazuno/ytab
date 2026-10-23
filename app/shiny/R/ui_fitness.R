@@ -20,12 +20,9 @@ fitness_design_ui <- function() tagList(
 
 fitness_run_ui <- function() tagList(
   panel_card(
-    "Configure fitness analysis",
-    tags$div(
-      class = "alert alert-info",
-      tags$b("Fitness analysis uses raw per-sample SummaryTable outputs and performs CPM normalization inside the R analysis."),
-      tags$p("MidLC-normalized inputs are not used for this workflow.")
-    ),
+    "Local-abundance z-score",
+    uiOutput("fitness_normalization_selector"),
+    helpText("BGC from the latest Site Normalization run is the default; gene values are the normalized site counts summed per gene, per million. Total reads (CPM) needs no normalization run."),
     selectizeInput("fitness_comparisons", "Comparisons to analyze", choices = character(),
                    multiple = TRUE, options = list(placeholder = "Select valid comparisons…")),
     uiOutput("fitness_selection_summary"),
@@ -37,7 +34,7 @@ fitness_run_ui <- function() tagList(
     ),
     tags$details(tags$summary("Review selected comparisons"), DT::DTOutput("fitness_selected_preview")),
     radioButtons("fitness_execution_mode", "Execution mode",
-                 choices = list("Preview analysis" = "preview", "Run fitness analysis" = "run"),
+                 choices = list("Preview analysis" = "preview", "Run analysis" = "run"),
                  selected = "preview", inline = TRUE),
     checkboxInput("fitness_annotate_classifier", "Annotate with classifier", FALSE),
     uiOutput("fitness_classifier_controls"),
@@ -53,11 +50,11 @@ fitness_run_ui <- function() tagList(
 
 fitness_results_ui <- function() tagList(
   panel_card(
-    "Fitness results",
+    "Local-abundance z-score results",
     uiOutput("fitness_results_state"),
     ytab_two_column_layout(
       controls = ytab_control_panel(
-        "Fitness display",
+        "Display",
         uiOutput("fitness_result_selector"),
         uiOutput("fitness_visualization_selector"),
         uiOutput("fitness_ma_controls"),
@@ -71,12 +68,12 @@ fitness_results_ui <- function() tagList(
                      uiOutput("fitness_result_technical"))
       ),
       main = tagList(
-        ytab_plot_card("Fitness visualization", uiOutput("fitness_selected_visualization")),
+        ytab_plot_card("Plot", uiOutput("fitness_selected_visualization")),
         tags$details(
           class = "ytab-more-options",
           tags$summary("Tables / downloads"),
           tags$h4("Selected top hits"),
-          tags$p(class = "text-muted", "Selected top hits require abs(log2FC) >= 1 and CPM/read support >= 1."),
+          tags$p(class = "text-muted", "Top hits are called genes with at least a 2-fold change (abs(log2FC) >= 1), ranked by |z|."),
           textInput("fitness_gene_search", "Search gene or feature ID"),
           uiOutput("fitness_selected_top_hits_count"),
           uiOutput("fitness_selected_top_hits_empty"),

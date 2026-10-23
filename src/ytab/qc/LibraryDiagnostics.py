@@ -14,8 +14,8 @@ Given one or more insertion-site count tables (per library / replicate), compute
 
 2) OPTIONAL: MidLC-based library depth normalization (Gale et al. "depth correction" idea)
    - If --normalize-to-midlc TARGET is provided:
-       For each library, compute MidLC_est = depth where mean unique sites reaches ~50% of max
-       Compute reads_target = TARGET * MidLC_est
+       For each library, compute MidLC_est = depth at which half the occupied sites are expected (exact, under binomial thinning)
+       Compute reads_target = TARGET * MidLC_est   (TARGET is a multiple of MidLC, i.e. a depth/MidLC ratio, not a read count)
        If total_reads > reads_target: downsample counts by binomial thinning p = reads_target/total_reads
        If total_reads <= reads_target: do nothing (never upsample)
 
@@ -84,6 +84,9 @@ from dataclasses import dataclass
 from typing import Dict, Tuple, List, Optional, Iterable
 
 import numpy as np
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+from ytab.normalization.midlc import midlc as exact_midlc  # noqa: E402
 
 import matplotlib
 matplotlib.use("Agg")
@@ -1126,7 +1129,10 @@ def main() -> None:
         write_midlc_csv(midlc_csv, depths, uniques)
 
         # ---- MidLC scalar estimate ----
-        midlc_est = estimate_midlc_from_curve(depths, uniques)
+        # Exact: the depth at which binomial thinning is expected to keep half the occupied sites (the same estimator as
+        # the Site Normalization `midlc` method). The subsampling curve above is kept for plotting; reading MidLC off its
+        # factor-of-4 depth grid (estimate_midlc_from_curve) overestimated it by up to 4x.
+        midlc_est = int(round(exact_midlc(np.fromiter(sc.values(), dtype=float))[0])) if total_reads > 0 else 0
         depth_ratio = (total_reads / float(midlc_est)) if midlc_est else 0.0
 
         # ---- OPTIONAL MidLC normalization (downsample only) ----

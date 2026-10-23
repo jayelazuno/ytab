@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .combine_hits_runner import load_project_for_combine_hits, resolve_combine_target
+from .summary_table_runner import feature_db_args, feature_db_errors
 
 
 STATUS_FIELDS = [
@@ -81,9 +82,6 @@ def find_combined_hits_file(config: dict, target_tag: str) -> Path:
 
 def validate_summary_combined_inputs(config: dict, target_info: dict) -> list[str]:
     errors: list[str] = []
-    species = str(config.get("species") or "")
-    if species not in {"albicans", "pombe", "cerevisiae", "glabrata"}:
-        errors.append(f"SummaryTable does not yet provide a feature DB for species: {species}")
     hits = find_combined_hits_file(config, target_info["target_tag"])
     if not hits.is_file() or hits.stat().st_size == 0:
         errors.append(f"Combined parent hit file missing or empty: {hits}. Run Step 8 first.")
@@ -91,11 +89,7 @@ def validate_summary_combined_inputs(config: dict, target_info: dict) -> list[st
     annotation = reference["gff"] or reference["gtf"] or reference["feature_table"]
     if annotation is None or not annotation.is_file():
         errors.append("No feature table, GFF, or GTF is available. Fix the reference resources first.")
-    if species == "glabrata":
-        if reference["fasta"] is None or not reference["fasta"].is_file():
-            errors.append("Reference FASTA is missing. Fix the reference resources first.")
-        if reference["gff"] is None or not reference["gff"].is_file():
-            errors.append("Glabrata GFF is missing. Fix the reference resources first.")
+    errors.extend(feature_db_errors(config, reference))
     return errors
 
 
@@ -111,13 +105,9 @@ def build_summary_combined_command(config: dict, target_info: dict, threads: int
         sys.executable, str(root / "src" / "ytab" / "summary" / "SummaryTable.py"),
         "--input-dir", str(hits.parent), "--hit-glob", hits.name,
         "--output-dir", str(_paths(config, tag)["output"]),
-        "--feature-db", str(config["species"]), "--threads", str(selected_threads),
+        *feature_db_args(config, reference), "--threads", str(selected_threads),
         "--overwrite",
     ]
-    if config.get("species") == "glabrata":
-        command.extend(["--feature-gff", str(reference["gff"]), "--reference-fasta", str(reference["fasta"])])
-        if reference["orthology_file"] and reference["orthology_file"].is_file():
-            command.extend(["--scer-orthologs", str(reference["orthology_file"])])
     return command
 
 

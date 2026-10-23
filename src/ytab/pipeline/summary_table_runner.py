@@ -82,16 +82,47 @@ def _paths(config: dict, sample_name: str) -> dict[str, Path]:
     }
 
 
+def feature_db_kind(config: dict, reference: dict) -> str:
+    """SummaryTable feature database: the reference GFF (any species), glabrata's named GFF database, or a built-in
+    database only when the reference has no GFF."""
+    species = str(config.get("species") or "")
+    if species == "glabrata" or not (reference.get("gff") and Path(reference["gff"]).is_file()):
+        return species
+    return "gff"
+
+
+def feature_db_args(config: dict, reference: dict) -> list[str]:
+    """SummaryTable feature-database arguments shared by every SummaryTable stage. Genes come from the project's
+    reference GFF for every species (glabrata keeps its named database, which gives the same genes and adds
+    S. cerevisiae ortholog columns to the analysis table)."""
+    args = ["--feature-db", feature_db_kind(config, reference)]
+    if reference.get("gff") and Path(reference["gff"]).is_file():
+        args += ["--feature-gff", str(reference["gff"]), "--reference-fasta", str(reference["fasta"])]
+    if config.get("species") == "glabrata" and reference.get("orthology_file") and Path(reference["orthology_file"]).is_file():
+        args += ["--scer-orthologs", str(reference["orthology_file"])]
+    return args
+
+
+def feature_db_errors(config: dict, reference: dict) -> list[str]:
+    species = str(config.get("species") or "")
+    gff = reference.get("gff")
+    if gff and Path(gff).is_file():
+        fasta = reference.get("fasta")
+        return [] if fasta and Path(fasta).is_file() else ["Reference FASTA is missing. Fix the reference resources first."]
+    if species in {"albicans", "pombe", "cerevisiae"}:
+        return []
+    return [f"No reference GFF for species {species}: SummaryTable takes genes from resources/species/{species}/reference_genome."]
+
+
 def find_sample_hits_file(sample: dict, config: dict) -> Path:
     name = str(sample["sample"])
     return _paths(config, name)["project"] / "create_hit_file" / name / f"{name}_hits.txt"
 
 
-def validate_summary_table_inputs(config: dict) -> list[str]:
+def validate_summary_table_inputs(config: dict, samples: list[str] | None = None) -> list[str]:
+    """Check the project and the given samples (default: every included sample)."""
     errors: list[str] = []
-    species = str(config.get("species") or "")
-    if species not in {"albicans", "pombe", "cerevisiae", "glabrata"}:
-        errors.append(f"SummaryTable does not yet provide a feature DB for species: {species}")
+    errors.extend(feature_db_errors(config, _reference_files(config)))
     try:
         threads = int(config.get("threads", 0))
     except (TypeError, ValueError):
@@ -102,15 +133,11 @@ def validate_summary_table_inputs(config: dict) -> list[str]:
     annotation = reference["gff"] or reference["gtf"] or reference["feature_table"]
     if annotation is None or not annotation.is_file():
         errors.append("No feature table, GFF, or GTF is available. Fix the reference resources first.")
-    if species == "glabrata":
-        if reference["fasta"] is None or not reference["fasta"].is_file():
-            errors.append("Reference FASTA is missing. Fix the reference resources first.")
-        if reference["gff"] is None or not reference["gff"].is_file():
-            errors.append("Glabrata GFF is missing. Fix the reference resources first.")
-    samples = get_included_samples(config)
-    if not samples:
+    included = get_included_samples(config)
+    if not included:
         errors.append("No included samples were found in the sample sheet.")
-    for sample in samples:
+    # Only the samples being run need inputs here: others may have been processed elsewhere (e.g. on the HPC).
+    for sample in [s for s in included if samples is None or str(s.get("sample")) in samples]:
         name = str(sample.get("sample") or "")
         if not name:
             errors.append("An included sample has no sample name.")
@@ -137,16 +164,10 @@ def build_summary_table_command(
         sys.executable, str(root / "src" / "ytab" / "summary" / "SummaryTable.py"),
         "--input-dir", str(hits.parent), "--hit-glob", hits.name,
         "--output-dir", str(_paths(config, name)["output"]),
-        "--feature-db", str(config["species"]), "--threads", str(selected_threads),
+        "--feature-db", feature_db_kind(config, reference), "--threads", str(selected_threads),
         "--overwrite",
     ]
-    if config.get("species") == "glabrata":
-        command.extend([
-            "--feature-gff", str(reference["gff"]),
-            "--reference-fasta", str(reference["fasta"]),
-        ])
-        if reference["orthology_file"] and reference["orthology_file"].is_file():
-            command.extend(["--scer-orthologs", str(reference["orthology_file"])])
+    command.extend(feature_db_args(config, reference)[2:])
     return command
 
 
@@ -281,7 +302,7 @@ def run_summary_table_project(
     config = load_project_for_summary_table(project_config)
     if threads is not None:
         config["threads"] = threads
-    errors = validate_summary_table_inputs(config)
+    errors = validate_summary_table_inputs(config, samples)
     if errors:
         raise ValueError("\n".join(errors))
     included = get_included_samples(config)

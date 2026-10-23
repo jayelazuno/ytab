@@ -23,6 +23,12 @@ def plan_export(project_config:Path,include_logs=False,include_browser_tracks=Fa
    if ("hit" in low and low.endswith((".txt",".tsv",".csv"))) and not include_hit_files: continue
    if "logs" in parts and not include_logs: continue
    if low.endswith((".bed",".bedgraph",".wig",".bw",".bigwig")) and not include_browser_tracks: continue
+   # Explicit opt-ins must actually include these files, not merely pass the
+   # exclusion checks before the compact-summary allowlist below.
+   explicit=(include_hit_files and "hit" in low and low.endswith((".txt",".tsv",".csv"))) or (include_browser_tracks and low.endswith((".bed",".bedgraph",".wig",".bw",".bigwig"))) or (include_logs and "logs" in parts) or (include_bams and low.endswith((".bam",".bai")))
+   if explicit:
+    files.append(p)
+    continue
    if any(token in low for token in ("feature_table","long.raw","feature_reads_cpm","_analysis.csv")): continue
    stable=low.endswith((".csv",".tsv",".json",".yaml",".yml",".png",".svg",".html",".txt"))
    wanted=(low.startswith(("essentiality_predictions.","classifier_summary.","classifier_run_metadata.","treated_vs_parent_results","treated_vs_parent_comparison_summary","treated_vs_parent_run_metadata","normalization_","library_diagnostics","summary_stats","stats.csv","ytab_project_summary")) or "gene_domain_explorer" in parts or low.endswith((".png",".svg")))

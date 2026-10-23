@@ -1,3 +1,49 @@
+# Display aliases never replace sample identifiers in paths, joins or selections.
+# Accept project metadata, a sample table, or a project root for saved results.
+ytab_sample_labels <- function(sample, project = NULL) {
+  ids <- as.character(sample)
+  metadata <- if (is.data.frame(project)) project else if (is.list(project)) project$samples else NULL
+  root <- if (is.character(project) && length(project) == 1L) project else if (is.list(project)) project$project_root else NULL
+  if (!is.data.frame(metadata) && length(root) == 1L && !is.na(root)) {
+    metadata <- tryCatch(read.csv(file.path(root, "config", "sample_sheet.csv"),
+      stringsAsFactors = FALSE, check.names = FALSE), error = function(e) NULL)
+  }
+  if (!is.data.frame(metadata) || !all(c("sample", "display_name") %in% names(metadata))) return(ids)
+  metadata <- metadata[!duplicated(metadata$sample), , drop = FALSE]
+  labels <- trimws(as.character(metadata$display_name))
+  missing <- is.na(labels) | !nzchar(labels)
+  labels[missing] <- as.character(metadata$sample[missing])
+  duplicate <- duplicated(labels) | duplicated(labels, fromLast = TRUE)
+  labels[duplicate] <- paste0(labels[duplicate], " [", metadata$sample[duplicate], "]")
+  index <- match(ids, as.character(metadata$sample))
+  found <- !is.na(index)
+  ids[found] <- labels[index[found]]
+  ids
+}
+
+ytab_save_sample_labels <- function(sample_sheet, ids, labels, expected_md5) {
+  if (!file.exists(sample_sheet) || !identical(unname(tools::md5sum(sample_sheet)), expected_md5))
+    stop("The sample sheet changed. Reopen the name editor before saving.", call. = FALSE)
+  rows <- read.csv(sample_sheet, colClasses = "character", stringsAsFactors = FALSE,
+                   check.names = FALSE, na.strings = character())
+  if (!"sample" %in% names(rows) || anyDuplicated(ids) ||
+      !identical(as.character(rows$sample), as.character(ids)))
+    stop("Sample identifiers changed. Reopen the name editor.", call. = FALSE)
+  labels <- trimws(as.character(labels))
+  if (length(labels) != nrow(rows) || anyNA(labels))
+    stop("Provide one display name per sample.", call. = FALSE)
+  effective <- ifelse(nzchar(labels), labels, ids)
+  if (anyDuplicated(effective)) stop("Display names must be unique within the project.", call. = FALSE)
+  rows$display_name <- labels
+  temporary <- tempfile(pattern = ".sample-labels-", tmpdir = dirname(sample_sheet))
+  on.exit(unlink(temporary), add = TRUE)
+  write.csv(rows, temporary, row.names = FALSE, na = "", fileEncoding = "UTF-8")
+  if (!identical(unname(tools::md5sum(sample_sheet)), expected_md5))
+    stop("The sample sheet changed while saving. Please reopen the editor.", call. = FALSE)
+  if (!file.rename(temporary, sample_sheet)) stop("Could not save sample display names.", call. = FALSE)
+  invisible(rows)
+}
+
 ytab_resolve_path <- function(path, base) {
   if (is.null(path) || !length(path) || !nzchar(trimws(path[[1]]))) return("")
   path <- path[[1]]
@@ -49,6 +95,14 @@ read_project_summary <- function(project_config, repo_root) {
   if (!checked$valid) stop(checked$message, call. = FALSE)
   config <- checked$data
   samples <- tryCatch(read.csv(checked$sample_sheet, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) data.frame())
+  if (identical(config$fastq_paths_relative_to, "fastq_dir")) {
+    base <- ytab_resolve_path(config$fastq_dir %||% "", repo_root)
+    for (key in intersect(c("fastq_1", "fastq_2"), names(samples))) {
+      samples[[key]] <- vapply(samples[[key]], function(value) {
+        if (is.na(value) || !nzchar(value)) "" else ytab_resolve_path(value, base)
+      }, "")
+    }
+  }
   include <- if ("include" %in% names(samples)) tolower(as.character(samples$include)) %in% c("true", "1", "yes") else rep(TRUE, nrow(samples))
   condition <- if ("condition" %in% names(samples)) {
     tolower(samples$condition)

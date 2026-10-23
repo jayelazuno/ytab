@@ -42,7 +42,7 @@ qc_library_project_samples <- function(project) {
 qc_library_role_from_values <- function(values) {
   values <- tolower(paste(stats::na.omit(as.character(values)), collapse = " "))
   if (!nzchar(values)) return(NA_character_)
-  if (grepl("\\btreated\\b|zn-treated|h2o2-treated|1_5mm|h2o2", values)) return("treated")
+  if (grepl("\\btreated\\b", values)) return("treated")
   if (grepl("\\bcontrol\\b|\\bmock\\b|\\bparent\\b|classifier_control", values)) return("control")
   NA_character_
 }
@@ -74,19 +74,11 @@ qc_library_sample_roles <- function(project, samples = NULL) {
       if ("pool" %in% names(row) && nzchar(as.character(row$pool[[1]]))) pool <- as.character(row$pool[[1]])
       if ("pool_id" %in% names(row) && nzchar(as.character(row$pool_id[[1]]))) pool <- as.character(row$pool_id[[1]])
     }
-    if (is.na(role)) {
-      sample_lower <- tolower(sample)
-      if (grepl("treated|h2o2|zn-treated|1_5mm", sample_lower)) role <- "treated"
-      else if (grepl("mock|control|parent", sample_lower)) role <- "control"
-      else role <- "other"
-    }
-    display_group <- if (identical(role, "control")) {
-      if (grepl("mock", tolower(paste(condition_label, sample)))) "Mock control" else "Parent/control"
-    } else if (identical(role, "treated")) {
-      if (grepl("1\\.5|1_5|zn", tolower(paste(condition_label, sample)))) "1.5 mM Zn-treated"
-      else if (grepl("h2o2", tolower(paste(condition_label, sample)))) "H2O2-treated"
-      else "Treated"
-    } else "Other"
+    if (is.na(role)) role <- c(parent = "control", treated = "treated", other = "other")[[qc_plot_condition(sample)]]
+    # Group name from the sample sheet's condition label when it names one; otherwise the role.
+    specific <- nzchar(condition_label) && !tolower(condition_label) %in% c("treated", "control", "parent", "mock", "other")
+    display_group <- if (identical(role, "control")) { if (specific) condition_label else "Parent/control" }
+      else if (identical(role, "treated")) { if (specific) condition_label else "Treated" } else "Other"
     data.frame(sample = sample, role = role, display_group = display_group,
                pool = pool, stringsAsFactors = FALSE)
   })
@@ -174,7 +166,7 @@ qc_library_filter_data <- function(project, data, group = "all") {
   out
 }
 
-qc_library_sample_style <- function(data, color_by = "group") {
+qc_library_sample_style <- function(data, color_by = "group", project = NULL) {
   samples <- unique(as.character(data$sample))
   roles <- unique(data[, intersect(c("sample", "role", "display_group", "pool"), names(data)), drop = FALSE])
   roles <- roles[match(samples, roles$sample), , drop = FALSE]
@@ -183,7 +175,7 @@ qc_library_sample_style <- function(data, color_by = "group") {
     key <- data.frame(label = "All samples", color = "grey35", pch = 16, lty = 1, stringsAsFactors = FALSE)
   } else if (identical(color_by, "sample")) {
     colors <- qc_plot_palette(length(samples))
-    key <- data.frame(label = qc_plot_display_labels(samples), color = colors, pch = 16, lty = 1, stringsAsFactors = FALSE)
+    key <- data.frame(label = qc_plot_display_labels(samples, project), color = colors, pch = 16, lty = 1, stringsAsFactors = FALSE)
   } else if (identical(color_by, "pool")) {
     pools <- unique(as.character(roles$pool))
     pool_colors <- stats::setNames(qc_plot_palette(length(pools)), pools)
@@ -244,7 +236,7 @@ qc_library_sample_key_ui <- function(project, data, group = "all") {
       class = "table table-sm",
       tags$thead(tags$tr(tags$th("Sample"), tags$th("Group"), tags$th("Pool"))),
       tags$tbody(lapply(seq_len(nrow(roles)), function(i) {
-        tags$tr(tags$td(roles$sample[[i]]), tags$td(roles$display_group[[i]]), tags$td(roles$pool[[i]]))
+        tags$tr(tags$td(ytab_sample_labels(roles$sample[[i]], project)), tags$td(roles$display_group[[i]]), tags$td(roles$pool[[i]]))
       }))
     )
   )
@@ -272,7 +264,7 @@ plot_qc_library_midlc <- function(project, group = "all", color_by = "group") {
        ylim = range(data$unique_sites, na.rm = TRUE), log = "x",
        xlab = "Reads sampled", ylab = "Unique insertion sites",
        main = "MidLC saturation")
-  style <- qc_library_sample_style(data, color_by)
+  style <- qc_library_sample_style(data, color_by, project)
   aesthetic <- qc_library_plot_aesthetics("midlc")
   if (qc_plot_grid_enabled()) {
     abline(h = pretty(range(data$unique_sites, na.rm = TRUE)), col = "#e3e9ee", lty = 3, lwd = 1)
@@ -309,11 +301,11 @@ plot_qc_library_jackpot_depth <- function(project, group = "all", color_by = "gr
   data <- qc_library_filter_data(project, data, group)
   if (!nrow(data)) return(qc_plot_empty("No library diagnostic summary is available for the selected sample group."))
   raw_labels <- as.character(data$sample)
-  labels <- qc_plot_display_labels(raw_labels)
+  labels <- qc_plot_display_labels(raw_labels, project)
   jackpot <- qc_plot_numeric(qc_plot_column(data, c("jackpot_frac_reads", "jackpot_top_frac")))
   depth <- qc_plot_numeric(qc_plot_column(data, "depth_ratio_R_over_midlc"))
   horizontal <- qc_plot_bar_horizontal(labels)
-  style <- qc_library_sample_style(data, color_by)
+  style <- qc_library_sample_style(data, color_by, project)
   bar_cols <- style$colors[match(as.character(data$sample), style$samples)]
   old <- par(no.readonly = TRUE)
   on.exit({ qc_plot_reset_layout(); par(old) }, add = TRUE)
@@ -450,7 +442,7 @@ plot_qc_library_centromere_bias <- function(project, group = "all", color_by = "
   data <- qc_library_filter_data(project, data, group)
   if (!nrow(data)) return(qc_plot_empty("No centromere-bias data are available for the selected sample group."))
   effective_color_by <- if (color_by %in% c("sample", "none")) color_by else "group"
-  style <- qc_library_sample_style(data, effective_color_by)
+  style <- qc_library_sample_style(data, effective_color_by, project)
   aesthetic <- qc_library_plot_aesthetics("centromere")
   old <- par(no.readonly = TRUE)
   on.exit({ qc_plot_reset_layout(); par(old) }, add = TRUE)
@@ -521,7 +513,7 @@ plot_qc_library_metaplot <- function(project, panel = "tss", group = "all", colo
   if (!nrow(data)) return(qc_plot_empty("No feature-metaplot data are available for the selected sample group."))
   feature_label <- c(tss = "TSS metaplot", tts = "TTS metaplot", trna = "tRNA metaplot")[[panel]] %||% "Feature metaplot"
   effective_color_by <- if (color_by %in% c("sample", "none")) color_by else "group"
-  style <- qc_library_sample_style(data, effective_color_by)
+  style <- qc_library_sample_style(data, effective_color_by, project)
   aesthetic <- qc_library_plot_aesthetics("metaplot")
   old <- par(no.readonly = TRUE)
   on.exit({ qc_plot_reset_layout(); par(old) }, add = TRUE)

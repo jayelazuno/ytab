@@ -300,6 +300,24 @@
     browser.search(String(locus));
   }
 
+  // IGV desktop: its batch port (60151) accepts /load from the user's browser; files are the app's own URLs.
+  function openInDesktop(spec) {
+    const absolute = function (path) { return new URL(path, window.location.href).href; };
+    const params = new URLSearchParams();
+    params.set("genome", absolute(spec.genome));
+    params.set("file", (spec.files || []).map(absolute).join(","));
+    params.set("name", (spec.names || []).join(","));
+    params.set("locus", currentLocusString() || spec.locus || "");
+    params.set("merge", "false");
+    const controller = new AbortController(); const timer = setTimeout(function () { controller.abort(); }, 4000);
+    fetch("http://127.0.0.1:60151/load?" + params.toString(), { mode: "no-cors", signal: controller.signal })
+      .then(function () { clearTimeout(timer); warning(""); })
+      .catch(function () {
+        clearTimeout(timer);
+        warning("IGV desktop did not answer. Start IGV and enable its port (View > Preferences > Advanced > Enable port 60151), or use Download for IGV.");
+      });
+  }
+
   function attachHandlers() {
     if (!window.Shiny || !Shiny.addCustomMessageHandler) {
       setTimeout(attachHandlers, 100);
@@ -312,6 +330,7 @@
       pan(Number(direction) < 0 ? -1 : 1);
     });
     Shiny.addCustomMessageHandler("ytab_igv_warning", warning);
+    Shiny.addCustomMessageHandler("ytab_igv_desktop", openInDesktop);
   }
 
   attachHandlers();

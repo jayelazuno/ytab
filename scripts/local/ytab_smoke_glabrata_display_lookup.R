@@ -80,7 +80,7 @@ if (!all(c("cagl_display_id", "gene_display_name") %in% names(fallback)))
 standardized <- ytab_standardize_glabrata_annotation_names(joined)
 if ("cgla_gene_name_from_deseq" %in% names(standardized))
   fail("DESeq gene name exposed after standardization")
-for (name in c("CAGL ID", "Gene name", "Cg-to-Sc relationship", "Original feature ID"))
+for (name in c("Gene ID", "Gene name", "S. cerevisiae orthology", "Original feature ID"))
   if (!name %in% names(standardized)) fail(paste("standardized user-facing name missing:", name))
 
 if (!file.exists(file.path(root, "resources/comparative/orthology/gene_lookup.csv")))

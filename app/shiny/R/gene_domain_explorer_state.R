@@ -28,7 +28,7 @@ gene_domain_tracks <- function(python_bin, repo_root, project_config, track_sour
   if (!length(tracks)) return(data.frame())
   data.frame(
     sample = vapply(tracks, function(x) as.character(x$sample %||% ""), ""),
-    track_name = vapply(tracks, function(x) as.character(x$track_name %||% x$sample %||% ""), ""),
+    track_name = ytab_sample_labels(vapply(tracks, function(x) as.character(x$track_name %||% x$sample %||% ""), ""), dirname(dirname(project_config))),
     track_source = vapply(tracks, function(x) as.character(x$track_source %||% ""), ""),
     source_file = vapply(tracks, function(x) as.character(x$source_file %||% ""), ""),
     stringsAsFactors = FALSE
@@ -86,7 +86,7 @@ gene_domain_infer_track_role <- function(sample, sample_sheet = data.frame()) {
     if (nrow(row) && field %in% names(row)) values <- c(values, as.character(row[[field]][[1]]))
   values <- values[!is.na(values)]
   text <- tolower(paste(c(values, sample), collapse = " "))
-  if (grepl("treated|h2o2|zn-treated|1[_ .-]?5\\s*mm|1_5mm|1\\.5mm", text)) return("treated")
+  if (grepl("treated", text)) return("treated")
   if (grepl("mock|parent|control", text)) return("parent")
   ""
 }

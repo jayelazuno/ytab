@@ -97,7 +97,10 @@ def resolve_classifier_resources(config: dict) -> dict:
         except json.JSONDecodeError:
             resolved = {}
     species_root = root / "resources" / "species"
-    orthology = _resolve(resolved.get("orthology_file") or reference.get("orthology_file"), root)
+    # S. cerevisiae orthologs for annotation: the species' gene_annotation.tsv when built, else the project's
+    # recorded orthology file (e.g. glabrata's BG2 table).
+    annotation = species_root / str(config.get("species") or "") / "annotation" / "gene_annotation.tsv"
+    orthology = annotation if annotation.is_file() else _resolve(resolved.get("orthology_file") or reference.get("orthology_file"), root)
     resources = {
         "orthology_file": orthology,
         "kornmann_wig_files": sorted((species_root / "Kornmann").glob("*WildType*.wig")),
@@ -146,8 +149,6 @@ def inspect_classifier_requirements(config: dict, feature_table: Path, resources
 
 def validate_classifier_inputs(config: dict, target_info: dict, feature_table: Path, resources: dict) -> list[str]:
     errors: list[str] = []
-    if str(config.get("species") or "") != "glabrata":
-        errors.append("Classifier table mode currently supports species 'glabrata' only.")
     if not feature_table.is_file() or feature_table.stat().st_size == 0:
         errors.append(f"Combined feature table missing or empty: {feature_table}. Run Steps 8 and 9 for {target_info['target_tag']} first.")
         return errors
@@ -156,7 +157,8 @@ def validate_classifier_inputs(config: dict, target_info: dict, feature_table: P
         errors.append("Combined feature table is missing required classifier columns: " + ", ".join(inspection["missing_columns"]))
     if inspection["invalid_feature_rows"]:
         errors.append(f"Combined feature table has {inspection['invalid_feature_rows']} rows with missing or non-numeric required classifier values.")
-    for name in ("orthology_file", "cerevisiae_feature_table", "cerevisiae_viable_annotations", "cerevisiae_inviable_annotations", "cerevisiae_paralogs"):
+    # The S. cerevisiae training resources are required; species orthologs only annotate the output.
+    for name in ("cerevisiae_feature_table", "cerevisiae_viable_annotations", "cerevisiae_inviable_annotations", "cerevisiae_paralogs"):
         path = resources.get(name)
         if not isinstance(path, Path) or not path.is_file():
             errors.append(f"Required classifier resource is missing ({name}): {path}")
@@ -172,11 +174,12 @@ def build_classifier_command(config: dict, target_info: dict, feature_table: Pat
     root = Path(config["_repo_root"])
     command = [
         sys.executable, str(root / "src" / "ytab" / "essentiality" / "Classifier.py"),
-        "--mode", "scer-train-gla-classify", "--gla-feature-table", str(feature_table),
+        "--mode", "scer-train-classify", "--feature-table", str(feature_table), "--species", str(config.get("species") or ""),
         "--out-dir", str(_paths(config, target_info["target_tag"])["output"]),
-        "--threads", str(int(config.get("threads", 1))), "--target-fpr", "0.10",
-        "--orthology-file", str(resources["orthology_file"]), "--combine", "--overwrite",
+        "--threads", str(int(config.get("threads", 1))), "--target-fpr", "0.10", "--combine", "--overwrite",
     ]
+    if resources.get("orthology_file") and Path(resources["orthology_file"]).is_file():
+        command.extend(["--orthology-file", str(resources["orthology_file"])])
     if seed is not None:
         command.extend(["--seed", str(int(seed))])
     return command
@@ -194,7 +197,7 @@ def choose_primary_prediction_table(outputs: list[Path]) -> Path:
     if len(candidates) == 1:
         return candidates[0]
     if not candidates:
-        candidates = [path for path in outputs if path.name == "combined_glabrata_RF-G4.tsv"]
+        candidates = [path for path in outputs if path.name in ("combined_RF-G4.tsv", "combined_glabrata_RF-G4.tsv")]
     if len(candidates) != 1:
         names = ", ".join(str(path) for path in candidates) or "none"
         raise ValueError(f"Could not identify one unambiguous classifier prediction table; candidates: {names}")

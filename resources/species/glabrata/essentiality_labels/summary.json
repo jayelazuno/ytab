@@ -1,0 +1,76 @@
+{
+  "genes": 5220,
+  "with_cagl_id": 5220,
+  "one_to_one": 3628,
+  "labels": {
+    "gold": {
+      "essential": 20,
+      "nonessential": 256
+    },
+    "silver": {
+      "essential": 924,
+      "nonessential": 2367
+    }
+  },
+  "unlabelled": {
+    "orthology 2:2": 530,
+    "orthology no orthogroup": 392,
+    "orthology 1:2": 180,
+    "S. cerevisiae ortholog without viability data": 121,
+    "orthology 2:1": 114,
+    "orthology 3:3": 83,
+    "S. cerevisiae conflict": 52,
+    "orthology 2:3": 49,
+    "orthology 3:2": 26,
+    "orthology 4:4": 23,
+    "orthology 3:4": 11,
+    "orthology 9:2": 9,
+    "orthology 11:11": 9,
+    "orthology 8:30": 8,
+    "orthology 1:3": 6,
+    "orthology 1:0": 6,
+    "C. glabrata direct evidence conditional": 5,
+    "orthology 4:2": 4,
+    "orthology 4:1": 4,
+    "orthology 4:5": 4,
+    "orthology 2:4": 3,
+    "orthology 3:5": 3,
+    "orthology 1:4": 3,
+    "orthology 3:1": 2,
+    "orthology 2:5": 2,
+    "orthology 4:3": 1,
+    "orthology 1:5": 1,
+    "orthology 1:9": 1,
+    "orthology 1:8": 1
+  },
+  "gold_vs_sc_ortholog": {
+    "genes": 151,
+    "agree": 141,
+    "discordant": [
+      "PGS1 (Cg nonessential, Sc essential)",
+      "KRE29 (Cg nonessential, Sc essential)",
+      "GWK60_C02145 (Cg essential, Sc nonessential)",
+      "ERG11 (Cg nonessential, Sc essential)",
+      "GWK60_F04961 (Cg essential, Sc nonessential)",
+      "CBF1 (Cg essential, Sc nonessential)",
+      "OPI1 (Cg essential, Sc nonessential)",
+      "GWK60_K09845 (Cg nonessential, Sc essential)",
+      "GSH1 (Cg essential, Sc nonessential)",
+      "ATM1 (Cg nonessential, Sc essential)"
+    ]
+  },
+  "comparator_only_gale2020": {
+    "labelled_genes_with_gale_call": 3548,
+    "agree": 3214,
+    "by_tier": {
+      "gold": {
+        "n": 274,
+        "agree": 251
+      },
+      "silver": {
+        "n": 3274,
+        "agree": 2963
+      }
+    }
+  }
+}

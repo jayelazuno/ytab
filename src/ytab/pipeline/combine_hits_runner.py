@@ -116,6 +116,10 @@ def resolve_combine_target(config: dict, target: str = "recommended") -> dict:
     elif mode == "site-recommended":
         info = _read_recommendation(site_path, "Site-retention")
         source = str(site_path)
+    elif (normalization / value / "normalization_source.json").is_file():
+        # Parent hit files written from a site normalization method (hybrid_inputs.export_method_hits).
+        written = json.loads((normalization / value / "normalization_source.json").read_text(encoding="utf-8"))
+        info, source = {"target": written["method"], "target_tag": value}, str(normalization / value / "normalization_source.json")
     else:
         tag = value if value.startswith("T") else normalize_target_tag(value)
         try:

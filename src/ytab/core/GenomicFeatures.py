@@ -545,6 +545,63 @@ class GlabrataFeatureDB(_FeatureDB):
             self._chrom_names[chrom] = chrom
 
 
+class GffFeatureDB(_FeatureDB):
+    """Feature DB from any GFF3 (NCBI, SGD, CGD, Ensembl style): one feature per protein-coding gene.
+
+    Gene ID: the transcript's or gene's locus_tag, else the gene's ID (a CDS's parent transcript's parent gene, or the
+    CDS's own parent when it is the gene). Name: the gene attribute, else Name. The CDS blocks of the gene's first
+    coding transcript are the exons. With a FASTA, genes on sequences absent from it (e.g. the second haplotype of a
+    diploid assembly when reads map to one haplotype) are left out. Species-agnostic; for NCBI GFFs it gives the same
+    genes as GlabrataFeatureDB.
+    """
+
+    def __init__(self, gff_filename, fasta_filename=None):
+        gff_db_filename = gff_filename + ".gffutils_db.sqlite"
+        if not os.path.exists(gff_db_filename):
+            gff_db = gffutils.create_db(gff_filename, gff_db_filename, merge_strategy="create_unique", keep_order=True)
+        else:
+            gff_db = gffutils.FeatureDB(gff_db_filename, keep_order=True)
+        contigs = None
+        if fasta_filename and os.path.exists(fasta_filename):
+            with open(fasta_filename) as handle:
+                contigs = {line[1:].split()[0] for line in handle if line.startswith(">")}
+        first = lambda attrs, *keys: next((attrs[k][0] for k in keys if attrs.get(k) and attrs[k][0]), None)
+        features, seen = [], set()
+        for cds in gff_db.all_features(featuretype="CDS", order_by=("seqid", "start")):
+            if contigs is not None and cds.seqid not in contigs:
+                continue
+            parents = list(gff_db.parents(cds, level=1))
+            if not parents:
+                continue
+            tx = parents[0]
+            genes = [tx] if tx.featuretype in ("gene", "pseudogene") else list(gff_db.parents(tx, level=1)) or [tx]
+            gene = genes[0]
+            gene_id = first(tx.attributes, "locus_tag") or first(gene.attributes, "locus_tag", "ID") or tx.id
+            if gene_id in seen:
+                continue
+            seen.add(gene_id)
+            blocks = [(c.start, c.end) for c in gff_db.children(tx, featuretype="CDS", level=1, order_by="start")]
+            if not blocks:
+                continue
+            name = first(gene.attributes, "gene") or first(tx.attributes, "gene") or first(gene.attributes, "Name") or gene_id
+            description = first(tx.attributes, "product") or first(gene.attributes, "product", "description", "Note") or ""
+            strand = {"+": "W", "-": "C"}.get(tx.strand, "W")
+            feature = _Feature([gene_id, name, "ORF", cds.seqid, min(b for b, _ in blocks), max(e for _, e in blocks), strand, description],
+                               0, 1, 2, 3, 4, 5, 6, 7)
+            feature._set_exons(blocks)
+            for alias in (gene_id, name, gene.id, tx.id, first(gene.attributes, "Name"), first(tx.attributes, "Name")):
+                if alias:
+                    feature.all_names.add(alias)
+            protein_id = next((c.attributes.get("protein_id", [None])[0] for c in gff_db.children(tx, featuretype="CDS") if c.attributes.get("protein_id")), None)
+            if protein_id:
+                feature.protein_id = protein_id
+                feature.all_names.add(protein_id)
+            features.append(feature)
+        super().__init__(features, fasta_filename)
+        for chrom in self._chrom_features:
+            self._chrom_names[chrom] = chrom
+
+
 class Chromosome(object):
     """A chromosome in the genome (wrapper around _FeatureDB methods)."""
 

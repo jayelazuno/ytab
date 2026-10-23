@@ -87,7 +87,8 @@ def _bam_index_exists(bam: Path) -> bool:
     return Path(f"{bam}.bai").is_file() or bam.with_suffix(".bai").is_file()
 
 
-def validate_create_hit_file_inputs(config: dict) -> list[str]:
+def validate_create_hit_file_inputs(config: dict, samples: list[str] | None = None) -> list[str]:
+    """Check the project and the given samples (default: every included sample)."""
     errors: list[str] = []
     try:
         threads = int(config.get("threads", 0))
@@ -102,10 +103,11 @@ def validate_create_hit_file_inputs(config: dict) -> list[str]:
         errors.append("Reference FASTA is missing. Fix or prepare the reference resources first.")
     if not isinstance(features, Path) or not features.is_file():
         errors.append("No feature table, GFF, or GTF is available. Fix the reference resources first.")
-    samples = get_included_samples(config)
-    if not samples:
+    included = get_included_samples(config)
+    if not included:
         errors.append("No included samples were found in the sample sheet.")
-    for sample in samples:
+    # Only the samples being run need inputs here: others may have been processed elsewhere (e.g. on the HPC).
+    for sample in [s for s in included if samples is None or str(s.get("sample")) in samples]:
         name = str(sample.get("sample") or "")
         if not name:
             errors.append("An included sample has no sample name.")
@@ -253,7 +255,7 @@ def run_create_hit_file_project(
     config = load_project_for_create_hit_file(project_config)
     if threads is not None:
         config["threads"] = threads
-    errors = validate_create_hit_file_inputs(config)
+    errors = validate_create_hit_file_inputs(config, samples)
     if errors:
         raise ValueError("\n".join(errors))
     included = get_included_samples(config)

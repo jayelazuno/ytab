@@ -13,14 +13,32 @@ ytab_glabrata_key <- function(x) {
   tolower(trimws(as.character(x %||% "")))
 }
 
+# Gene annotation of the other species (resources/species/<species>/annotation/gene_annotation.tsv, built by
+# scripts/local/ytab_build_species_resources.py) in the lookup's columns. Gene IDs are species-specific, so one lookup
+# serves every project: a feature ID matches only its own species' rows.
+ytab_species_annotation_lookup <- function(repo_root) {
+  paths <- Sys.glob(file.path(repo_root, "resources", "species", "*", "annotation", "gene_annotation.tsv"))
+  rows <- lapply(paths, function(path) {
+    x <- tryCatch(utils::read.delim(path, stringsAsFactors = FALSE, check.names = FALSE, quote = "", na.strings = character()), error = function(e) NULL)
+    if (is.null(x) || !nrow(x) || !"gene_id" %in% names(x)) return(NULL)
+    col <- function(name) if (name %in% names(x)) as.character(x[[name]]) else rep("", nrow(x))
+    data.frame(cagl_id = col("systematic_id"), gwk60_id_clean = col("gene_id"), qng_id = "", cgla_common_name = col("gene_name"),
+               cg_to_sc_relationship = col("scer_relationship"), pre_WGD_Ancestor = "", scer_gene_id = col("scer_gene_id"),
+               scer_gene_name = col("scer_gene_name"), SGD_essentiality = col("scer_essentiality"), SGD_description = col("description"),
+               stringsAsFactors = FALSE)
+  })
+  do.call(rbind, Filter(Negate(is.null), rows)) %||% data.frame(stringsAsFactors = FALSE)
+}
+
 ytab_load_glabrata_annotation_lookup <- function(repo_root) {
   path <- ytab_glabrata_annotation_lookup_file(repo_root)
   empty <- data.frame(stringsAsFactors = FALSE)
-  if (!file.exists(path)) return(empty)
-  data <- tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE),
-                   error = function(e) empty)
   required <- ytab_glabrata_annotation_required_columns()
-  if (!nrow(data) || !all(required %in% names(data))) return(empty)
+  data <- if (file.exists(path)) tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) empty) else empty
+  if (nrow(data) && !all(required %in% names(data))) data <- empty
+  other <- ytab_species_annotation_lookup(repo_root)
+  if (nrow(other)) data <- if (nrow(data)) { other[setdiff(names(data), names(other))] <- ""; rbind(data, other[names(data)]) } else other
+  if (!nrow(data)) return(empty)
   data$gwk60_key <- ytab_glabrata_key(data$gwk60_id_clean)
   data$cagl_key <- ytab_glabrata_key(data$cagl_id)
   data$qng_key <- ytab_glabrata_key(data$qng_id)
@@ -69,6 +87,7 @@ ytab_join_glabrata_display <- function(data, repo_root, id_col,
   }
   joined$cagl_display_id <- ytab_first_nonempty(joined$cagl_id, original_id)
   joined$gene_display_name <- ytab_first_nonempty(joined$scer_gene_name,
+                                                  joined$cgla_common_name,
                                                   joined$cagl_display_id,
                                                   original_id)
   joined$cg_to_sc_relationship_display <- ytab_first_nonempty(joined$cg_to_sc_relationship, "")
@@ -77,14 +96,14 @@ ytab_join_glabrata_display <- function(data, repo_root, id_col,
 
 ytab_glabrata_annotation_name_map <- function() {
   c(
-    cagl_id = "CAGL ID",
-    cagl_display_id = "CAGL ID",
-    gwk60_id_clean = "GWK60 ID",
+    cagl_id = "Gene ID",
+    cagl_display_id = "Gene ID",
+    gwk60_id_clean = "Feature ID",
     original_feature_id = "Original feature ID",
     qng_id = "QNG ID",
-    cgla_common_name = "C. glabrata common name",
-    cg_to_sc_relationship = "Cg-to-Sc relationship",
-    cg_to_sc_relationship_display = "Cg-to-Sc relationship",
+    cgla_common_name = "Common name",
+    cg_to_sc_relationship = "S. cerevisiae orthology",
+    cg_to_sc_relationship_display = "S. cerevisiae orthology",
     pre_WGD_Ancestor = "Pre-WGD ancestor",
     scer_gene_id = "S. cerevisiae gene ID",
     scer_gene_name = "S. cerevisiae gene name",
@@ -118,7 +137,7 @@ ytab_glabrata_gene_detail_columns <- function(data) {
     if ("Gene name" %in% names(data)) data[["Gene name"]] else "",
     if ("scer_gene_name" %in% names(data)) data$scer_gene_name else "",
     if ("cagl_display_id" %in% names(data)) data$cagl_display_id else "",
-    if ("CAGL ID" %in% names(data)) data[["CAGL ID"]] else ""
+    if ("Gene ID" %in% names(data)) data[["Gene ID"]] else ""
   )
   description <- ytab_first_nonempty(
     if ("SGD_description" %in% names(data)) data$SGD_description else "",
@@ -141,9 +160,9 @@ ytab_glabrata_regular_display_columns <- function(data, repo_root, id_col,
                                                   include_details = FALSE) {
   data <- ytab_join_glabrata_display(data, repo_root, id_col)
   out <- data.frame(
-    `CAGL ID` = data$cagl_display_id,
+    `Gene ID` = data$cagl_display_id,
     `Gene name` = data$gene_display_name,
-    `Cg-to-Sc relationship` = data$cg_to_sc_relationship_display,
+    `S. cerevisiae orthology` = data$cg_to_sc_relationship_display,
     check.names = FALSE,
     stringsAsFactors = FALSE
   )

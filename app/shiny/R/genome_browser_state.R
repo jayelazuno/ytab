@@ -4,37 +4,34 @@ genome_browser_reference_dir <- function(project) {
   if (nzchar(fasta)) dirname(fasta) else ""
 }
 
-genome_browser_alias_rows <- function(project) {
-  map <- qc_plot_glabrata_chromosome_map(project)
-  if (!nrow(map)) return(data.frame())
-  compact <- gsub(" ", "", map$display)
-  data.frame(
-    canonical = compact,
-    alias_1 = map$display,
-    alias_2 = map$contig,
-    alias_3 = paste0(compact, "_C_glabrata_CBS138"),
-    stringsAsFactors = FALSE
-  )
-}
-
-genome_browser_alias_dir <- function(project) {
-  path <- file.path(tempdir(), "ytab_igv_aliases", project$project_id %||% "project")
-  dir.create(path, recursive = TRUE, showWarnings = FALSE)
-  normalizePath(path, winslash = "/", mustWork = FALSE)
-}
-
-genome_browser_alias_file <- function(project) {
-  rows <- genome_browser_alias_rows(project)
-  if (!nrow(rows)) return("")
-  path <- file.path(genome_browser_alias_dir(project), "chromosome_aliases.tsv")
-  write.table(rows, path, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
-  normalizePath(path, winslash = "/", mustWork = FALSE)
-}
-
+# Genome browser files are written by the pipeline (scripts/local/ytab_browser_tracks.py,
+# ytab.domain_explorer.browser_tracks) into <project>/genome_browser/; the app only reads them.
 genome_browser_asset_dir <- function(project) {
-  path <- file.path(tempdir(), "ytab_igv_assets", project$project_id %||% "project")
-  dir.create(path, recursive = TRUE, showWarnings = FALSE)
+  path <- file.path(project$project_root %||% "", "genome_browser")
   normalizePath(path, winslash = "/", mustWork = FALSE)
+}
+
+genome_browser_manifest <- function(project) {
+  path <- file.path(genome_browser_asset_dir(project), "manifest.json")
+  m <- if (file.exists(path)) tryCatch(jsonlite::fromJSON(path, simplifyVector = FALSE), error = function(e) NULL) else NULL
+  if (is.null(m) || !identical(as.integer(m$contract %||% 0L), 2L)) NULL else m
+}
+
+# Runs the browser-tracks pipeline (it rebuilds only when an input is newer than its manifest). TRUE when the files
+# changed, so the caller can refresh what it shows.
+genome_browser_ensure <- function(project, python, repo_root, config_path) {
+  before <- file.mtime(file.path(genome_browser_asset_dir(project), "manifest.json"))
+  result <- tryCatch(run_process_sync(python, c(file.path(repo_root, "scripts/local/ytab_browser_tracks.py"), "--project-config", config_path), wd = repo_root),
+                     error = function(e) list(status = 1L, stderr = conditionMessage(e)))
+  after <- file.mtime(file.path(genome_browser_asset_dir(project), "manifest.json"))
+  list(ok = identical(as.integer(result$status %||% 1L), 0L), message = result$stderr %||% "", changed = !identical(before, after))
+}
+
+genome_browser_alias_rows <- function(project) {
+  m <- genome_browser_manifest(project); path <- file.path(genome_browser_asset_dir(project), m$aliases %||% "")
+  if (is.null(m) || !file.exists(path)) return(data.frame())
+  rows <- strsplit(readLines(path, warn = FALSE), "\t")
+  data.frame(canonical = vapply(rows, `[[`, "", 1L), stringsAsFactors = FALSE)
 }
 
 genome_browser_asset_url <- function(project, path) {
@@ -47,228 +44,15 @@ genome_browser_contig_to_display <- function(project) {
   stats::setNames(gsub(" ", "", map$display), map$contig)
 }
 
-genome_browser_write_indexed_fasta <- function(input_fasta, output_fasta, project) {
-  contig_map <- genome_browser_contig_to_display(project)
-  lines <- readLines(input_fasta, warn = FALSE)
-  headers <- grep("^>", lines)
-  if (!length(headers)) return(FALSE)
-  output_fai <- paste0(output_fasta, ".fai")
-  dir.create(dirname(output_fasta), recursive = TRUE, showWarnings = FALSE)
-  con <- file(output_fasta, open = "wb")
-  on.exit(close(con), add = TRUE)
-  offset <- 0L
-  fai <- list()
-  write_bytes <- function(text) {
-    bytes <- charToRaw(text)
-    writeBin(bytes, con)
-    length(bytes)
-  }
-  for (i in seq_along(headers)) {
-    start <- headers[[i]]
-    end <- if (i < length(headers)) headers[[i + 1L]] - 1L else length(lines)
-    original <- sub("^>(\\S+).*$", "\\1", lines[[start]])
-    chrom <- contig_map[[original]] %||% original
-    offset <- offset + write_bytes(paste0(">", chrom, " ", original, "\n"))
-    seq_lines <- lines[(start + 1L):end]
-    seq <- paste(seq_lines[!grepl("^>", seq_lines)], collapse = "")
-    seq <- gsub("\\s+", "", seq)
-    seq_len <- nchar(seq, type = "bytes")
-    seq_offset <- offset
-    width <- 80L
-    if (seq_len > 0L) {
-      starts <- seq(1L, seq_len, by = width)
-      for (s in starts) {
-        chunk <- substr(seq, s, min(seq_len, s + width - 1L))
-        offset <- offset + write_bytes(paste0(chunk, "\n"))
-      }
-    }
-    fai[[length(fai) + 1L]] <- data.frame(
-      chrom = chrom,
-      length = seq_len,
-      offset = seq_offset,
-      line_bases = width,
-      line_width = width + 1L,
-      stringsAsFactors = FALSE
-    )
-  }
-  fai <- do.call(rbind, fai)
-  write.table(fai, output_fai, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
-  TRUE
-}
-
 genome_browser_display_reference <- function(project) {
-  reference <- project$reference %||% list()
-  source_fasta <- ytab_resolve_path(reference$fasta %||% "", project$repo_root %||% "")
-  if (!file.exists(source_fasta)) return(list(fasta = "", fai = ""))
-  ref_dir <- file.path(genome_browser_asset_dir(project), "reference")
-  output_fasta <- file.path(ref_dir, "ytab_igv_reference.fna")
-  output_fai <- paste0(output_fasta, ".fai")
-  stale <- !file.exists(output_fasta) || !file.exists(output_fai) ||
-    file.info(output_fasta)$mtime < file.info(source_fasta)$mtime
-  if (isTRUE(stale)) genome_browser_write_indexed_fasta(source_fasta, output_fasta, project)
-  list(fasta = output_fasta, fai = output_fai)
-}
-
-genome_browser_gff_attribute <- function(attributes, key) {
-  pattern <- paste0("(^|;)", key, "=([^;]+)")
-  hit <- regexec(pattern, attributes)
-  value <- regmatches(attributes, hit)
-  vapply(value, function(x) {
-    if (length(x) < 3L) return("")
-    URLdecode(x[[3]])
-  }, character(1))
-}
-
-genome_browser_clean_display_label <- function(x) {
-  x <- trimws(as.character(x %||% ""))
-  x[is.na(x) | x %in% c("0", "NA", "N/A", "None", "none", "NULL", "null", ".", "-")] <- ""
-  x
-}
-
-genome_browser_first_display_label <- function(...) {
-  values <- list(...)
-  max_len <- max(c(1L, vapply(values, length, integer(1))))
-  out <- rep("", max_len)
-  for (value in values) {
-    value <- genome_browser_clean_display_label(value)
-    if (length(value) == 1L && max_len > 1L) value <- rep(value, max_len)
-    if (length(value) < max_len) value <- rep_len(value, max_len)
-    fill <- !nzchar(out) & nzchar(value)
-    out[fill] <- value[fill]
-  }
-  out
+  m <- genome_browser_manifest(project); dir <- genome_browser_asset_dir(project)
+  if (is.null(m)) return(list(fasta = "", fai = ""))
+  list(fasta = file.path(dir, m$reference), fai = file.path(dir, m$index))
 }
 
 genome_browser_gene_bed_file <- function(project) {
-  reference <- project$reference %||% list()
-  gff <- ytab_resolve_path(reference$gff %||% "", project$repo_root %||% "")
-  if (!file.exists(gff)) return("")
-  out <- file.path(genome_browser_asset_dir(project), "reference", "genes.v5.bed")
-  stale <- !file.exists(out) || file.info(out)$mtime < file.info(gff)$mtime
-  if (!isTRUE(stale)) return(out)
-  data <- tryCatch(read.delim(gff, header = FALSE, sep = "\t", quote = "",
-                              comment.char = "#", stringsAsFactors = FALSE),
-                   error = function(e) data.frame())
-  if (!nrow(data) || ncol(data) < 9L) return("")
-  data <- data[data[[3]] == "gene", , drop = FALSE]
-  if (!nrow(data)) return("")
-  contig_map <- genome_browser_contig_to_display(project)
-  chrom <- contig_map[as.character(data[[1]])]
-  chrom[is.na(chrom)] <- as.character(data[[1]][is.na(chrom)])
-  name <- genome_browser_gff_attribute(as.character(data[[9]]), "Name")
-  locus <- genome_browser_gff_attribute(as.character(data[[9]]), "locus_tag")
-  id <- genome_browser_gff_attribute(as.character(data[[9]]), "ID")
-  feature_id <- genome_browser_first_display_label(locus, id, name)
-  label <- genome_browser_first_display_label(name, locus, id)
-  if (exists("ytab_join_glabrata_display", mode = "function") && nzchar(project$repo_root %||% "")) {
-    anno <- tryCatch(
-      ytab_join_glabrata_display(
-        data.frame(feature_id = feature_id, stringsAsFactors = FALSE),
-        project$repo_root,
-        "feature_id"
-      ),
-      error = function(e) data.frame()
-    )
-    if (is.data.frame(anno) && "scer_gene_name" %in% names(anno)) {
-      mapped_name <- genome_browser_first_display_label(
-        anno$scer_gene_name,
-        if ("cagl_id" %in% names(anno)) anno$cagl_id else ""
-      )
-      label <- mapped_name
-    } else if (is.data.frame(anno) && "gene_display_name" %in% names(anno)) {
-      mapped_name <- genome_browser_first_display_label(
-        if ("scer_gene_name" %in% names(anno)) anno$scer_gene_name else "",
-        if ("cagl_id" %in% names(anno)) anno$cagl_id else ""
-      )
-      label <- mapped_name
-    }
-  }
-  label <- genome_browser_clean_display_label(label)
-  keep_label <- nzchar(label)
-  if (!any(keep_label)) return("")
-  data <- data[keep_label, , drop = FALSE]
-  chrom <- chrom[keep_label]
-  label <- label[keep_label]
-  bed <- data.frame(
-    chrom = unname(chrom),
-    start = pmax(0L, as.integer(data[[4]]) - 1L),
-    end = as.integer(data[[5]]),
-    name = label,
-    score = 0L,
-    strand = as.character(data[[7]]),
-    stringsAsFactors = FALSE
-  )
-  dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
-  write.table(bed, out, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
-  out
-}
-
-genome_browser_hit_count_column <- function(data) {
-  hits <- names(data)[tolower(trimws(names(data))) %in% c("hit count", "hit_count", "count")]
-  if (length(hits)) hits[[1]] else ""
-}
-
-genome_browser_hit_position_column <- function(data) {
-  hits <- names(data)[tolower(trimws(names(data))) %in% c("hit position", "hit_position", "position", "pos")]
-  if (length(hits)) hits[[1]] else ""
-}
-
-genome_browser_chromosome_column <- function(data) {
-  hits <- names(data)[tolower(trimws(names(data))) %in% c("chromosome", "chrom", "chr", "seqid")]
-  if (length(hits)) hits[[1]] else ""
-}
-
-genome_browser_display_insertion_bed <- function(project, sample, source_file) {
-  if (!file.exists(source_file)) return("")
-  out_dir <- file.path(genome_browser_asset_dir(project), "insertion_tracks")
-  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  out <- file.path(out_dir, paste0(make.names(sample %||% tools::file_path_sans_ext(basename(source_file))), ".insertions.v3.bed"))
-  stale <- !file.exists(out) || file.info(out)$mtime < file.info(source_file)$mtime
-  if (!isTRUE(stale)) return(out)
-  data <- tryCatch(read.delim(source_file, header = TRUE, sep = "\t", quote = "",
-                              check.names = FALSE, stringsAsFactors = FALSE),
-                   error = function(e) data.frame())
-  chrom_col <- genome_browser_chromosome_column(data)
-  pos_col <- genome_browser_hit_position_column(data)
-  count_col <- genome_browser_hit_count_column(data)
-  if (!nrow(data) || !nzchar(chrom_col) || !nzchar(pos_col)) return("")
-  pos <- suppressWarnings(as.integer(data[[pos_col]]))
-  keep <- !is.na(pos) & pos > 0L
-  if (!any(keep)) return("")
-  data <- data[keep, , drop = FALSE]
-  pos <- pos[keep]
-  contig_map <- genome_browser_contig_to_display(project)
-  chrom <- contig_map[as.character(data[[chrom_col]])]
-  chrom[is.na(chrom)] <- as.character(data[[chrom_col]][is.na(chrom)])
-  bed <- data.frame(
-    chrom = unname(chrom),
-    start = pmax(0L, pos - 1L),
-    end = pos,
-    stringsAsFactors = FALSE
-  )
-  bed <- bed[order(bed$chrom, bed$start, bed$end), , drop = FALSE]
-  write.table(bed, out, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
-  out
-}
-
-genome_browser_display_bedgraph <- function(project, source_file) {
-  if (!file.exists(source_file)) return("")
-  out_dir <- file.path(genome_browser_asset_dir(project), "tracks")
-  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  out <- file.path(out_dir, basename(source_file))
-  stale <- !file.exists(out) || file.info(out)$mtime < file.info(source_file)$mtime
-  if (!isTRUE(stale)) return(out)
-  data <- tryCatch(read.delim(source_file, header = FALSE, sep = "\t", quote = "",
-                              stringsAsFactors = FALSE),
-                   error = function(e) data.frame())
-  if (!nrow(data) || ncol(data) < 4L) return("")
-  contig_map <- genome_browser_contig_to_display(project)
-  chrom <- contig_map[as.character(data[[1]])]
-  chrom[is.na(chrom)] <- as.character(data[[1]][is.na(chrom)])
-  data[[1]] <- unname(chrom)
-  write.table(data[, 1:4, drop = FALSE], out, quote = FALSE, sep = "\t",
-              row.names = FALSE, col.names = FALSE)
-  out
+  m <- genome_browser_manifest(project)
+  if (is.null(m)) "" else file.path(genome_browser_asset_dir(project), m$genes)
 }
 
 genome_browser_file_url <- function(path, root, route) {
@@ -280,68 +64,25 @@ genome_browser_file_url <- function(path, root, route) {
   if (!nzchar(encoded)) "" else paste0(route, "/", encoded)
 }
 
-genome_browser_track_format <- function(path) {
-  if (grepl("_hits\\.txt$", basename(path), ignore.case = TRUE)) return("insertion_bed")
-  ext <- tolower(tools::file_ext(path))
-  if (ext %in% c("bw", "bigwig")) return("bigwig")
-  if (ext %in% c("bedgraph", "bdg")) return("bedgraph")
-  if (ext %in% "wig") return("wig")
-  if (ext %in% "bed") return("bed")
-  ext
-}
-
-genome_browser_track_priority <- function(path) {
-  format <- genome_browser_track_format(path)
-  if (identical(format, "insertion_bed")) return(0L)
-  if (identical(format, "bedgraph")) return(1L)
-  if (identical(format, "bigwig")) return(2L)
-  if (identical(format, "wig")) return(3L)
-  if (identical(format, "bed")) return(4L)
-  9L
-}
-
 genome_browser_compact_sample_label <- function(sample) {
-  label <- gsub("-parent-", " ", sample, fixed = TRUE)
-  label <- gsub("1_5mM-", "", label, fixed = TRUE)
-  label <- gsub("-treated", "-treated", label, fixed = TRUE)
-  label <- gsub("-", " ", label, fixed = TRUE)
+  label <- gsub("-", " ", sample, fixed = TRUE)
   trimws(label)
 }
 
+# One insertion track per sample, as listed by the pipeline; labels, roles and pools come from the sample sheet.
 genome_browser_track_inventory <- function(project) {
-  root <- project$project_root %||% ""
-  track_root <- file.path(root, "create_hit_file")
-  if (!dir.exists(track_root)) return(data.frame())
-  hit_files <- list.files(
-    track_root,
-    pattern = "_hits\\.txt$",
-    recursive = TRUE,
-    full.names = TRUE,
-    ignore.case = TRUE
-  )
-  files <- hit_files
-  if (!length(files)) files <- list.files(
-    track_root,
-    pattern = "\\.(bw|bigwig|bedgraph|wig|bed)$",
-    recursive = TRUE,
-    full.names = TRUE,
-    ignore.case = TRUE
-  )
-  if (!length(hit_files))
-    files <- files[grepl("\\.insertions\\.(bw|bigwig|bedgraph|wig)$|\\.filter_1\\.bed$", files, ignore.case = TRUE)]
-  if (!length(files)) return(data.frame())
-  sample <- basename(dirname(files))
+  m <- genome_browser_manifest(project)
+  if (is.null(m) || !length(m$tracks)) return(data.frame())
+  dir <- genome_browser_asset_dir(project)
+  sample <- vapply(m$tracks, function(t) as.character(t$sample), "")
   data <- data.frame(
     sample = sample,
-    track_name = sample,
-    display_label = vapply(sample, genome_browser_compact_sample_label, character(1)),
-    source_file = normalizePath(files, winslash = "/", mustWork = FALSE),
-    format = vapply(files, genome_browser_track_format, character(1)),
-    priority = vapply(files, genome_browser_track_priority, integer(1)),
+    track_name = ytab_sample_labels(sample, project),
+    display_label = vapply(ytab_sample_labels(sample, project), genome_browser_compact_sample_label, character(1)),
+    source_file = file.path(dir, vapply(m$tracks, function(t) as.character(t$file), "")),
+    format = "insertion_bed",
     stringsAsFactors = FALSE
   )
-  data <- data[order(data$sample, data$priority, data$source_file), , drop = FALSE]
-  data <- data[!duplicated(data$sample), , drop = FALSE]
   data <- gene_domain_order_tracks(data, project$samples %||% data.frame())
   data$track_id <- make.names(data$sample, unique = TRUE)
   rownames(data) <- NULL
@@ -429,11 +170,7 @@ genome_browser_track_configs <- function(project, rows) {
     row <- rows[i, , drop = FALSE]
     format <- row$format[[1]]
     source_file <- row$source_file[[1]]
-    if (identical(format, "insertion_bed")) {
-      source_file <- genome_browser_display_insertion_bed(project, row$sample[[1]], source_file)
-      url <- genome_browser_asset_url(project, source_file)
-    } else if (identical(format, "bedgraph")) {
-      source_file <- genome_browser_display_bedgraph(project, source_file)
+    if (format %in% c("insertion_bed", "bedgraph")) {
       url <- genome_browser_asset_url(project, source_file)
     } else {
       url <- genome_browser_file_url(source_file, root, "ytab-project-output")

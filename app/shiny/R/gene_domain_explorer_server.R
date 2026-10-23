@@ -132,9 +132,9 @@ gene_domain_explorer_server <- function(input, output, session, active,
     if ("chromosome" %in% names(data)) {
       data$chromosome_display <- qc_plot_chromosome_display(data$chromosome, active())
     }
-    mapped <- data.frame(`CAGL ID` = data$cagl_display_id,
+    mapped <- data.frame(`Gene ID` = data$cagl_display_id,
                          `Gene name` = data$gene_display_name,
-                         `Cg-to-Sc relationship` = data$cg_to_sc_relationship_display,
+                         `S. cerevisiae orthology` = data$cg_to_sc_relationship_display,
                          data[, intersect(c("chromosome_display", "start", "end", "strand",
                                              "product", "match_type"), names(data)),
                               drop = FALSE],
@@ -165,9 +165,9 @@ gene_domain_explorer_server <- function(input, output, session, active,
     chromosome_display <- qc_plot_chromosome_display(row$chromosome[[1]], active())
     tags$dl(
       class = "ytab-meta",
-      tags$dt("CAGL ID"), tags$dd(row$cagl_display_id[[1]]),
+      tags$dt("Gene ID"), tags$dd(row$cagl_display_id[[1]]),
       tags$dt("Gene name"), tags$dd(tags$b(row$gene_display_name[[1]])),
-      tags$dt("Cg-to-Sc relationship"), tags$dd(row$cg_to_sc_relationship_display[[1]] %||% ""),
+      tags$dt("S. cerevisiae orthology"), tags$dd(row$cg_to_sc_relationship_display[[1]] %||% ""),
       tags$dt("Location"), tags$dd(sprintf("%s:%s-%s (%s)", chromosome_display, row$start[[1]], row$end[[1]], row$strand[[1]])),
       tags$dt("Product"), tags$dd(row$product[[1]] %||% "")
     )

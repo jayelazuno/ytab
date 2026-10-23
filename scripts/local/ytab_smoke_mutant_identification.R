@@ -21,7 +21,7 @@ lookup<-ytab_load_glabrata_annotation_lookup(repo_root)
 fallback<-lookup[nzchar(lookup$gwk60_id_clean)&nzchar(lookup$cagl_id)&!nzchar(lookup$scer_gene_name),,drop=FALSE]
 stopifnot(nrow(fallback)>0L)
 fallback_display<-ms_gene_display(fallback$gwk60_id_clean[[1]],repo_root)
-stopifnot(identical(fallback_display[["Gene name"]],fallback_display[["CAGL ID"]]))
+stopifnot(identical(fallback_display[["Gene name"]],fallback_display[["Gene ID"]]))
 display<-ms_identification_table(fixture_data$results,repo_root,project)
 first_read<-Filter(function(r)r$mutant=="1-HR2",fixture_data$results)[[1]]
 pre_qc_example<-first_read;pre_qc_example$hermes_overlap_before_qc_bases<-12;pre_qc_example$hermes_overlap_bases<-0
@@ -29,13 +29,13 @@ pre_qc_display<-ms_identification_table(list(pre_qc_example),repo_root,project)
 stopifnot(pre_qc_display[["Hermes overlap (bp)"]][1]==12,
   pre_qc_display[["Aligned bases after QC (bp)"]][1]==first_read$aligned_bases)
 visible<-function(x)names(x)[!startsWith(names(x),".ytab_")]
-stopifnot(identical(visible(display),c("Mutant","CAGL ID","Gene name","Chromosome","Aligned bases after QC (bp)","Hermes overlap (bp)","Identity (%)")),
+stopifnot(identical(visible(display),c("Mutant","Gene ID","Gene name","Chromosome","Aligned bases after QC (bp)","Hermes overlap (bp)","Identity (%)")),
   nrow(display)==length(fixture_data$results),identical(display$Mutant,paste0(1:10,"-HR2")),
   display[["Aligned bases after QC (bp)"]][1]==first_read$aligned_bases,
   is.na(display[["Hermes overlap (bp)"]][1]),
   display[["Identity (%)"]][1]==round(100*first_read$identity,2),
-  grepl(";",display[["CAGL ID"]][display$Mutant=="10-HR2"],fixed=TRUE),
-  "CAGL0H05885g"%in%display[["CAGL ID"]],"FMP30"%in%display[["Gene name"]],
+  grepl(";",display[["Gene ID"]][display$Mutant=="10-HR2"],fixed=TRUE),
+  "CAGL0H05885g"%in%display[["Gene ID"]],"FMP30"%in%display[["Gene name"]],
   !any(grepl("^CP",display$Chromosome)),"Chr H"%in%display$Chromosome)
 candidate<-Filter(function(r)any(vapply(r$candidates,function(g)g$gene_id=="GWK60_H05819",FALSE)),fixture_data$results)[[1]]
 stopifnot(length(visible(ms_candidate_table(candidate,repo_root,project)))==5L,

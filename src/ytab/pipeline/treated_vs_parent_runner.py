@@ -1,6 +1,6 @@
 """Local raw-SummaryTable treated-versus-parent fitness orchestration.
 
-The scientific calculation remains in ``scripts/ytab_treated_vs_parent_screen.R``.
+The scientific calculation is ``ytab.fitness.zscore`` (run through ``scripts/local/ytab_fitness_zscore.py``).
 This module deliberately refuses every normalized input mode.
 """
 
@@ -9,6 +9,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import sys
 import re
 import shutil
 import subprocess
@@ -27,9 +28,6 @@ STATUS_COLUMNS = ["analysis_id", "status", "input_mode", "comparison_count",
                   "output_dir", "log_file", "elapsed_seconds", "message"]
 INPUT_MODE_ERROR = ("Treated-versus-parent analysis supports raw per-sample SummaryTable "
                     "inputs only. MidLC-normalized inputs are reserved for the essentiality classifier.")
-CPM_ERROR = ("CPM normalization could not be confirmed in "
-             "scripts/ytab_treated_vs_parent_screen.R. Step 11 requires the established "
-             "raw-summary to CPM workflow. Review the R script before continuing.")
 FITNESS_FEATURE_COLUMNS = {"feature_id", "gene_id", "standard_name", "gene", "id"}
 FITNESS_CALL_COLUMNS = {"final_call", "fitness_call", "call", "status"}
 
@@ -257,7 +255,20 @@ def detect_raw_summary_feature_table(config: dict, sample: str) -> Path:
     return selected[0]
 
 
-def inspect_treated_vs_parent_script(script_path: Path) -> dict:
+def inspect_treated_vs_parent_script(script_path: Path, normalization: str = "cpm") -> dict:
+    """Facts about the z-score implementation (ytab.fitness.zscore) and the chosen input normalization."""
+    from ytab.fitness import zscore
+    module = Path(zscore.__file__).resolve()
+    cpm = normalization in {"", "cpm", None}
+    return {"script": str(Path(script_path).resolve()), "implementation": str(module), "implementation_sha256": _sha256(module),
+            "cpm_normalization_detected": cpm, "cpm_detection_evidence": ["reads / total_feature_reads * 1e6 (ytab.fitness.zscore)"] if cpm else [],
+            "normalization_method": "counts per million (CPM)" if cpm else f"site normalization: {normalization}",
+            "pseudocount": str(zscore.Settings.pseudocount), "significance_thresholds": {"z_quantile": str(zscore.Settings.z_quantile)},
+            "fold_change_thresholds": {}, "multiple_testing_method": None,
+            "analysis_method": "local-abundance z-score: background-specific control-control noise model"}
+
+
+def _legacy_inspect_r_script(script_path: Path) -> dict:
     text = Path(script_path).read_text(encoding="utf-8")
     evidence = []
     for pattern, label in ((r"reads\s*/\s*total_feature_reads\s*\*\s*1e6", "reads / total_feature_reads * 1e6"),
@@ -274,7 +285,6 @@ def inspect_treated_vs_parent_script(script_path: Path) -> dict:
 
 
 def verify_cpm_normalization(script_inspection: dict) -> dict:
-    if not script_inspection.get("cpm_normalization_detected"): raise ValueError(CPM_ERROR)
     return script_inspection
 
 
@@ -293,7 +303,7 @@ def build_fitness_cache_context(config, analysis_id, comparisons, resolved_input
     inputs = {str(path): _sha256(Path(path)) for path in sorted(resolved_inputs["sample_files"].values(), key=str)}
     design = _paths(config)["design"]; script = Path(script_inspection["script"]); runner = Path(__file__)
     classifier_path = Path(classifier_annotation["prediction_table"]) if classifier_annotation else None
-    parameters = {"input_mode":"raw-summary", "normalization":"CPM inside R",
+    parameters = {"input_mode":"raw-summary", "normalization":script_inspection.get("normalization_method"),
                   "pseudocount":script_inspection.get("pseudocount"),
                   "z_threshold_quantile":(script_inspection.get("significance_thresholds") or {}).get("z_quantile"),
                   "analysis_method":script_inspection.get("analysis_method"), **(scientific_parameters or {})}
@@ -302,6 +312,8 @@ def build_fitness_cache_context(config, analysis_id, comparisons, resolved_input
                "comparison_definitions":selected, "comparison_set_sha256":_canonical_sha256(selected),
                "input_summary_hashes":inputs, "design_sha256":_sha256(design),
                "script_sha256":_sha256(script), "runner_sha256":_sha256(runner),
+               "implementation_sha256":script_inspection.get("implementation_sha256"),
+               "normalized_input":(scientific_parameters or {}).get("normalized_input"),
                "classifier_annotation":bool(classifier_annotation),
                "classifier_target":classifier_annotation.get("target_tag") if classifier_annotation else None,
                "classifier_hash":_sha256(classifier_path) if classifier_path else None,
@@ -339,6 +351,17 @@ def validate_treated_vs_parent_result_schema(path: Path) -> dict:
             "fitness_call_column": calls[0], "warnings": warnings}
 
 
+def parsed_fitness_error(log_path: Path) -> str:
+    try:
+        text = Path(log_path).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        text = ""
+    errors = re.findall(r"^ERROR:\s*(.+)$", text, re.M)
+    if errors:return f"Fitness analysis failed: {errors[-1].strip()} See technical details."
+    trace = re.findall(r"^\w+Error:\s*(.+)$", text, re.M)
+    return f"Fitness analysis failed: {trace[-1].strip()} See technical details." if trace else "Fitness analysis failed. See technical details."
+
+
 def parsed_fitness_r_error(log_path: Path) -> str:
     try:
         text = Path(log_path).read_text(encoding="utf-8", errors="replace")
@@ -365,21 +388,26 @@ def resolve_optional_classifier_annotation(config: dict, target: str | None = No
 
 def validate_treated_vs_parent_inputs(config, comparisons, resolved_inputs, script_inspection):
     errors = []
-    if not script_inspection.get("cpm_normalization_detected"): errors.append(CPM_ERROR)
     for sample, path in resolved_inputs.get("sample_files", {}).items():
         if not Path(path).is_file(): errors.append(f"Raw SummaryTable input is missing for {sample}: {path}")
     return errors
 
 
+def zscore_script(config: dict) -> Path:
+    """The z-score CLI of this code checkout (not of the project's recorded repository root)."""
+    return Path(__file__).resolve().parents[3] / "scripts" / "local" / "ytab_fitness_zscore.py"
+
+
 def build_treated_vs_parent_command(config, analysis_id, comparisons, resolved_inputs, output_dir,
-                                    classifier_annotation=None, extra_args=None):
-    root = Path(config["_repo_root"]); script = root / "scripts" / "ytab_treated_vs_parent_screen.R"
-    rscript = shutil.which("Rscript")
-    if not rscript: raise FileNotFoundError("Rscript was not found in the active environment or PATH.")
+                                    classifier_annotation=None, extra_args=None, normalized_input=None):
+    script = zscore_script(config)
     ids = ",".join(row["comparison_id"] for row in comparisons)
-    command = [rscript, str(script), "--project-id", str(config["project_id"]),
+    command = [sys.executable, str(script), "--project-id", str(config["project_id"]),
                "--comparison-design", str(_paths(config)["design"]), "--comparisons", ids,
                "--output-dir", str(output_dir), "--analysis-id", _safe_id(analysis_id)]
+    if normalized_input:
+        command.extend(["--normalized", str(normalized_input["run"]), "--normalization", normalized_input["method"], "--gff", str(normalized_input["gff"])])
+    # The SummaryTables also give gene annotation and library sizes when another normalization supplies the values.
     for sample, path in sorted(resolved_inputs["sample_files"].items()):
         command.extend(["--sample-table", f"{sample}={path}"])
     command.extend(extra_args or [])
@@ -467,10 +495,10 @@ def write_treated_vs_parent_metadata(config, analysis_id, comparisons, resolved_
                 "treated_samples": sorted({r["treated_sample"] for r in comparisons}),
                 "raw_summary_input_files": {k: str(v) for k,v in resolved_inputs["sample_files"].items()},
                 "input_file_sha256": {k: _sha256(v) for k,v in resolved_inputs["sample_files"].items()},
-                "R_script": script_inspection["script"], "R_script_sha256": _sha256(Path(script_inspection["script"])),
-                "R_version": r_environment.get("R_version"),
-                "relevant_R_package_versions": r_environment.get("packages", {}),
-                "cpm_normalization_detected": True, "cpm_detection_evidence": script_inspection["cpm_detection_evidence"],
+                "implementation": script_inspection.get("implementation"), "implementation_sha256": script_inspection.get("implementation_sha256"),
+                "script": script_inspection["script"], "script_sha256": _sha256(Path(script_inspection["script"])),
+                "runtime_versions": r_environment.get("packages", {}),
+                "cpm_normalization_detected": script_inspection["cpm_normalization_detected"], "cpm_detection_evidence": script_inspection["cpm_detection_evidence"],
                 "normalization_method": script_inspection["normalization_method"], "analysis_method": script_inspection["analysis_method"],
                 "pseudocount": script_inspection["pseudocount"], "significance_thresholds": script_inspection["significance_thresholds"],
                 "fold_change_thresholds": script_inspection["fold_change_thresholds"], "multiple_testing_method": None,
@@ -487,7 +515,7 @@ def _r_environment(outputs):
     rows = _read_csv(path)
     if not rows: return {}
     row = rows[0]
-    return {"R_version": row.pop("R_version", None), "packages": row}
+    return {"R_version": row.pop("R_version", None), "packages": row}  # now Python package versions (ytab.fitness.zscore)
 
 
 def _write_status(path, result):
@@ -504,7 +532,7 @@ def run_treated_vs_parent_project(project_config: Path, analysis_id="treated_vs_
                                   comparison_design=None, comparisons=None, input_mode="auto",
                                   classifier_target=None, annotate_classifier=False, force=False,
                                   dry_run=False, keep_going=False, extra_args=None,
-                                  job_id=None, progress_file=None):
+                                  job_id=None, progress_file=None, normalization="cpm", normalization_run=None):
     started = time.monotonic(); start_time = _now(); config = load_project_for_treated_vs_parent(project_config)
     aid = _safe_id(analysis_id); paths = _paths(config, aid)
     design = Path(comparison_design).resolve() if comparison_design else infer_comparison_design(config)
@@ -514,13 +542,22 @@ def run_treated_vs_parent_project(project_config: Path, analysis_id="treated_vs_
     if not validation["valid"]: raise ValueError("Comparison design has unresolved issues; review " + str(_paths(config)["issues"]))
     selected = get_included_comparisons(rows, comparisons)
     resolved = resolve_treated_vs_parent_inputs(config, selected, input_mode)
-    script = Path(config["_repo_root"]) / "scripts" / "ytab_treated_vs_parent_screen.R"
-    inspection = verify_cpm_normalization(inspect_treated_vs_parent_script(script))
+    script = zscore_script(config)
+    normalization = (normalization or "cpm").lower() if normalization != "cpm" else "cpm"
+    normalized_input = None
+    if normalization != "cpm":
+        if not normalization_run: raise ValueError("A normalization other than CPM needs a Site Normalization run (--normalization-run).")
+        reference = config.get("reference") or {}
+        gff = _resolve(reference.get("gff"), Path(config["_repo_root"]))
+        if gff is None or not Path(gff).is_file(): raise ValueError("The project reference has no GFF for gene totals.")
+        normalized_input = {"run": str(Path(normalization_run).resolve()), "method": normalization, "gff": str(gff)}
+    inspection = verify_cpm_normalization(inspect_treated_vs_parent_script(script, normalization))
     errors = validate_treated_vs_parent_inputs(config, selected, resolved, inspection)
     if errors: raise ValueError("\n".join(errors))
     annotation = resolve_optional_classifier_annotation(config, classifier_target) if annotate_classifier else None
-    command = build_treated_vs_parent_command(config, aid, selected, resolved, paths["output"], annotation, extra_args)
-    cache_key = build_fitness_cache_context(config, aid, selected, resolved, inspection, annotation)
+    command = build_treated_vs_parent_command(config, aid, selected, resolved, paths["output"], annotation, extra_args, normalized_input)
+    cache_key = build_fitness_cache_context(config, aid, selected, resolved, inspection, annotation,
+                                            {"normalized_input": normalized_input} if normalized_input else None)
     job_id=job_id or make_job_id("fitness_analysis");progress_file=Path(progress_file) if progress_file else paths["project"]/"manifests"/"jobs"/f"{job_id}.progress.json"
     selected_ids=[row["comparison_id"] for row in selected];tracker=ProgressTracker.create(progress_file,job_id,str(config.get("project_id")),"Fitness Analysis",[aid],command=command);tracker.state.update(dry_run=dry_run,execution_mode="preview" if dry_run else "run",analysis_id=aid,comparison_count=len(selected),selected_comparisons=selected_ids,selected_comparison_count=len(selected),comparison_set_label="All valid comparisons" if len(selected)==len(get_included_comparisons(rows)) else"Selected subset",classifier_annotation=bool(annotation),force=force,keep_going=keep_going);tracker.start("Validating design");tracker.start_item(aid,1,"validating design")
     if not force and paths["manifest"].is_file() and paths["stable"].is_file():
@@ -536,16 +573,17 @@ def run_treated_vs_parent_project(project_config: Path, analysis_id="treated_vs_
               "stable_result_table":str(paths["stable"]), "comparison_summary_file":str(paths["summary"]),
               "run_metadata_file":str(paths["metadata"]), "log_file":str(paths["log"]), "status":"failed",
               "start_time":start_time, "command_run":command, "warnings":[], "cached_from":None,
-              "normalization":"CPM", "scientific_parameters":cache_key["scientific_parameters"], **cache_key}
+              "normalization":"CPM" if normalized_input is None else normalization, "normalized_input":normalized_input,
+              "method":"local-abundance z-score", "scientific_parameters":cache_key["scientific_parameters"], **cache_key}
     try:
         if dry_run:
             manifest["status"]="dry-run"; manifest["detected_outputs"]=[]
         else:
             paths["output"].mkdir(parents=True, exist_ok=True); paths["log"].parent.mkdir(parents=True, exist_ok=True); paths["manifest"].parent.mkdir(parents=True, exist_ok=True)
-            tracker.phase("loading raw summaries","Loading raw SummaryTable inputs");tracker.phase("calculating CPM","Running validated raw-summary CPM analysis")
+            tracker.phase("loading inputs","Loading gene values");tracker.phase("calculating z-scores","Running the local-abundance z-score analysis")
             with paths["log"].open("w", encoding="utf-8") as log:
                 completed=subprocess.run(command, cwd=config["_repo_root"], stdout=log, stderr=subprocess.STDOUT, text=True)
-            if completed.returncode: raise RuntimeError(parsed_fitness_r_error(paths["log"]))
+            if completed.returncode: raise RuntimeError(parsed_fitness_error(paths["log"]))
             outputs=detect_treated_vs_parent_outputs(paths["output"])
             try:
                 stable=create_stable_treated_vs_parent_outputs(config, aid, selected, outputs)
@@ -565,7 +603,7 @@ def run_treated_vs_parent_project(project_config: Path, analysis_id="treated_vs_
             tracker.phase("exporting results","Writing stable and run-specific outputs")
             paths["export"].mkdir(parents=True, exist_ok=True)
             for item in (paths["stable"], paths["summary"], paths["metadata"]): shutil.copy2(item, paths["export"] / item.name)
-            manifest.update(status="success", detected_outputs=[str(p) for p in outputs], R_version=runtime.get("R_version"), relevant_R_package_versions=runtime.get("packages",{}), **stable, **annotation_counts)
+            manifest.update(status="success", detected_outputs=[str(p) for p in outputs], runtime_versions=runtime.get("packages",{}), **stable, **annotation_counts)
     except Exception as exc:
         manifest["error_message"]=str(exc)
     manifest["end_time"]=_now(); manifest["elapsed_seconds"]=round(time.monotonic()-started,3)

@@ -1,37 +1,36 @@
+project_module_ui <- function() navset_tab(id="project_tabs",
+  nav_panel("Samples",value="samples",panel_card("Project and samples",uiOutput("project_metadata_ui"),actionButton("edit_sample_names","Edit sample names"),DT::DTOutput("sample_sheet_table"))),
+  nav_panel("Logs & Provenance",value="provenance",panel_card("Logs and provenance",uiOutput("provenance_ui"),uiOutput("last_job_summary"),verbatimTextOutput("pipeline_job_text_logs"))),
+  nav_panel("Help",value="help",panel_card("Quick start",uiOutput("help_ui"),low_memory_note())))
+
+reports_exports_modal <- function() modalDialog(title="Reports and exports",size="m",easyClose=TRUE,
+  uiOutput("results_readiness"),
+  tags$p("Build a summary report of the project, or a compact bundle of its result tables and plots to share."),
+  tags$div(class="ytab-actions",actionButton("build_project_report","Build project summary report"),actionButton("build_export_bundle","Create compact export bundle")),
+  tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("exports_text")),
+  footer=modalButton("Close"))
+
+gene_explorer_module_ui <- function() navset_tab(id="gene_explorer_tabs",
+  nav_panel("Genome Browser",value="browser",genome_browser_ui()),
+  nav_panel("Gene & Domain Insertions",value="gene_domain",gene_domain_explorer_ui()),
+  nav_panel("GO Enrichment",value="go",go_analysis_ui()),
+  nav_panel("Across Species",value="comparative",comparative_ui()))
+
 workspace_ui <- function(detected_cpu) {
   tags$div(class="ytab-workspace",
     tags$header(class="ytab-workspace-header ytab-release-header",
       tags$div(tags$h2("YTAB"), tags$p(class="ytab-release-subtitle","Yeast Transposon Analysis Browser")),
       project_badge(),
+      actionButton("open_reports_exports", "Reports & exports"),
       actionButton("switch_project", "Switch project")),
     job_progress_ui("global_job",compact=TRUE),
     navbarPage(id="workspace_tabs", title=NULL, collapsible=TRUE, inverse=TRUE,
-      tabPanel("Overview",value="overview", panel_card("Project overview", uiOutput("overview_ui"), uiOutput("overview_actions"), tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("project_status_text")))),
-      tabPanel("Project & Data",value="project_data",navset_tab(id="project_data_tabs",
-        nav_panel("Project",value="project",panel_card("Project metadata",uiOutput("project_metadata_ui"))),
-        nav_panel("Samples",value="samples",panel_card("Project sample sheet",uiOutput("sample_metadata_summary"),DT::DTOutput("sample_sheet_table"))),
-        nav_panel("Reference",value="reference",panel_card("Reference resources",uiOutput("reference_readiness_ui_project"))),
-        nav_panel("Files",value="files",panel_card("Project files",uiOutput("project_files_ui"))))),
-      tabPanel("Pipeline",value="pipeline", panel_card("Profile orchestrator",
-        selectInput("pipeline_profile","Profile",c("core","classifier","fitness","all"),"all"), sliderInput("pipeline_threads","Threads",1,max(2,detected_cpu),2),
-        textInput("pipeline_target","Classifier target","recommended"), textInput("pipeline_analysis_id","Fitness analysis ID","treated_vs_parent_raw_cpm"),
-        actionButton("preview_pipeline","Preview plan"), actionButton("run_pipeline","Run selected profile",class="btn-primary"), actionButton("cancel_pipeline","Cancel current job"), tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("pipeline_job_text")))),
-      tabPanel("Preprocessing",value="preprocessing", preprocessing_ui()),
+      tabPanel("Project",value="project",project_module_ui()),
+      tabPanel("Run",value="run",run_module_ui(detected_cpu)),
       tabPanel("Quality Control",value="quality_control",quality_control_ui()),
-      tabPanel("Essentiality",value="essentiality", essentiality_ui()),
-      tabPanel("Fitness Screen",value="fitness",fitness_ui()),
-      tabPanel("GO Analysis",value="go_analysis",go_analysis_ui()),
-      tabPanel("Screen Coverage",value="screen_coverage",screen_coverage_ui()),
-      tabPanel("Gene & Domain Insertion Explorer",value="gene_domain_explorer",gene_domain_explorer_ui()),
-      tabPanel("Comparative Species",value="comparative_species",comparative_ui()),
-      tabPanel("Genome Browser",value="genome_browser",genome_browser_ui()),
-      tabPanel("Results & Exports",value="results_exports", panel_card("Reports and exports",
-        ytab_two_column_layout(
-          controls=ytab_control_panel("Export actions",
-            uiOutput("results_readiness"),
-            tags$div(class="ytab-actions",actionButton("build_project_report","Build project summary report"),actionButton("build_export_bundle","Create compact export bundle"),actionButton("refresh_exports","Refresh exports")),
-            tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("exports_text"))),
-          main=tagList(ytab_section_header("Results browser","Files are grouped by display purpose. Long paths are hidden by default."),DT::DTOutput("results_exports_table"),tags$details(class="ytab-more-options",tags$summary("Show project/export roots"),uiOutput("results_exports_roots")))))),
-      tabPanel("Logs & Provenance",value="logs_provenance",panel_card("Logs and provenance",uiOutput("provenance_ui"),uiOutput("last_job_summary"),verbatimTextOutput("pipeline_job_text_logs"))),
-      tabPanel("Help",value="help",panel_card("Quick start",uiOutput("help_ui"),low_memory_note()))))
+      tabPanel("Normalization",value="normalization",normalization_module_ui()),
+      tabPanel("Condition Comparisons",value="fitness",comparisons_module_ui()),
+      tabPanel("Essentiality",value="essentiality",essentiality_module_ui()),
+      tabPanel("Gene Explorer",value="gene_explorer",gene_explorer_module_ui()),
+      tabPanel("Screen Planning",value="screen_coverage",screen_coverage_ui())))
 }

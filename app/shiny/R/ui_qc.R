@@ -19,7 +19,7 @@ format_qc_metrics <- function(data, count_columns=character(), percentage_column
 mapping_qc_data <- function(project) {
   raw<-read_qc_csvs(file.path(project$project_root,"mapfastq"),"mapping_stats.*\\.csv$"); if(!nrow(raw))return(raw)
   sample<-raw$sample %||% basename(dirname(raw$.source)); bam<-file.path(project$project_root,"mapfastq",sample,paste0(sample,".sorted.bam"))
-  result<-data.frame(Sample=sample,check.names=FALSE,stringsAsFactors=FALSE)
+  result<-data.frame(Sample=ytab_sample_labels(sample,project),check.names=FALSE,stringsAsFactors=FALSE)
   available<-list(`Reads processed`="total_records",`Aligned reads`="primary_mapped",`Alignment percentage`="percent_mapped")
   for(label in names(available))if(available[[label]]%in%names(raw))result[[label]]<-raw[[available[[label]]]]
   result$BAM<-ifelse(file.exists(bam),"Available","Missing");result$`Mapping statistics`<-"Available"
@@ -32,6 +32,7 @@ summary_qc_data <- function(project) {
   wanted<-c("sample","total_reads","total_hits","percent_hits_in_features","percent_intergenic_hits","percent_features_hit","mean_hits_per_feature"); visible<-raw[intersect(wanted,names(raw))]
   names(visible)<-c(sample="Sample",total_reads="Total reads",total_hits="Total hits",percent_hits_in_features="Hits in features",percent_intergenic_hits="Intergenic hits",percent_features_hit="Features hit",mean_hits_per_feature="Mean hits / feature")[names(visible)]
   detail_names<-setdiff(names(raw),c(wanted,".source"));details<-raw[,c("sample",detail_names),drop=FALSE];details$source<-vapply(raw$.source,relative_project_path,"",project_root=project$project_root);attr(visible,"details")<-details
+  if ("Sample" %in% names(visible)) visible$Sample <- ytab_sample_labels(visible$Sample, project)
   format_qc_metrics(visible,c("Total reads","Total hits"),c("Hits in features","Intergenic hits","Features hit"),"Mean hits / feature")
 }
 
@@ -53,7 +54,7 @@ summary_qc_cards <- function(project) {
 summary_qc_role_value <- function(values) {
   values <- tolower(paste(stats::na.omit(as.character(values)), collapse = " "))
   if (!nzchar(values)) return(NA_character_)
-  if (grepl("\\btreated\\b|zn-treated|h2o2-treated|1_5mm|h2o2", values)) return("treated")
+  if (grepl("\\btreated\\b", values)) return("treated")
   if (grepl("\\bcontrol\\b|\\bmock\\b|\\bparent\\b|classifier_control", values)) return("control")
   NA_character_
 }
@@ -219,7 +220,9 @@ summary_qc_insertion_role_stats <- function(project) {
   data
 }
 
-summary_qc_sample_label <- function(sample, role = "", pool = "") {
+summary_qc_sample_label <- function(sample, role = "", pool = "", project = NULL) {
+  alias <- ytab_sample_labels(sample, project)
+  if (!identical(alias, as.character(sample))) return(alias)
   role_label <- if (identical(role, "control")) "Parent/control" else if (identical(role, "treated")) "Treated" else "Sample"
   pool <- as.character(pool %||% "")
   if (nzchar(pool) && !identical(pool, "NA")) return(paste(role_label, paste0("pool ", pool)))
@@ -257,7 +260,7 @@ summary_qc_pool_insertion_stats_raw <- function(project) {
       `Sample group` = role_label,
       sample = sample,
       Pool = pool,
-      `Display sample` = summary_qc_sample_label(sample, role, pool),
+      `Display sample` = summary_qc_sample_label(sample, role, pool, project),
       `Total hit count` = summary_qc_read_hit_count_total(project, sample),
       `Unique insertion sites` = length(unique(sites$insertion_site)),
       stringsAsFactors = FALSE,
@@ -350,16 +353,17 @@ summary_qc_gene_hit_bins_raw <- function(project, roles = c("control", "treated"
     pool <- summary_qc_pool_value(metadata, sample, c("pool", "pool_id", "guessed_pool", "replicate_id"))
     data$Pool <- pool
     data$`Sample group` <- if (identical(role, "control")) "Parents / controls" else "Treated"
-    data$`Display sample` <- summary_qc_sample_label(sample, role, pool)
+    data$`Display sample` <- summary_qc_sample_label(sample, role, pool, project)
     data
   })
   features <- do.call(rbind, Filter(Negate(is.null), feature_rows))
   if (is.null(features) || !nrow(features)) return(data.frame())
   features$hits[is.na(features$hits)] <- 0
   mode <- if (identical(mode, "combined")) "combined" else "per_pool"
-  bin_levels <- c("0", "1", "2", "3", "4", "\u22655")
+  # Insertion sites per gene: 0, 1-3, 4-7, 8-9, 10-19, >=20. Wider upper bins keep dense libraries from piling up in the top bin.
+  bin_levels <- c("0", "1\u20133", "4\u20137", "8\u20139", "10\u201319", "\u226520")
   make_bins <- function(data, group_label, role = "", sample = "", sample_group = "") {
-    bins <- ifelse(data$hits >= 5, "\u22655", as.character(pmax(0, pmin(4, floor(data$hits)))))
+    bins <- as.character(cut(floor(data$hits), c(-Inf, 0, 3, 7, 9, 19, Inf), labels = bin_levels))
     counts <- as.data.frame(table(factor(bins, levels = bin_levels)), stringsAsFactors = FALSE)
     names(counts) <- c("Hit bin", "Genes")
     counts$Genes <- as.integer(counts$Genes)
@@ -488,20 +492,24 @@ plot_qc_summary_insertion_role_stats <- function(project) {
   qc_plot_reset_layout()
   layout(matrix(c(1, 2), nrow = 1), widths = c(1, 1))
 
-  draw_metric <- function(values, title, ylab, value_digits = 0L) {
+  draw_metric <- function(values, title, ylab, value_digits = 0L, count_axis = FALSE) {
     display_labels <- qc_plot_display_labels(labels)
     old_par <- qc_plot_par(mar = c(qc_plot_label_margin_lines(display_labels, angle = 0L, orientation = "vertical") + 1.0,
-                                  7.0, 4.2, 2.2))
+                                  8.0, 4.2, 2.2), mgp = c(6.0, 0.9, 0))
     on.exit(par(old_par), add = TRUE)
     values <- as.numeric(values)
-    limit <- max(values, na.rm = TRUE)
+    display <- if (count_axis) qc_plot_count_display(values, getOption("ytab.plot.count_scale", "thousands")) else
+      list(values = values, divisor = 1, suffix = "")
+    plotted <- display$values
+    limit <- max(plotted, na.rm = TRUE)
     if (!is.finite(limit) || limit <= 0) limit <- 1
-    at <- barplot(values, names.arg = rep("", length(values)), axes = FALSE,
+    at <- barplot(plotted, names.arg = rep("", length(values)), axes = FALSE,
                   ylim = c(0, limit * 1.18),
                   col = fills, border = qc_plot_border, lwd = max(1.7, qc_plot_lwd),
-                  ylab = ylab, main = title)
+                  ylab = paste0(ylab, display$suffix), main = title)
     qc_plot_add_grid(FALSE)
-    axis(2)
+    ticks <- axTicks(2)
+    axis(2, at = ticks, labels = qc_plot_axis_labels(ticks / display$divisor), las = 1)
     qc_plot_draw_vertical_labels(at, labels, angle = 0L, cex = qc_plot_label_cex(0.92))
     if (show_values) {
       value_labels <- if (value_digits > 0L) {
@@ -509,7 +517,7 @@ plot_qc_summary_insertion_role_stats <- function(project) {
       } else {
         format(round(values), big.mark = ",", trim = TRUE)
       }
-      text(at, values, labels = value_labels, pos = 3, xpd = NA,
+      text(at, plotted, labels = value_labels, pos = 3, xpd = NA,
            font = 2, cex = qc_plot_value_cex(0.88))
     }
     box()
@@ -518,7 +526,7 @@ plot_qc_summary_insertion_role_stats <- function(project) {
   draw_metric(data$`Total unique insertions`,
               "Total unique insertions",
               "Unique insertion sites",
-              value_digits = 0L)
+              value_digits = 0L, count_axis = TRUE)
   draw_metric(data$`Average insertions / gene`,
               "Average insertions per gene",
               "Insertions per gene",
@@ -598,171 +606,6 @@ filter_diagnostic_inventory <- function(data,sample="All",plot_type="All",sample
 }
 paginate_diagnostic_inventory <- function(data,page=1L,page_size=8L) {pages<-max(1L,ceiling(nrow(data)/page_size));page<-max(1L,min(as.integer(page),pages));start<-(page-1L)*page_size+1L;rows<-if(nrow(data)&&start<=nrow(data))seq.int(start,min(start+page_size-1L,nrow(data)))else integer();list(data=data[rows,,drop=FALSE],page=page,pages=pages,total=nrow(data))}
 
-qc_mapping_ui <- function() panel_card(
-  "Mapping QC",
-  ytab_two_column_layout(
-    controls = ytab_control_panel(
-      "Mapping display",
-      uiOutput("mapping_qc_readiness"),
-      selectInput("mapping_qc_plot_choice", "Visualization",
-                  choices = c("Total and mapped reads" = "read_counts",
-                              "Percent mapped reads" = "percent_mapped",
-                              "Mapping quality score" = "mapq"),
-                  selected = "read_counts"),
-      uiOutput("mapping_qc_plot_controls"),
-      tags$details(
-        class = "ytab-more-options",
-        tags$summary("Tables / downloads"),
-        tags$div(class = "ytab-actions",
-                 downloadButton("download_mapping_qc_plot", "Download plot"),
-                 downloadButton("download_mapping_qc_plotted_data", "Download plotted data"),
-                 downloadButton("download_mapping_qc_table", "Download mapping summary"),
-                 downloadButton("download_mapping_qc_details", "Download file details")),
-        DT::DTOutput("mapping_qc_table"),
-        tags$details(tags$summary("File details"), DT::DTOutput("mapping_qc_details"))
-      )
-    ),
-    main = ytab_plot_card(
-      "Mapping summary",
-      tagList(
-        uiOutput("mapping_qc_selected_plot"),
-        tags$details(class = "ytab-more-options",
-                     tags$summary("Plot provenance"),
-                     tags$p(class = "text-muted",
-                            "Rendered from existing mapping statistics tables."))
-      )
-    )
-  )
-)
-
-qc_summary_ui <- function() panel_card(
-  "Summary QC",
-  ytab_two_column_layout(
-    controls = ytab_control_panel(
-      "Summary display",
-      uiOutput("summary_qc_readiness"),
-      selectInput(
-        "summary_qc_plot_choice", "Visualization",
-        choices = c("Library complexity" = "complexity",
-                    "Features hit" = "features",
-                    "Combined features hit" = "combined_features",
-                    "Parent/treated insertion summary" = "insertion_role_stats",
-                    "Insertion counts per pool" = "insertion_pool_stats",
-                    "Genes by insertion count" = "gene_hit_bins",
-                    "Reads per insertion site" = "reads_per_hit",
-                    "Feature vs intergenic hits" = "feature_intergenic",
-                    "Genome-wide binned signal" = "genome_bins",
-                    "Library concordance" = "pairwise")
-      ),
-      uiOutput("summary_qc_combined_group_selector"),
-      uiOutput("summary_qc_insertion_pool_selector"),
-      uiOutput("summary_qc_gene_hit_bin_selector"),
-      uiOutput("summary_qc_plot_controls"),
-      tags$details(
-        class = "ytab-more-options",
-        tags$summary("Tables / downloads"),
-        uiOutput("summary_qc_cards"),
-        tags$h5("Parent/treated insertion summary"),
-        tags$p(class = "text-muted",
-               "Role-level totals are calculated from per-sample SummaryTable hit positions and feature tables."),
-        DT::DTOutput("summary_qc_insertion_role_stats_table"),
-        tags$div(class = "ytab-actions",
-                 downloadButton("download_summary_qc_plot", "Download plot"),
-                 downloadButton("download_summary_qc_plotted_data", "Download plotted data"),
-                 downloadButton("download_summary_qc_table", "Download summary table"),
-                 downloadButton("download_summary_qc_details", "Download detailed metrics"),
-                 downloadButton("download_summary_qc_insertion_role_stats", "Download parent/treated insertion summary")),
-        DT::DTOutput("summary_qc_table"),
-        tags$details(tags$summary("Detailed metrics"), DT::DTOutput("summary_qc_details"))
-      )
-    ),
-    main = ytab_plot_card(
-      "Summary QC",
-      tagList(
-        uiOutput("summary_qc_selected_plot"),
-        tags$details(class = "ytab-more-options",
-                     tags$summary("Plot provenance"),
-                     tags$p(class = "text-muted",
-                            "Rendered from existing SummaryTable outputs."))
-      )
-    )
-  )
-)
-
-qc_library_diagnostics_ui <- function() panel_card(
-  "Library Diagnostics",
-  tags$section(
-    class = "ytab-qc-section",
-    tags$h4("1. Select samples"),
-    uiOutput("library_diagnostics_readiness"),
-    uiOutput("qc_current_selection"),
-    selectizeInput("qc_samples", "Samples to diagnose", choices = character(),
-                   multiple = TRUE, options = list(placeholder = "Select samples…")),
-    uiOutput("qc_sample_presets"),
-    uiOutput("qc_selection_message"),
-    tags$details(tags$summary("Review eligible samples"), DT::DTOutput("qc_sample_preview"))
-  ),
-  tags$section(
-    class = "ytab-qc-section",
-    tags$h4("2. Configure and run"),
-    radioButtons("library_diagnostics_mode", "Execution mode",
-                 choices = list("Preview command" = "preview", "Run diagnostics" = "run"),
-                 selected = "preview", inline = TRUE),
-    uiOutput("qc_execution_summary"),
-    uiOutput("library_diagnostics_cache_ui"),
-    uiOutput("library_diagnostics_action")
-  ),
-  tags$section(
-    class = "ytab-qc-section",
-    tags$h4("3. Results"),
-    ytab_two_column_layout(
-      controls = ytab_control_panel(
-        "Diagnostics display",
-        selectInput("library_diagnostics_plot_choice", "Visualization",
-                    choices = c("MidLC saturation" = "midlc",
-                                "Jackpots and library depth" = "jackpot",
-                                "Centromere bias" = "centromere",
-                                "Feature metaplots" = "metaplots",
-                                "Sequence bias" = "sequence_bias")),
-        uiOutput("library_diagnostics_group_selector"),
-        uiOutput("library_diagnostics_metaplot_selector"),
-        selectInput("library_diagnostics_color_by", "Color by",
-                    choices = qc_library_color_choices(), selected = "group"),
-        uiOutput("library_diagnostics_plot_controls"),
-        tags$details(
-          class = "ytab-more-options",
-          tags$summary("Downloads"),
-          tags$div(class = "ytab-actions",
-                   downloadButton("download_library_diagnostics_plot", "Download plot"),
-                   downloadButton("download_library_diagnostics_plotted_data", "Download plotted data"))
-        ),
-        tags$details(class = "ytab-technical-details", tags$summary("Technical details"),
-                     tags$div(class = "ytab-technical-console",
-                              verbatimTextOutput("library_diagnostics_technical")))
-      ),
-      main = ytab_plot_card("Library Diagnostics",
-                            uiOutput("library_diagnostics_selected_plot"))
-    )
-  )
-)
-qc_files_ui <- function() panel_card(
-  "Diagnostic Files",
-  ytab_two_column_layout(
-    controls = ytab_control_panel(
-      "Diagnostic file display",
-      actionButton("refresh_diagnostic_files", "Refresh diagnostic files", class = "btn-secondary"),
-      uiOutput("diagnostic_result_selector"),
-      uiOutput("diagnostic_file_filters"),
-      checkboxInput("diagnostic_show_archived_static",
-                    "Show archived/static generated image files", FALSE)
-    ),
-    main = ytab_plot_card(
-      "Diagnostic files",
-      tagList(
-        uiOutput("diagnostic_files_empty"),
-        DT::DTOutput("diagnostic_files_table")
-      )
-    )
-  )
-)
-quality_control_ui <- function() navset_tab(id="qc_tabs",nav_panel("Mapping QC",value="mapping_qc",qc_mapping_ui()),nav_panel("Summary QC",value="summary_qc",qc_summary_ui()),nav_panel("Library Diagnostics",value="library_diagnostics",qc_library_diagnostics_ui()),nav_panel("Diagnostic Files",value="diagnostic_files",qc_files_ui()))
+# The Mapping QC, Summary QC and Library Diagnostics panels were replaced by the Quality Control plot menus (qc_module.R);
+# the data functions above feed those plots.
+# quality_control_ui() is in qc_module.R (Overview table + themed subtabs).

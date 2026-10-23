@@ -1,0 +1,31 @@
+{
+  "genes": 6201,
+  "centromeres": 8,
+  "trnas": 126,
+  "chromosomes": 8,
+  "labels": {
+    "gold": {
+      "essential": 271,
+      "nonessential": 1695
+    },
+    "silver": {
+      "essential": 729,
+      "nonessential": 1815
+    }
+  },
+  "unlabelled": {
+    "orthology no ortholog": 1524,
+    "S. cerevisiae ortholog without viability data": 67,
+    "C. albicans direct evidence conflict": 49,
+    "S. cerevisiae conflict": 43,
+    "C. albicans direct evidence conditional": 8
+  },
+  "gold_vs_sc_ortholog": {
+    "genes": 1256,
+    "agree": 1099
+  },
+  "comparator_only_transposon": {
+    "labelled_genes_with_call": 4448,
+    "agree": 3827
+  }
+}

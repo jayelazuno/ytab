@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import os
 import json
 import math
 import re
@@ -1105,6 +1106,23 @@ def _write_insertions_table(rows: list[dict[str, Any]], table_path: Path) -> Non
             writer.writerow({key: row.get(key, "") for key in fieldnames})
 
 
+SAVED_QUERY_LIMIT = 500  # saved gene queries kept per project (most recently used); older ones are rebuilt on demand
+
+
+def _limit_saved_queries(base: Path, keep: int = SAVED_QUERY_LIMIT) -> int:
+    """Removes the least recently used saved queries beyond `keep`: their manifest, figure and table under `base`.
+    Each is a deterministic function of its query settings (the file name holds their hash), so a removed query is
+    rebuilt identically when asked for again. Files outside `base` (a custom --output figure) are never touched."""
+    manifests = sorted((base/"manifests").glob("*.json"), key=lambda p:p.stat().st_mtime, reverse=True)
+    removed = 0
+    for manifest in manifests[keep:]:
+        stem = manifest.name[:-len(".json")]
+        for path in (manifest, base/"figures"/f"{stem}.png", base/"tables"/f"{stem}.insertions.csv"):
+            if path.is_file():path.unlink()
+        removed += 1
+    return removed
+
+
 def run_gene_domain_explorer(
     project_config: str | Path,
     query: str,
@@ -1223,4 +1241,6 @@ def run_gene_domain_explorer(
             manifest["status"] = "cached"
         except Exception:
             pass
+        os.utime(manifest_path)   # reused: most recently used
+    _limit_saved_queries(base)
     return {"status": manifest.get("status", "success"), "gene": payload["gene"], "payload": payload, "manifest": manifest}

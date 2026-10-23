@@ -63,3 +63,6 @@ __pycache__/
 /output/**/manifests/orchestrator/current_job.json
 /output/**/config/argon_fastq_inputs/
 
+
+# Obsolete material kept for reference, not part of the app (see archive/ARCHIVE_MANIFEST.md)
+/archive/
