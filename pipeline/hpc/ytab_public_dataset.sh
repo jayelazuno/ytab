@@ -1,7 +1,7 @@
 #!/bin/bash
 # Download or process one public dataset described in pipeline/hpc/datasets/<dataset>/ (samples.csv, dataset.env).
 # Run on the Argon login node from the YTAB checkout:
-#   bash pipeline/hpc/ytab_public_dataset.sh <dataset> download          # qsub the download job
+#   bash pipeline/hpc/ytab_public_dataset.sh <dataset> download          # qsub the download job (NCBI SRA; SOURCE=ena for ENA)
 #   bash pipeline/hpc/ytab_public_dataset.sh <dataset> submit [options]  # create the project, submit its stage chain
 #   bash pipeline/hpc/ytab_public_dataset.sh <dataset> status            # files downloaded and verified
 # submit options go to argon_pipeline.py submit (default --profile core: reference, mapping, hit files, SummaryTable,
@@ -21,7 +21,7 @@ case "$ACTION" in
   download)
     mkdir -p "$DATA_ROOT/$DATASET/logs"
     cd "$YTAB"
-    qsub -v "DATASET=$DATASET,YTAB=$YTAB,DATA_ROOT=$DATA_ROOT" -N "YTAB_dl_${DATASET:0:20}" \
+    qsub -v "DATASET=$DATASET,YTAB=$YTAB,DATA_ROOT=$DATA_ROOT,SOURCE=${SOURCE:-sra}${PARALLEL:+,PARALLEL=$PARALLEL}" -N "YTAB_dl_${DATASET:0:20}" \
          -o "$DATA_ROOT/$DATASET/logs/qsub.log" "$YTAB/pipeline/hpc/ytab_download_public.txt"
     ;;
   status)

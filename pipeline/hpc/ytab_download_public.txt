@@ -3,21 +3,27 @@
 #$ -cwd
 #$ -N YTAB_download
 #$ -q UI
-#$ -pe smp 4
+#$ -pe smp 8
 #$ -M jayelazuno@uiowa.edu
 #$ -m e
 #$ -j y
 
 ## Download the sequencing runs of one public dataset (pipeline/hpc/datasets/<DATASET>/samples.csv).
-## Submit:   qsub -v DATASET=segal_2018_albicans -N YTAB_dl_segal pipeline/hpc/ytab_download_public.txt
-##           (or: bash pipeline/hpc/ytab_public_dataset.sh <dataset> download)
-## Resubmit the same command to resume; completed runs are verified and skipped. One copy per dataset at a time.
+## Submit:   bash pipeline/hpc/ytab_public_dataset.sh <dataset> download
+##           (or: qsub -v DATASET=segal_2018_albicans pipeline/hpc/ytab_download_public.txt)
+## Resubmit the same command to resume; finished files are skipped. One copy per dataset at a time.
 ##
 ## Each `sample` in samples.csv is a run accession (SRR/ERR/DRR) or an experiment (SRX/ERX), resolved through ENA.
-## FASTQs are downloaded from ENA over HTTPS and checked against ENA's MD5:
+## SOURCE=sra (default): NCBI SRA (prefetch, vdb-validate, fasterq-dump, pigz), usually much faster than ENA from
+##   the US; ERR runs are mirrored at NCBI. A run is accepted when its archive validates and its read count equals
+##   ENA's. A run that fails on SRA is downloaded from ENA instead.
+## SOURCE=ena: ENA's FASTQs over HTTPS, checked against ENA's MD5 (ENA can be slow and occasionally serves an error
+##   page, which the MD5 check rejects).
+## PARALLEL runs (sra, default 3) or files (ena, default 6) are processed at once; the job's slots are shared out.
+## Output, the same for both sources:
 ##   $DATA_ROOT/<DATASET>/fastq/<study>/<run>/<run>.fastq.gz           single-end
-##   $DATA_ROOT/<DATASET>/fastq/<study>/<run>/<run>_1|_2.fastq.gz      paired-end (unpaired orphan files are skipped)
-## Sample IDs therefore follow the run accession, which is the `sample` the manifest describes.
+##   $DATA_ROOT/<DATASET>/fastq/<study>/<run>/<run>_1|_2.fastq.gz      paired-end (unpaired orphan reads are left out)
+##   each with a <file>.complete marker once verified. Sample IDs therefore follow the run accession.
 
 set -euo pipefail
 
@@ -30,6 +36,9 @@ DATASET="${DATASET:?Set DATASET, e.g. qsub -v DATASET=segal_2018_albicans}"
 MANIFEST="$YTAB/pipeline/hpc/datasets/$DATASET/samples.csv"
 DATA_ROOT="${DATA_ROOT:-/nfsscratch/jayelazuno/workspace/public_data}"
 BASE="$DATA_ROOT/$DATASET"
+SOURCE="${SOURCE:-sra}"
+[[ "$SOURCE" == "sra" || "$SOURCE" == "ena" ]] || { echo "ERROR: SOURCE must be sra or ena" >&2; exit 1; }
+SLOTS="${NSLOTS:-4}"
 
 [[ -f "$MANIFEST" ]] || { echo "ERROR: No manifest: $MANIFEST (run from the YTAB checkout or set YTAB)" >&2; exit 1; }
 
@@ -38,8 +47,20 @@ conda activate /old_Users/jayelazuno/miniforge3/envs/ytab-sra-tools
 for tool in python pigz curl md5sum; do
     command -v "$tool" >/dev/null || { echo "ERROR: Required tool missing: $tool" >&2; exit 1; }
 done
+if [[ "$SOURCE" == "sra" ]]; then
+    # Cluster SRA Toolkit, loaded after Conda so its binaries take precedence (as for the Gale download).
+    if ! type module >/dev/null 2>&1; then
+        for init in /etc/profile.d/modules.sh /usr/share/lmod/lmod/init/bash; do
+            if [[ -f "$init" ]]; then source "$init"; break; fi
+        done
+    fi
+    if type module >/dev/null 2>&1 && module load "${SRA_MODULE:-sratoolkit/2.10.9_gcc-9.3.0}"; then hash -r; fi
+    for tool in prefetch vdb-validate fasterq-dump; do
+        command -v "$tool" >/dev/null || { echo "WARNING: $tool not found; using ENA for every run."; SOURCE=ena; break; }
+    done
+fi
 
-mkdir -p "$BASE"/{fastq,tmp,metadata,logs}
+mkdir -p "$BASE"/{fastq,tmp,metadata,logs,sra}
 export TMPDIR="$BASE/tmp"
 exec > >(tee -a "$BASE/logs/download.${JOB_ID:-manual}.log") 2>&1
 trap 'rc=$?; echo "Finished: $(date); exit code=$rc; elapsed=$(( $(date +%s) - start )) seconds"' EXIT
@@ -47,11 +68,12 @@ trap 'rc=$?; echo "Finished: $(date); exit code=$rc; elapsed=$(( $(date +%s) - s
 echo "Dataset: $DATASET"
 echo "Manifest: $MANIFEST"
 echo "Destination: $BASE"
+echo "Source: $SOURCE"
 df -h "$BASE"
 cp "$MANIFEST" "$BASE/metadata/samples.csv"
 
 # -----------------------
-# Resolve every manifest accession to its runs and FASTQ files (ENA filereport)
+# Resolve every manifest accession to its runs, read counts and ENA FASTQ files (ENA filereport)
 # -----------------------
 python - "$MANIFEST" "$BASE" <<'PY'
 import csv, io, re, sys, time, urllib.parse, urllib.request
@@ -86,7 +108,7 @@ for sample in csv.DictReader(manifest.open()):
         seen.add(run)
         urls, md5s = record["fastq_ftp"].split(";"), record["fastq_md5"].split(";")
         if not record["fastq_ftp"] or len(urls) != len(md5s):
-            raise SystemExit(f"ENA lists no FASTQ for {run}; use the SRA Toolkit for this run")
+            raise SystemExit(f"ENA lists no FASTQ for {run}")
         files = list(zip(urls, md5s))
         if record["library_layout"] == "PAIRED":
             # ENA may add an unpaired orphan file (<run>.fastq.gz); keep only the mates.
@@ -96,50 +118,117 @@ for sample in csv.DictReader(manifest.open()):
         elif len(files) != 1:
             raise SystemExit(f"Expected one file for single-end run {run}: {record['fastq_ftp']}")
         for u, m in files:
-            rows.append([study, run, record["library_layout"], "https://" + u, m])
+            rows.append([study, run, record["library_layout"], "https://" + u, m, record["read_count"]])
         print(f"{accession} -> {run} ({record['library_layout']}, {record['read_count']} reads)", flush=True)
 pending = base/"metadata"/"files.tsv.pending"
 with pending.open("w", newline="") as handle:
-    w = csv.writer(handle, delimiter="\t", lineterminator="\n"); w.writerow(["study", "run", "layout", "url", "md5"]); w.writerows(rows)
+    w = csv.writer(handle, delimiter="\t", lineterminator="\n")
+    w.writerow(["study", "run", "layout", "url", "md5", "read_count"]); w.writerows(rows)
 pending.replace(base/"metadata"/"files.tsv")
 PY
 
 # -----------------------
-# Download, verify and place each file
+# Fetch one file from ENA (MD5-checked), or one run from NCBI SRA (archive validated, read count checked)
 # -----------------------
-while IFS=$'\t' read -r study run layout url md5; do
-    [[ "$study" == "study" ]] && continue
-    md5="${md5%$'\r'}"   # tolerate CRLF line endings
-    final="$BASE/fastq/$study/$run"
-    name=$(basename "$url")
-    target="$final/$name"
-    if [[ -f "$target.complete" ]]; then
-        echo "Verified earlier; skipping $name"
-        continue
-    fi
-    echo
-    echo "=== $study | $run | $name ==="
+ena_file() {
+    local study=$1 run=$2 url=$3 md5=${4%$'\r'}   # tolerate CRLF line endings
+    local final="$BASE/fastq/$study/$run" name target part ok=0 attempt got
+    name=$(basename "$url"); target="$final/$name"; part="$BASE/tmp/$name.part"
+    if [[ -f "$target.complete" ]]; then echo "Verified earlier; skipping $name"; return 0; fi
     mkdir -p "$final"
-    part="$BASE/tmp/$name.part"
-    ok=0
+    echo "ENA started: $study | $run | $name"
     for attempt in 1 2 3 4 5; do
-        # -C - resumes a partial download.
-        if curl -fL --retry 3 --retry-delay 10 -C - -o "$part" "$url"; then
+        # -C - resumes a partial download; -sS keeps parallel logs readable (errors are still printed).
+        if curl -fsSL --retry 3 --retry-delay 10 -C - -o "$part" "$url"; then
             got=$(md5sum "$part" | cut -d' ' -f1)
             if [[ "$got" == "$md5" ]]; then ok=1; break; fi
             echo "MD5 mismatch for $name ($got, expected $md5); downloading again."
             mv "$part" "$part.bad.$attempt"
         else
-            echo "Download attempt $attempt failed for $name."
+            echo "ENA attempt $attempt failed for $name."
         fi
         sleep 15
     done
-    (( ok == 1 )) || { echo "ERROR: $name could not be downloaded and verified; resubmit to resume." >&2; exit 1; }
-    pigz -t "$part"
-    mv "$part" "$target"
+    (( ok == 1 )) || { echo "ERROR: $name could not be downloaded and verified; resubmit to resume." >&2; return 1; }
+    pigz -t "$part" || return 1
+    mv "$part" "$target" || return 1
     date -u '+%Y-%m-%dT%H:%M:%SZ' > "$target.complete"
-    echo "Completed: $target ($(du -h "$target" | cut -f1))"
-done < "$BASE/metadata/files.tsv"
+    echo "Completed (ENA): $target ($(du -h "$target" | cut -f1))"
+}
+
+sra_run() {
+    local study=$1 run=$2 layout=$3 expected=$4 threads=$5
+    local final="$BASE/fastq/$study/$run" sra stage reads n attempt fetched=0 done_all=1
+    local names
+    if [[ "$layout" == "PAIRED" ]]; then names=("${run}_1.fastq" "${run}_2.fastq"); else names=("${run}.fastq"); fi
+    for n in "${names[@]}"; do [[ -f "$final/$n.gz.complete" ]] || done_all=0; done
+    if (( done_all )); then echo "Verified earlier; skipping $run"; return 0; fi
+    echo "SRA started: $study | $run ($layout, $expected reads, $threads threads)"
+    for attempt in 1 2 3; do
+        # Repeated prefetch calls resume and reuse completed archives.
+        if prefetch "$run" --max-size u --output-directory "$BASE/sra" >/dev/null; then fetched=1; break; fi
+        echo "prefetch attempt $attempt failed for $run"; sleep 20
+    done
+    (( fetched )) || return 1
+    sra=$(find "$BASE/sra/$run" -maxdepth 2 -type f -name "$run.sra*" | head -1)
+    [[ -s "$sra" ]] || { echo "No .sra archive for $run"; return 1; }
+    vdb-validate "$sra" >/dev/null 2>&1 || { echo "vdb-validate failed for $run"; return 1; }
+    stage=$(mktemp -d "$BASE/tmp/$run.XXXXXX") || return 1
+    mkdir -p "$stage/fastq" "$stage/work"
+    fasterq-dump "$sra" --split-3 --threads "$threads" --outdir "$stage/fastq" --temp "$stage/work" >/dev/null \
+        || { echo "fasterq-dump failed for $run"; return 1; }
+    [[ -s "$stage/fastq/${names[0]}" ]] || { echo "Missing ${names[0]} for $run"; return 1; }
+    # Reads = mate-1 (or single) records plus any unpaired orphans; must equal ENA's read count.
+    reads=$(( $(wc -l < "$stage/fastq/${names[0]}") / 4 ))
+    if [[ "$layout" == "PAIRED" && -f "$stage/fastq/$run.fastq" ]]; then reads=$(( reads + $(wc -l < "$stage/fastq/$run.fastq") / 4 )); fi
+    if [[ "$reads" != "$expected" ]]; then echo "Read count mismatch for $run: $reads, ENA $expected"; return 1; fi
+    for n in "${names[@]}"; do
+        [[ -s "$stage/fastq/$n" ]] || { echo "Missing $n"; return 1; }
+        pigz -p "$threads" "$stage/fastq/$n" && pigz -t "$stage/fastq/$n.gz" || { echo "Compression failed for $n"; return 1; }
+    done
+    mkdir -p "$final"
+    for n in "${names[@]}"; do
+        mv "$stage/fastq/$n.gz" "$final/$n.gz" || return 1
+        date -u '+%Y-%m-%dT%H:%M:%SZ' > "$final/$n.gz.complete"
+        echo "Completed (SRA): $final/$n.gz ($(du -h "$final/$n.gz" | cut -f1))"
+    done
+    rm -rf "$stage/work"   # conversion scratch only; the .sra archive is kept in $BASE/sra
+}
+
+fetch_run() {   # SRA first; a run that fails there comes from ENA
+    local study=$1 run=$2 layout=$3 expected=$4 threads=$5 rc=0 s r l url md5 count
+    if [[ "$SOURCE" == "sra" ]]; then
+        if sra_run "$study" "$run" "$layout" "$expected" "$threads"; then return 0; fi
+        echo "Falling back to ENA for $run"
+    fi
+    while IFS=$'\t' read -r s r l url md5 count; do
+        [[ "$r" == "$run" ]] || continue
+        ena_file "$s" "$r" "$url" "$md5" || rc=1
+    done < <(tail -n +2 "$BASE/metadata/files.tsv")
+    return $rc
+}
+export -f ena_file sra_run fetch_run
+export BASE SOURCE
+
+# -----------------------
+# Process runs (sra) or files (ena) in parallel
+# -----------------------
+if [[ "$SOURCE" == "sra" ]]; then
+    PARALLEL="${PARALLEL:-3}"
+    [[ "$PARALLEL" =~ ^[1-9][0-9]*$ ]] || { echo "ERROR: PARALLEL must be a positive integer" >&2; exit 1; }
+    THREADS=$(( SLOTS / PARALLEL )); (( THREADS >= 1 )) || THREADS=1
+    echo "Parallel runs: $PARALLEL, $THREADS threads each"
+    awk -F'\t' -v t="$THREADS" 'NR > 1 && !seen[$2]++ {print $1 "\t" $2 "\t" $3 "\t" $6 "\t" t}' "$BASE/metadata/files.tsv" \
+        | tr '\n' '\0' | xargs -0 -n 1 -P "$PARALLEL" bash -c 'IFS=$'"'"'\t'"'"' read -r s r l c t <<< "$0"; fetch_run "$s" "$r" "$l" "$c" "$t"' \
+        || { echo "ERROR: One or more runs failed; resubmit the same command to resume." >&2; exit 1; }
+else
+    PARALLEL="${PARALLEL:-6}"
+    [[ "$PARALLEL" =~ ^[1-9][0-9]*$ ]] || { echo "ERROR: PARALLEL must be a positive integer" >&2; exit 1; }
+    echo "Parallel downloads: $PARALLEL"
+    awk -F'\t' 'NR > 1 {print $1 "\t" $2 "\t" $4 "\t" $5}' "$BASE/metadata/files.tsv" \
+        | tr '\n' '\0' | xargs -0 -n 1 -P "$PARALLEL" bash -c 'IFS=$'"'"'\t'"'"' read -r s r u m <<< "$0"; ena_file "$s" "$r" "$u" "$m"' \
+        || { echo "ERROR: One or more files failed; resubmit the same command to resume." >&2; exit 1; }
+fi
 
 echo
 echo "All files verified. FASTQ directory for the project: $BASE/fastq"

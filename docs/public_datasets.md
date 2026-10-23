@@ -84,13 +84,16 @@ On read samples of each dataset (about 50,000–80,000 reads each), mapped with 
 ## Downloading and processing (Argon)
 
 ```bash
-bash pipeline/hpc/ytab_public_dataset.sh <dataset> download   # one SGE job; resumable; MD5-checked against ENA
+bash pipeline/hpc/ytab_public_dataset.sh <dataset> download   # one SGE job; NCBI SRA, ENA fallback; resumable
 bash pipeline/hpc/ytab_public_dataset.sh <dataset> status
 bash pipeline/hpc/ytab_public_dataset.sh <dataset> submit --profile core --threads 8
 ```
 
-The download job (`pipeline/hpc/ytab_download_public.txt`) resolves each accession through the ENA portal API and
-downloads ENA's FASTQs over HTTPS to `/nfsscratch/jayelazuno/workspace/public_data/<dataset>/fastq/<study>/<run>/`
+The download job (`pipeline/hpc/ytab_download_public.txt`) resolves each accession and its read count through the
+ENA portal API, then fetches each run from NCBI SRA (prefetch, vdb-validate, fasterq-dump, pigz; ERR runs are
+mirrored there), accepting it only when the archive validates and the read count equals ENA's. A run that fails on
+SRA is downloaded from ENA with MD5 checks (`SOURCE=ena` uses ENA for everything; it is slow from Argon). Both give
+identical reads. FASTQs go to `/nfsscratch/jayelazuno/workspace/public_data/<dataset>/fastq/<study>/<run>/`
 (`DATA_ROOT` changes the base). Paired runs keep only their two mate files. `submit` creates the project from the
 manifest and submits reference preparation, mapping, hit files, SummaryTable, library diagnostics, report and export.
 On any other machine, download the same accessions and run `python scripts/local/ytab.py run --profile core` on a

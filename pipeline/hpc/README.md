@@ -27,7 +27,7 @@ accession, with role, pool, transposon and library design) and `dataset.env` (pr
 
 ```bash
 cd /Users/jayelazuno/workspace/ytab
-# 1. One download job per dataset (resumable; MD5-checked against ENA):
+# 1. One download job per dataset (NCBI SRA by default, 3 runs at once; resumable; SOURCE=ena for ENA):
 bash pipeline/hpc/ytab_public_dataset.sh segal_2018_albicans download
 bash pipeline/hpc/ytab_public_dataset.sh pombe_hermes download
 bash pipeline/hpc/ytab_public_dataset.sh michel_2017_satay download
@@ -37,7 +37,7 @@ bash pipeline/hpc/ytab_public_dataset.sh pombe_hermes status       # files verif
 bash pipeline/hpc/ytab_public_dataset.sh segal_2018_albicans submit --profile core --threads 8
 ```
 
-FASTQs go to `/nfsscratch/jayelazuno/workspace/public_data/<dataset>/fastq` (`DATA_ROOT` overrides the base). The
+Runs come from NCBI SRA (prefetch, vdb-validate, fasterq-dump, pigz); each is accepted only if its archive validates and its read count equals ENA's, and a run that fails there is fetched from ENA with MD5 checks. ENA alone (`SOURCE=ena`) is slow from Argon (about 1–2 MB/s per file). `PARALLEL` sets runs (SRA) or files (ENA) processed at once. FASTQs go to `/nfsscratch/jayelazuno/workspace/public_data/<dataset>/fastq` (`DATA_ROOT` overrides the base); SRA archives are kept in `<dataset>/sra`. The
 export stage bundles each project's summaries, hit files and logs under `output/exports/<project>` for pulling back.
 Transposon profiles are in `resources/transposons/<transposon>/profile.json`; see `docs/hermes_alignment.md`.
 
