@@ -21,3 +21,5 @@ Gale splinkerette oligos. Phosphate and phosphorothioate notation is omitted fro
 the machine-readable nucleotide strings; these are chemical modifications, not
 sequenced bases. Indices are retained as metadata, not standalone trimming anchors.
 See `docs/hermes_alignment.md` for automatic trimming and declared-mate selection.
+
+`profile.json` lists the Hermes library designs (`splinkerette_pcr`, `end_ligated_adapter`, `terminal_10bp`) and their trimming; see `docs/public_datasets.md`.

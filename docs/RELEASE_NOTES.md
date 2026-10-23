@@ -1,5 +1,24 @@
 # Release notes
 
+## 2026-10-23: four species, two transposons
+
+**Mapping**
+- Transposon profiles: Hermes (`splinkerette_pcr`, `end_ligated_adapter`, `terminal_10bp`) and Ac/Ds
+  (`ds_primer_tail`, `satay_restriction`), chosen per project or per sample (`--transposon`, `--library-design`).
+  Hermes projects map exactly as before.
+- `MapFastq.py --trim-3p-seq` (repeatable).
+- Hit files no longer fail when a chromosome with genes has no insertions.
+
+**Data**
+- Public datasets reprocessed from raw reads: Segal et al. 2018 (C. albicans, Ac/Ds), S. pombe Hermes (Guo et al.
+  2013, Grech et al. 2019, Lee et al. 2020) and Michel et al. 2017 (S. cerevisiae SATAY, all seven libraries).
+  Sources, trimming and references: *Public datasets* in Methods.
+- Argon: one download job per dataset (ENA, MD5-checked, resumable) and one submission per project.
+
+**Species resources**
+- One layout for every species (`reference_genome`, `annotation`, `orthologs`, `essentiality_labels`, `tnseq_data`);
+  S. pombe and S. cerevisiae references indexed.
+
 ## 2026-10-23: app and pipeline release
 
 **Structure: the pipelines write, the app streams.** Every analysis writes the same tables, whatever the

@@ -10,4 +10,4 @@ with `mapping: {transposon: ac_ds, library_design: <design>}` in its config, or 
   read from the wild-type libraries (ERR1533147, ERR1533148); they are the circularised MiniDs sequence that follows
   the genomic fragment.
 
-Both designs report the insertion at the first genomic base of the read, as for Hermes.
+Full sequences and validation: `docs/public_datasets.md`. Both designs report the insertion at the first genomic base of the read, as for Hermes.

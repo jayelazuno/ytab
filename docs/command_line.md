@@ -158,7 +158,30 @@ Initialization and hit-file import are also available.
 
 Hermes mapping defaults to automatic sequence cleanup and the designated R1 read;
 R2 and explicit concordant-pair requirements are supported. See
-[Hermes alignment](hermes_alignment.md) for shared CLI/Shiny settings and reports.
+[Read alignment](hermes_alignment.md) for shared CLI/Shiny settings and reports.
+
+**Transposons and library designs.** Trimming comes from a transposon profile
+(`resources/transposons/<transposon>/profile.json`): `hermes` (`splinkerette_pcr`, the default;
+`end_ligated_adapter`; `terminal_10bp`) and `ac_ds` (`ds_primer_tail`, the default; `satay_restriction`).
+Select one in the project config (`mapping: {transposon: ..., library_design: ...}`), per sample with `transposon`
+and `library_design` sample-sheet columns, or for one run:
+
+```sh
+python scripts/local/ytab.py mapfastq --project-config P/config/project.yaml \
+  --transposon ac_ds --library-design ds_primer_tail
+```
+
+| option | meaning |
+|---|---|
+| `--transposon NAME` | transposon profile (default: the project's, else `hermes`) |
+| `--library-design NAME` | design within the profile (default: the profile's `default_design`) |
+| `--junction-mate R1\|R2`, `--require-mate-alignment`, `--hermes-cleanup` | as before; explicit settings override the design |
+
+The backend `src/ytab/mapping/MapFastq.py` gains `--trim-3p-seq SEQ` (repeatable; all 3′ sequences trimmed in one
+cutadapt pass) next to `--trim-5p-seq`, `--trim-5p-overlap` and `--discard-untrimmed`; a 5′ sequence starting with
+`^` is anchored to the read start. The sequences of every design are listed in
+[Public datasets](public_datasets.md#read-structures-and-trimming). Mapping manifests record the transposon,
+design and profile used.
 
 ```sh
 python scripts/local/ytab.py fitness \
@@ -216,6 +239,11 @@ site-level normalization methods are separate modules, not automatically inserte
 into these existing profiles.
 
 ## Species resources
+
+Every species folder has the same layout: `reference_genome/` (FASTA, GFF, Bowtie2 index, chromosome names,
+centromere and tRNA tracks), `annotation/`, `orthologs/`, `essentiality_labels/` (with `raw/` sources) and
+`tnseq_data/` (published insertion data); see `resources/species/README.md`. Published libraries are reprocessed
+from raw reads with the dataset manifests in `pipeline/hpc/datasets/` ([Public datasets](public_datasets.md)).
 
 `scripts/local/ytab_build_species_resources.py` builds, for C. albicans and S. cerevisiae,
 the files glabrata already has: centromere and tRNA tracks, chromosome display names

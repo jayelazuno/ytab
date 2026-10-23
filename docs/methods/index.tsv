@@ -1,17 +1,18 @@
 order	section	title	file
 1	Building a pool	Making a Hermes Tn-seq pool	docs/methods/01_making_a_hermes_pool.md
-2	Sequencing and mapping	Hermes read alignment	docs/hermes_alignment.md
-3	Quality control	Library QC table	docs/library_qc.md
-4	Quality control	Insertion statistics	docs/tnseq_stats.md
-5	Normalization	Site normalization methods	docs/normalization_methods.md
-6	Normalization	Beta-geometric correction (BGC)	docs/betageom_normalization.md
-7	Normalization	Trimmed total reads (TTR)	docs/ttr_normalization.md
-8	Essentiality	Hermes window HMM and hybrid	docs/methods/05_essentiality_hmm.md
-9	Condition comparisons	Treated vs control: z-score, resampling, Gumbel	docs/methods/06_condition_comparisons.md
-10	Condition comparisons	Control-conditioned Gumbel (details)	docs/control_conditioned_gumbel.md
-11	Gene Explorer	Genome browser, gene insertions, GO, across species	docs/methods/07_gene_explorer.md
-12	Screen planning	Coverage planning	docs/screen_coverage.md
-13	Screen planning	Identifying single mutants (bench protocol)	docs/methods/02_identifying_single_mutants.md
-14	Screen planning	Mutant identification	docs/mutant_identification.md
-15	Reference	Command line	docs/command_line.md
-16	Reference	References	docs/references.md
+2	Sequencing and mapping	Read alignment: Hermes and Ac/Ds	docs/hermes_alignment.md
+3	Sequencing and mapping	Public datasets: sources, trimming and references	docs/public_datasets.md
+4	Quality control	Library QC table	docs/library_qc.md
+5	Quality control	Insertion statistics	docs/tnseq_stats.md
+6	Normalization	Site normalization methods	docs/normalization_methods.md
+7	Normalization	Beta-geometric correction (BGC)	docs/betageom_normalization.md
+8	Normalization	Trimmed total reads (TTR)	docs/ttr_normalization.md
+9	Essentiality	Hermes window HMM and hybrid	docs/methods/05_essentiality_hmm.md
+10	Condition comparisons	Treated vs control: z-score, resampling, Gumbel	docs/methods/06_condition_comparisons.md
+11	Condition comparisons	Control-conditioned Gumbel (details)	docs/control_conditioned_gumbel.md
+12	Gene Explorer	Genome browser, gene insertions, GO, across species	docs/methods/07_gene_explorer.md
+13	Screen planning	Coverage planning	docs/screen_coverage.md
+14	Screen planning	Identifying single mutants (bench protocol)	docs/methods/02_identifying_single_mutants.md
+15	Screen planning	Mutant identification	docs/mutant_identification.md
+16	Reference	Command line	docs/command_line.md
+17	Reference	References	docs/references.md
