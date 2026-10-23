@@ -7,7 +7,9 @@ chromatin-biased), so this module:
 - observes fixed genomic windows (default 100 bp): y[w, l] = distinct insertion sites in window w of
   library l (several independent libraries are emitted jointly, conditionally independent given the state);
 - masks windows that reads cannot map to uniquely (k-mer uniqueness of the reference; missing emission);
-- models Hermes target accessibility with window covariates (motif count, AT content, fraction outside CDS):
+- models transposon accessibility with window covariates (sequence preference, AT content, fraction outside CDS); the
+  sequence preference is the Hermes nTnnnnAn count (v2) or, in v3, a target-site model learned from the libraries'
+  own insertion sites (learn_target_model), so any transposon can be modelled:
       y[w, l] | state k, u_w ~ Poisson(exp(a_l + x_w.b) * r_k * u_w),  u_w ~ Gamma(mean 1, variance psi),
       shared by the libraries (window accessibility common to independent libraries), giving a
       negative-multinomial joint emission (an NB for one library);   r_ES < r_GD < r_NE = 1 < r_GA;
@@ -30,6 +32,9 @@ from scipy.special import digamma, gammaln
 
 MODEL = "Hermes window HMM"
 REVISION = "hermes_hmm_v2"
+REVISION_LEARNED = "hermes_hmm_v3"        # v2 with the learned target-site covariate in place of the motif count
+TARGET_OFFSETS = (-10, 17)               # target-site model: offsets around the hit coordinate, read outward from the transposon
+TARGET_FLANK = 100                       # local background: bases within this distance of the insertion sites
 STATES = ("ES", "GD", "NE", "GA")
 COMPLEMENT = np.array([3, 2, 1, 0, 4], dtype=np.uint8)   # A C G T N -> T G C A N
 
@@ -109,8 +114,44 @@ def unique_kmer_starts(sequences, k):
     return out
 
 
-def window_features(sequences, cds_intervals, settings):
-    """Per chromosome: window starts, covariates (log1p motif count, AT fraction, fraction outside CDS) and mappability mask."""
+def learn_target_model(sequences, sites, offsets=TARGET_OFFSETS, flank=TARGET_FLANK):
+    """Order-0 position weight matrix of the insertion target against the local background (label-free).
+
+    sites: {chromosome: (positions 1-based, strands "W"/"C")}, each distinct site once. A W site at p is read as genome
+    p+j; a C site as the complement of genome p-j (the sequence read outward from the transposon). The background Q is
+    the oriented base composition within +-flank bp of the sites, so regional composition does not enter the motif.
+    Returns offsets, P (L x 4), Q (4), logodds (L x 5, N = 0), information (bits per offset) and the site count."""
+    js = np.arange(offsets[0], offsets[1]+1); counts = np.zeros((len(js), 4)); bg = np.zeros(4); n = 0
+    for name, (pos, strand) in sites.items():
+        if name not in sequences:continue
+        codes = sequences[name]; L = len(codes); i0 = np.asarray(pos, dtype=np.int64)-1
+        rev = np.asarray(strand) == "C"; n += len(i0)
+        onehot = np.zeros((L+1, 4)); onehot[np.arange(L)[codes < 4]+1, codes[codes < 4]] = 1; cs = np.cumsum(onehot, 0)
+        lo, hi = np.clip(i0-flank, 0, L), np.clip(i0+flank+1, 0, L)
+        local = cs[hi]-cs[lo]; bg += local[~rev].sum(0)+local[rev][:, ::-1].sum(0)   # complement of A C G T is T G C A
+        for k, j in enumerate(js):
+            idx = np.where(rev, i0-j, i0+j); ok = (idx >= 0) & (idx < L); b = codes[idx[ok]]
+            b = np.where(rev[ok], COMPLEMENT[b], b); b = b[b < 4]
+            counts[k] += np.bincount(b, minlength=4)[:4]
+    P = (counts+1)/(counts.sum(1, keepdims=True)+4); Q = bg/bg.sum()
+    logodds = np.zeros((len(js), 5)); logodds[:, :4] = np.log(P/Q)
+    return dict(offsets=js, P=P, Q=Q, logodds=logodds, information=(P*np.log2(P/Q)).sum(1), sites=int(n), flank=flank)
+
+
+def target_propensity(codes, model):
+    """Per position: mean over both strands of exp(target-model score) for an insertion at that coordinate."""
+    js, lo = model["offsets"], model["logodds"]; L = len(codes); pad = max(abs(js[0]), abs(js[-1]))
+    padded = np.concatenate([np.full(pad, 4, np.uint8), codes, np.full(pad, 4, np.uint8)]); comp = COMPLEMENT[padded]
+    forward = np.zeros(L); reverse = np.zeros(L)
+    for k, j in enumerate(js):
+        forward += lo[k][padded[pad+j:pad+j+L]]                 # W: genome i+j
+        reverse += lo[k][comp[pad-j:pad-j+L]]                   # C: complement of genome i-j
+    return (np.exp(forward)+np.exp(reverse))/2
+
+
+def window_features(sequences, cds_intervals, settings, target=None):
+    """Per chromosome: window starts, covariates (log1p motif count, AT fraction, fraction outside CDS; with a learned
+    target model also log mean target propensity) and mappability mask."""
     unique = unique_kmer_starts(sequences, settings.kmer); W = settings.window; out = {}
     for name, codes in sequences.items():
         n = len(codes); nw = -(-n//W); pad = nw*W-n
@@ -124,6 +165,7 @@ def window_features(sequences, cds_intervals, settings):
         length = f(np.ones(n))
         out[name] = dict(start=np.arange(nw)*W+1, length=length, motif=f(motif), at=f(at*valid)/np.maximum(f(valid), 1),
                          outside_cds=1-f(incds)/length, masked=f(nonunique)/length >= settings.unmappable_fraction)
+        if target is not None:out[name]["target"] = np.log(f(target_propensity(codes, target))/length)
     return out
 
 

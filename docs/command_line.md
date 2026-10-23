@@ -238,6 +238,13 @@ The original pipeline retains its per-stage cache, project status and logs. Opt-
 site-level normalization methods are separate modules, not automatically inserted
 into these existing profiles.
 
+## Essentiality HMM for any transposon
+
+`ytab hermes-hmm OUTPUT --project P --libraries S1 S2 --sequence-covariate learned` learns the target-site preference
+from the libraries' own insertion sites (needs YTAB hit files, which carry the strand) instead of counting the Hermes
+nTnnnnAn motif (`motif`, the default). Use it for Ac/Ds and other transposons; on Hermes it matches the motif model
+(see the HMM methods page, section 8.4). It also writes `target_model.tsv`.
+
 ## Species resources
 
 Every species folder has the same layout: `reference_genome/` (FASTA, GFF, Bowtie2 index, chromosome names,

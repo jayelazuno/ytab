@@ -106,6 +106,18 @@ Three covariates are computed from the genome and annotation only, and standardi
 
 They form $x_w \in \mathbb{R}^3$.
 
+**Learned target preference (v3, any transposon).** The motif count encodes Hermes' consensus and means nothing for
+other transposons (Ac/Ds). With `--sequence-covariate learned` (`hermes_hmm_v3`) it is replaced by a target-site
+model learned from the libraries' own insertion sites, with no labels:
+- **Sites:** the distinct insertion sites of the parent libraries (each site once, so jackpots carry no extra weight),
+  with their strand, read outward from the transposon: offsets −10 to +17 around the hit coordinate.
+- **Model:** an order-0 position weight matrix, $P_j(b) = (n_{jb}+1)/(n+4)$, against the local background $Q$: the
+  base composition within ±100 bp of the sites, so regional composition (which the AT and CDS covariates carry) does
+  not enter the motif.
+- **Covariate:** $\log$ of the window mean, over positions and both strands, of
+  $\exp\sum_j \log(P_j(b_{i+j})/Q(b_{i+j}))$. It replaces $\log(1+\text{nTnnnnAn count})$; the other two covariates
+  are unchanged. The fitted model is written to `target_model.tsv`.
+
 # 4. Model
 
 ## 4.1 States and transitions
@@ -347,6 +359,18 @@ and a monotone, converged EM. All passed.
   correctly; the current RF 7. Only the HMM calls the *C. glabrata*-specific essential gene
   GWK60_L11605.
 - **Gale 2020 calls (comparator):** the HMM agrees with 92% of them.
+
+## 8.4 Learned target preference (v3, pre-registered)
+
+`output/essentiality/hermes_hmm/benchmark_v3/RESULT.md`; frozen before any v3 code ran.
+- **Rediscovery without labels:** on Gale Cg1–Cg3 the learned model's two most informative offsets are +1 (T, 72% of
+  sites) and +6 (A, 73%), 5 bp apart: Hermes' nTnnnnAn, found from the data alone.
+- **Label-free gates:** determinism, EM convergence and synthetic recovery all pass (AUC 0.979–1.000); agreement with
+  v2 on Gale: Spearman of P_ES_run 0.998, κ of ES calls 0.956 (1,391 vs 1,382 ES genes).
+- **Labels (S. cerevisiae orthologs, 3,290 genes):** AUC 0.926 vs v2's 0.922; difference +0.003, 95% CI
+  [+0.002, +0.004], not inferior (pre-registered margin −0.01).
+
+v3 is therefore used for libraries of any transposon, including the Ac/Ds libraries of the four-species benchmark.
 
 # 9. Which model to use
 

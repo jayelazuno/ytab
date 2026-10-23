@@ -102,3 +102,31 @@ def test_run_probability_matches_enumeration():
             best = max(best, run)
         hit += p*(best >= m)
     assert np.isclose(got, hit/total, atol=1e-10)
+
+
+def test_learned_target_model_recovers_planted_motif_on_both_strands():
+    rng = np.random.default_rng(3); L = 200_000
+    codes = rng.integers(0, 4, L).astype(np.uint8)
+    # Insertions only at oriented T(+1)...A(+6), i.e. nTnnnnAn read outward; half on each strand.
+    pos, strand = [], []
+    for i in rng.choice(np.arange(50, L-50), 4000, replace=False):
+        if rng.random() < .5:
+            codes[i+1], codes[i+6] = 3, 0; pos.append(i+1); strand.append("W")
+        else:   # C site at p: oriented base j is the complement of genome p-j
+            codes[i-1], codes[i-6] = 0, 3; pos.append(i+1); strand.append("C")
+    model = hh.learn_target_model({"c": codes}, {"c": (np.array(pos), np.array(strand))})
+    top = model["offsets"][np.argsort(model["information"])[-2:]]
+    assert sorted(top.tolist()) == [1, 6]
+    k1, k6 = list(model["offsets"]).index(1), list(model["offsets"]).index(6)
+    assert "ACGT"[int(np.argmax(model["logodds"][k1, :4]))] == "T" and "ACGT"[int(np.argmax(model["logodds"][k6, :4]))] == "A"
+    prop = hh.target_propensity(codes, model)
+    sites = np.array(pos)-1
+    assert prop[sites].mean() > 3*np.median(prop)
+
+
+def test_target_propensity_is_strand_symmetric():
+    rng = np.random.default_rng(5); codes = rng.integers(0, 4, 5000).astype(np.uint8)
+    model = dict(offsets=np.arange(-3, 5), logodds=np.column_stack([rng.normal(0, 1, (8, 4)), np.zeros(8)]))
+    rc = hh.COMPLEMENT[codes[::-1]]
+    # the propensity of a position equals that of its mirror position on the reverse-complement genome
+    assert np.allclose(hh.target_propensity(codes, model)[10:-10], hh.target_propensity(rc, model)[::-1][10:-10])

@@ -15,6 +15,11 @@
   Sources, trimming and references: *Public datasets* in Methods.
 - Argon: one download job per dataset (ENA, MD5-checked, resumable) and one submission per project.
 
+**Essentiality**
+- `ytab hermes-hmm --sequence-covariate learned` (hermes_hmm_v3): the HMM learns the transposon's target preference
+  from the libraries' own insertion sites, so it works for Ac/Ds as well as Hermes. Pre-registered check: it
+  rediscovers Hermes' nTnnnnAn from Gale's data alone and is not worse than the motif model (AUC 0.926 vs 0.922).
+
 **Species resources**
 - One layout for every species (`reference_genome`, `annotation`, `orthologs`, `essentiality_labels`, `tnseq_data`);
   S. pombe and S. cerevisiae references indexed.
