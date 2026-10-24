@@ -76,7 +76,7 @@ tvc_plot_choices <- function(method) if (identical(method, "gumbel"))
 
 tvc_tested <- function(genes) genes[genes$status %in% "tested" | genes$in_family %in% c("True", TRUE), , drop = FALSE]
 
-tvc_call_colours <- c(depleted = "#b2182b", `depleted run` = "#b2182b", enriched = "#2166ac", `not significant` = "grey70")
+tvc_call_colours <- c(YTAB_DIRECTION_COLOURS, `depleted run` = YTAB_DIRECTION_COLOURS[["depleted"]])
 
 # One plot of a resampling or Gumbel result group. sites: the group's sites.tsv.gz rows for `gene` (gene sites only).
 tvc_plot <- function(choice, genes, method, sites = NULL, gene = NULL) {
@@ -118,7 +118,7 @@ tvc_plot <- function(choice, genes, method, sites = NULL, gene = NULL) {
       ggplot2::geom_point(size = 2, alpha = .8) + ggplot2::scale_colour_manual(values = shades) +
       ggplot2::labs(x = sprintf("%s position (bp)", gene), y = if (identical(method, "gumbel")) "Reads per site" else "Normalized count per site",
                     colour = "Library") + base
-    if (any(long$depleted)) p <- p + ggplot2::geom_rug(data = long[long$depleted & long$condition == "control", , drop = FALSE], sides = "b", colour = "#b2182b", inherit.aes = FALSE, ggplot2::aes(x = position))
+    if (any(long$depleted)) p <- p + ggplot2::geom_rug(data = long[long$depleted & long$condition == "control", , drop = FALSE], sides = "b", colour = YTAB_DIRECTION_COLOURS[["depleted"]], inherit.aes = FALSE, ggplot2::aes(x = position))
     return(p)
   }
   tvc_ggplot(genes, method)
@@ -133,7 +133,7 @@ tvc_ggplot <- function(genes, method) {
   ggplot2::ggplot(d, ggplot2::aes(.data[[x]], -log10(pmax(p_value, 1e-300)), colour = call,
       text = sprintf("%s %s<br>%s %.2f<br>p %.3g; q %.3g", ORF, ifelse(is.na(Name), "", Name), x, .data[[x]], p_value, q_bh))) +
     ggplot2::geom_point(alpha = .6, size = 1.3) +
-    ggplot2::scale_colour_manual(values = c(depleted = "#b2182b", `depleted run` = "#b2182b", enriched = "#2166ac", `not significant` = "grey70"), drop = FALSE) +
+    ggplot2::scale_colour_manual(values = tvc_call_colours, drop = FALSE) +
     ggplot2::labs(x = if (identical(x, "log2FC")) "log2FC (treated / control)" else "log2 scaled read ratio (treated / control)", y = "-log10 p", colour = "Call") +
     ggplot2::theme_minimal(base_size = 12)
 }

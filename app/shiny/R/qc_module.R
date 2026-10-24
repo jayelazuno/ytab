@@ -5,7 +5,6 @@
 # libraries within the project or with other projects' libraries.
 
 qc_flag_colours <- c(red = "#F4C7C3", yellow = "#FCE8B2", green = "#B7E1CD", grey = "#EEEEEE")
-qc_flag_line <- c(red = "#C5221F", yellow = "#B06000", green = "#188038", grey = "#9AA0A6")
 
 
 # Each subtab's plot menu, grouped by question: label -> value ("metric:<key>" plots a QC-table metric across
@@ -31,7 +30,8 @@ qc_plot_menus <- list(
                 "Insertion signal along chromosomes" = "genome_bins")),
   saturation_bias = list(
     "Saturation" = c("Saturation curves" = "midlc", "MidLC estimate" = "metric:midlc_est", "Depth / MidLC" = "metric:depth_ratio"),
-    "Jackpots" = c("Reads in jackpot sites" = "metric:jackpot_frac_reads", "Jackpot sites" = "metric:n_jackpot_sites"),
+    "Jackpots" = c("Share of reads in the top sites (Lorenz curve)" = "dist_lorenz", "Reads in jackpot sites" = "metric:jackpot_frac_reads",
+                   "Jackpot sites" = "metric:n_jackpot_sites"),
     "Positional bias" = c("Centromere bias" = "centromere", "Metaplot around TSS" = "metaplot_TSS", "Metaplot around TTS" = "metaplot_TTS",
                           "Metaplot around tRNA genes" = "metaplot_tRNA", "Sequence bias (+2/+7)" = "sequence_bias")),
   agreement = list(
@@ -49,6 +49,7 @@ qc_plot_descriptions <- c(
   read_counts = "Alignment records and primary mapped reads per library.",
   dist_histogram = "Histogram of read counts at occupied positions (log bins). Well-behaved libraries have many low counts and few high ones.",
   dist_qq = "Observed count quantiles against a geometric distribution fitted to each library's mean. Strong curvature away from the diagonal means a skewed library; BGC suits those.",
+  dist_lorenz = "Cumulative share of a library's reads held by its occupied sites, largest first. A curve that rises steeply at the left means a few sites (jackpots) hold much of the library; even libraries rise slowly. Skewed or jackpot-dominated libraries suit BGC.",
   dist_ranked = "Read counts at positions in decreasing order. A few isolated outliers are expected (TTR is robust to them); a steep head means a few sites dominate.",
   gene_hit_bins = "Number of genes with 0, 1–3, 4–7, 8–9, 10–19 and 20 or more insertion sites, per library.",
   combined_features = "Genes with at least one insertion when all libraries of a role are combined.",
@@ -191,7 +192,7 @@ qc_metric_plot <- function(f, s, companions = NULL) {
   }, "") else ""
   f$tip <- sprintf("%s\n%s: %s%s\n%s", f$display_name, f$label, qc_format_value(f$value), extra, f$reason)
   p <- ggplot2::ggplot(f, ggplot2::aes(x = library, y = value, fill = flag, text = tip)) + ggplot2::geom_col(width = .7) +
-    ggplot2::scale_fill_manual(values = qc_flag_line, drop = FALSE) + ggplot2::labs(x = NULL, y = f$label[[1L]], fill = "Flag")
+    ggplot2::scale_fill_manual(values = YTAB_FLAG_COLOURS, drop = FALSE) + ggplot2::labs(x = NULL, y = f$label[[1L]], fill = "Flag")
   if (isTRUE(s$show_value_labels)) p <- p + ggplot2::geom_text(ggplot2::aes(label = qc_format_value(value)), size = s$text_size / 4.2,
                                                                hjust = if (horizontal) -.1 else .5, vjust = if (horizontal) .5 else -.4)
   if (horizontal) qc_apply_display(p + ggplot2::coord_flip(), s, "y") else qc_apply_display(p, s, "x")
@@ -280,7 +281,8 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
   distribution <- function(kind) {
     validate(need(has_table(), "Build the QC table in Overview first."))
     d <- ytab_read_analysis_tsv(file.path(selected_run(), "plots", paste0(kind, ".tsv.gz")))
-    validate(need(nrow(d) > 0, "No count distributions in this QC table."))
+    validate(need(nrow(d) > 0, if (identical(kind, "lorenz")) "This QC table was built before the Lorenz curve was added; build the QC table again in Overview."
+                                else "No count distributions in this QC table."))
     qc_annotate(d, info())
   }
 
@@ -395,7 +397,9 @@ qc_role_filter <- function(d, input, prefix) { roles <- input[[paste0(prefix, "_
 qc_distribution_plot <- function(d, kind, s, colour) switch(kind,
   histogram = qc_line_plot(d[d$sites > 0, , drop = FALSE], "bin_start", "sites", colour, s, "Reads at a position (log bins)", "Positions", TRUE, TRUE),
   qq = qc_line_plot(d, "geometric", "observed", colour, s, "Geometric quantile (fit to the mean)", "Observed quantile", TRUE, TRUE, diagonal = TRUE),
-  ranked = qc_line_plot(d, "rank", "reads", colour, s, "Rank of position", "Reads at the position", TRUE, TRUE))
+  ranked = qc_line_plot(d, "rank", "reads", colour, s, "Rank of position", "Reads at the position", TRUE, TRUE),
+  lorenz = qc_line_plot(d, "fraction_sites", "share_reads", colour, s, "Sites, largest first (fraction, log scale)", "Cumulative share of reads", FALSE, FALSE) +
+    ggplot2::scale_x_log10(labels = scales::label_percent(drop0trailing = TRUE)) + ggplot2::scale_y_continuous(labels = scales::label_percent(), limits = c(0, 1)))
 
 # Build one QC plot: list(plot = ggplot, data = plotted data).
 qc_build_plot <- function(choice, input, prefix, s, src) {

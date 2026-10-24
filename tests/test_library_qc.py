@@ -42,6 +42,8 @@ def test_distribution_plot_data():
     assert sum(r["sites"] for r in data["histogram"]) == len(counts)
     assert data["ranked"][0]["rank"] == 1 and data["ranked"][0]["reads"] == 400
     qq = data["qq"]; assert all(a["observed"] <= b["observed"] and a["geometric"] <= b["geometric"] for a, b in zip(qq, qq[1:]))
+    lorenz = data["lorenz"]   # the top site holds 400 of 433 reads; all sites hold all reads
+    assert lorenz[0]["fraction_sites"] == 1/8 and abs(lorenz[0]["share_reads"] - 400/433) < 1e-6 and lorenz[-1]["share_reads"] == 1
 
 
 def _hits(path, rows):

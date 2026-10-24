@@ -129,9 +129,10 @@ def insertion_metrics(sites: dict, strands: dict, universe: int, genome_bp: int)
 
 
 def plot_data(sample: str, counts: np.ndarray, n_points: int = 400) -> dict[str, list]:
-    """Count distribution plots: positive-count histogram (log bins), QQ against a geometric fit, ranked counts."""
+    """Count distribution plots: positive-count histogram (log bins), QQ against a geometric fit, ranked counts, and the
+    Lorenz curve (share of reads held by the top fraction of occupied sites; log-spaced fractions plus the top site)."""
     x = np.sort(counts[counts > 0])
-    if not len(x):return {"histogram":[], "qq":[], "ranked":[]}
+    if not len(x):return {"histogram":[], "qq":[], "ranked":[], "lorenz":[]}
     edges = np.unique(np.floor(np.logspace(0, math.log10(x.max()+1), 40)).astype(int))
     hist, _ = np.histogram(x, bins=np.append(edges, x.max()+1))
     histogram = [dict(sample=sample, bin_start=int(a), bin_end=int(b)-1, sites=int(h)) for a, b, h in zip(edges, np.append(edges[1:], x.max()+1), hist)]
@@ -141,7 +142,9 @@ def plot_data(sample: str, counts: np.ndarray, n_points: int = 400) -> dict[str,
     qq = [dict(sample=sample, probability=round(float(q), 5), observed=float(o), geometric=float(e)) for q, o, e in zip(probs, observed, expected)]
     ranks = np.unique(np.round(np.logspace(0, math.log10(len(x)), n_points)).astype(int))
     ranked = [dict(sample=sample, rank=int(r), reads=float(x[::-1][r-1])) for r in ranks]
-    return {"histogram":histogram, "qq":qq, "ranked":ranked}
+    cum = np.cumsum(x[::-1])/x.sum(); tops = np.unique(np.maximum(1, np.round(np.geomspace(1, len(x), n_points)).astype(int)))
+    lorenz = [dict(sample=sample, fraction_sites=round(int(k)/len(x), 8), share_reads=round(float(cum[k-1]), 6)) for k in tops]
+    return {"histogram":histogram, "qq":qq, "ranked":ranked, "lorenz":lorenz}
 
 
 def _hermes(path: Path) -> dict:
@@ -236,7 +239,7 @@ def build(project_config: Path, output: Path) -> dict:
         if path and path.is_file():hits[name] = read_hits(path)
         else:missing.append(name)
     universe = len(set().union(*(set(h[0]) for h in hits.values()))) if hits else 0
-    rows, plots = [], {"histogram":[], "qq":[], "ranked":[]}
+    rows, plots = [], {"histogram":[], "qq":[], "ranked":[], "lorenz":[]}
     for s in samples:
         name = str(s["sample"]); role = str(s.get("library_role") or s.get("condition") or s.get("guessed_condition") or "library").strip().lower()
         row = dict(sample=name, display_name=s.get("display_name") or name, role=role, pool=s.get("pool") or s.get("guessed_pool") or "",
@@ -273,7 +276,8 @@ def build(project_config: Path, output: Path) -> dict:
                                comparison="within role (parents with parents, treated with treated)"),
                     created=datetime.now(timezone.utc).isoformat(),
                     files=dict(table="qc_table.tsv", flags="qc_flags.tsv", metrics="metrics.tsv", excel="qc_table.xlsx",
-                               histogram="plots/histogram.tsv.gz", qq="plots/qq.tsv.gz", ranked="plots/ranked.tsv.gz"))
+                               histogram="plots/histogram.tsv.gz", qq="plots/qq.tsv.gz", ranked="plots/ranked.tsv.gz",
+                               lorenz="plots/lorenz.tsv.gz"))
     (output/"manifest.json").write_text(json.dumps(manifest, indent=2)+"\n")
     return manifest
 

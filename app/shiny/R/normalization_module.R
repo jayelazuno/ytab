@@ -22,7 +22,10 @@ normalization_site_ui <- function() ytab_two_column_layout(
     tags$hr(),
     uiOutput("norm_result_selector"),
     radioButtons("norm_plot", "View", c("Each normalization, before and after" = "native", "Replicate agreement (methods side by side)" = "pairs")),
-    conditionalPanel("input.norm_plot == 'pairs'", ytab_plot_downloads_ui("norm", c(pairs = "Download pair diagnostics (TSV)"))),
+    conditionalPanel("input.norm_plot == 'pairs'",
+      radioButtons("norm_pair_plot", "Show", c("Shift and spread at shared sites" = "sites", "Gene-level shift and rank agreement" = "gene_summary",
+                                               "Gene log2 ratios, each pair" = "gene_ratios")),
+      ytab_plot_downloads_ui("norm", c(pairs = "Download pair diagnostics (TSV)", gene_agreement = "Download gene-level agreement (TSV)"))),
     downloadButton("norm_download_stats", "Download per-sample statistics (TSV)")),
   main = tagList(
     # The window height sizes the panels so that all ticked methods fit on screen.
@@ -36,7 +39,7 @@ normalization_site_ui <- function() ytab_two_column_layout(
     ytab_methods_drawer(
       tags$p("Counts at each insertion site are normalized per sample, within each library (one background and pool), so that libraries sequenced to different depths can be compared. Every method starts from the same raw counts; zeros stay zero."),
       tags$p(tags$b("Which method? "), "In the pre-registered Hermes benchmarks, beta-geometric correction (BGC, then TTR scaling) with recentering kept false discoveries lowest: 7.0% versus 12.4% with TTR in the two-condition test. The multi-condition and genetic-interaction tests were validated with BGC. BGC compresses the upper tail, so it can attenuate a real enrichment carried by a few very abundant sites; compare with TTR when that matters. Unnormalized counts are not suitable when libraries differ in depth."),
-      tags$p(tags$b("Reading the views. "), "Each method is shown with the plot that shows what it does, before (unnormalized) and after: a scaling method makes one statistic equal across samples (the shape of the counts is unchanged); BGC and adaptive BGC reshape the counts toward a geometric distribution (quantile–quantile plot, ranked counts); quantile normalization makes the count distributions identical; MidLC thins libraries to a common saturation. Replicate agreement compares methods directly: matched controls from the same pool should differ little after normalization (median log2 ratio near 0, narrow spread). The per-sample statistics are those of TRANSIT's quality-control table."),
+      tags$p(tags$b("Reading the views. "), "Each method is shown with the plot that shows what it does, before (unnormalized) and after: a scaling method makes one statistic equal across samples (the shape of the counts is unchanged); BGC and adaptive BGC reshape the counts toward a geometric distribution (quantile–quantile plot, ranked counts); quantile normalization makes the count distributions identical; MidLC thins libraries to a common saturation. Replicate agreement compares methods directly: matched controls from the same pool should differ little after normalization (median log2 ratio near 0, narrow spread). The per-sample statistics are the standard Tn-seq library statistics (see Reference)."),
       tags$p(tags$b("MidLC common saturation. "), "MidLC is the read depth at which a library shows half of its insertion sites; depth divided by MidLC says how far past that point it was sequenced. Each library is randomly thinned (reads removed, never added) to the smallest of these ratios among the libraries normalized together, here the libraries of one background and pool. It removes differences in sequencing saturation, not in insertion preference. A strongly selected library has few sites with many reads, looks highly saturated and is thinned the most, so MidLC suits unselected libraries (such as parents for essentiality) better than treated–control comparisons."),
       uiOutput("norm_method_guide"),
       ytab_reference("TTR, BGC and the other site methods are adapted from the normalization methods of TRANSIT (DeJesus et al. 2015, PLoS Comput Biol 11:e1004401); the quantile–quantile plot against a geometric distribution, the ranked counts and the per-sample statistics follow TRANSIT's quality-control views."),
@@ -52,8 +55,10 @@ norm_plot_data <- function(run_dir) {
        pairs = read("experiment", "comparison_diagnostics.tsv"), stats = read("plots", "native_stats.tsv"),
        scaling = read("plots", "native_scaling.tsv"), qq = read("plots", "native_qq.tsv"), ranked = read("plots", "native_ranked.tsv"),
        saturation = read("plots", "native_saturation.tsv"), midlc = read("plots", "native_midlc.tsv"),
-       abgc = read("experiment", "methods", "aBGC", "factors.tsv"))
+       abgc = read("experiment", "methods", "aBGC", "factors.tsv"), gene_pairs = read("plots", "pair_gene_agreement.tsv"))
 }
+# Per-gene log2 ratios of every pair (large): read only for the view that shows them.
+norm_pair_genes <- function(run_dir) ytab_read_analysis_tsv(file.path(run_dir, "plots", "pair_genes.tsv.gz"))
 
 norm_method_label <- function(x) {
   x <- as.character(x); out <- unname(normalization_method_labels[x]); out[is.na(out)] <- x[is.na(out)]
@@ -83,7 +88,7 @@ norm_native_caption <- function(method, data = NULL) {
     },
     quantile = "Quantile normalization gives every sample of a library the same distribution of nonzero counts. Counts at each percentile of each sample's insertion sites, unnormalized (left) and after (right).",
     midlc = "Expected insertion sites against reads as each library is thinned (exact rarefaction from its own counts). Open circles: MidLC, the depth showing half of the library's sites; filled circles: the library as sequenced; triangles: after thinning to the smallest depth/MidLC ratio of the library group. Libraries are only thinned, never added to.",
-    nonorm = "The raw counts, as in TRANSIT's quality control: quantiles of the nonzero counts against a geometric distribution fitted to them (strong upward curvature = jackpots, skew) and counts in ranked order.",
+    nonorm = "The raw counts: quantiles of the nonzero counts against a geometric distribution fitted to them (strong upward curvature = jackpots, skew) and counts in ranked order.",
     "")
 }
 
@@ -215,7 +220,7 @@ norm_save_native <- function(file, parts, method, width, height) {
   table <- ggplot2::ggplotGrob(ytab_style_ggplot(norm_with_legend(parts[[1L]])))
   legend <- table$grobs[[which(grepl("guide-box", table$layout$name) & !vapply(table$grobs, inherits, logical(1), "zeroGrob"))[[1L]]]]
   legend_height <- grid::convertHeight(grid::grobHeight(legend), "in", valueOnly = TRUE) + .2
-  if (grepl("\\.pdf$", file, ignore.case = TRUE)) grDevices::pdf(file, width = width, height = height + legend_height) else grDevices::png(file, width = width, height = height + legend_height, units = "in", res = 200)
+  if (grepl("\\.pdf$", file, ignore.case = TRUE)) ytab_pdf_device()(file, width = width, height = height + legend_height) else grDevices::png(file, width = width, height = height + legend_height, units = "in", res = 600)
   on.exit(grDevices::dev.off())
   grid::grid.newpage()
   grid::pushViewport(grid::viewport(layout = grid::grid.layout(rows + 1L, cols, heights = grid::unit(c(rep(height / rows, rows), legend_height), "in"))))
@@ -224,18 +229,41 @@ norm_save_native <- function(file, parts, method, width, height) {
   invisible(file)
 }
 
-# Replicate agreement: the one view where methods are compared side by side.
-norm_ggplot <- function(data, choice = "pairs") {
-  base <- ggplot2::theme_minimal(base_size = 12)
-  d <- data$pairs; d <- d[!is.na(d$median_log2_ratio_shared), , drop = FALSE]
-  long <- rbind(data.frame(d[, c("method", "comparison_id", "kind")], metric = "Median log2 ratio (shift)", value = d$median_log2_ratio_shared),
-                data.frame(d[, c("method", "comparison_id", "kind")], metric = "Spread of log2 ratios (IQR)", value = d$log2_ratio_iqr_shared))
-  long$method <- norm_method_short_label(long$method)
-  long$kind <- ifelse(long$kind == "control_control", "control vs control", "treated vs control")
+# Replicate agreement: the one view where methods are compared side by side. sites: shift and spread of log2 ratios at
+# the sites both samples contain; gene_summary: per pair, the median gene log2 ratio (shift) and the Spearman
+# correlation of gene read sums (agreement no scaling can change); gene_ratios: every gene's log2 ratio, per pair.
+norm_pair_kind <- function(kind) ifelse(kind == "control_control", "control vs control", "treated vs control")
+norm_ggplot <- function(data, choice = "sites", genes = NULL) {
+  base <- ggplot2::theme_minimal(base_size = 12) + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 40, hjust = 1))
+  if (identical(choice, "gene_ratios")) {
+    g <- genes[genes$method %in% unique(data$gene_pairs$method), , drop = FALSE]; validate(need(nrow(g) > 0, "No gene-level ratios in this run."))
+    g$method_id <- g$method; g$method <- norm_method_short_label(g$method)
+    g$pair <- factor(sprintf("%s (%s)", g$comparison_id, norm_pair_kind(g$kind)))
+    fills <- stats::setNames(YTAB_NORM_COLOURS[unique(g$method_id)], as.character(norm_method_short_label(unique(g$method_id))))
+    return(ggplot2::ggplot(g, ggplot2::aes(method, log2_ratio, fill = method)) + ggplot2::geom_hline(yintercept = 0, linewidth = .5) +
+      ggplot2::geom_violin(scale = "width", linewidth = .4, colour = "black") +
+      ggplot2::geom_boxplot(width = .15, outlier.shape = NA, fill = "white", linewidth = .4) +
+      ggplot2::facet_wrap(~pair, ncol = min(3L, nlevels(g$pair))) + ggplot2::scale_fill_manual(values = fills, guide = "none") +
+      ggplot2::coord_cartesian(ylim = c(-5, 5)) + ggplot2::labs(x = NULL, y = "Gene log2 ratio, sample A / B") + base +
+      ggplot2::theme(strip.text = ggplot2::element_text(face = "bold")))
+  }
+  if (identical(choice, "gene_summary")) {
+    d <- data$gene_pairs; validate(need(nrow(d) > 0, "This run has no gene-level agreement; run normalization again to add it."))
+    long <- rbind(data.frame(d[, c("method", "comparison_id", "kind")], metric = "Median gene log2 ratio (shift)", value = d$median_gene_log2_ratio),
+                  data.frame(d[, c("method", "comparison_id", "kind")], metric = "Rank agreement of genes (Spearman)", value = d$spearman_genes))
+    zero <- data.frame(metric = "Median gene log2 ratio (shift)")
+  } else {
+    d <- data$pairs; d <- d[!is.na(d$median_log2_ratio_shared), , drop = FALSE]
+    long <- rbind(data.frame(d[, c("method", "comparison_id", "kind")], metric = "Median log2 ratio (shift)", value = d$median_log2_ratio_shared),
+                  data.frame(d[, c("method", "comparison_id", "kind")], metric = "Spread of log2 ratios (IQR)", value = d$log2_ratio_iqr_shared))
+    zero <- data.frame(metric = "Median log2 ratio (shift)")
+  }
+  long$method <- norm_method_short_label(long$method); long$kind <- norm_pair_kind(long$kind)
   ggplot2::ggplot(long, ggplot2::aes(method, value, colour = kind, text = sprintf("%s<br>%s<br>%s: %.3f", comparison_id, method, metric, value))) +
-    ggplot2::geom_hline(ggplot2::aes(yintercept = 0), data = data.frame(metric = "Median log2 ratio (shift)"), linetype = "dashed", colour = "grey50") +
-    ggplot2::geom_point(size = 3, position = ggplot2::position_dodge(width = .4)) + ggplot2::facet_wrap(~metric, scales = "free_y") + base +
-    ggplot2::labs(x = NULL, y = NULL, colour = "Pair") + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 40, hjust = 1))
+    ggplot2::geom_hline(ggplot2::aes(yintercept = 0), data = zero, linetype = "dashed", colour = "grey50") +
+    ggplot2::geom_point(size = 3, position = ggplot2::position_dodge(width = .4)) + ggplot2::facet_wrap(~metric, scales = "free_y") +
+    ggplot2::scale_colour_manual(values = c(`control vs control` = YTAB_FOCAL, `treated vs control` = YTAB_ACCENT)) + base +
+    ggplot2::labs(x = NULL, y = NULL, colour = "Pair")
 }
 
 normalization_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin) {
@@ -299,12 +327,19 @@ normalization_server <- function(input, output, session, repo_root, active, acti
     if (length(missing)) tags$p(class = "text-warning", sprintf("Not in this run: %s. Run normalization again to add every method.",
                                                                 paste(as.character(norm_method_short_label(missing)), collapse = ", ")))
   })
-  output$norm_plot_caption <- renderUI("Each point is one matched pair of samples, compared at the insertion sites both contain. After a good normalization, controls from the same pool have a shift near 0 and a narrow spread; treated–control pairs also contain the treatment's effect.")
-  output$norm_plot_frame <- renderUI({ req(nrow(runs()) > 0); plotly::plotlyOutput("norm_plotly", height = "520px") })
-  output$norm_plotly <- plotly::renderPlotly({
-    d <- shown(); validate(need(length(input$norm_methods), "Tick at least one method to show.")); req(nrow(d$pairs) > 0)
-    ytab_ggplotly(norm_ggplot(d))
+  pair_choice <- reactive(input$norm_pair_plot %||% "sites")
+  pair_genes <- reactive(norm_filter(list(g = norm_pair_genes(selected_run())), input$norm_methods %||% character())$g)
+  pair_plot <- reactive({
+    d <- shown(); validate(need(length(input$norm_methods), "Tick at least one method to show."))
+    if (identical(pair_choice(), "sites")) req(nrow(d$pairs) > 0)
+    norm_ggplot(d, pair_choice(), if (identical(pair_choice(), "gene_ratios")) pair_genes())
   })
+  output$norm_plot_caption <- renderUI(switch(pair_choice(),
+    gene_summary = "Each point is one matched pair of samples. Normalized reads are summed over each gene's coding sequence (genes with at least 3 catalogue sites and reads in both samples). Shift: the median gene log2 ratio, near 0 when the two samples are on one scale. Rank agreement: the Spearman correlation of the gene sums, which no scaling can change; a method that reshapes counts (BGC) can raise it.",
+    gene_ratios = "Every gene's log2 ratio between the two samples of each pair, under each method (violin: distribution; box: median and quartiles; axis cut at ±5). Controls from the same pool should centre on 0 with a narrow distribution.",
+    "Each point is one matched pair of samples, compared at the insertion sites both contain. After a good normalization, controls from the same pool have a shift near 0 and a narrow spread; treated–control pairs also contain the treatment's effect."))
+  output$norm_plot_frame <- renderUI({ req(nrow(runs()) > 0); plotly::plotlyOutput("norm_plotly", height = "520px") })
+  output$norm_plotly <- plotly::renderPlotly(ytab_ggplotly(pair_plot()))
 
   # One card per ticked method, each with its own plot and axes.
   # Panels fit the window: one column for one method, two for up to four, three beyond; the window height is shared by the rows.
@@ -363,11 +398,13 @@ normalization_server <- function(input, output, session, repo_root, active, acti
   for (format in c("png", "pdf")) local({
     ext <- format
     output[[paste0("norm_download_", ext)]] <- downloadHandler(filename = function() paste0(active()$project_id, "_normalization_agreement_", basename(selected_run()), ".", ext),
-      content = function(file) ytab_save_ggplot(file, norm_ggplot(shown()), width = 11, height = 7))
+      content = function(file) ytab_save_ggplot(file, pair_plot(), width = 11, height = 7))
   })
   output$norm_download_stats <- downloadHandler(filename = function() paste0(active()$project_id, "_normalization_statistics_", basename(selected_run()), ".tsv"),
     content = function(file) file.copy(file.path(selected_run(), "plots", "native_stats.tsv"), file))
   output$norm_download_pairs <- downloadHandler(filename = function() paste0(active()$project_id, "_normalization_pairs_", basename(selected_run()), ".tsv"),
     content = function(file) file.copy(file.path(selected_run(), "experiment", "comparison_diagnostics.tsv"), file))
+  output$norm_download_gene_agreement <- downloadHandler(filename = function() paste0(active()$project_id, "_normalization_gene_agreement_", basename(selected_run()), ".tsv"),
+    content = function(file) file.copy(file.path(selected_run(), "plots", "pair_gene_agreement.tsv"), file))
   invisible(list(runs = runs, selected_run = selected_run, data = data, manifest = manifest))
 }

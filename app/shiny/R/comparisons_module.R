@@ -113,14 +113,14 @@ mc_ggplot <- function(choice, data, pair = NULL) {
     long$gene <- factor(long$gene, levels = rev(unique(long$gene)))
     limit <- max(abs(long$log2FC), na.rm = TRUE)
     return(ggplot2::ggplot(long, ggplot2::aes(condition, gene, fill = log2FC, text = sprintf("%s (%s)<br>%s: log2FC %.2f", gene, ORF, condition, log2FC))) +
-      ggplot2::geom_tile(colour = "white", linewidth = .2) + ggplot2::scale_fill_gradient2(low = "#2166ac", mid = "white", high = "#b2182b", limits = c(-limit, limit)) +
+      ggplot2::geom_tile(colour = "white", linewidth = .2) + ggplot2::scale_fill_gradient2(low = YTAB_DIRECTION_COLOURS[["depleted"]], mid = "white", high = YTAB_DIRECTION_COLOURS[["enriched"]], limits = c(-limit, limit)) +
       ggplot2::labs(x = NULL, y = NULL, fill = "log2FC vs reference") + base + ggplot2::theme(axis.text.y = ggplot2::element_blank()))
   }
   d <- data$pairs[data$pairs$pair == pair & data$pairs$status == "tested", , drop = FALSE]
   d$call_all_pairs <- factor(d$call_all_pairs, levels = c("depleted", "enriched", "not significant"))
   ggplot2::ggplot(d, ggplot2::aes(log2FC, -log10(pmax(p_value, 1e-300)), colour = call_all_pairs,
       text = sprintf("%s %s<br>log2FC %.2f<br>p %.3g; q (all pairs) %.3g<br>%d sites", ORF, ifelse(is.na(Name), "", Name), log2FC, p_value, q_all_pairs, n_sites))) +
-    ggplot2::geom_point(alpha = .6, size = 1.3) + ggplot2::scale_colour_manual(values = c(depleted = "#b2182b", enriched = "#2166ac", `not significant` = "grey70"), drop = FALSE) +
+    ggplot2::geom_point(alpha = .6, size = 1.3) + ggplot2::scale_colour_manual(values = YTAB_DIRECTION_COLOURS, drop = FALSE) +
     ggplot2::labs(x = sprintf("log2FC (%s)", pair), y = "-log10 p", colour = "Call (all pairs, one FDR family)") + base
 }
 
@@ -128,7 +128,8 @@ gi_ggplot <- function(choice, genes, reference, query) {
   base <- ggplot2::theme_minimal(base_size = 12)
   d <- genes[genes$status == "tested", , drop = FALSE]
   d$call <- factor(d$call, levels = c("Aggravating", "Alleviating", "Suppressive", "No interaction"))
-  colours <- c(Aggravating = "#b2182b", Alleviating = "#2166ac", Suppressive = "#1a9850", `No interaction` = "grey75")
+  colours <- c(Aggravating = YTAB_DIRECTION_COLOURS[["depleted"]], Alleviating = YTAB_DIRECTION_COLOURS[["enriched"]], Suppressive = "#E69F00",
+               `No interaction` = YTAB_DIRECTION_COLOURS[["not significant"]])
   hover <- function(x) sprintf("%s %s<br>log2FC %s %.2f; %s %.2f<br>Δ %.2f%s<br>q %.3g; %s", x$ORF, ifelse(is.na(x$Name), "", x$Name), reference, x$log2FC_reference,
                                query, x$log2FC_query, x$delta_log2FC,
                                if ("delta_lower" %in% names(x)) sprintf(" (%.2f to %.2f)", x$delta_lower, x$delta_upper) else "", x[["p_adjusted"]] %||% x$q_bh, x$call)

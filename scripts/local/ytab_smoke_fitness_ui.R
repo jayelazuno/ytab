@@ -5,7 +5,7 @@ self <- normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), v
 repo_root <- normalizePath(file.path(dirname(self), "../.."), winslash = "/", mustWork = TRUE)
 `%||%` <- function(x, y) if (is.null(x) || !length(x)) y else x
 library(shiny); library(bslib)
-source(file.path(repo_root, "app/shiny/R/project_discovery.R")); source(file.path(repo_root, "app/shiny/R/ui_helpers.R"))
+source(file.path(repo_root, "app/shiny/R/analysis_runs.R")); source(file.path(repo_root, "app/shiny/R/project_discovery.R")); source(file.path(repo_root, "app/shiny/R/ui_helpers.R"))
 source(file.path(repo_root, "app/shiny/R/plot_customization_helpers.R")); source(file.path(repo_root, "app/shiny/R/qc_plot_utils.R"))
 source(file.path(repo_root, "app/shiny/R/glabrata_annotation_lookup.R"))
 source(file.path(repo_root, "app/shiny/R/fitness_result_state.R")); source(file.path(repo_root, "app/shiny/R/fitness_plot_utils.R"))

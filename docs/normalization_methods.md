@@ -259,8 +259,11 @@ they existed (the app does this on first view).
 In the app, a run computes every method. The **Show methods** boxes (full names, Unnormalized included) choose which
 methods are shown. View **Each normalization, before and after** gives one panel per ticked method with its own plot
 and axes (the method's native view, above); **Replicate agreement** is the one view comparing methods side by side
-(matched pairs: median log2 ratio and IQR at shared sites, short method names at 40°). The per-sample statistics table
-follows TRANSIT's quality-control table.
+(matched pairs: median log2 ratio and IQR at shared sites, short method names at 40°), with two gene-level views:
+the median gene log2 ratio and the Spearman correlation of gene read sums per pair, and every gene's log2 ratio per pair
+(`plots/pair_gene_agreement.tsv`, `plots/pair_genes.tsv.gz`; normalized reads summed over each gene's coding sequence,
+genes with >= 3 catalogue sites and reads in both samples). The per-sample statistics table follows TRANSIT's
+quality-control table.
 
 `RUN/experiment/methods` is the input for `ytab multicondition`, `ytab genetic-interactions` and `ytab resampling`.
 

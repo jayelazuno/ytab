@@ -158,7 +158,7 @@ cells survive enrichment.
 5. **Pool the tubes:** collect all 40 tubes into a centrifuge jar.
 6. **Plate (CFU checkpoint 1):**
    - Mix 100 µL of the pool into 900 µL PBS and make seven 1:10 serial dilutions.
-   - Plate them on YPD, SCD−Ura and SCD + NAT + 5-FOA (Table 1).
+   - Plate them on YPD, SCD−Ura and SCD + NAT + 5-FOA (plating dilutions in the table at the end of this protocol).
    - Do the same for control tube 41.
 7. **Rinse the tubes:** rinse each tube with 500 µL PBS into the jar and spin at 3000 × g for 15 min.
 8. **Recover:**
@@ -225,7 +225,7 @@ From these:
 | 6 | | | | | | |
 | 7 | final pool | | | | | |
 
-Table 1 (dilutions to plate per medium and day) is to be added from the docx **[to confirm]**.
+The table of dilutions to plate per medium and day is to be added from the docx **[to confirm]**.
 
 ## Induction log (current induction)
 

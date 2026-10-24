@@ -245,6 +245,21 @@ from the libraries' own insertion sites (needs YTAB hit files, which carry the s
 nTnnnnAn motif (`motif`, the default). Use it for Ac/Ds and other transposons; on Hermes it matches the motif model
 (see the HMM methods page, section 8.4). It also writes `target_model.tsv`.
 
+`ytab essentiality` also writes plot summaries for the app: `plots/target_model.tsv` (the target preference the fit
+used, or, for a motif fit, one learned from the same libraries as a diagnostic) and, with `--labels`, `plots/roc.tsv`
+(each model against the curated labels per tier; the hybrid's training genes out-of-fold).
+`ytab essentiality --project-config P --refresh-plots RUN` adds both to an earlier run.
+
+## Essentiality across species
+
+`ytab cross-species --project-config A --project-config B [...] --output DIR` compares the newest essentiality runs of
+two or more projects (one per species) on one-to-one orthologs, matched through S. cerevisiae systematic names with
+each project's `reference.orthology_file` (an S. cerevisiae project is the hub). Writes `orthologs.tsv` (each
+species' gene, score and call), `intersections.tsv` (shared and species-specific essential sets) and `pairwise.tsv`
+(Cohen's kappa of the calls, Spearman correlation of the scores). A new species needs one ortholog table: tab-separated,
+the species' gene first and a `scer_id` column, or a S. cerevisiae systematic name in a later column. The app shows it
+in Gene Explorer > Across Species > Essentiality across species.
+
 ## Species resources
 
 Every species folder has the same layout: `reference_genome/` (FASTA, GFF, Bowtie2 index, chromosome names,

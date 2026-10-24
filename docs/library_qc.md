@@ -23,6 +23,7 @@ Code: `src/ytab/qc/library_qc.py` (package module) and `scripts/local/ytab_qc.py
 | `qc_table.xlsx` | the table coloured by flag; each cell's note holds its reason and hint; header notes hold the metric comments; a Read me and a Flags sheet |
 | `metrics.tsv` | the metric definitions (theme, label, bad direction, rule, comment) |
 | `plots/histogram.tsv.gz`, `qq.tsv.gz`, `ranked.tsv.gz` | count histogram, QQ against a geometric fit and ranked counts for every library (adapted from TRANSIT's QC plots) |
+| `plots/lorenz.tsv.gz` | Lorenz curve: cumulative share of reads held by the top fraction of occupied sites (jackpots rise steeply at the left) |
 | `manifest.json` | counts, catalogue size, genome size, the rules and their parameters |
 
 ## Metrics

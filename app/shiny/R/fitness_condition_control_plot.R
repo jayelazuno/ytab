@@ -90,7 +90,7 @@ plot_fitness_condition_control_scatter <- function(result, mode = "combined", pa
   ytab_base_axes()
   abline(0, 1, lwd = qc_plot_lwd, lty = 2, col = adjustcolor("black", alpha.f = 0.45))
   if (length(highlight)) {
-    depleted_col <- "#2f6fb5"; enriched_col <- "#c83f3f"
+    depleted_col <- YTAB_DIRECTION_COLOURS[["depleted"]]; enriched_col <- YTAB_DIRECTION_COLOURS[["enriched"]]
     hit_cols <- if (identical(direction, "depleted")) rep(depleted_col, length(highlight)) else if (identical(direction, "enriched")) rep(enriched_col, length(highlight)) else ifelse(qc_plot_numeric(ranked$log2fc[match(data$feature_id[highlight], ranked$feature_id)]) < 0, depleted_col, enriched_col)
     points(x[highlight], y[highlight], pch = 21, bg = hit_cols, col = "black", cex = display_point_size + qc_plot_point_cex(0.55), lwd = qc_plot_lwd)
   }

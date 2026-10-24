@@ -10,7 +10,8 @@ Runs the existing, separately validated stages in order and adds plot-ready summ
      log2(normalized / raw) at its insertion sites, sites kept), positive-count distributions and matched-pair diagnostics;
      and each method's native before/after view (native()): TRANSIT-style per-sample statistics, the statistic a scaling
      method equalizes, quantiles against a fitted geometric and ranked counts (BGC, aBGC, unnormalized), and saturation
-     curves with the thinning target (MidLC).
+     curves with the thinning target (MidLC); and, for each matched pair, gene-level agreement under each method
+     (gene_agreement(): per-gene log2 ratios, their median and the rank correlation of gene sums).
 Without --method every available method is run, so any of them can be shown. --refresh-summaries RUN rewrites the plot
 summaries of an earlier run (no renormalization).
 
@@ -22,17 +23,19 @@ Example:
 """
 import argparse
 import csv
+import gzip
 import json
 from pathlib import Path
 import sys
 
 import numpy as np
 from scipy import sparse
-from scipy.stats import kurtosis, skew
+from scipy.stats import kurtosis, skew, spearmanr
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
+from ytab.essentiality.control_conditioned_gumbel import Settings, annotations, gene_sites
 from ytab.normalization.experiment import evaluate
 from ytab.normalization.methods import METHODS
 from ytab.normalization.midlc import expected_occupied
@@ -141,8 +144,53 @@ def write_native(output, methods, trim):
         if rows:write_table(output/"plots"/f"native_{name}.tsv", list(rows[0]), rows)
 
 
+def gene_agreement(experiment, methods):
+    """Gene-level agreement of each matched pair (comparison_diagnostics.tsv) under each method: normalized reads summed
+    over each gene's coding sequence, for genes with >= 3 catalogue sites and reads in both samples; M = log2(a/b) per
+    gene. Per pair: the median M (an offset: 0 when the two are on one scale), its IQR, the fraction of genes with |M| > 1
+    and the Spearman correlation of the gene sums (agreement that no scaling can change). Returns (pair rows, gene rows)."""
+    path = experiment/"comparison_diagnostics.tsv"
+    if not path.exists():return [], []
+    pairs = list({r["comparison_id"]:r for r in _rows(path)}.values())
+    config = Path(json.loads((experiment/"matrix/run_manifest.json").read_text())["project_config"])
+    if not config.exists():config = ROOT/"output/projects"/config.parents[1].name/"config/project.yaml"
+    gff = ROOT/yaml.safe_load(config.read_text())["reference"]["gff"]
+    sites = [(r["chromosome"], int(r["position_1based"])) for r in _rows_gz(experiment/"matrix/sites.tsv.gz")]
+    genes = annotations(gff); indices = gene_sites(genes, sites, Settings())
+    keep = [(g["id"], idx) for g, idx in zip(genes, indices) if len(idx) >= 3]
+    column = {m["sample"]:j for j, m in enumerate(_rows(experiment/"matrix/observations.tsv"))}
+    summary, gene_rows = [], []
+    for method in methods:
+        matrix = sparse.load_npz(experiment/"methods"/method/"normalized_counts.npz").tocsc()
+        for r in pairs:
+            a, b = (matrix[:, column[r[k]]].toarray().ravel() for k in ("left", "right"))
+            sums = np.array([(a[idx].sum(), b[idx].sum()) for _, idx in keep]); ok = (sums > 0).all(axis=1)
+            if ok.sum() < 3:continue
+            m = np.log2(sums[ok, 0]/sums[ok, 1]); q1, med, q3 = np.quantile(m, [.25, .5, .75])
+            summary.append(dict(method=method, comparison_id=r["comparison_id"], kind=r["kind"], left=r["left"], right=r["right"], genes=int(ok.sum()),
+                                median_gene_log2_ratio=float(med), gene_log2_ratio_iqr=float(q3-q1), fraction_abs_gt1=float(np.mean(np.abs(m) > 1)),
+                                spearman_genes=float(spearmanr(sums[ok, 0], sums[ok, 1]).statistic)))
+            gene_rows.extend(dict(method=method, comparison_id=r["comparison_id"], kind=r["kind"], gene=g, log2_ratio=round(float(v), 4))
+                             for (g, _), v in zip((k for k, o in zip(keep, ok) if o), m))
+    return summary, gene_rows
+
+
+def _rows_gz(path):
+    with gzip.open(path, "rt") as handle:return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def write_gene_agreement(output, methods):
+    summary, genes = gene_agreement(output/"experiment", methods)
+    if not summary:return
+    write_table(output/"plots/pair_gene_agreement.tsv", list(summary[0]), summary)
+    with gzip.open(output/"plots/pair_genes.tsv.gz", "wt", newline="") as handle:
+        w = csv.DictWriter(handle, fieldnames=list(genes[0]), delimiter="\t", lineterminator="\n"); w.writeheader(); w.writerows(genes)
+
+
 def method_summary(experiment, methods):
-    with (experiment/"comparison_diagnostics.tsv").open() as handle:rows = list(csv.DictReader(handle, delimiter="\t"))
+    path = experiment/"comparison_diagnostics.tsv"
+    if not path.exists():return {}  # a sample-list run with no pool-matched pairs has no pair diagnostics
+    with path.open() as handle:rows = list(csv.DictReader(handle, delimiter="\t"))
     out = {}
     for method in methods:
         for kind in ("control_control", "treated_control"):
@@ -161,6 +209,10 @@ def main():
     parser.add_argument("--output", help="New output directory")
     parser.add_argument("--trim", type=float, default=.05); parser.add_argument("--target", type=float, default=100)
     parser.add_argument("--refresh-summaries", metavar="RUN", help="Rewrite the plot summaries of an earlier run and exit")
+    parser.add_argument("--normalize-together", action="store_true",
+                        help="With --sample: normalize all samples as one group (independently made libraries, e.g. one per strain)")
+    parser.add_argument("--sample", action="append", help="Normalize exactly these samples (repeat; roles from the sample sheet) instead of the "
+                        "comparison design: for multi-condition tests between strains or conditions that are not pool-matched pairs")
     args = parser.parse_args()
     if args.refresh_summaries:
         run = Path(args.refresh_summaries).resolve(); manifest = json.loads((run/"manifest.json").read_text())
@@ -168,6 +220,7 @@ def main():
         write_table(run/"plots/effective_scale.tsv", list(scale[0]), scale)
         write_table(run/"plots/distributions.tsv", list(distribution[0]), distribution)
         write_native(run, manifest["methods"], float(manifest.get("trim", .05)))
+        write_gene_agreement(run, manifest["methods"])
         print(json.dumps(dict(status="success", refreshed=str(run))))
         return
     if not (args.project_config and args.output):parser.error("--project-config and --output are required")
@@ -181,13 +234,14 @@ def main():
         cfg, parents = catalogue_manifest(Path(args.project_config), output/"catalogue_sources.yaml")
         build_catalogue(output/"catalogue_sources.yaml", output/"catalogue", args.trim, args.target, plots=False)
         print("2/3 Normalizing the experiment samples: "+", ".join(methods), flush=True)
-        evaluate(args.project_config, output/"catalogue", output/"experiment", methods, args.trim, args.target, plots=False)
+        evaluate(args.project_config, output/"catalogue", output/"experiment", methods, args.trim, args.target, plots=False, sample_list=args.sample, together=args.normalize_together)
         print("3/3 Writing plot summaries", flush=True)
         scale, distribution = summaries(output/"experiment", methods)
         (output/"plots").mkdir()
         write_table(output/"plots/effective_scale.tsv", list(scale[0]), scale)
         write_table(output/"plots/distributions.tsv", list(distribution[0]), distribution)
         write_native(output, methods, args.trim)
+        write_gene_agreement(output, methods)
     except (ValueError, KeyError, OSError) as error:
         parser.exit(1, f"ERROR: {error}\n")
     manifest = dict(status="success", project=cfg["project_id"], methods=methods, suggested=SUGGESTED, parents_in_catalogue=parents,
@@ -195,7 +249,8 @@ def main():
                     normalized=str(output/"experiment/methods"), catalogue=str(output/"catalogue"),
                     method_summary=method_summary(output/"experiment", methods),
                     files=dict(effective_scale="plots/effective_scale.tsv", distributions="plots/distributions.tsv",
-                               comparisons="experiment/comparison_diagnostics.tsv", factors="experiment/methods/method_comparison.tsv"),
+                               comparisons="experiment/comparison_diagnostics.tsv", factors="experiment/methods/method_comparison.tsv",
+                               gene_agreement="plots/pair_gene_agreement.tsv", pair_genes="plots/pair_genes.tsv.gz"),
                     reading="Matched controls from the same pool should differ little after normalization: a small median shift and a narrow spread of "
                             "log2 ratios at shared sites. Units differ between methods; compare relative results, not absolute values.")
     (output/"manifest.json").write_text(json.dumps(manifest, indent=2)+"\n")

@@ -16,7 +16,8 @@ ytab_analysis_runs <- function(dir, marker = "manifest.json") {
 # Readable names for run folders: "<kind>_<YYYYMMDD>_<HHMMSS>" becomes "QC table, 21 Oct 2026, 13:13"; other folder
 # names are shown with underscores as spaces and the folder's date.
 ytab_run_kinds <- c(qc = "QC table", libcor = "Library correlation", norm = "Normalization", essentiality = "Essentiality",
-                    multicondition = "Multi-condition", gi = "Genetic interactions")
+                    multicondition = "Multi-condition", gi = "Genetic interactions",
+                    cross_species = "Across species")
 
 ytab_run_label <- function(run_id, modified = NULL) {
   m <- regmatches(run_id, regexec("^(.*)_([0-9]{8})_([0-9]{6})$", run_id))[[1]]
@@ -47,6 +48,24 @@ ytab_read_manifest <- function(run_dir) read_json_safely(file.path(run_dir, "man
 YTAB_BAR_BORDER_MM <- .8
 YTAB_AXIS_LINE_MM <- .8
 YTAB_TICK_MM <- .6
+
+# Shared colours, defined once so that a colour means one thing in every plot and figure made from YTAB results.
+# Species: the Okabe-Ito colour-blind-safe palette (Okabe & Ito 2008); the method under test in teal and comparators in
+# greys; depleted navy and enriched brick red; QC flags green, yellow, red.
+YTAB_SPECIES_COLOURS <- c("C. glabrata" = "#009E73", "C. albicans" = "#E69F00", "S. cerevisiae" = "#CC79A7", "S. pombe" = "#0072B2")
+YTAB_FOCAL <- "#087f85"; YTAB_COMPARATOR <- "#9aa5ad"; YTAB_ACCENT <- "#c8553d"
+YTAB_DIRECTION_COLOURS <- c(depleted = "#3b4f7a", enriched = "#c8553d", `not significant` = "grey80")
+YTAB_FLAG_COLOURS <- c(green = "#7fbf7b", yellow = "#f2d16b", red = "#d6604d", grey = "grey88")
+# Normalization methods by id: unnormalized white, scalings in greys and orange, BGC (the default) teal.
+YTAB_NORM_COLOURS <- c(nonorm = "#ffffff", totreads = "#cfd6db", nzmean = "#9aa5ad", ttr = "#E69F00", betageom = "#087f85",
+                       aBGC = "#56B4E9", quantile = "#CC79A7", zinfnb = "#D55E00", midlc = "#F0E442")
+
+# Species colour for a species written as "C. glabrata", "Candida glabrata" or the project's short name ("glabrata").
+ytab_species_colour <- function(species) {
+  key <- sub("^.*[ _]", "", tolower(as.character(species)))
+  short <- sub("^.*[ ]", "", tolower(names(YTAB_SPECIES_COLOURS)))
+  out <- unname(YTAB_SPECIES_COLOURS[match(key, short)]); out[is.na(out)] <- YTAB_COMPARATOR; out
+}
 
 ytab_style_ggplot <- function(plot) {
   if (!inherits(plot, "ggplot")) return(plot)
@@ -95,11 +114,13 @@ ytab_plotly_style <- function(widget, axis_lines = TRUE, native = FALSE) {
 
 ytab_ggplotly <- function(plot, tooltip = "text") ytab_plotly_style(plotly::ggplotly(ytab_style_ggplot(plot), tooltip = tooltip))
 
-# Writes a ggplot to PNG or PDF according to the file extension, in the house plot style.
+# Writes a ggplot to PNG or PDF according to the file extension, in the house plot style, at publication quality: vector PDF through cairo (which keeps Δ, κ, ρ and other non-ASCII labels) or a 600-dpi PNG.
 ytab_save_ggplot <- function(file, plot, width = 9, height = 7) {
-  device <- if (grepl("\\.pdf$", file, ignore.case = TRUE)) "pdf" else "png"
-  ggplot2::ggsave(file, ytab_style_ggplot(plot), device = device, width = width, height = height, dpi = 200, bg = "white")
+  pdf <- grepl("\\.pdf$", file, ignore.case = TRUE)
+  ggplot2::ggsave(file, ytab_style_ggplot(plot), device = if (pdf) ytab_pdf_device() else "png", width = width, height = height,
+                  dpi = 600, bg = "white")
 }
+ytab_pdf_device <- function() if (isTRUE(capabilities("cairo"))) grDevices::cairo_pdf else grDevices::pdf
 
 ytab_plot_downloads_ui <- function(id, tables = c(table = "Download table")) {
   tags$div(class = "ytab-actions",

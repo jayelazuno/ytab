@@ -373,7 +373,7 @@ plot_fitness_ma <- function(result, mode = "combined", pair = "", direction = "b
   highlighted <- fitness_ma_highlight_rows(data, direction, as.integer(n %||% 10L), min_support)
   label_table <- fitness_ma_label_table(data, highlighted, annotation_mode, custom, mode, pair)
   scales <- qc_plot_text_sizes(); old <- qc_plot_par(mar = c(8.3, 6.2, 5.4, 2.2), mgp = c(3.2, 0.9, 0)); on.exit(par(old), add = TRUE)
-  depleted_col <- "#2f6fb5"; enriched_col <- "#c83f3f"
+  depleted_col <- YTAB_DIRECTION_COLOURS[["depleted"]]; enriched_col <- YTAB_DIRECTION_COLOURS[["enriched"]]
   selected_hit_colors <- rep(NA_character_, nrow(data))
   if (length(highlighted)) {
     selected_hit_colors[highlighted] <- if (identical(direction, "depleted")) depleted_col else if (identical(direction, "enriched")) enriched_col else ifelse(data$log2fc[highlighted] < 0, depleted_col, enriched_col)

@@ -113,7 +113,9 @@ comparative_ui <- function() {
     nav_panel("Comparative View", value = "comparative",
               comparative_comparison_ui()),
     nav_panel("Gene Group Analysis", value = "gene_group",
-              comparative_gene_group_ui())
+              comparative_gene_group_ui()),
+    nav_panel("Essentiality across species", value = "essentiality_species",
+              cross_species_ui())
   )
 }
 

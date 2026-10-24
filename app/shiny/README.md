@@ -14,12 +14,21 @@ The workspace uses horizontal application tabs and nested stage tabs. Opening a 
 | Normalization | Site Normalization (`ytab normalize-project`) · MidLC | `R/normalization_module.R` |
 | Essentiality | Run (HMM; hybrid when labels exist, its gene features built from the chosen normalization: `ytab essentiality`, `ytab hybrid-inputs`) · Results | `R/essentiality_module.R` |
 | Condition Comparisons | Design · Fitness: Run · Fitness: Results · Multi-condition · Genetic Interactions | `R/comparisons_module.R`, `R/ui_fitness.R` |
-| Gene Explorer | Genome Browser · Gene & Domain Insertions · GO Enrichment · Across Species | `R/ui_workspace.R` |
+| Gene Explorer | Genome Browser · Gene & Domain Insertions · GO Enrichment · Across Species (incl. Essentiality across species: `ytab cross-species`) | `R/ui_workspace.R`, `R/cross_species.R` |
 | Screen Planning | Coverage Planner · Mutant Identification | `R/screen_planning.R`, `R/mutant_screen.R` |
 
 **Reports & exports** is a header button. The new analysis panels share `R/analysis_runs.R`:
 - each run is a folder under the project (`library_correlation/`, `normalization/`, `essentiality/`, `multicondition/`, `genetic_interactions/`) with a manifest;
-- results are shown as interactive plotly plots, with PNG/PDF and TSV downloads;
+- results are shown as interactive plotly plots, with PNG/PDF and TSV downloads; downloads are publication quality
+  (vector PDF through cairo, 600-dpi PNG);
+- colours are defined once (`YTAB_*_COLOURS` in `R/analysis_runs.R`): species in the Okabe–Ito palette, the method under test in teal and comparators in
+  grey, depleted navy and enriched brick red, QC flags green/yellow/red, one colour per normalization method;
+- plots drawn from tables the commands write: Lorenz curve (QC › Saturation & Bias,
+  `ytab qc` `plots/lorenz.tsv.gz`), gene-level replicate agreement (Normalization › Replicate agreement,
+  `plots/pair_gene_agreement.tsv`, `pair_genes.tsv.gz`), insertion-target preference and ROC against curated labels
+  (Essentiality › Results, `plots/target_model.tsv`, `plots/roc.tsv`; `ytab essentiality --refresh-plots RUN` adds
+  them to an earlier run), and essentiality across species (Gene Explorer › Across Species, `ytab cross-species`:
+  shared and species-specific essential sets, Cohen's κ between species, the ortholog table);
 - the methods and validation for each panel are in a collapsed **Methods** section.
 
 Multi-condition and genetic interactions read a Normalization run (BGC suggested). Navigation is defined once in `R/navigation.R` (`navigation_modules`, `navigation_inner_navsets` for GO and Across Species). Retired tab values (e.g. `preprocessing`, `go_analysis`, `genome_browser`) are translated, so old links still open the right place. The top-level menus are in `www/ytab_nav_menus.js`; bump its `?v=` cache-buster in `app.R` when they change.

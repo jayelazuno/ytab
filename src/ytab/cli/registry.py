@@ -48,6 +48,7 @@ MODULES = {m.name: m for m in (
     Module("multicondition-plots", "ytab_multicondition_plots.py", "Response correlation (corrplot) and response heatmap for a multicondition run", project_option=None, force_option=None),
     Module("genetic-interactions", "ytab_genetic_interactions.py", "Hermes genetic interactions: strain x treatment response differences", project_option=None, force_option=None),
     Module("essentiality", "ytab_essentiality.py", "Essentiality for a project in one step: Hermes HMM (label-free), current RF scores and the hybrid when labels are given", project_option=None, force_option=None),
+    Module("cross-species", "ytab_cross_species.py", "Essentiality across species: HMM calls of one-to-one orthologs (S. cerevisiae hub) in two or more projects", project_option=None, force_option=None),
     Module("hermes-hmm", "ytab_hermes_hmm.py", "Label-free Hermes window HMM essentiality for any yeast (haploid reference FASTA + GFF + hit files)", project_option=None, force_option=None),
     Module("library-correlation", "ytab_library_correlation.py", "Correlate Hermes libraries across pools, strains, conditions and species (gene insertion density)", project_option=None, force_option=None),
     Module("comparison-design", "ytab_init_comparison_design.py", "Create explicit fitness comparisons", force_option="--overwrite"),

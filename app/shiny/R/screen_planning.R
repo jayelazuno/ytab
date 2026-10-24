@@ -46,14 +46,15 @@ sc_python_command <- function(python_bin, repo_root) {
     call. = FALSE)
 }
 
-sc_poisson_ggplot <- function(n, q, k, theme) {
+# Coverage curve in the species' colour, the target as a dashed line and the required colonies marked.
+sc_poisson_ggplot <- function(n, q, k, theme, species = NULL) {
   xmax <- max(25000,k)*1.04
   points <- data.frame(k=seq(0,xmax,length.out=201));points$coverage<-100*(1-exp(-points$k/n))
   ggplot2::ggplot(points,ggplot2::aes(x=k,y=coverage,group=1))+
-    ggplot2::geom_line(colour="#E76F64",linewidth=1.15)+
-    ggplot2::geom_hline(yintercept=100*q,colour="#B34A36",linetype="dashed",linewidth=.5)+
-    ggplot2::geom_vline(xintercept=k,colour="#2C7FB8",linetype="dotted",linewidth=.5)+
-    ggplot2::annotate("point",x=k,y=100*(1-exp(-k/n)),colour="#2C7FB8",size=2.5)+
+    ggplot2::geom_line(colour=if (length(species)) ytab_species_colour(species) else YTAB_FOCAL,linewidth=1.15)+
+    ggplot2::geom_hline(yintercept=100*q,colour="black",linetype="22",linewidth=.5)+
+    ggplot2::geom_vline(xintercept=k,colour="grey40",linetype="dotted",linewidth=.5)+
+    ggplot2::annotate("point",x=k,y=100*(1-exp(-k/n)),colour="black",size=2.5)+
     ggplot2::scale_y_continuous(limits=c(0,100),labels=function(x)paste0(x,"%"))+
     ggplot2::scale_x_continuous(labels=function(x)format(x,big.mark=",",scientific=FALSE,trim=TRUE))+
     ggplot2::labs(title="Theoretical Poisson / Equal-Gene Benchmark",x="Total colonies screened",y="Represented genes recovered (%)")+
@@ -133,12 +134,12 @@ screen_coverage_server <- function(input, output, session, repo_root, active, ac
       tags$strong(paste(fmt(k),"colonies required")),
       tags$p({digits<-if(q>=.999)2L else 1L;sprintf("Expected recovery: %s of %s represented genes (%.*f%%); %.*f%% of %s reference genes.",fmt(round(recovered)),fmt(n),digits,100*recovered/n,digits,100*recovered/d$annotated,fmt(d$annotated))}),
       withMathJax(tags$p(sprintf("\\[K_q=\\left\\lceil-N\\ln(1-q)\\right\\rceil,\\quad N=%s,\\quad q=%.4f\\]",fmt(n),q))),
-      tags$p("The blue marker shows required K; the red dashed line is the target. This is an equal-gene analytical benchmark, not a confidence guarantee."))
+      tags$p("The black point marks the required K; the dashed line is the target. This is an equal-gene analytical benchmark, not a confidence guarantee."))
   })
   output$sc_frame_primary <- renderUI({v<-ytab_plot_customization_values(input,"sc");ytab_plot_frame(plotly::plotlyOutput("sc_plot_primary",height=v$height),width=v$width)})
   poisson_plot <- function() {
     d <- current(); n <- d$represented; q <- target(); k <- ceiling(-n*log1p(-q))
-    sc_poisson_ggplot(n, q, k, sc_theme(ytab_plot_customization_values(input,"sc")))
+    sc_poisson_ggplot(n, q, k, sc_theme(ytab_plot_customization_values(input,"sc")), species = active()$species)
   }
   output$sc_plot_primary <- plotly::renderPlotly(plotly::config(ytab_ggplotly(poisson_plot(), tooltip = "all"),displaylogo=FALSE))
   download_name <- function(ext) sprintf("%s_screen_planning_poisson_%s%s", active()$project_id, sub("\\.", "p", format(100*target())), ext)

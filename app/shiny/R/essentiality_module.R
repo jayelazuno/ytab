@@ -50,7 +50,8 @@ essentiality_run_ui <- function() ytab_two_column_layout(
 essentiality_model_results_ui <- function() ytab_two_column_layout(
   controls = ytab_control_panel("Results",
     uiOutput("ess_result_selector"),
-    radioButtons("ess_plot", "Plot", c("Chromosome track" = "track", "Model scores" = "scores", "Calls" = "calls")),
+    radioButtons("ess_plot", "Plot", c("Chromosome track" = "track", "Model scores" = "scores", "Calls" = "calls",
+                                       "Insertion-target preference" = "target", "ROC against curated labels" = "roc")),
     conditionalPanel("input.ess_plot === 'track'", uiOutput("ess_chromosome_selector")),
     ytab_plot_downloads_ui("ess", c(genes = "Download gene table (TSV)"))),
   main = tagList(
@@ -96,8 +97,39 @@ ess_track_plotly <- function(windows, chromosome, chrom_label = chromosome) {
     ytab_plotly_style(native = TRUE)
 }
 
-ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifest = list()) {
+# Model colours: the label-free HMM in teal, the hybrid in brick red, the current random forest in grey.
+essentiality_model_colours <- c(`HMM (label-free)` = YTAB_FOCAL, Hybrid = YTAB_ACCENT, `Random forest` = YTAB_COMPARATOR)
+
+ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifest = list(), run_dir = NULL) {
   base <- ggplot2::theme_minimal(base_size = 12)
+  if (identical(choice, "target")) {
+    tm <- ytab_read_analysis_tsv(file.path(run_dir %||% "", "plots", "target_model.tsv"))
+    validate(need(nrow(tm) > 0, "This run has no insertion-target summary. Run essentiality again (or `ytab essentiality --refresh-plots RUN`)."))
+    used <- isTRUE(as.logical(tm$used_in_fit[[1L]]))
+    tm$tip <- sprintf("offset %+d<br>%.2f bits<br>A %.2f  C %.2f  G %.2f  T %.2f", tm$offset, tm$information_bits, tm$A, tm$C, tm$G, tm$T)
+    return(ggplot2::ggplot(tm, ggplot2::aes(offset, information_bits, text = tip)) + ggplot2::geom_col(fill = YTAB_FOCAL, width = .8) +
+      ggplot2::geom_text(data = tm[tm$information_bits >= .05, , drop = FALSE], ggplot2::aes(label = preferred), vjust = -.4, fontface = "bold", size = 4.5) +
+      ggplot2::scale_x_continuous(breaks = seq(min(tm$offset), max(tm$offset), 2)) + ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, .25))) +
+      ggplot2::labs(x = "Offset from the insertion site (0 = first base of the target-site duplication)", y = "Information (bits)",
+                    title = if (used) "Learned from these libraries and used in the HMM fit" else "Learned from these libraries (diagnostic; the fit used the Hermes motif)") + base)
+  }
+  if (identical(choice, "roc")) {
+    roc <- ytab_read_analysis_tsv(file.path(run_dir %||% "", "plots", "roc.tsv"))
+    validate(need(nrow(roc) > 0, "ROC curves need curated labels: run essentiality with the hybrid model (labels), or refresh an earlier run's plots."))
+    roc$tier <- factor(ifelse(roc$tier == "all", "All labelled genes", paste(tools::toTitleCase(roc$tier), "labels")))
+    roc$tier <- factor(roc$tier, unique(c("All labelled genes", levels(roc$tier))))
+    auc <- unique(roc[, c("model", "tier", "genes", "essential", "auc")])
+    auc$label <- sprintf("%s %.3f", sub(" \\(label-free\\)", "", auc$model), auc$auc)
+    auc$y <- .05 + .08 * (stats::ave(seq_len(nrow(auc)), auc$tier, FUN = seq_along) - 1)
+    roc$tip <- sprintf("%s<br>%s<br>FPR %.3f, TPR %.3f<br>AUC %.3f (%s genes, %s essential)", roc$model, roc$tier, roc$fpr, roc$tpr, roc$auc,
+                       format(roc$genes, big.mark = ","), format(roc$essential, big.mark = ","))
+    return(ggplot2::ggplot(roc, ggplot2::aes(fpr, tpr, colour = model, group = model, text = tip)) +
+      ggplot2::geom_abline(linetype = "dotted", colour = "grey50") + ggplot2::geom_step(linewidth = .9) +
+      ggplot2::geom_text(data = auc, ggplot2::aes(x = .98, y = y, label = label, colour = model), hjust = 1, fontface = "bold", size = 3.6, inherit.aes = FALSE, show.legend = FALSE) +
+      ggplot2::facet_wrap(~tier, nrow = 1) + ggplot2::scale_colour_manual(values = essentiality_model_colours) + ggplot2::coord_equal() +
+      ggplot2::scale_x_continuous(breaks = c(0, .5, 1)) + ggplot2::scale_y_continuous(breaks = c(0, .5, 1)) +
+      ggplot2::labs(x = "False positive rate", y = "True positive rate", colour = NULL) + base + ggplot2::theme(legend.position = "top"))
+  }
   if (identical(choice, "track")) {
     w <- windows[windows$chromosome == chromosome, , drop = FALSE]
     posterior <- do.call(rbind, lapply(names(essentiality_state_labels), function(s)
@@ -242,14 +274,16 @@ essentiality_module_server <- function(input, output, session, repo_root, active
   output$ess_plot_caption <- renderUI(switch(input$ess_plot %||% "track",
     track = "Insertions per window (top), the most probable HMM state of each window (strip; grey = unmappable) and the posterior probabilities of essential and growth-defect states (bottom). Zoom with the mouse; double-click to reset. The PNG/PDF download shows all four state posteriors.",
     scores = if (isTRUE(manifest()$hybrid)) "Each point is a gene. Dashed lines are the 0.5 thresholds used for both models." else "Distribution of the HMM score (P_ES_run) by call.",
-    calls = "Number of genes per HMM call, and agreement between the HMM and the hybrid when the hybrid was run."))
+    calls = "Number of genes per HMM call, and agreement between the HMM and the hybrid when the hybrid was run.",
+    target = "Information (bits) at each position around the insertion site, from the libraries' distinct insertion sites against the local base composition, with the preferred base above informative positions. No labels or prior motif are used; Hermes shows T at +1 and A at +6 (nTnnnnAn).",
+    roc = "Each model's score against the curated labels, per label tier and all together, with the area under the curve (AUC). Only genes a model was not fitted to: the HMM uses no labels, and the hybrid's training genes carry out-of-fold scores."))
   output$ess_plot_frame <- renderUI({ req(nrow(runs()) > 0); plotly::plotlyOutput("ess_plotly", height = if (identical(input$ess_plot, "track")) "620px" else "520px") })
   output$ess_plotly <- plotly::renderPlotly({
     choice <- input$ess_plot %||% "track"
     if (identical(choice, "track")) {
       req(input$ess_chromosome); return(ess_track_plotly(windows(), input$ess_chromosome, qc_plot_chromosome_display(input$ess_chromosome, active())))
     }
-    out <- ytab_ggplotly(ess_ggplot(choice, genes(), manifest = manifest()))
+    out <- ytab_ggplotly(ess_ggplot(choice, genes(), manifest = manifest(), run_dir = selected_run()))
     if (identical(choice, "calls")) {
       # ggplotly draws the facet y title as an annotation that runs into the tick labels: use the axis title instead
       out$x$layout$annotations <- Filter(function(a) !identical(trimws(gsub("<[^>]+>", "", as.character(a$text %||% ""))), "Genes"), out$x$layout$annotations)
@@ -273,7 +307,7 @@ essentiality_module_server <- function(input, output, session, repo_root, active
 
   plot_for_download <- function() {
     choice <- input$ess_plot %||% "track"
-    if (!identical(choice, "track")) return(ess_ggplot(choice, genes(), manifest = manifest()))
+    if (!identical(choice, "track")) return(ess_ggplot(choice, genes(), manifest = manifest(), run_dir = selected_run()))
     p <- ess_ggplot("track", genes(), windows(), input$ess_chromosome %||% unique(windows()$chromosome)[[1L]])
     p$bottom + ggplot2::geom_col(ggplot2::aes(start, insertions / max(insertions, 1)), data = windows()[windows()$chromosome == (input$ess_chromosome %||% ""), ],
                                  inherit.aes = FALSE, fill = "grey20", alpha = .5) +
