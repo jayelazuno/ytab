@@ -1,0 +1,47 @@
+{
+  "project_id": "Michel_2017_SATAY",
+  "sample": "ERR1533146",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/mapfastq/ERR1533146/ERR1533146.sorted.bam",
+  "species": "cerevisiae",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533146",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533146/ERR1533146_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/logs/create_hit_file/ERR1533146.log",
+  "status": "success",
+  "start_time": "2026-10-23T19:18:48.530764+00:00",
+  "end_time": "2026-10-23T19:23:28.354022+00:00",
+  "elapsed_seconds": 279.823,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/mapfastq/ERR1533146/ERR1533146.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533146",
+    "--out-prefix",
+    "ERR1533146",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533146/ERR1533146.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533146/ERR1533146.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533146/ERR1533146.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533146/ERR1533146_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533146/ERR1533146_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}

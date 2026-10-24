@@ -1,0 +1,2 @@
+sample,input_path,total_reads,unique_sites,jackpot_top_frac,jackpot_frac_reads,n_jackpot_sites,midlc_est,depth_ratio_R_over_midlc,per_gene_top_site_removed,per_gene_sites_removed,normalize_target,reads_target,thinning_p,reads_after_norm,normalized_written,normalized_output,midlc_points,midlc_max_sampled,seqbias_done,centromere_done
+ERR1533145,/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533145/ERR1533145_hits.txt,17962540,505735,0.001,0.135999,506,1153905,15.5667,0,0,NA,NA,NA,NA,0,NA,10,17962540,1,1

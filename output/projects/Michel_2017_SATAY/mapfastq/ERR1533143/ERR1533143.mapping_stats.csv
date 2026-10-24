@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+ERR1533143,27260929,27260929,17275293,9985636,63.37,0,0.0,15241253,88.226,36.42,/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/mapfastq/ERR1533143/ERR1533143.sam

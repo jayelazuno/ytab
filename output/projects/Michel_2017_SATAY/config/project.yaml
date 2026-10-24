@@ -1,0 +1,92 @@
+project_id: Michel_2017_SATAY
+repo_root: ../../../..
+fastq_dir: output/projects/Michel_2017_SATAY/config/argon_fastq_inputs
+fastq_paths_relative_to: fastq_dir
+output_project_dir: output/projects/Michel_2017_SATAY
+output_export_dir: output/exports/Michel_2017_SATAY
+species: cerevisiae
+threads: 8
+reference:
+  species: cerevisiae
+  species_dir: resources/species/cerevisiae
+  reference_dir: resources/species/cerevisiae/reference_genome
+  fasta: resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta
+  feature_table: null
+  gff: resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff
+  gtf: null
+  gffutils_db: resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/cerevisiae/reference_genome/centromeres.SGD.bed
+  trna_bed: resources/species/cerevisiae/reference_genome/tRNAs.bed
+  orthology_file: null
+  warnings:
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: ERR1533143
+  fastq_1: ERR1533143.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: ERR1533144
+  fastq_1: ERR1533144.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: ERR1533145
+  fastq_1: ERR1533145.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: ERR1533146
+  fastq_1: ERR1533146.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: ERR1533147
+  fastq_1: ERR1533147.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: ERR1533148
+  fastq_1: ERR1533148.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: ERR1533149
+  fastq_1: ERR1533149.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+sample_sheet: output/projects/Michel_2017_SATAY/config/sample_sheet.csv
+created_at: '2026-10-23T18:01:38.978803+00:00'
+ytab_version_or_git_commit_if_available: 07c9ca9

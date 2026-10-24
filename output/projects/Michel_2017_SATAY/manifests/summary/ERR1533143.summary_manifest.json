@@ -1,0 +1,43 @@
+{
+  "project_id": "Michel_2017_SATAY",
+  "sample": "ERR1533143",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533143/ERR1533143_hits.txt",
+  "species": "cerevisiae",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": null
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/summary/ERR1533143",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/summary/ERR1533143/ERR1533143.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/logs/summary/ERR1533143.log",
+  "status": "success",
+  "start_time": "2026-10-23T19:29:25.495011+00:00",
+  "end_time": "2026-10-23T19:29:45.125614+00:00",
+  "elapsed_seconds": 19.631,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/create_hit_file/ERR1533143",
+    "--hit-glob",
+    "ERR1533143_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Michel_2017_SATAY/summary/ERR1533143",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta"
+  ],
+  "warnings": [],
+  "error_message": null
+}
