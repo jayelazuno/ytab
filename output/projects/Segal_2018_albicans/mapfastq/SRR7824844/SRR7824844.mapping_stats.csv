@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR7824844,25643159,25643159,23629973,2013186,92.149,0,0.0,20390967,86.293,35.76,/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/mapfastq/SRR7824844/SRR7824844.sam

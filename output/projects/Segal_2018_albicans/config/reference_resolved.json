@@ -1,0 +1,19 @@
+{
+  "species": "albicans",
+  "species_dir": "resources/species/albicans",
+  "reference_dir": "resources/species/albicans/reference_genome",
+  "fasta": "resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomes_HapA.fasta",
+  "feature_table": "resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomal_feature.tab",
+  "gff": "resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_features.gff",
+  "gtf": null,
+  "gffutils_db": "resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_features.gff.gffutils_db.sqlite",
+  "bowtie2_index_prefix": "resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomes_HapA",
+  "bowtie2_index_complete": true,
+  "bowtie2_index_type": "bt2",
+  "centromere_bed": "resources/species/albicans/reference_genome/centromeres.CGD.bed",
+  "trna_bed": "resources/species/albicans/reference_genome/tRNAs.bed",
+  "orthology_file": "resources/species/albicans/orthologs/C_albicans_SC5314_S_cerevisiae_orthologs.txt",
+  "warnings": [
+    "Bowtie2 index found; indexing skipped."
+  ]
+}

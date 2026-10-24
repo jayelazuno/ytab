@@ -1,0 +1,47 @@
+{
+  "project_id": "Segal_2018_albicans",
+  "sample": "SRR7824843",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/mapfastq/SRR7824843/SRR7824843.sorted.bam",
+  "species": "albicans",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomes_HapA.fasta",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_features.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824843",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824843/SRR7824843_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/logs/create_hit_file/SRR7824843.log",
+  "status": "success",
+  "start_time": "2026-10-23T23:09:27.302628+00:00",
+  "end_time": "2026-10-23T23:12:54.688682+00:00",
+  "elapsed_seconds": 207.386,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/mapfastq/SRR7824843/SRR7824843.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824843",
+    "--out-prefix",
+    "SRR7824843",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomes_HapA.fasta",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_features.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824843/SRR7824843.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824843/SRR7824843.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824843/SRR7824843.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824843/SRR7824843_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824843/SRR7824843_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}

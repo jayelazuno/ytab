@@ -1,0 +1,2 @@
+sample,input_path,total_reads,unique_sites,jackpot_top_frac,jackpot_frac_reads,n_jackpot_sites,midlc_est,depth_ratio_R_over_midlc,per_gene_top_site_removed,per_gene_sites_removed,normalize_target,reads_target,thinning_p,reads_after_norm,normalized_written,normalized_output,midlc_points,midlc_max_sampled,seqbias_done,centromere_done
+SRR7824845,/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824845/SRR7824845_hits.txt,12478734,26293,0.001,0.0233807,27,328901,37.9407,0,0,NA,NA,NA,NA,0,NA,10,12478734,1,1

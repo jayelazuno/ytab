@@ -1,0 +1,27 @@
+=== Transposon removal (searched with primer+Tn tail) ===
+27695299 reads; of these:
+  16265830 (58.73%) contained the transposon
+
+=== Adapter removal ===
+16265830 reads; of these:
+  16256962 (99.95%) contained the adapter
+
+=== Sequence alignment ===
+16256962 reads; of these:
+  16256962 (100.00%) were unpaired; of these:
+    1246200 (7.67%) aligned 0 times
+    12175753 (74.90%) aligned exactly 1 time
+    2835009 (17.44%) aligned >1 times
+92.33% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 16256962
+primary_records: 16256962
+primary_mapped: 15010762
+primary_unmapped: 1246200
+percent_mapped: 92.334
+mapq_ge_threshold: 12478734
+percent_mapq_ge_threshold: 83.132
+avg_mapq_mapped_primary: 34.43
+mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/mapfastq/SRR7824845/SRR7824845.mapping_stats.csv

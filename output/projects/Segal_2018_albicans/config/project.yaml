@@ -1,0 +1,128 @@
+project_id: Segal_2018_albicans
+repo_root: ../../../..
+fastq_dir: output/projects/Segal_2018_albicans/config/argon_fastq_inputs
+fastq_paths_relative_to: fastq_dir
+output_project_dir: output/projects/Segal_2018_albicans
+output_export_dir: output/exports/Segal_2018_albicans
+species: albicans
+threads: 8
+reference:
+  species: albicans
+  species_dir: resources/species/albicans
+  reference_dir: resources/species/albicans/reference_genome
+  fasta: resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomes_HapA.fasta
+  feature_table: resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomal_feature.tab
+  gff: resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_features.gff
+  gtf: null
+  gffutils_db: resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_features.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomes_HapA
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/albicans/reference_genome/centromeres.CGD.bed
+  trna_bed: resources/species/albicans/reference_genome/tRNAs.bed
+  orthology_file: resources/species/albicans/orthologs/C_albicans_SC5314_S_cerevisiae_orthologs.txt
+  warnings:
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: SRR7824838
+  fastq_1: SRR7824838.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824839
+  fastq_1: SRR7824839.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824840
+  fastq_1: SRR7824840.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824841
+  fastq_1: SRR7824841.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824842
+  fastq_1: SRR7824842.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824843
+  fastq_1: SRR7824843.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824844
+  fastq_1: SRR7824844.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824845
+  fastq_1: SRR7824845.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824846
+  fastq_1: SRR7824846.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824847
+  fastq_1: SRR7824847.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR7824848
+  fastq_1: SRR7824848.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+sample_sheet: output/projects/Segal_2018_albicans/config/sample_sheet.csv
+created_at: '2026-10-23T20:03:53.664258+00:00'
+ytab_version_or_git_commit_if_available: 07c9ca9

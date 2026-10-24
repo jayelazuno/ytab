@@ -1,0 +1,43 @@
+{
+  "project_id": "Segal_2018_albicans",
+  "sample": "SRR7824847",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824847/SRR7824847_hits.txt",
+  "species": "albicans",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomes_HapA.fasta",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_features.gff",
+    "gtf": null,
+    "feature_table": "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomal_feature.tab",
+    "orthology_file": "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/orthologs/C_albicans_SC5314_S_cerevisiae_orthologs.txt"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/summary/SRR7824847",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/summary/SRR7824847/SRR7824847.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/logs/summary/SRR7824847.log",
+  "status": "success",
+  "start_time": "2026-10-23T23:31:42.143777+00:00",
+  "end_time": "2026-10-23T23:31:50.483607+00:00",
+  "elapsed_seconds": 8.34,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/create_hit_file/SRR7824847",
+    "--hit-glob",
+    "SRR7824847_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Segal_2018_albicans/summary/SRR7824847",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_features.gff",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/albicans/reference_genome/C_albicans_SC5314_version_A22-s07-m01-r08_chromosomes_HapA.fasta"
+  ],
+  "warnings": [],
+  "error_message": null
+}
