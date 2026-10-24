@@ -24,9 +24,10 @@ demo_project_id <- as.character(launcher_config$demo_project_id %||% "")
 
 ui <- tagList(
   tags$head(tags$title("YTAB — Yeast Transposon Analysis Browser"), tags$link(rel="stylesheet", href="ytab.css"),
-    tags$link(rel="stylesheet", href="ytab-landing.css?v=20260911_1"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet", href="ytab_help.css?v=20261023_1"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20261022_3"),
+    tags$link(rel="stylesheet", href="ytab-landing.css?v=20261023_1"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet", href="ytab_help.css?v=20261023_1"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20261023_6"),
     tags$script(src="https://cdn.jsdelivr.net/npm/igv@3/dist/igv.min.js"),
     tags$script(src="ytab_igv_browser.js?v=20261022_1"),
+    tags$script(src="ytab_page_styles.js?v=20261023_2"),
     tags$script(src="ytab_nav_menus.js?v=20261022_2&screen_coverage=4")),
   uiOutput("app_shell")
 )
@@ -42,7 +43,6 @@ server <- function(input, output, session) {
   fastq_scan_warning <- reactiveVal("")
   initialization_running <- reactiveVal(FALSE)
   log_text <- reactiveVal("No command has run in this session.")
-  exports_log <- reactiveVal("")
   jobs <- new_job_manager()
   status_tick <- reactiveVal(0L)
   project_created <- reactiveVal(FALSE)
@@ -195,7 +195,7 @@ server <- function(input, output, session) {
   output$demo_project_card <- renderUI({
     demo <- demo_project(); if (is.null(demo)) return(NULL)
     panel_card("Workflow demonstration project", tags$p(project_display_label(as.list(demo[1, ]))),
-      tags$p(class="ytab-warning", "Workflow demonstration only; not final biological results."),
+      tags$p(class="ytab-warning", "A small example project for trying the workflow; its results are not for biological conclusions."),
       actionButton("open_demo", "Open demonstration project", class="btn-primary ytab-button"))
   })
   open_path <- function(path) {
@@ -258,11 +258,14 @@ server <- function(input, output, session) {
       update_project_selector_choices(refreshed_choices,selected=character())
     },once=TRUE)
   }
-  observeEvent(input$switch_project,{
+  leave_project<-function(){
     if(jobs$job_is_running()){
       showModal(modalDialog(title="Pipeline job running","A pipeline job is running. Switching projects will not stop the job. You may continue monitoring it from its project later.",footer=tagList(modalButton("Stay here"),actionButton("confirm_switch_project","Switch project",class="btn-danger"))))
     } else switch_to_landing()
-  },ignoreInit=TRUE)
+  }
+  # The YTAB brand in the header goes to the home page, like Switch project.
+  observeEvent(input$switch_project,leave_project(),ignoreInit=TRUE)
+  observeEvent(input$ytab_home,leave_project(),ignoreInit=TRUE)
   observeEvent(input$confirm_switch_project,{removeModal();switch_to_landing()},ignoreInit=TRUE)
   observeEvent(input$return_from_new_project,new_project_open(FALSE),ignoreInit=TRUE)
   observeEvent(input$return_from_import_project,import_project_open(FALSE),ignoreInit=TRUE)
@@ -358,7 +361,7 @@ server <- function(input, output, session) {
   }, ignoreInit=TRUE)
   observeEvent(input$import_existing_hit_project, {
     error <- validate_import_project_id(input$import_project_id); if(nzchar(error)){showNotification(error,type="error");return()}
-    if(!nzchar(trimws(input$import_hit_dir_path %||% ""))){showNotification("Provide a CreateHitFile output directory.",type="error");return()}
+    if(!nzchar(trimws(input$import_hit_dir_path %||% ""))){showNotification("Provide the hit-file directory.",type="error");return()}
     if(!nzchar(input$import_species %||% "")){showNotification("Choose a species/reference.",type="error");return()}
     script<-import_args()[[1]];if(!file.exists(script)||dir.exists(script)){showNotification("Hit-file import script is unavailable.",type="error");return()}
     result<-tryCatch(run_process_sync(locate_python_executable(),import_args(),wd=repo_root),error=function(e)list(status=1L,stdout="",stderr=conditionMessage(e)))
@@ -417,7 +420,7 @@ server <- function(input, output, session) {
   job_progress_server("library_diagnostics_job",jobs,active,compact=FALSE)
   job_progress_server("fitness_job",jobs,active,compact=FALSE)
   included_samples <- reactive({d<-active()$samples;inc<-if("include"%in%names(d))tolower(as.character(d$include))%in%c("true","1","yes")else rep(TRUE,nrow(d));as.character(d$sample[inc])})
-  output$active_project_badge <- renderUI({p<-active();tagList(tags$b(p$project_id),tags$span(p$species),tags$span(if(p$analysis_ready)"analysis ready" else "preprocessing"))})
+  output$active_project_badge <- renderUI({p<-active();tagList(tags$b(p$project_id),tags$span(p$species))})
   output$project_metadata_ui <- renderUI({p<-active();tags$dl(class="ytab-meta",tags$dt("Project ID"),tags$dd(p$project_id),tags$dt("Project config"),tags$dd(tags$code(p$project_config)),tags$dt("FASTQ directory"),tags$dd(tags$code(p$fastq_directory)),tags$dt("Sample sheet"),tags$dd(tags$code(p$sample_sheet)),tags$dt("Threads"),tags$dd(p$threads),tags$dt("Reference"),tags$dd(p$reference$fasta %||% "Not resolved"))})
   sample_name_editor <- reactiveVal(NULL)
   observeEvent(input$edit_sample_names, {
@@ -578,7 +581,6 @@ server <- function(input, output, session) {
   observeEvent(input$fitness_continue_analysis,go_to("fitness","fitness_tabs","fitness_run"),ignoreInit=TRUE);observeEvent(input$fitness_change_design,go_to("fitness","fitness_tabs","fitness_design"),ignoreInit=TRUE)
   output$essentiality_readiness<-renderUI({s<-sample_pipeline_status();if(!any(s$hit_file%in%c("success","skipped")))blocked_card("Essentiality preprocessing blocked","Raw hit files are unavailable.","Create hit files")})
   output$fitness_readiness<-renderUI({s<-sample_pipeline_status();if(!all(s$summary[s$included]%in%c("success","skipped")))blocked_card("Fitness analysis blocked","Fitness analysis requires raw SummaryTable outputs.","Complete raw SummaryTable")else if(!file.exists(file.path(active()$project_root,"config","comparison_design.csv")))blocked_card("Comparison design required","Raw summaries are ready.","Generate comparison design")})
-  output$results_readiness<-renderUI({p<-active();if(!dir.exists(p$export_root)||!length(list.files(p$export_root)))tags$p(class="text-muted","Reports and stable result exports become available after preprocessing and downstream analyses.")})
 
   python_bin <- locate_python_executable
   run_cli <- function(script,args=character()) {
@@ -1432,9 +1434,7 @@ server <- function(input, output, session) {
   observeEvent(input$refresh_reference_status,refresh_preprocessing(),ignoreInit=TRUE)
   for(id in c("cancel_mapfastq","cancel_create_hit_file","cancel_summary_table"))local({key<-id;observeEvent(input[[key]],jobs$cancel_job(),ignoreInit=TRUE)})
   for(id in c("change_preprocess_selection"))local({key<-id;observeEvent(input[[key]],go_to("run","run_tabs","samples"),ignoreInit=TRUE)})
-  observeEvent(input$open_reports_exports,showModal(reports_exports_modal()),ignoreInit=TRUE)
-  observeEvent(input$build_project_report,run_cli("ytab_build_project_report.py","--force"));observeEvent(input$build_export_bundle,run_cli("ytab_export_project.py","--force"))
-  output$exports_text<-renderText(exports_log());output$command_output<-renderText(log_text());output$import_command_output<-renderText(log_text())
+  output$command_output<-renderText(log_text());output$import_command_output<-renderText(log_text())
   output$reference_status<-renderText({p<-active();sprintf("Selected species: %s\nReference status: %s\nBowtie2 index complete: %s",p$species,stage_status(p$status,"reference"),p$reference$bowtie2_index_complete %||% FALSE)})
 
 }

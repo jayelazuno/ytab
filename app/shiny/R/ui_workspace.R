@@ -3,13 +3,6 @@ project_module_ui <- function() navset_tab(id="project_tabs",
   nav_panel("Logs & Provenance",value="provenance",panel_card("Logs and provenance",uiOutput("provenance_ui"),uiOutput("last_job_summary"),verbatimTextOutput("pipeline_job_text_logs"))),
   nav_panel("Help",value="help",panel_card("Quick start",uiOutput("help_ui"),low_memory_note())))
 
-reports_exports_modal <- function() modalDialog(title="Reports and exports",size="m",easyClose=TRUE,
-  uiOutput("results_readiness"),
-  tags$p("Build a summary report of the project, or a compact bundle of its result tables and plots to share."),
-  tags$div(class="ytab-actions",actionButton("build_project_report","Build project summary report"),actionButton("build_export_bundle","Create compact export bundle")),
-  tags$details(class="ytab-technical-details",tags$summary("Technical details"),verbatimTextOutput("exports_text")),
-  footer=modalButton("Close"))
-
 gene_explorer_module_ui <- function() navset_tab(id="gene_explorer_tabs",
   nav_panel("Genome Browser",value="browser",genome_browser_ui()),
   nav_panel("Gene & Domain Insertions",value="gene_domain",gene_domain_explorer_ui()),
@@ -18,13 +11,11 @@ gene_explorer_module_ui <- function() navset_tab(id="gene_explorer_tabs",
 
 workspace_ui <- function(detected_cpu) {
   tags$div(class="ytab-workspace",
-    tags$header(class="ytab-workspace-header ytab-release-header",
-      tags$div(tags$h2("YTAB"), tags$p(class="ytab-release-subtitle","Yeast Transposon Analysis Browser")),
-      project_badge(),
-      actionButton("open_reports_exports", "Reports & exports"),
-      actionButton("switch_project", "Switch project")),
-    job_progress_ui("global_job",compact=TRUE),
+    tags$header(class="ytab-workspace-header",
+      actionLink("ytab_home",tagList(tags$b("YTAB"),tags$span("Yeast Transposon Analysis Browser")),class="ytab-workspace-brand",title="Home: choose or start a project"),
+      tags$div(class="ytab-workspace-project",project_badge(),actionButton("switch_project","Switch project",class="btn-sm"))),
     navbarPage(id="workspace_tabs", title=NULL, collapsible=TRUE, inverse=TRUE,
+      header=job_progress_ui("global_job",compact=TRUE),
       tabPanel("Project",value="project",project_module_ui()),
       tabPanel("Run",value="run",run_module_ui(detected_cpu)),
       tabPanel("Quality Control",value="quality_control",quality_control_ui()),

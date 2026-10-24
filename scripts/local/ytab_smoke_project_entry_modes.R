@@ -13,12 +13,12 @@ source(file.path(app_dir, "R", "ui_landing.R"), local = TRUE)
 
 html <- as.character(landing_ui(c("glabrata"), 2L, FALSE))
 required <- c(
-  "Start new project from FASTQ",
-  "Run mapping and hit-file creation locally from FASTQ files.",
-  "Import existing hit files",
-  "Use CreateHitFile outputs that were already generated elsewhere, such as on an HPC.",
+  "Start a project from FASTQ files",
+  "aligns the reads, calls insertion sites and builds gene summaries in one step",
+  "Import insertion hit files",
+  "Start from hit files made elsewhere, for example on an HPC cluster.",
   "Open an existing YTAB project",
-  "Continue analysis or view results for an existing YTAB project."
+  "Return to a project to continue its analyses or browse its results."
 )
 missing <- required[!vapply(required, grepl, logical(1), x = html, fixed = TRUE)]
 if (length(missing)) stop("Landing entry mode text missing: ", paste(missing, collapse = "; "), call. = FALSE)

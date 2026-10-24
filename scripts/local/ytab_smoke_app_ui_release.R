@@ -111,7 +111,7 @@ must_contain("app/shiny/R/qc_plot_utils.R", "qc_plot_value_cex", "QC value-label
 must_contain("app/shiny/R/qc_plot_utils.R", "qc_plot_key_cex", "QC metric-key text-size helper")
 must_contain("app/shiny/www/ytab_release_ui.css", "height: auto !important", "aspect-ratio preserving image CSS")
 must_contain("app/shiny/www/ytab_release_ui.css", "ytab-two-column-layout", "two-column layout CSS")
-must_contain("app/shiny/www/ytab_release_ui.css", "ytab-workspace-header\\.ytab-release-header", "readable header contrast CSS")
+must_contain("app/shiny/www/ytab_release_ui.css", "\\.ytab-workspace-header \\{", "workspace header CSS")
 must_contain("app/shiny/www/ytab_release_ui.css", "ytab-diagnostic-gallery-grid", "diagnostic gallery density CSS")
 must_contain("app/shiny/www/ytab_release_ui.css", "\\.dataTables_wrapper \\{\\s*font-size: 1\\.18rem !important;", "global readable DataTables font size")
 must_contain("app/shiny/www/ytab_release_ui.css", "table\\.dataTable thead th", "explicit DataTables header font size")
@@ -153,7 +153,7 @@ workspace_text <- paste(readLines(must_exist("app/shiny/R/ui_workspace.R"), warn
 for (tab in c("Project", "Run", "Quality Control", "Normalization", "Essentiality", "Condition Comparisons",
               "Gene Explorer", "GO Enrichment",
               "Gene & Domain Insertions", "Across Species",
-              "Genome Browser", "Reports & exports")) {
+              "Genome Browser", "Switch project")) {
   if (!grepl(tab, workspace_text, fixed = TRUE)) fail(paste("Missing major tab:", tab))
 }
 

@@ -7,7 +7,7 @@ app_env<-new.env(parent=.GlobalEnv);source(file.path(root,"app/shiny/app.R"),loc
 landing<-app_env$landing_ui(character(),2L,FALSE);workspace<-app_env$workspace_ui(2L)
 landing_html<-htmltools::renderTags(landing)$html;workspace_html<-htmltools::renderTags(workspace)$html
 stopifnot(grepl("Open an existing YTAB project",landing_html,fixed=TRUE),grepl("workspace_tabs",workspace_html,fixed=TRUE))
-for(label in c("Project","Logs &amp; Provenance","Run","Run Profiles","Quality Control","Normalization","Essentiality","Condition Comparisons","Multi-condition","Genetic Interactions","Reports &amp; exports"))stopifnot(grepl(label,workspace_html,fixed=TRUE))
+for(label in c("Project","Logs &amp; Provenance","Run","Run Profiles","Quality Control","Normalization","Essentiality","Condition Comparisons","Multi-condition","Genetic Interactions","Switch project"))stopifnot(grepl(label,workspace_html,fixed=TRUE))
 static_code<-paste(deparse(body(app_env$workspace_ui)),deparse(body(app_env$landing_ui)),collapse="\n")
 stopifnot(!grepl("active\\(\\)|active_project\\(\\)|state\\$values|input\\$",static_code))
 

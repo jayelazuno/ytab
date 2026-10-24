@@ -17,28 +17,105 @@
   border: 1px solid #dbe7f3;
 }
 
-.ytab-workspace-header.ytab-release-header {
-  color: #102033;
-  background: linear-gradient(135deg, #ffffff, #e9f3fb);
-  border-bottom: 1px solid #cbdbea;
+/* Workspace header: brand, project and Switch project in one row above the tabs, in the tab bar's colour. */
+.ytab-workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 30px 4px;
+  background: #222222;
+  color: #ffffff;
+  border-radius: 0;
 }
 
-.ytab-workspace-header.ytab-release-header .ytab-project-badge span,
-.ytab-workspace-header.ytab-release-header .ytab-project-badge b {
-  color: #102033;
+/* The landing page's wave-and-dots motif, faint, in the middle of the header row. */
+.ytab-workspace-header {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 180'%3E%3Cpath d='M20 100 C150 10,220 170,350 80 S600 20,740 95' fill='none' stroke='%2329d3c2' stroke-width='3' opacity='.35'/%3E%3Cg fill='%2355a7ff' opacity='.45'%3E%3Ccircle cx='120' cy='58' r='6'/%3E%3Ccircle cx='265' cy='120' r='6'/%3E%3Ccircle cx='430' cy='48' r='6'/%3E%3Ccircle cx='620' cy='110' r='6'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 140%;
 }
 
-.ytab-workspace-header.ytab-release-header .ytab-project-badge > div {
-  background: #ffffff;
-  border: 1px solid #cbdbea;
-  border-radius: 999px;
-  padding: 0.35rem 0.7rem;
+/* Workspace page: light blue-grey with a faint dot grid behind the white cards (plots and tables stay white).
+   body:has() outranks Bootstrap's body background, which loads after this file. */
+body:has(.ytab-workspace) {
+  background-color: #f4f7fa;
+  background-image: radial-gradient(rgba(16, 34, 53, 0.09) 1px, transparent 1.2px);
+  background-size: 18px 18px;
 }
 
-.ytab-workspace-header.ytab-release-header .btn {
-  color: #102033;
-  background: #ffffff;
-  border-color: #9fb8cc;
+.ytab-workspace-header + .navbar-inverse {
+  margin-top: 0;
+  border-top: 0;
+}
+
+.ytab-workspace-brand {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+a.ytab-workspace-brand,
+a.ytab-workspace-brand:hover,
+a.ytab-workspace-brand:focus {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.ytab-workspace-brand .action-label {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+a.ytab-workspace-brand b {
+  color: #ffffff;
+}
+
+a.ytab-workspace-brand:hover b {
+  color: #29d3c2;
+}
+
+.ytab-workspace-brand b {
+  font-size: 22px;
+  letter-spacing: 0.02em;
+}
+
+.ytab-workspace-brand span,
+.ytab-workspace-header .ytab-project-badge span {
+  color: #bcd1df;
+  font-size: 14px;
+}
+
+.ytab-workspace-project {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.ytab-workspace-header .ytab-project-badge b {
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.ytab-workspace-header .btn {
+  color: #e8f1f6;
+  background: transparent;
+  border-color: #6b7f8f;
+  font-size: 14px;
+}
+
+.ytab-workspace-header .btn:hover,
+.ytab-workspace-header .btn:focus {
+  color: #29d3c2;
+  border-color: #29d3c2;
+  background: transparent;
+}
+
+/* The running-job banner below the tabs takes no space when no job is running. */
+.ytab-job-progress.compact:not(:has(.ytab-job-banner-content)) {
+  display: none;
 }
 
 .ytab-release-header h2,
@@ -595,6 +672,7 @@ details.ytab-release-details {
 
 /* Main tabs spread evenly across the full bar, slightly larger text (wide screens; narrow screens keep the collapsed menu). */
 @media (min-width: 768px) {
+  .ytab-workspace .navbar-inverse .navbar-header { display: none; }   /* empty brand block; the brand is in the header row */
   #workspace_tabs.navbar-nav, .navbar-inverse .navbar-collapse > .navbar-nav {
     display: flex;
     float: none;
