@@ -91,3 +91,33 @@ def test_nonlinear_methods_get_matched_diagnostics_and_scalar_results_are_unchan
     previous = np.median(np.log2(raw[shared, 1] / raw[shared, 0]) + np.log2(factors[1] / factors[0]))
     assert ttr["c1_vs_c2"] == pytest.approx(previous)
     assert (output / "comparison_diagnostics.png").stat().st_size > 0
+
+
+def test_explicit_sample_list_needs_no_pairs(tmp_path):
+    """Strain comparisons (multi-condition): the listed samples, roles from the sample sheet, pools need not match."""
+    cfg, catalogue, sheet = fixture(tmp_path)
+    sheet.write_text("sample,include,pool,background,library_role,display_name\nc1,true,p1,bg,parent,Control 1\nc2,true,p2,bg,parent,Control 2\n"
+                     "t1,true,m1,mutA,treated,Mutant A\nt2,true,m2,mutB,treated,Mutant B\noriginal_parent,true,p1,bg,parent,Original parent\n")
+    output = tmp_path / "strains"
+    result = evaluate(cfg, catalogue, output, ["nonorm", "ttr"], plots=False, sample_list=["c1", "c2", "t1", "t2"])
+    assert result["sample_list"] == ["c1", "c2", "t1", "t2"] and result["design_sha256"] is None
+    with (output / "matrix/observations.tsv").open() as handle:
+        roles = {r["sample"]:r["role"] for r in csv.DictReader(handle, delimiter="\t")}
+    assert roles == {"c1":"control", "c2":"control", "t1":"treated", "t2":"treated"}
+    assert not (output / "comparisons.tsv").exists()
+    with pytest.raises(ValueError, match="not in the sample sheet"):
+        evaluate(cfg, catalogue, tmp_path / "bad", ["ttr"], plots=False, sample_list=["c1", "nope"])
+
+
+def test_normalize_together_uses_one_group(tmp_path):
+    cfg, catalogue, sheet = fixture(tmp_path)
+    sheet.write_text("sample,include,pool,background,library_role\nc1,true,p1,bg,parent\nc2,true,p2,bg,parent\nt1,true,m1,mutA,treated\n"
+                     "t2,true,m2,mutB,treated\noriginal_parent,true,p1,bg,parent\n")
+    output = tmp_path / "together"
+    result = evaluate(cfg, catalogue, output, ["ttr"], plots=False, sample_list=["c1", "c2", "t1", "t2"], together=True)
+    assert result["normalization_group"] == "project"
+    with (output / "methods/ttr/factors.tsv").open() as handle:
+        groups = {r["normalization_group"] for r in csv.DictReader(handle, delimiter="\t")}
+    assert len(groups) == 1
+    with pytest.raises(ValueError, match="explicit sample list"):
+        evaluate(cfg, catalogue, tmp_path / "bad", ["ttr"], plots=False, together=True)

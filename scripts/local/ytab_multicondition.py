@@ -43,6 +43,8 @@ def main():
     parser.add_argument("--reference-condition", default="", help="Condition used for recentering and log2FC (default: the first condition listed)")
     parser.add_argument("--test", choices=["both", "anova", "all-pairs"], default="both")
     parser.add_argument("--stratify-libraries", action="store_true", help="Several libraries (pools), each split into the conditions: permute only within library_id")
+    parser.add_argument("--independent-libraries", action="store_true",
+                        help="Conditions are separate, independently made libraries (e.g. one per strain): permute among all samples at each site, as TRANSIT")
     defaults = Settings()
     parser.add_argument("--recenter", choices=["iterative-median", "trimmed-sum", "none"], default=defaults.recenter,
                         help="Per-condition rescaling to the reference (iterative-median is the validated default)")
@@ -57,7 +59,7 @@ def main():
                         ignore_stop=not args.include_stop)
     tests = ("anova", "all-pairs") if args.test == "both" else (args.test,)
     try:
-        result = run(args.normalized, args.gff, args.reference, args.output, args.sample, settings, args.normalization, args.stratify_libraries, tests)
+        result = run(args.normalized, args.gff, args.reference, args.output, args.sample, settings, args.normalization, args.stratify_libraries, tests, independent=args.independent_libraries)
     except (ValueError, KeyError, OSError) as error:parser.exit(1, f"ERROR: {error}\n")
     d = result["diagnostics"]
     print(json.dumps(dict(status=result["status"], analysis=result["analysis"], revision=result["algorithm_revision"],

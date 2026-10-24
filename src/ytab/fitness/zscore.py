@@ -162,6 +162,7 @@ def load_design(path: Path, comparisons: list[str] | None = None):
     ids = comparisons or list(design.comparison_id)
     contrasts = design[design.comparison_id.isin(ids)]
     if contrasts.empty:raise ValueError("No selected comparisons were found in the design.")
+    design = design[design.background.isin(contrasts.background)]  # the noise model is per background; other backgrounds are not needed
     samples = pd.concat([design.rename(columns=dict(parent_sample="sample", parent_condition="condition"))[["sample", "condition", "background", "pool"]],
                          design.rename(columns=dict(treated_sample="sample", treated_condition="condition"))[["sample", "condition", "background", "pool"]]])
     return contrasts, samples.drop_duplicates("sample", keep="first").reset_index(drop=True)

@@ -105,7 +105,7 @@ def test_all_pairs_v2_recenters_once_to_the_reference():
     assert all(diag[p]["treatment_rescale"] == 1. for p in ("x vs c", "y vs c", "y vs x"))
 
 
-def normalization_output(tmp_path, columns, meta):
+def normalization_output(tmp_path, columns, meta, group_by="library_id"):
     """Synthetic YTAB catalogue + TTR normalization run (as in tests/test_resampling.py)."""
     import csv, gzip, json
     from scipy import sparse
@@ -131,7 +131,7 @@ def normalization_output(tmp_path, columns, meta):
     with (catalogue/"observations.tsv").open("w") as handle:
         writer = csv.DictWriter(handle, list(meta[0]), delimiter="\t"); writer.writeheader(); writer.writerows(meta)
     (catalogue/"run_manifest.json").write_text(json.dumps(dict(status="success", reference_sha256=sha256(reference), universe_sites=len(pos))))
-    run_choices(catalogue, tmp_path/"norm", ["ttr"], "library_id")
+    run_choices(catalogue, tmp_path/"norm", ["ttr"], group_by)
     return gff, reference
 
 
@@ -175,3 +175,17 @@ def test_runner_stratified_libraries(tmp_path):
     import pytest
     with pytest.raises(ValueError, match="one explicit library_id|library_id"):
         mc.run(tmp_path/"norm", gff, reference, tmp_path/"out2", samples)                  # unstratified across two pools is refused
+
+
+def test_runner_independent_libraries(tmp_path):
+    lost = lambda i:np.where((i >= 60) & (i < 90), 0., 1.)            # gene g02 loses its insertions in condition x
+    one = lambda i:np.ones(len(i))
+    names = [("w1", "W1", "c", one), ("w2", "W2", "c", one), ("m1", "M1", "x", lost), ("m2", "M2", "y", one)]
+    meta = [dict(observation_id=f"P::{x}", display_name=x, project="P", library_id=f"P::{l}", pool=l, role="any") for x, l, _, _ in names]
+    gff, reference = normalization_output(tmp_path, [f for *_, f in names], meta, group_by="project")   # normalized together
+    samples = [(f"P::{x}", c) for x, _, c, _ in names]
+    manifest = mc.run(tmp_path/"norm", gff, reference, tmp_path/"out", samples, independent=True)
+    assert manifest["independent_libraries"] is True and manifest["conditions"] == ["c", "x", "y"]
+    import pytest
+    with pytest.raises(ValueError):
+        mc.run(tmp_path/"norm", gff, reference, tmp_path/"out2", samples, stratified=True, independent=True)

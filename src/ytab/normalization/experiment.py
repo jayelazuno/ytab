@@ -34,8 +34,17 @@ def shared_log2_change(raw, normalized, a, b):
     return shared, np.log2(ny[shared] / nx[shared])
 
 
-def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, plots=True):
-    """Select assay samples from comparison_design.csv, never from names."""
+def samples_by_id(records):
+    return {row["sample"]: row for row in records}
+
+
+def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, plots=True, sample_list=None, together=False):
+    """Select assay samples from comparison_design.csv, never from names; or, with `sample_list`, exactly the samples listed
+    (for comparisons between strains or conditions that are not pool-matched pairs: multi-condition tests). With a
+    sample list, the sample sheet's role says control (parent/control) or treated, and no pairing is required. together=True (sample list only) normalizes all listed samples as one group
+    (the project) instead of within each library, so independently made libraries are on one scale (TRANSIT's
+    convention); library_id still records each sample's library."""
+    if together and not sample_list:raise ValueError("Normalizing together needs an explicit sample list")
     catalogue, output = Path(catalogue).resolve(), Path(output).resolve()
     if output == catalogue or output in catalogue.parents:
         raise ValueError("Output cannot replace the parent catalogue")
@@ -52,12 +61,20 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
     samples = {row["sample"]: row for row in records}
     if len(samples) != len(records):
         raise ValueError("Duplicate sample IDs in sample sheet")
-    with design_path.open() as handle:
-        design = [row for row in csv.DictReader(handle) if included(row)]
-    if not design or len({r["comparison_id"] for r in design}) != len(design):
-        raise ValueError("Supply nonempty comparisons with unique comparison IDs")
-    controls = {r["parent_sample"] for r in design}
-    treatments = {r["treated_sample"] for r in design}
+    if sample_list:
+        missing = [s for s in sample_list if s not in samples_by_id(records)]
+        if missing:raise ValueError("Samples not in the sample sheet: " + ", ".join(missing))
+        design = []
+        role = lambda s: (samples_by_id(records)[s].get("library_role") or samples_by_id(records)[s].get("condition") or "").strip().lower()
+        controls = {s for s in sample_list if role(s) in ("parent", "control")}
+        treatments = set(sample_list) - controls
+    else:
+        with design_path.open() as handle:
+            design = [row for row in csv.DictReader(handle) if included(row)]
+        if not design or len({r["comparison_id"] for r in design}) != len(design):
+            raise ValueError("Supply nonempty comparisons with unique comparison IDs")
+        controls = {r["parent_sample"] for r in design}
+        treatments = {r["treated_sample"] for r in design}
     if controls & treatments:
         raise ValueError("A sample cannot be both a control and treatment in this evaluation")
     selected = sorted(controls | treatments)
@@ -113,14 +130,14 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
     manifest = dict(status="success", project=cfg["project_id"], reference_sha256=reference_hash,
         universe_sites=len(sites), parent_catalogue_sites=len(parent_set), experiment_additional_sites=len(additions),
         project_config=str(Path(project_config).resolve()), project_config_sha256=sha256(project_config),
-        sample_sheet_sha256=sha256(sheet), design_sha256=sha256(design_path),
+        sample_sheet_sha256=sha256(sheet), design_sha256=sha256(design_path) if design else None, sample_list=sorted(sample_list) if sample_list else None, normalization_group="project" if together else "library_id",
         parent_catalogue=str(catalogue), parent_manifest_sha256=sha256(catalogue / "run_manifest.json"),
         parent_sites_sha256=sha256(catalogue / "sites.tsv.gz"), implementation_sha256=sha256(__file__),
         site_policy="Parent empirical catalogue plus experiment-observed additions; zeros mean undetected, not impossible sites",
         scope="Exploratory site-level validation; no fitness calls, no downstream CPM, no independent-induction claim")
     (matrix_dir / "run_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    write_table(output / "comparisons.tsv", list(design[0]), design)
-    run_choices(matrix_dir, output / "methods", methods, "library_id", trim=trim, target=target)
+    if design:write_table(output / "comparisons.tsv", list(design[0]), design)
+    run_choices(matrix_dir, output / "methods", methods, "project" if together else "library_id", trim=trim, target=target)
     comparison_rows = [dict(comparison_id=r["comparison_id"], kind="treated_control", left=r["parent_sample"], right=r["treated_sample"]) for r in design]
     comparison_rows.extend(dict(comparison_id=a + "_vs_" + b, kind="control_control", left=a, right=b)
         for a, b in itertools.combinations(sorted(controls), 2) if group(a) == group(b))
@@ -141,8 +158,8 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
                 median_log2_ratio_shared=float(np.median(change)) if len(change) else None,
                 median_absolute_log2_ratio_shared=float(np.median(np.abs(change))) if len(change) else None,
                 log2_ratio_iqr_shared=float(np.percentile(change, 75) - np.percentile(change, 25)) if len(change) else None))
-    write_table(output / "comparison_diagnostics.tsv", list(metrics[0]), metrics)
-    if plots:
+    if metrics:write_table(output / "comparison_diagnostics.tsv", list(metrics[0]), metrics)  # none when no pairs share a pool
+    if plots and comparison_rows:
         plot_comparisons(output, raw, selected, comparison_rows, methods, metadata, trim, target)
     (output / "run_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     (output / "implementation_snapshot.py").write_bytes(Path(__file__).read_bytes())

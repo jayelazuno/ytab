@@ -159,11 +159,12 @@ def infer_comparison_design(config: dict, overwrite: bool = False) -> Path:
         treated_name = str(child.get("sample") or "")
         parent_name = str(parent.get("sample") or "")
         pair = f"{background}_pool{pool}" if background and pool else f"pair_{len(rows)+1}"
+        pair = re.sub(r"[^A-Za-z0-9_-]+", "_", pair).strip("_")  # IDs allow only these; backgrounds may be genotypes (otr1R::ura4)
         rows.append({"comparison_id": f"{pair}_treated_vs_parent", "pair_id": pair,
                      "parent_sample": parent_name, "treated_sample": treated_name,
                      "background": background, "pool": pool, "parent_condition": "parent",
-                     "treated_condition": "treated", "include": "true",
-                     "notes": "" if len(matches) == 1 else f"Expected one matching parent; found {len(matches)}."})
+                     "treated_condition": "treated", "include": "true" if len(matches) == 1 else "false",
+                     "notes": "" if len(matches) == 1 else f"Expected one matching parent; found {len(matches)}. Pair it by hand and set include to true."})
     write_comparison_design(path, rows)
     validation = validate_comparison_design(config, rows)
     _write_design_issues(_paths(config)["issues"], validation["issues"])

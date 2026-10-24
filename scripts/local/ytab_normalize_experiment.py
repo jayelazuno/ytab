@@ -18,9 +18,11 @@ def main():
     parser.add_argument("--trim", type=float, default=.05)
     parser.add_argument("--target", type=float, default=100)
     parser.add_argument("--no-plots", action="store_true")
+    parser.add_argument("--normalize-together", action="store_true", help="With --sample: one normalization group for all samples (independent libraries)")
+    parser.add_argument("--sample", action="append", help="Normalize exactly these samples (repeat; roles from the sample sheet) instead of the comparison design")
     args = parser.parse_args()
     try:
-        result = evaluate(args.project_config, args.catalogue, args.output, args.method, args.trim, args.target, not args.no_plots)
+        result = evaluate(args.project_config, args.catalogue, args.output, args.method, args.trim, args.target, not args.no_plots, sample_list=args.sample, together=args.normalize_together)
     except (ValueError, KeyError, OSError) as error:
         parser.exit(1, f"ERROR: {error}\n")
     print(json.dumps(result, indent=2))

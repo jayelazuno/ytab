@@ -29,6 +29,7 @@ def main():
     p.add_argument("--reference-condition", required=True)
     p.add_argument("--test", choices=["both", "anova", "all-pairs"], default="both")
     p.add_argument("--stratify-libraries", action="store_true")
+    p.add_argument("--independent-libraries", action="store_true", help="Conditions are separate, independently made libraries (e.g. one per strain)")
     p.add_argument("--fdr", type=float, default=.05)
     p.add_argument("--output", required=True, type=Path)
     a = p.parse_args()
@@ -40,6 +41,7 @@ def main():
     command = [sys.executable, SCRIPTS/"ytab_multicondition.py", "--normalized", a.normalized, "--normalization", a.normalization,
                "--gff", gff, "--reference", fasta, "--output", out/"tests", "--reference-condition", a.reference_condition,
                "--test", a.test, "--fdr", a.fdr, *(["--stratify-libraries"] if a.stratify_libraries else []),
+               *(["--independent-libraries"] if a.independent_libraries else []),
                *[x for s in a.sample for x in ("--sample", s)]]
     print("1/2 Running the multi-condition tests", file=sys.stderr, flush=True)
     test = subprocess.run([str(x) for x in command], cwd=ROOT, capture_output=True, text=True)

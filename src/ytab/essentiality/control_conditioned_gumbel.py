@@ -739,7 +739,7 @@ def load_normalization(normalized, normalization=None, nonlinear=False):
 
 
 def load_design(normalized, normalization, reference, output, controls, treatments, min_controls=2, min_treatments=1, stratified=False,
-                nonlinear=False, check_roles=True):
+                nonlinear=False, check_roles=True, independent=False):
     """Validated controls/treatments from a YTAB scalar normalization output and its source catalogue.
 
     stratified=True (resampling only) allows several independent libraries, each with >=1 control and
@@ -750,6 +750,9 @@ def load_design(normalized, normalization, reference, output, controls, treatmen
     nonlinear=True (resampling only) accepts betageom/aBGC output: factors are None, and the normalized
     counts are checked to keep every raw zero and the within-sample order of raw counts.
     check_roles=False (multi-condition tests only): conditions are user-assigned, so catalogue roles are not compared.
+    independent=True (unstratified resampling only): the samples may come from different, independently made libraries
+    (e.g. one library per strain, as in SATAY mutant screens); labels are permuted among samples within each site, as in
+    TRANSIT's resampling. Differences in library composition then add to the noise, so the test is for library-level designs.
     """
     norm = load_normalization(normalized, normalization, nonlinear)
     catalogue = Path(norm["manifest"].get("catalogue", "")).resolve()
@@ -774,7 +777,7 @@ def load_design(normalized, normalization, reference, output, controls, treatmen
     missing = [x for x in selected if x not in ids or x not in norm["factors"]]
     if missing:raise ValueError(f"Observations missing from the catalogue or normalization: {missing}")
     chosen = [metadata[ids.index(x)] for x in selected]
-    for field in ("project",) if stratified else ("project", "library_id", "pool"):
+    for field in ("project",) if stratified or independent else ("project", "library_id", "pool"):
         if len({r.get(field, "") for r in chosen}) != 1 or not chosen[0].get(field):
             raise ValueError(f"Controls and treatments must share one explicit {field}")
     if stratified:

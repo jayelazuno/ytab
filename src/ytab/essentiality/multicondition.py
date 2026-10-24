@@ -285,12 +285,15 @@ def gene_sample_sums(values, gene_indices, libraries=None):
     return S, N
 
 
-def run(normalized, gff, reference, output, samples, settings=None, normalization=None, stratified=False, tests=("anova", "all-pairs")):
+def run(normalized, gff, reference, output, samples, settings=None, normalization=None, stratified=False, tests=("anova", "all-pairs"),
+        independent=False):
     """File-based runner on a YTAB normalization output (BGC recommended; ttr, totreads, nzmean and aBGC accepted).
 
     samples: (observation_id, condition) pairs; settings.reference names the reference condition (default:
     the first condition listed). stratified=True: several libraries (pools), each split into the reference
-    and >= 1 other condition; labels are permuted only within library. Writes anova_genes.tsv and/or
+    and >= 1 other condition; labels are permuted only within library. independent=True: each condition may be its own,
+    independently made library (strain screens such as SATAY mutants); labels are permuted among all samples within each
+    site (unstratified). Writes anova_genes.tsv and/or
     pairs_genes.tsv and run_manifest.json to a new output directory.
     """
     settings = settings or Settings(); settings.validate()
@@ -302,8 +305,9 @@ def run(normalized, gff, reference, output, samples, settings=None, normalizatio
     if len(names) < 2 or ref not in names:raise ValueError("Assign samples to >= 2 conditions, including the reference condition")
     condition = dict(samples)
     controls = [o for o, c in samples if c == ref]; treatments = [o for o, c in samples if c != ref]
+    if stratified and independent:raise ValueError("Choose stratified (pools split into conditions) or independent libraries, not both")
     design = load_design(normalized, normalization, reference, output, controls, treatments, min_controls=1, stratified=stratified,
-                         nonlinear=True, check_roles=False)
+                         nonlinear=True, check_roles=False, independent=independent)
     output, sites, values = design["output"], design["sites"], design["scaled"]
     conditions = [condition[x] for x in design["selected"]]; libraries = design["libraries"] if stratified else None
     settings = Settings(**(asdict(settings) | dict(reference=ref)))
@@ -338,7 +342,7 @@ def run(normalized, gff, reference, output, samples, settings=None, normalizatio
     norm = design["norm"]
     manifest = dict(status="success", analysis=MODEL, algorithm_revision=REVISION, parameters=asdict(settings), tests=list(tests), files=files,
         samples=[dict(observation_id=x, condition=condition[x], library=l) for x, l in zip(design["selected"], design["libraries"])],
-        conditions=names, reference_condition=ref, stratified=stratified,
+        conditions=names, reference_condition=ref, stratified=stratified, independent_libraries=independent,
         normalization=dict(method=norm["method"], input=str(norm["folder"]), catalogue=str(design["catalogue"]),
             hashes={name:sha256(norm["folder"]/name) for name in ("normalized_counts.npz", "factors.tsv", "method.json")}
                    | dict(run_manifest=sha256(norm["root"]/"run_manifest.json"))),
