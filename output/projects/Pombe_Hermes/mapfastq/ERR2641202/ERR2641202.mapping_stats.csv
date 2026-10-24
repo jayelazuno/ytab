@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+ERR2641202,6638453,6638453,3204260,3434193,48.268,0,0.0,2885948,90.066,37.31,/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/mapfastq/ERR2641202/ERR2641202.sam

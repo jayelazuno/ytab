@@ -1,0 +1,43 @@
+{
+  "project_id": "Pombe_Hermes",
+  "sample": "ERR2641208",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641208/ERR2641208_hits.txt",
+  "species": "pombe",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/orthologs/pombe_cerevisiae_orthologs.txt"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/summary/ERR2641208",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/summary/ERR2641208/ERR2641208.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/logs/summary/ERR2641208.log",
+  "status": "success",
+  "start_time": "2026-10-23T20:32:46.798194+00:00",
+  "end_time": "2026-10-23T20:32:57.496793+00:00",
+  "elapsed_seconds": 10.699,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641208",
+    "--hit-glob",
+    "ERR2641208_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/summary/ERR2641208",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa"
+  ],
+  "warnings": [],
+  "error_message": null
+}

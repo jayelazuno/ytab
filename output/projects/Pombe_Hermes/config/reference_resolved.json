@@ -1,0 +1,19 @@
+{
+  "species": "pombe",
+  "species_dir": "resources/species/pombe",
+  "reference_dir": "resources/species/pombe/reference_genome",
+  "fasta": "resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+  "feature_table": null,
+  "gff": "resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+  "gtf": null,
+  "gffutils_db": "resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3.gffutils_db.sqlite",
+  "bowtie2_index_prefix": "resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome",
+  "bowtie2_index_complete": true,
+  "bowtie2_index_type": "bt2",
+  "centromere_bed": null,
+  "trna_bed": null,
+  "orthology_file": "resources/species/pombe/orthologs/pombe_cerevisiae_orthologs.txt",
+  "warnings": [
+    "Bowtie2 index found; indexing skipped."
+  ]
+}

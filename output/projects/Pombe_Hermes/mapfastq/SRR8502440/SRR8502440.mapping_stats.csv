@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR8502440,29377526,29377526,21436051,7941475,72.968,0,0.0,18261006,85.188,35.05,/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/mapfastq/SRR8502440/SRR8502440.sam

@@ -1,0 +1,47 @@
+{
+  "project_id": "Pombe_Hermes",
+  "sample": "SRR8502439",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/mapfastq/SRR8502439/SRR8502439.sorted.bam",
+  "species": "pombe",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439/SRR8502439_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/logs/create_hit_file/SRR8502439.log",
+  "status": "success",
+  "start_time": "2026-10-23T20:23:34.323023+00:00",
+  "end_time": "2026-10-23T20:27:40.201644+00:00",
+  "elapsed_seconds": 245.879,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/mapfastq/SRR8502439/SRR8502439.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439",
+    "--out-prefix",
+    "SRR8502439",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439/SRR8502439.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439/SRR8502439.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439/SRR8502439.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439/SRR8502439_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439/SRR8502439_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}

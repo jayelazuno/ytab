@@ -1,0 +1,47 @@
+{
+  "project_id": "Pombe_Hermes",
+  "sample": "ERR2641204",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/mapfastq/ERR2641204/ERR2641204.sorted.bam",
+  "species": "pombe",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641204",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641204/ERR2641204_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/logs/create_hit_file/ERR2641204.log",
+  "status": "success",
+  "start_time": "2026-10-23T19:43:33.423132+00:00",
+  "end_time": "2026-10-23T19:44:34.281668+00:00",
+  "elapsed_seconds": 60.859,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/mapfastq/ERR2641204/ERR2641204.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641204",
+    "--out-prefix",
+    "ERR2641204",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641204/ERR2641204.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641204/ERR2641204.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641204/ERR2641204.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641204/ERR2641204_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641204/ERR2641204_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}

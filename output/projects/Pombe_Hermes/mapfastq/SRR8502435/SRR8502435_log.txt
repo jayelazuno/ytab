@@ -1,0 +1,27 @@
+=== Transposon removal (searched with primer+Tn tail) ===
+10976049 reads; of these:
+  6527707 (59.47%) contained the transposon
+
+=== Adapter removal ===
+6527707 reads; of these:
+  6527460 (100.0%) contained the adapter
+
+=== Sequence alignment ===
+6527460 reads; of these:
+  6527460 (100.00%) were unpaired; of these:
+    846011 (12.96%) aligned 0 times
+    5312945 (81.39%) aligned exactly 1 time
+    368504 (5.65%) aligned >1 times
+87.04% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 6527460
+primary_records: 6527460
+primary_mapped: 5681449
+primary_unmapped: 846011
+percent_mapped: 87.039
+mapq_ge_threshold: 5321893
+percent_mapq_ge_threshold: 93.671
+avg_mapq_mapped_primary: 38.89
+mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/mapfastq/SRR8502435/SRR8502435.mapping_stats.csv
