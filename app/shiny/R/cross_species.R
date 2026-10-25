@@ -20,7 +20,7 @@ cross_species_ui <- function() ytab_two_column_layout(
       tags$p(tags$b("Calls. "), "Each species' label-free HMM score (P_ES_run, the posterior probability of a run of essential windows in the coding sequence) and call (essential when P_ES_run ≥ 0.5) from the project's newest essentiality run."),
       tags$p(tags$b("Agreement. "), "For each pair of species: Cohen's κ of the essential calls (agreement beyond chance; 1 = identical calls, 0 = chance) and the Spearman correlation of the scores. Differences combine biology (species-specific essentiality) with differences in library density and transposon; compare with the libraries' QC before reading a species-specific set as biology."),
       ytab_reference("Cohen J (1960). A coefficient of agreement for nominal scales. Educ Psychol Meas 20:37–46."),
-      tags$p("Command: ", tags$code("ytab cross-species"), ". Results are written to the project's ", tags$code("cross_species"), " folder."))))
+      tags$p("Command: ", tags$code("ytab cross-species"), ". Results are written to ", tags$code("output/cross_species"), " and shown in every project they include."))))
 
 # Species names in italics: HTML for the interactive plot, plotmath for downloads.
 xs_species_labels <- function(species, html = TRUE) if (html) paste0("<i>", species, "</i>") else parse(text = sprintf('bolditalic("%s")', species))
@@ -66,10 +66,16 @@ xs_agreement_ggplot <- function(pairwise, species, html = TRUE) {
 }
 
 cross_species_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin) {
-  runs_dir <- reactive(file.path(active()$project_root, "cross_species"))
-  runs <- reactivePoll(4000, session,
-    checkFunc = function() { x <- ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")); paste(x$path, x$modified, collapse = "|") },
-    valueFunc = function() ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")))
+  # Comparisons span projects, so they are kept in one place (output/cross_species) and every project they include shows them.
+  runs_dir <- file.path(repo_root, "output", "cross_species")
+  all_runs <- reactivePoll(4000, session,
+    checkFunc = function() { x <- ytab_analysis_runs(runs_dir); paste(x$path, x$modified, collapse = "|") },
+    valueFunc = function() ytab_analysis_runs(runs_dir))
+  runs <- reactive({
+    x <- all_runs(); if (!nrow(x)) return(x)
+    keep <- vapply(x$path, function(run) active()$project_id %in% vapply((ytab_read_manifest(run) %||% list())$projects %||% list(), function(p) p$project %||% "", ""), TRUE)
+    x[keep, , drop = FALSE]
+  })
   # projects with an essentiality run, newest run first
   candidates <- reactive({
     x <- discover_ytab_projects(repo_root, include_tests = FALSE); if (!nrow(x)) return(x)
@@ -91,7 +97,7 @@ cross_species_server <- function(input, output, session, repo_root, active, acti
     if (length(chosen) < 2L) { showNotification("Choose at least two projects.", type = "error"); return() }
     if (anyDuplicated(species)) { showNotification("Choose one project per species.", type = "error"); return() }
     args <- c(file.path(repo_root, "scripts", "local", "ytab_cross_species.py"), as.vector(rbind("--project-config", chosen)),
-              "--output", ytab_new_run_dir(runs_dir(), "cross_species"))
+              "--output", ytab_new_run_dir(runs_dir, "cross_species"))
     tryCatch({
       jobs$start_job(python_bin(), args, active_project_path(), "cross_species", wd = repo_root)
       showNotification("Comparing species. The result appears here when it finishes.", type = "message")
@@ -124,7 +130,8 @@ cross_species_server <- function(input, output, session, repo_root, active, acti
   output$xs_plotly <- plotly::renderPlotly(ytab_ggplotly(plot_for(TRUE)))
   output$xs_table <- DT::renderDT({
     o <- data()$orthologs; req(nrow(o) > 0)
-    for (s in data()$species) o[[paste(s, "ES")]] <- ifelse(o[[paste(s, "ES")]] == 1, "essential", "")
+    for (s in data()$species) { o[[paste(s, "ES")]] <- ifelse(o[[paste(s, "ES")]] == 1, "essential", "")
+      o[[paste(s, "name")]] <- ytab_display_gene_names(o[[paste(s, "gene")]], o[[paste(s, "name")]], repo_root) }
     names(o)[names(o) == "scer_id"] <- "S. cerevisiae ID"
     ytab_datatable(o, page_length = 10L)
   })

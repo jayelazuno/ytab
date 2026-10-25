@@ -24,6 +24,7 @@ lactis:
 
 pombe:
   label: Schizosaccharomyces pombe
-  enabled: false
-  placeholder: true
-  note: Placeholder only; no orthology mapping is currently migrated.
+  enabled: true
+  ytab_species_key: pombe
+  rnacross_aliases: [sp, spom, S_pombe, Schizosaccharomyces pombe]
+  note: Orthogroups through S. cerevisiae orthologs.

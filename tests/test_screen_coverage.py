@@ -195,3 +195,16 @@ class CoverageTests(unittest.TestCase):
 
 
 if __name__=="__main__":unittest.main()
+
+
+def test_coding_genes_from_ensembl_style_gff(tmp_path):
+    """CDS that name their gene only through Parent (CDS -> transcript -> gene), as in Ensembl GFF3 files."""
+    from ytab.screen_coverage.library import read_coding_genes
+    gff = tmp_path/"g.gff3"
+    gff.write_text("##gff-version 3\n"
+                   "I\tx\tgene\t100\t400\t.\t+\t.\tID=gene:A1;Name=abc1;biotype=protein_coding\n"
+                   "I\tx\tmRNA\t100\t400\t.\t+\t.\tID=transcript:A1.1;Parent=gene:A1\n"
+                   "I\tx\tCDS\t100\t200\t.\t+\t0\tID=CDS:A1.1;Parent=transcript:A1.1\n"
+                   "I\tx\tCDS\t300\t400\t.\t+\t0\tID=CDS:A1.1;Parent=transcript:A1.1\n")
+    genes = read_coding_genes(gff)
+    assert list(genes) == ["gene:A1"] and genes["gene:A1"]["common_name"] == "abc1" and genes["gene:A1"]["length"] == 202

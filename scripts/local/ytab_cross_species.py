@@ -23,7 +23,7 @@ Outputs in OUTPUT/:
   manifest.json
 
   ytab cross-species --project-config output/projects/Gale_2020/config/project.yaml \\
-      --project-config output/projects/Pombe_Hermes/config/project.yaml --output output/projects/Gale_2020/cross_species/run1
+      --project-config output/projects/Pombe_Hermes/config/project.yaml --output output/cross_species/run1
 """
 import argparse
 from collections import Counter

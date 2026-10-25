@@ -119,29 +119,33 @@ comparative_ui <- function() {
   )
 }
 
-comparative_row_matches <- function(data, query) {
+# Rows whose names or IDs contain the query (any case), or whose ID is one of `ids` (the gene's orthologs, matched
+# exactly; a GFF prefix such as "gene:" is ignored).
+comparative_row_matches <- function(data, query, ids = character()) {
   if (!nrow(data)) return(rep(FALSE, 0L))
-  query <- trimws(as.character(query %||% ""))
-  if (!nzchar(query)) return(rep(FALSE, nrow(data)))
+  query <- tolower(trimws(as.character(query %||% "")))
+  if (!nzchar(query) && !length(ids)) return(rep(FALSE, nrow(data)))
   fields <- intersect(c(
     "Standard name", "Common name", "Sc ortholog", "Sc std name",
     "feature_id", "standard_name", "common_name", "gene_id", "gene",
-    "Feature ID", "Gene"
+    "Feature ID", "Gene", "ORF", "Name"
   ), names(data))
   if (!length(fields)) return(rep(FALSE, nrow(data)))
+  bare <- function(x) sub("^[a-z]+:", "", tolower(as.character(x)))
+  ids <- bare(ids[nzchar(ids)])
   Reduce(`|`, lapply(data[, fields, drop = FALSE], function(value)
-    grepl(query, as.character(value), ignore.case = TRUE, fixed = TRUE)))
+    (nzchar(query) & grepl(query, tolower(as.character(value)), fixed = TRUE)) | bare(value) %in% ids))
 }
 
-comparative_display_rows <- function(data, query = "") {
+comparative_display_rows <- function(data, query = "", ids = character()) {
   if (!nrow(data)) return(data.frame())
-  rows <- if (nzchar(trimws(query))) data[comparative_row_matches(data, query), ,
+  rows <- if (nzchar(trimws(query)) || length(ids)) data[comparative_row_matches(data, query, ids), ,
                                          drop = FALSE] else data
   if (!nrow(rows)) return(data.frame())
   keep <- intersect(c(
     "ytab_species", "ytab_project_id", "ytab_result_type", "ytab_target_tag",
     "ytab_analysis_id", "Standard name", "Common name", "Sc ortholog",
-    "RF - G4 - ess. for FPR 0.100", "feature_id", "standard_name",
+    "RF - G4 - ess. for FPR 0.100", "ORF", "Name", "hmm_call", "hmm_score", "hybrid_score", "agreement", "feature_id", "standard_name",
     "common_name", "final_call", "mean_log2FC", "max_abs_z", "sample",
     "total_reads", "total_hits", "percent_features_hit"
   ), names(rows))
@@ -152,7 +156,7 @@ comparative_display_rows <- function(data, query = "") {
 comparative_load_metric <- function(project_config, metric) {
   if (!nzchar(project_config %||% "")) return(data.frame())
   if (metric %in% c("essentiality"))
-    return(load_project_classifier_results(project_config))
+    return(load_project_essentiality_results(project_config))
   if (metric %in% c("fitness", "fitness_call", "fitness_score"))
     return(load_project_fitness_results(project_config))
   load_project_summary_stats(project_config)
@@ -177,6 +181,10 @@ comparative_server <- function(input, output, session, repo_root, active = funct
   species_manifest <- reactive(load_comparative_species_manifest(repo_root))
   project_inventory <- reactive(list_ytab_projects_by_species(repo_root))
   gene_lookup <- reactive(load_comparative_gene_lookup(repo_root))
+  # other IDs of the same gene (e.g. C. glabrata CAGL0 IDs in the orthogroups, GWK60 IDs in projects), from the annotation lookup
+  id_aliases <- reactive({ x <- tryCatch(ytab_load_glabrata_annotation_lookup(repo_root), error = function(e) data.frame())
+    if (all(c("cagl_id", "gwk60_id_clean") %in% names(x))) x[nzchar(x$cagl_id) & nzchar(x$gwk60_id_clean), c("cagl_id", "gwk60_id_clean")] else data.frame(cagl_id = character(), gwk60_id_clean = character()) })
+  with_aliases <- function(ids) unique(c(ids, id_aliases()$gwk60_id_clean[id_aliases()$cagl_id %in% ids]))
   orthology <- reactive(load_comparative_orthogroups(repo_root))
   availability <- reactive(summarize_species_project_availability(repo_root))
 
@@ -193,11 +201,6 @@ comparative_server <- function(input, output, session, repo_root, active = funct
     updateSelectInput(session, "comparative_group_species",
                       choices = choices,
                       selected = keep_or(isolate(input$comparative_group_species), selected))
-    updateCheckboxGroupInput(
-      session, "comparative_species_set", choices = choices,
-      selected = intersect(input$comparative_species_set %||% enabled$species,
-                           enabled$species)
-    )
   })
 
   observe({
@@ -213,7 +216,12 @@ comparative_server <- function(input, output, session, repo_root, active = funct
     updateSelectInput(session, "comparative_single_project", choices = choices, selected = selected)
   })
 
-  output$comparative_species_checks <- renderUI(comparative_species_checkbox_ui())
+  # rendered with its choices: an empty group rendered after the observer's update would otherwise replace them
+  output$comparative_species_checks <- renderUI({
+    species <- species_manifest(); enabled <- species[species$enabled, , drop = FALSE]
+    checkboxGroupInput("comparative_species_set", "Species", choices = stats::setNames(enabled$species, enabled$label),
+                       selected = isolate(input$comparative_species_set) %||% enabled$species)
+  })
 
   output$comparative_single_state <- renderUI({
     if ((input$comparative_single_search %||% 0L) == 0L)
@@ -280,7 +288,8 @@ comparative_server <- function(input, output, session, repo_root, active = funct
       if (!nrow(subset)) return(data.frame())
       data <- comparative_load_metric(subset$project_config[[1]],
                                       input$comparative_metric %||% "essentiality")
-      comparative_display_rows(data, query)
+      # the gene itself (by name or ID) and its orthologs in this species (orthogroup members)
+      comparative_display_rows(data, query, with_aliases(as.character(mapped$gene_id[mapped$species == key])))
     })
     rows <- Filter(function(x) is.data.frame(x) && nrow(x) > 0L, rows)
     list(query = query, species = species, mapped = mapped,

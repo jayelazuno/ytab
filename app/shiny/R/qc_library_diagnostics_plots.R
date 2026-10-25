@@ -490,7 +490,7 @@ qc_library_metaplot_plot_data <- function(project) {
     files <- if (length(available)) root_files[[available[[1]]]] else character()
     rows <- c(rows, lapply(files, function(file) {
       data <- tryCatch(read.delim(file, stringsAsFactors = FALSE, check.names = FALSE), error = function(e) NULL)
-      if (is.null(data) || !all(c("rel_bp", "reads_sum", "sites_n") %in% names(data))) return(NULL)
+      if (is.null(data) || !nrow(data) || !all(c("rel_bp", "reads_sum", "sites_n") %in% names(data))) return(NULL)   # empty when the species has no such features
       sample <- sub(paste0("\\.", feature, "_metaplot\\.tsv$"), "", basename(file))
       data.frame(sample = sample, feature = feature,
                  rel_bp = qc_plot_numeric(data$rel_bp),

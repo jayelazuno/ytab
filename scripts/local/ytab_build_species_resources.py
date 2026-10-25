@@ -23,6 +23,16 @@ Essentiality label rules (they never look at any YTAB model output):
       --sgd-phenotypes phenotype_data.tab.gz
   python scripts/local/ytab_build_species_resources.py --species albicans --cgd-phenotypes C_albicans_SC5314_phenotype_data.tab \\
       --sgd-phenotypes phenotype_data.tab.gz --sgd-gff saccharomyces_cerevisiae_R64-5-1_20240529.gff
+
+Any other species (--annotation-only): only annotation/gene_annotation.tsv, from the species' registered reference GFF
+(gene name and description) and its ortholog table to S. cerevisiae (resources/species/<species>/orthologs/, read as
+`ytab cross-species` reads it), with S. cerevisiae names and viability from resources/species/cerevisiae. With
+--viability FILE (tab-separated gene ID and null-mutant viability, e.g. PomBase FYPOviability.tsv), also
+essentiality_labels/labels.tsv: inviable -> essential, viable -> nonessential (tier gold, direct evidence); any other
+value (condition-dependent) is left unlabelled.
+
+  python scripts/local/ytab_build_species_resources.py --species pombe --annotation-only \\
+      --viability resources/species/pombe/essentiality_labels/raw/FYPOviability.tsv
 """
 from __future__ import annotations
 
@@ -262,12 +272,53 @@ def build(species: str, args) -> dict:
     return summary
 
 
+def annotation_only(species: str, viability: Path | None = None) -> dict:
+    """gene_annotation.tsv for a species from its reference GFF and its S. cerevisiae ortholog table."""
+    from ytab.pipeline.reference_registry import resolve_reference
+    sys.path.append(str(ROOT/"scripts/local"))
+    from ytab_cross_species import read_orthologs
+    base = SPECIES/species; info = resolve_reference(species, ROOT)
+    tables = sorted((base/"orthologs").glob("*cerevisiae*orthologs*"))
+    ortho = read_orthologs(tables[0]) if tables else {}
+    sc = {r["gene_id"]:r for r in csv.DictReader(open(SPECIES/"cerevisiae/annotation/gene_annotation.tsv"), delimiter="\t")}
+    contigs = set(fasta_names(info.fasta)); rows = []
+    for g in annotations(info.gff):
+        if g["chrom"] not in contigs:continue
+        bare = re.sub(r"^[a-z]+:", "", g["id"])   # GFF IDs such as gene:SPAC1002.01 (kept as gene_id: the pipeline's feature IDs)
+        hub = ortho.get(bare, ""); s = sc.get(hub, {})
+        rows.append(dict(gene_id=g["id"], systematic_id=bare, gene_name=g["name"] if g["name"] not in (g["id"], bare) else "",
+                         scer_relationship="1:1" if hub else "", scer_gene_id=hub, scer_gene_name=s.get("gene_name", ""),
+                         scer_essentiality=s.get("scer_essentiality", ""),
+                         description=re.sub(r"\s*\[Source:[^]]*\]", "", g["description"] or "")))
+    write_tsv(base/"annotation/gene_annotation.tsv", rows)
+    labelled = None
+    if viability:
+        calls = dict(l.rstrip("\n").split("\t")[:2] for l in open(viability) if "\t" in l and not l.startswith("#"))
+        vocab = {"inviable":"essential", "viable":"nonessential"}
+        labels = [dict(gene_id=r["gene_id"], name=r["gene_name"] or r["systematic_id"], label=vocab.get(calls.get(r["systematic_id"], ""), ""),
+                       tier="gold" if calls.get(r["systematic_id"]) in vocab else "",
+                       unlabelled_reason="" if calls.get(r["systematic_id"]) in vocab else (calls.get(r["systematic_id"]) or "no viability data"))
+                  for r in rows]
+        write_tsv(base/"essentiality_labels/labels.tsv", labels)
+        (base/"essentiality_labels/sources.json").write_text(json.dumps(dict(built=str(date.today()), script_sha256=sha256(Path(__file__)),
+            viability=str(Path(viability).resolve().relative_to(ROOT)), viability_sha256=sha256(Path(viability)),
+            rule="inviable -> essential, viable -> nonessential (gold); other values unlabelled"), indent=2)+"\n")
+        labelled = {l:sum(r["label"] == l for r in labels) for l in ("essential", "nonessential")}
+    return dict(species=species, genes=len(rows), labels=labelled, named=sum(bool(r["gene_name"]) for r in rows), scer_1to1=sum(bool(r["scer_gene_id"]) for r in rows),
+                ortholog_table=str(tables[0].relative_to(ROOT)) if tables else None)
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--species", required=True, choices=["cerevisiae", "albicans"])
-    p.add_argument("--sgd-release", type=Path); p.add_argument("--sgd-phenotypes", type=Path, required=True)
+    p.add_argument("--species", required=True)
+    p.add_argument("--annotation-only", action="store_true", help="Write only annotation/gene_annotation.tsv (any species with a registered reference)")
+    p.add_argument("--viability", type=Path, help="With --annotation-only: gene ID and null-mutant viability (viable/inviable), written as labels")
+    p.add_argument("--sgd-release", type=Path); p.add_argument("--sgd-phenotypes", type=Path)
     p.add_argument("--cgd-phenotypes", type=Path); p.add_argument("--sgd-gff", type=Path)
     a = p.parse_args()
+    if a.annotation_only:print(json.dumps(annotation_only(a.species, a.viability), indent=1)); return
+    if a.species not in ("cerevisiae", "albicans"):p.error("full builds are for cerevisiae and albicans; use --annotation-only for other species")
+    if not a.sgd_phenotypes:p.error("--sgd-phenotypes is required")
     if a.species == "cerevisiae" and not a.sgd_release:p.error("--sgd-release is required for cerevisiae")
     if a.species == "albicans" and not (a.cgd_phenotypes and a.sgd_gff):p.error("--cgd-phenotypes and --sgd-gff are required for albicans")
     print(json.dumps(build(a.species, a), indent=1))

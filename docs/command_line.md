@@ -258,7 +258,8 @@ each project's `reference.orthology_file` (an S. cerevisiae project is the hub).
 species' gene, score and call), `intersections.tsv` (shared and species-specific essential sets) and `pairwise.tsv`
 (Cohen's kappa of the calls, Spearman correlation of the scores). A new species needs one ortholog table: tab-separated,
 the species' gene first and a `scer_id` column, or a S. cerevisiae systematic name in a later column. The app shows it
-in Gene Explorer > Across Species > Essentiality across species.
+in Gene Explorer > Across Species > Essentiality across species of every project it includes (runs are kept in
+`output/cross_species/`).
 
 ## Species resources
 
@@ -283,6 +284,10 @@ CGD or Ensembl style; one gene per protein-coding locus, sequences absent from t
 mapped FASTA left out), and the classifier (trained on S. cerevisiae) scores any
 species' feature tables, attaching S. cerevisiae orthologs from
 `annotation/gene_annotation.tsv` when present (`Classifier.py --species <species>`).
+For gene names in the app, `ytab_build_species_resources.py --species <species> --annotation-only` writes
+`annotation/gene_annotation.tsv` from the GFF (names, descriptions) and the species' ortholog table to S. cerevisiae
+(`orthologs/`); `ytab_comparative_add_species.py --species <species> --label "<Genus species>"` then adds the
+species to Gene Explorer > Across Species through those orthologs.
 
 ## Custom extensible master workflow
 

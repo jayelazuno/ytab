@@ -26,6 +26,19 @@ def _path(value, root):
     return p if p.is_absolute() else root / p
 
 
+def _coding_genes_by_parent(gff):
+    """CDS union per gene for GFF3 files whose CDS name their gene only through Parent (CDS -> transcript -> gene)."""
+    from ytab.essentiality.control_conditioned_gumbel import annotations
+    genes = {}
+    for g in annotations(gff):
+        blocks = sorted(g["blocks"])
+        genes[g["id"]] = dict(gene_id=g["id"], common_name=g["name"] if g["name"] != g["id"] else "", chromosome=g["chrom"], strand=g["strand"],
+                              blocks=blocks, essentiality="Unknown", length=sum(b-a+1 for a, b in blocks), start=blocks[0][0], end=blocks[-1][1])
+    if not genes:
+        raise ValueError("No protein-coding CDS annotations available")
+    return genes
+
+
 def read_coding_genes(gff):
     """CDS union per locus, excluding RNA-only features and pseudogenes without CDS."""
     genes = {}
@@ -38,8 +51,8 @@ def read_coding_genes(gff):
                 continue
             attrs = dict(item.split("=", 1) for item in fields[8].split(";") if "=" in item)
             gid = attrs.get("locus_tag") or attrs.get("gene_id")
-            if not gid:
-                raise ValueError("CDS annotation lacks locus_tag/gene_id; cannot align classifier calls safely")
+            if not gid:  # CDS linked to its gene only through Parent (Ensembl-style GFF3): resolve the ancestry instead
+                return _coding_genes_by_parent(gff)
             gene = genes.setdefault(gid, dict(gene_id=gid, common_name=unquote(attrs.get("gene", "")),
                 chromosome=fields[0], strand=fields[6], blocks=[], essentiality="Unknown"))
             if gene["chromosome"] != fields[0] or gene["strand"] != fields[6]:

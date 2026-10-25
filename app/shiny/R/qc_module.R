@@ -316,6 +316,14 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
 
   # --- themed subtabs: one plot at a time --------------------------------------------------------------------------
   plot_choices <- function(id) lapply(qc_plot_menus[[id]], as.list)
+  # the menu opens on the first plot this project has values for (e.g. reads before trimming are not recorded for every run)
+  default_choice <- function(id) {
+    all <- unlist(unname(qc_plot_menus[[id]]))
+    if (!has_table()) return(all[[1L]])
+    f <- tryCatch(flags(), error = function(e) data.frame(metric = character(), value = character()))
+    has_values <- vapply(all, function(v) !startsWith(v, "metric:") || any(!is.na(suppressWarnings(as.numeric(f$value[f$metric == sub("^metric:", "", v)])))), TRUE)
+    if (any(has_values)) all[has_values][[1L]] else all[[1L]]
+  }
   sources <- list(
     flags = function() { validate(need(has_table(), "Build the QC table in Overview first.")); flags() },
     distribution = distribution, project = active, info = info, libcor = libcor_results)
@@ -323,7 +331,7 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
   for (theme_id in names(qc_plot_menus)) local({
     id <- theme_id; prefix <- paste0("qcp_", id)
     output[[paste0(prefix, "_choice")]] <- renderUI({
-      tagList(selectInput(paste0(prefix, "_plot"), "Show", plot_choices(id), selected = isolate(input[[paste0(prefix, "_plot")]])),
+      tagList(selectInput(paste0(prefix, "_plot"), "Show", plot_choices(id), selected = isolate(input[[paste0(prefix, "_plot")]]) %||% default_choice(id)),
               if (!identical(id, "agreement") && !has_table()) helpText("Plots of QC-table metrics need the QC table (build it in Overview)."))
     })
     output[[paste0(prefix, "_options")]] <- renderUI(qc_plot_options(id, input[[paste0(prefix, "_plot")]] %||% "", info(), libcor_samples(), dirname(active()$project_root)))

@@ -250,7 +250,9 @@ essentiality_module_server <- function(input, output, session, repo_root, active
 
   selected_run <- reactive({ req(nrow(runs()) > 0); path <- input$ess_result %||% runs()$path[[1L]]; req(path %in% runs()$path); path })
   manifest <- reactive(ytab_read_manifest(selected_run()))
-  genes <- reactive(ytab_read_analysis_tsv(file.path(selected_run(), "models", "genes.tsv")))
+  genes <- reactive({ g <- ytab_read_analysis_tsv(file.path(selected_run(), "models", "genes.tsv"))
+    if (nrow(g) && "ORF" %in% names(g)) g$Name <- ytab_display_gene_names(g$ORF, g$Name, repo_root)   # display names by the species rule
+    g })
   windows <- reactive(ess_read_windows(selected_run()))
 
   output$ess_result_selector <- renderUI({

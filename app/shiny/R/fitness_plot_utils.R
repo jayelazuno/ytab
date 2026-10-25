@@ -290,6 +290,11 @@ fitness_ma_place_labels <- function(label_data, cex = 1) {
     side <- pattern$side[[1L]]
     label <- as.character(label_data$display_label[[row_ix]])
     text_width <- strwidth(label, cex = cex, font = 2)
+    # a label goes to the side with room for it, so points near an edge never push their label out of the plot
+    room <- c(left = label_data$x[[row_ix]] - 0.085 * xr - text_width - (usr[[1L]] + edge_x),
+              right = usr[[2L]] - edge_x - (label_data$x[[row_ix]] + 0.085 * xr + text_width))
+    if (side > 0 && room[["right"]] < 0 && room[["left"]] > room[["right"]]) side <- -1
+    if (side < 0 && room[["left"]] < 0 && room[["right"]] > room[["left"]]) side <- 1
     proposed_x <- label_data$x[[row_ix]] + side * pattern$x_frac[[1L]] * xr
     if (side > 0) {
       proposed_x <- min(proposed_x, usr[[2L]] - edge_x - text_width)
@@ -360,6 +365,19 @@ fitness_ma_supporting_pool_ids <- function(result, feature_id, direction = "both
   paste(unique(unlist(strsplit(ids[!is.na(ids)], ";"))), collapse = ";")
 }
 
+# Leader lines and labels placed by fitness_ma_place_labels: a light backing keeps a label readable over dense points;
+# text() takes one adj for all labels, so each side is drawn on its own (right of the point left-aligned, left of it
+# right-aligned). redraw: draws the highlighted points again between the backings and the text, so neither hides them.
+fitness_draw_labels <- function(label_data, cex, redraw = NULL) {
+  segments(label_data$x, label_data$y, label_data$x_label, label_data$y_label, col = adjustcolor("#68727d", alpha.f = 0.65), lwd = qc_plot_lwd * 0.5)
+  w <- strwidth(label_data$display_label, cex = cex, font = 2); h <- strheight("Mg", cex = cex, font = 2)
+  left <- ifelse(label_data$side > 0, label_data$x_label, label_data$x_label - w)
+  rect(left - .15 * h, label_data$y_label - .65 * h, left + w + .15 * h, label_data$y_label + .65 * h, col = adjustcolor("white", alpha.f = .8), border = NA, xpd = NA)
+  if (is.function(redraw)) redraw()
+  for (s in c(-1, 1)) { k <- label_data$side == s
+    if (any(k)) text(label_data$x_label[k], label_data$y_label[k], labels = label_data$display_label[k], cex = cex, font = 2, xpd = NA, adj = c(if (s > 0) 0 else 1, .5)) }
+}
+
 plot_fitness_ma <- function(result, mode = "combined", pair = "", direction = "both", n = 10L,
                             annotation_mode = "top", custom = "", text_size = "medium", grid = TRUE,
                             point_size = 1.5, min_support = 1L, repo_root = NULL) {
@@ -393,16 +411,15 @@ plot_fitness_ma <- function(result, mode = "combined", pair = "", direction = "b
   if (length(highlighted)) points(log10(data$mean_abundance[highlighted] + 1), data$log2fc[highlighted], pch = 21, bg = selected_hit_colors[highlighted], col = "black", lwd = qc_plot_lwd, cex = display_point_size + qc_plot_point_cex(0.55))
   if (nrow(label_table$data)) {
     label_table$data <- fitness_ma_place_labels(label_table$data, cex = scales$key)
-    segments(label_table$data$x, label_table$data$y, label_table$data$x_label, label_table$data$y_label,
-             col = adjustcolor("#68727d", alpha.f = 0.65), lwd = qc_plot_lwd * 0.5)
-    text(label_table$data$x_label, label_table$data$y_label, labels = label_table$data$display_label,
-         cex = scales$key, font = 2, xpd = NA,
-         adj = ifelse(label_table$data$side > 0, 0, 1))
+    fitness_draw_labels(label_table$data, scales$key, redraw = function() if (length(highlighted))
+      points(log10(data$mean_abundance[highlighted] + 1), data$log2fc[highlighted], pch = 21, bg = selected_hit_colors[highlighted], col = "black", lwd = qc_plot_lwd, cex = display_point_size + qc_plot_point_cex(0.55)))
   }
   present <- c(depleted = any(selected_hit_colors[highlighted] == depleted_col), enriched = any(selected_hit_colors[highlighted] == enriched_col))
   legend_labels <- c(depleted = "Depleted selected hit", enriched = "Enriched selected hit")
   legend_cols <- c(depleted = depleted_col, enriched = enriched_col)
-  if (any(present)) legend("topright", legend = unname(legend_labels[present]), col = unname(legend_cols[present]), pch = 21, pt.bg = unname(legend_cols[present]), bty = "n", cex = scales$key)
+  # legend above the plotting region, so it never covers points or labels whatever the data's shape
+  if (any(present)) legend("bottom", inset = c(0, 1), horiz = TRUE, xpd = NA, legend = unname(legend_labels[present]), col = unname(legend_cols[present]),
+                           pch = 21, pt.bg = unname(legend_cols[present]), bty = "n", cex = scales$key)
   note_line <- 5.75
   if (length(highlighted)) {
     mtext("Depleted/enriched colors reflect stored calls from local-abundance z-scores.", side = 1, line = note_line, cex = scales$key, col = "#666666")
@@ -476,7 +493,7 @@ plot_fitness_selected_hit_heatmap <- function(result, selected_hits, mode = "com
   max_abs <- if (length(finite)) max(abs(finite), na.rm = TRUE) else 1
   if (!is.finite(max_abs) || max_abs <= 0) max_abs <- 1
   breaks <- seq(-max_abs, max_abs, length.out = 101)
-  palette <- grDevices::colorRampPalette(c("#2f6fb5", "white", "#c83f3f"))(100)
+  palette <- grDevices::colorRampPalette(c(YTAB_DIRECTION_COLOURS[["depleted"]], "white", YTAB_DIRECTION_COLOURS[["enriched"]]))(100)
   image(t(z[nrow(z):1, , drop = FALSE]), col = palette, breaks = breaks, axes = FALSE,
         xlab = "", ylab = "", main = if (identical(mode, "individual") && nzchar(pair)) paste("Top selected hits log2FC heatmap —", pair) else "Top selected hits log2FC heatmap — combined across pools",
         cex.main = scales$title)

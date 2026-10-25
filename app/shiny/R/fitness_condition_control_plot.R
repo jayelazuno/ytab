@@ -96,17 +96,14 @@ plot_fitness_condition_control_scatter <- function(result, mode = "combined", pa
   }
   if (nrow(label_data)) {
     label_data <- fitness_ma_place_labels(label_data, cex = scales$key)
-    segments(label_data$x, label_data$y, label_data$x_label, label_data$y_label,
-             col = adjustcolor("#68727d", alpha.f = 0.65), lwd = qc_plot_lwd * 0.5)
-    text(label_data$x_label, label_data$y_label, labels = label_data$display_label,
-         cex = scales$key, font = 2, xpd = NA,
-         adj = ifelse(label_data$side > 0, 0, 1))
+    fitness_draw_labels(label_data, scales$key, redraw = function() if (length(highlight))
+      points(x[highlight], y[highlight], pch = 21, bg = hit_cols, col = "black", cex = display_point_size + qc_plot_point_cex(0.55), lwd = qc_plot_lwd))
   }
   if (length(highlight)) {
     present <- c(depleted = any(ranked$log2fc[highlighted_ranked] < 0), enriched = any(ranked$log2fc[highlighted_ranked] > 0))
-    legend("topleft", legend = c(depleted = "Depleted selected hit", enriched = "Enriched selected hit")[present],
-           col = c(depleted = "#2f6fb5", enriched = "#c83f3f")[present], pch = 21,
-           pt.bg = c(depleted = "#2f6fb5", enriched = "#c83f3f")[present], bty = "n", cex = scales$key)
+    legend("bottom", inset = c(0, 1), horiz = TRUE, xpd = NA, legend = c(depleted = "Depleted selected hit", enriched = "Enriched selected hit")[present],
+           col = YTAB_DIRECTION_COLOURS[c("depleted", "enriched")][present], pch = 21,
+           pt.bg = YTAB_DIRECTION_COLOURS[c("depleted", "enriched")][present], bty = "n", cex = scales$key)
   }
   note_line <- 5.75
   mtext("Below diagonal = depleted in treatment; above diagonal = enriched in treatment.", side = 1, line = note_line, cex = scales$key, col = "#666666")

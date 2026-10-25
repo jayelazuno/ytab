@@ -80,3 +80,12 @@ def test_build_on_a_synthetic_project(tmp_path):
     assert cell.fill.fgColor.rgb.endswith("F4C7C3") and "robust z" in cell.comment.text
     with pytest.raises(ValueError, match="new, empty"):qc.build(project/"config/project.yaml", tmp_path/"out")
     assert json.loads((tmp_path/"out/manifest.json").read_text())["rules"]["comparison"].startswith("within role")
+
+
+def test_read_counts_from_mapping_log(tmp_path):
+    log = tmp_path/"s_log.txt"
+    log.write_text("=== Transposon removal (searched with primer+Tn tail) ===\n1000 reads; of these:\n  900 (90.00%) contained the transposon\n\n"
+                   "=== Adapter removal ===\n900 reads; of these:\n  880 (97.78%) contained the adapter\n\n"
+                   "=== Sequence alignment ===\n880 reads; of these:\n  880 (100.00%) were unpaired; of these:\n")
+    assert qc._mapping_log(log) == dict(input_reads=1000., retained_fraction=.88, adapter_fraction=.88)
+    assert qc._mapping_log(tmp_path/"missing.txt") == {}

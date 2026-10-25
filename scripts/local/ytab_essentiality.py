@@ -86,11 +86,17 @@ def roc_curve(score, label):
     return fpr, tpr, float(np.sum(np.diff(fpr)*(tpr[1:]+tpr[:-1])/2))
 
 
-def export_roc(genes_path, path):
+def export_roc(genes_path, path, labels_path=None):
     """ROC of each model's score against the curated labels (reference_label), for each label tier and all together.
     Only genes the model was not fitted to: the HMM uses no labels, and the hybrid's training genes carry out-of-fold
-    scores. Returns {model: {tier: AUC}}, or {} without labels."""
+    scores. A run made without labels is scored against labels_path (the species' curated labels), which only the HMM
+    can use. Returns {model: {tier: AUC}}, or {} without labels."""
     genes = list(csv.DictReader(open(genes_path), delimiter="\t"))
+    if labels_path and Path(labels_path).exists() and not any(g.get("reference_label") for g in genes):
+        lab = {}
+        for r in csv.DictReader(open(labels_path), delimiter="\t"):
+            if r.get("label") in ("essential", "nonessential"):lab[r.get("gene_id") or r.get("cglab_id")] = (r["label"], r.get("tier", ""))
+        for g in genes:g["reference_label"], g["reference_tier"] = lab.get(g["ORF"], lab.get(g["ORF"].removeprefix("gene:"), ("", "")))
     labelled = [g for g in genes if g.get("reference_label") in ("essential", "nonessential")]
     models = {"HMM (label-free)":"hmm_score", "Hybrid":"hybrid_score", "Random forest":"rf_existing_score"}
     rows, aucs = [], {}
@@ -113,11 +119,12 @@ def write_rows(path, rows):
         w = csv.DictWriter(handle, fieldnames=list(rows[0]), delimiter="\t", lineterminator="\n"); w.writeheader(); w.writerows(rows)
 
 
-def plot_summaries(out, hmm_dir, project, min_reads):
+def plot_summaries(out, hmm_dir, project, min_reads, species=None):
     fit = json.loads((hmm_dir/"fit.json").read_text())
+    labels = ROOT/"resources/species"/species/"essentiality_labels/labels.tsv" if species else None
     used = export_target_model(hmm_dir, out/"plots/target_model.tsv", project, fit["samples"], min_reads)
     return dict(target_model=None if used is None else dict(file="plots/target_model.tsv", used_in_fit=used),
-                evaluation=export_roc(out/"models/genes.tsv", out/"plots/roc.tsv") or None)
+                evaluation=export_roc(out/"models/genes.tsv", out/"plots/roc.tsv", labels) or None)
 
 
 def auto_sequence_covariate(cfg, libraries):
@@ -151,7 +158,9 @@ def main():
     if a.refresh_plots:
         run = a.refresh_plots.resolve(); m = json.loads((run/"manifest.json").read_text())
         project = a.project_config.resolve().parents[1].name
-        extra = plot_summaries(run, Path(m["hmm_run"]), project, int(m.get("hmm", {}).get("settings", {}).get("min_reads", 1)))
+        cfg = yaml.safe_load(a.project_config.read_text())
+        extra = plot_summaries(run, Path(m["hmm_run"]), project, int(m.get("hmm", {}).get("settings", {}).get("min_reads", 1)),
+                               cfg.get("species") or cfg.get("reference", {}).get("species"))
         print(json.dumps(dict(status="success", refreshed=str(run), **extra), default=str)); return
     if not a.output:p.error("--output is required")
     out = a.output.resolve()
@@ -184,7 +193,7 @@ def main():
               *(["--labels", a.labels] if a.labels else [])])
         print("3/3 Writing plot summaries", file=sys.stderr, flush=True)
         (out/"plots").mkdir(); chromosomes = export_windows(hmm_dir, out/"plots/windows.tsv.gz")
-        extra = plot_summaries(out, hmm_dir, project, a.min_reads)
+        extra = plot_summaries(out, hmm_dir, project, a.min_reads, cfg.get("species") or cfg.get("reference", {}).get("species"))
     except (ValueError, KeyError, OSError) as error:
         p.exit(1, f"ERROR: {error}\n")
     fit = json.loads((hmm_dir/"fit.json").read_text()); models = json.loads((out/"models/summary.json").read_text())

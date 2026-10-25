@@ -155,6 +155,21 @@ def _hermes(path: Path) -> dict:
                 adapter_fraction=(_float(mate.get("adapter_3p_reads")) or 0)/reads if reads else None)
 
 
+def _mapping_log(path: Path) -> dict:
+    """Read counts from the mapping log when there is no preprocessing JSON (runs made on the cluster): reads given to
+    the first step (transposon or adapter removal, or alignment), reads that reached the alignment, reads with the
+    3' adaptor."""
+    if not path.is_file():return {}
+    text = path.read_text(errors="replace")
+    counts = [int(n) for n in re.findall(r"^(\d+) reads; of these:", text, flags=re.M)]
+    if not counts:return {}
+    align = re.search(r"=== Sequence alignment ===\s*\n(\d+) reads; of these:", text)
+    adapter = re.search(r"=== Adapter removal ===\s*\n\d+ reads; of these:\s*\n\s*(\d+) \([\d.]+%\) contained the adapter", text)
+    reads = float(counts[0])
+    return dict(input_reads=reads, retained_fraction=int(align.group(1))/reads if align else None,
+                adapter_fraction=int(adapter.group(1))/reads if adapter else None)
+
+
 def _mapping(path: Path) -> dict:
     if not path.is_file():return {}
     row = next(csv.DictReader(open(path)), {})
@@ -244,7 +259,8 @@ def build(project_config: Path, output: Path) -> dict:
         name = str(s["sample"]); role = str(s.get("library_role") or s.get("condition") or s.get("guessed_condition") or "library").strip().lower()
         row = dict(sample=name, display_name=s.get("display_name") or name, role=role, pool=s.get("pool") or s.get("guessed_pool") or "",
                    background=s.get("background") or s.get("guessed_background") or "")
-        row |= _hermes(project/"mapfastq"/name/f"{name}.hermes_preprocessing.json") | _mapping(project/"mapfastq"/name/f"{name}.mapping_stats.csv")
+        row |= (_hermes(project/"mapfastq"/name/f"{name}.hermes_preprocessing.json") or _mapping_log(project/"mapfastq"/name/f"{name}_log.txt")) \
+            | _mapping(project/"mapfastq"/name/f"{name}.mapping_stats.csv")
         if name in hits:
             row |= insertion_metrics(*hits[name], universe, genome_bp)
             data = plot_data(name, np.fromiter(hits[name][0].values(), dtype=float))

@@ -155,10 +155,20 @@ genome_browser_default_locus <- function(project) {
   if (!file.exists(fai)) return("")
   index <- tryCatch(read.delim(fai, header = FALSE, stringsAsFactors = FALSE), error = function(e) data.frame())
   if (!nrow(index) || ncol(index) < 2L) return("")
-  chrom <- as.character(index[[1]][[1]])
+  # the first chromosome in the reference's display order (chromosome_names.tsv), else the first FASTA record
+  first <- 1L
+  names_file <- file.path(dirname(fasta), "chromosome_names.tsv")
+  if (file.exists(names_file)) {
+    order <- tryCatch(read.delim(names_file, stringsAsFactors = FALSE), error = function(e) data.frame())
+    if (all(c("contig", "order") %in% names(order))) {
+      rank <- suppressWarnings(as.numeric(order$order[match(as.character(index[[1]]), order$contig)]))
+      if (any(!is.na(rank))) first <- which.min(ifelse(is.na(rank), Inf, rank))
+    }
+  }
+  chrom <- as.character(index[[1]][[first]])
   display <- qc_plot_chromosome_display(chrom, project)
   display <- gsub(" ", "", display)
-  length <- suppressWarnings(as.integer(index[[2]][[1]]))
+  length <- suppressWarnings(as.integer(index[[2]][[first]]))
   end <- if (is.na(length)) 50000L else min(length, 50000L)
   paste0(display, ":1-", end)
 }

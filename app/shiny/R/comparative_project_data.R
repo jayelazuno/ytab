@@ -18,7 +18,9 @@ comparative_species_key <- function(value) {
     sc = "cerevisiae", scer = "cerevisiae", s_cerevisiae = "cerevisiae",
     saccharomyces_cerevisiae = "cerevisiae", cerevisiae = "cerevisiae",
     kl = "lactis", klac = "lactis", k_lactis = "lactis",
-    kluyveromyces_lactis = "lactis", lactis = "lactis"
+    kluyveromyces_lactis = "lactis", lactis = "lactis",
+    sp = "pombe", spom = "pombe", s_pombe = "pombe",
+    schizosaccharomyces_pombe = "pombe", pombe = "pombe"
   )
   unname(ifelse(text %in% names(aliases), aliases[text], text))
 }
@@ -49,13 +51,14 @@ list_ytab_projects_by_species <- function(repo_root) {
                             error = function(e) list())
     fitness <- tryCatch(discover_fitness_results(project),
                         error = function(e) list())
+    essentiality <- nzchar(comparative_essentiality_run(project$project_root))
     data.frame(
       species = comparative_species_key(project$species),
       project_id = project$project_id,
       display_name = project$display_name,
       project_config = project$project_config,
       project_type = project$project_type,
-      has_classifier = length(classifiers) > 0L,
+      has_classifier = length(classifiers) > 0L || essentiality,
       has_fitness = length(fitness) > 0L,
       has_summary_stats = nzchar(comparative_project_summary_stats_path(project$project_root)),
       stringsAsFactors = FALSE
@@ -63,6 +66,30 @@ list_ytab_projects_by_species <- function(repo_root) {
   })
   rows <- Filter(Negate(is.null), rows)
   if (!length(rows)) comparative_empty_projects() else do.call(rbind, rows)
+}
+
+# Newest essentiality run (`ytab essentiality`) of a project, or "".
+comparative_essentiality_run <- function(project_root) {
+  runs <- ytab_analysis_runs(file.path(project_root, "essentiality"))
+  runs <- runs[file.exists(file.path(runs$path, "models", "genes.tsv")), , drop = FALSE]
+  if (nrow(runs)) runs$path[[1L]] else ""
+}
+
+# Essentiality of every gene: the newest HMM essentiality run (any species), else the earlier classifier predictions.
+load_project_essentiality_results <- function(project_config) {
+  repo_root <- infer_repo_root_from_project_config(project_config)
+  project <- tryCatch(read_project_summary(project_config, repo_root), error = function(e) NULL)
+  if (is.null(project)) return(data.frame())
+  run <- comparative_essentiality_run(project$project_root)
+  if (!nzchar(run)) return(load_project_classifier_results(project_config))
+  data <- ytab_read_analysis_tsv(file.path(run, "models", "genes.tsv"))
+  if (!nrow(data)) return(data.frame())
+  data$Name <- ytab_display_gene_names(data$ORF, data$Name, repo_root)
+  data$ytab_project_id <- project$project_id
+  data$ytab_species <- comparative_species_key(project$species)
+  data$ytab_result_type <- "essentiality_hmm"
+  data$ytab_source_path <- run
+  data
 }
 
 load_project_classifier_results <- function(project_config) {

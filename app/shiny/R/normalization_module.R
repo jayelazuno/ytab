@@ -253,7 +253,9 @@ norm_ggplot <- function(data, choice = "sites", genes = NULL) {
                   data.frame(d[, c("method", "comparison_id", "kind")], metric = "Rank agreement of genes (Spearman)", value = d$spearman_genes))
     zero <- data.frame(metric = "Median gene log2 ratio (shift)")
   } else {
-    d <- data$pairs; d <- d[!is.na(d$median_log2_ratio_shared), , drop = FALSE]
+    d <- data$pairs
+    validate(need(nrow(d) > 0 && "median_log2_ratio_shared" %in% names(d), "This run normalized a list of samples (for multi-condition tests) without matched pairs, so it has no replicate agreement. A run made from the comparison design (Run normalization) has it; earlier design runs are under Earlier runs."))
+    d <- d[!is.na(d$median_log2_ratio_shared), , drop = FALSE]
     long <- rbind(data.frame(d[, c("method", "comparison_id", "kind")], metric = "Median log2 ratio (shift)", value = d$median_log2_ratio_shared),
                   data.frame(d[, c("method", "comparison_id", "kind")], metric = "Spread of log2 ratios (IQR)", value = d$log2_ratio_iqr_shared))
     zero <- data.frame(metric = "Median log2 ratio (shift)")

@@ -8,7 +8,7 @@ root <- normalizePath(file.path(dirname(self), "../.."), winslash = "/")
 suppressPackageStartupMessages({library(shiny); library(bslib)})
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
 for (name in c("job_manager.R", "project_discovery.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R",
-               "table_display_helpers.R", "analysis_runs.R", "normalization_module.R", "ui_fitness.R", "treated_vs_control.R", "comparisons_module.R"))
+               "table_display_helpers.R", "analysis_runs.R", "glabrata_annotation_lookup.R", "normalization_module.R", "ui_fitness.R", "treated_vs_control.R", "comparisons_module.R"))
   source(file.path(root, "app/shiny/R", name))
 python <- unname(Sys.which("python")); config <- file.path(root, "output/projects/Zn_toxicity_screen/config/project.yaml")
 cli <- function(script, ...) { status <- system2(python, c(file.path(root, "scripts/local", script), ...), stdout = FALSE, stderr = FALSE); stopifnot(status == 0L) }

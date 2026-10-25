@@ -142,6 +142,16 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
   tvc_runs <- reactivePoll(3000, session,
     checkFunc = function() { x <- ytab_analysis_runs(tryCatch(file.path(active()$project_root, "treated_vs_control"), error = function(e) "")); paste(x$path, x$modified, collapse = "|") },
     valueFunc = function() ytab_analysis_runs(tryCatch(file.path(active()$project_root, "treated_vs_control"), error = function(e) "")))
+  # Results open on a method the project has results for: the z-score when it has one, else the newest resampling or
+  # Gumbel run.
+  observeEvent(active()$project_root, {
+    zscore <- length(tryCatch(discover_fitness_results(active()), error = function(e) list())) > 0L
+    x <- isolate(tvc_runs())
+    if (!zscore && nrow(x)) {
+      method <- (ytab_read_manifest(x$path[[1L]]) %||% list())$method %||% "resampling"
+      updateRadioButtons(session, "tvc_results_method", selected = method)
+    }
+  })
   design <- reactive({
     path <- file.path(active()$project_root, "config", "comparison_design.csv")
     if (!file.exists(path)) return(data.frame())
@@ -204,7 +214,9 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
     selectInput("tvc_result", "Result", ytab_run_choices(x))
   })
   selected <- reactive({ x <- method_runs(); req(nrow(x) > 0); path <- input$tvc_result %||% x$path[[1L]]; req(path %in% x$path); path })
-  data <- reactive({ run <- selected(); list(manifest = ytab_read_manifest(run), genes = ytab_read_analysis_tsv(file.path(run, "genes.tsv"))) })
+  data <- reactive({ run <- selected(); genes <- ytab_read_analysis_tsv(file.path(run, "genes.tsv"))
+    if (nrow(genes) && "ORF" %in% names(genes)) genes$Name <- ytab_display_gene_names(genes$ORF, genes$Name, repo_root)
+    list(manifest = ytab_read_manifest(run), genes = genes) })
   output$tvc_group_selector <- renderUI({
     g <- data()$genes; req(nrow(g) > 0); groups <- unique(g$group)
     if (length(groups) < 2L) return(NULL)

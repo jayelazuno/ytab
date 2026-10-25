@@ -96,7 +96,9 @@ comparisons_module_ui <- function() navset_tab(id = "fitness_tabs",
 mc_ggplot <- function(choice, data, pair = NULL) {
   base <- ggplot2::theme_minimal(base_size = 12)
   if (identical(choice, "correlation")) {
-    d <- data$correlation; d <- d[d$gene_set == "all tested genes", , drop = FALSE]
+    d <- data$correlation
+    validate(need(nrow(d) > 0 && "gene_set" %in% names(d), "Response correlation needs at least three conditions (two responses to the reference); this test has two."))
+    d <- d[d$gene_set == "all tested genes", , drop = FALSE]
     conditions <- unique(c(d$condition_a, d$condition_b))
     both <- rbind(d, transform(d, condition_a = condition_b, condition_b = condition_a),
                   data.frame(gene_set = d$gene_set[1], condition_a = conditions, condition_b = conditions, genes = NA, method = NA, rho = 1, ci_low = NA, ci_high = NA,
@@ -108,6 +110,7 @@ mc_ggplot <- function(choice, data, pair = NULL) {
   }
   if (identical(choice, "heatmap")) {
     m <- data$heatmap; value_columns <- grep("^log2FC_", names(m), value = TRUE)
+    validate(need(nrow(m) > 0 && length(value_columns), "No gene responds at this FDR, so there is no heatmap."))
     long <- do.call(rbind, lapply(value_columns, function(v) data.frame(gene = ifelse(is.na(m$Name) | !nzchar(m$Name), m$ORF, m$Name), ORF = m$ORF,
                                                                       condition = sub("^log2FC_", "", v), log2FC = m[[v]])))
     long$gene <- factor(long$gene, levels = rev(unique(long$gene)))
@@ -217,10 +220,11 @@ comparisons_server <- function(input, output, session, repo_root, active, active
   }, ignoreInit = TRUE)
 
   mc_selected <- reactive({ x <- mc_runs(); req(nrow(x) > 0); path <- input$mc_result %||% x$path[[1L]]; req(path %in% x$path); path })
+  named <- function(x) { if (nrow(x) && "ORF" %in% names(x)) x$Name <- ytab_display_gene_names(x$ORF, x$Name %||% "", repo_root); x }   # display names
   mc_data <- reactive({ run <- mc_selected()
-    list(manifest = ytab_read_manifest(run), anova = ytab_read_analysis_tsv(file.path(run, "tests", "anova_genes.tsv")),
-         pairs = ytab_read_analysis_tsv(file.path(run, "tests", "pairs_genes.tsv")), correlation = ytab_read_analysis_tsv(file.path(run, "plots", "response_correlation.tsv")),
-         heatmap = ytab_read_analysis_tsv(file.path(run, "plots", "heatmap_matrix.tsv"))) })
+    list(manifest = ytab_read_manifest(run), anova = named(ytab_read_analysis_tsv(file.path(run, "tests", "anova_genes.tsv"))),
+         pairs = named(ytab_read_analysis_tsv(file.path(run, "tests", "pairs_genes.tsv"))), correlation = ytab_read_analysis_tsv(file.path(run, "plots", "response_correlation.tsv")),
+         heatmap = named(ytab_read_analysis_tsv(file.path(run, "plots", "heatmap_matrix.tsv")))) })
   output$mc_result_selector <- renderUI({ x <- mc_runs(); if (!nrow(x)) return(tags$p(class = "text-muted", "No multi-condition result yet.")); selectInput("mc_result", "Result", ytab_run_choices(x)) })
   output$mc_pair_selector <- renderUI({ req(identical(input$mc_plot, "volcano")); p <- mc_data()$pairs; req(nrow(p) > 0); selectInput("mc_pair", "Pair", unique(p$pair)) })
   output$mc_summary <- renderUI({
@@ -291,7 +295,7 @@ comparisons_server <- function(input, output, session, repo_root, active, active
   }, ignoreInit = TRUE)
 
   gi_selected <- reactive({ x <- gi_runs(); req(nrow(x) > 0); path <- input$gi_result %||% x$path[[1L]]; req(path %in% x$path); path })
-  gi_data <- reactive(list(manifest = read_json_safely(file.path(gi_selected(), "run_manifest.json")), genes = ytab_read_analysis_tsv(file.path(gi_selected(), "genes.tsv"))))
+  gi_data <- reactive(list(manifest = read_json_safely(file.path(gi_selected(), "run_manifest.json")), genes = named(ytab_read_analysis_tsv(file.path(gi_selected(), "genes.tsv")))))
   output$gi_result_selector <- renderUI({ x <- gi_runs(); if (!nrow(x)) return(tags$p(class = "text-muted", "No genetic-interaction result yet.")); selectInput("gi_result", "Result", ytab_run_choices(x)) })
   output$gi_summary <- renderUI({
     if (!nrow(gi_runs())) return(ytab_empty_state("No genetic-interaction result yet", "Choose a normalization run, two strains and run. Each strain needs at least two control/treated pairs."))

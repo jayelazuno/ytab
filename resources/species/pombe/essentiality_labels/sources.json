@@ -1,0 +1,7 @@
+{
+  "built": "2026-10-24",
+  "script_sha256": "9be039c58c0d86ce86e1c76b77db9da28b6ef558d91c410addc0f886d8f13dac",
+  "viability": "resources/species/pombe/essentiality_labels/raw/FYPOviability.tsv",
+  "viability_sha256": "8566b20f53b63375838fb129432a0b47c9651262e990787d15db5fca60d4f3c5",
+  "rule": "inviable -> essential, viable -> nonessential (gold); other values unlabelled"
+}

@@ -31,7 +31,18 @@ ytab_species_annotation_lookup <- function(repo_root) {
   do.call(rbind, Filter(Negate(is.null), rows)) %||% data.frame(stringsAsFactors = FALSE)
 }
 
+# The lookup is read once and kept until one of its files changes (it is used for every table and plot label).
+.ytab_lookup_cache <- new.env(parent = emptyenv())
 ytab_load_glabrata_annotation_lookup <- function(repo_root) {
+  files <- c(ytab_glabrata_annotation_lookup_file(repo_root), Sys.glob(file.path(repo_root, "resources", "species", "*", "annotation", "gene_annotation.tsv")))
+  key <- paste(files, file.mtime(files), collapse = "|")
+  if (identical(.ytab_lookup_cache$key, key)) return(.ytab_lookup_cache$data)
+  data <- ytab_read_annotation_lookup(repo_root)
+  .ytab_lookup_cache$key <- key; .ytab_lookup_cache$data <- data
+  data
+}
+
+ytab_read_annotation_lookup <- function(repo_root) {
   path <- ytab_glabrata_annotation_lookup_file(repo_root)
   empty <- data.frame(stringsAsFactors = FALSE)
   required <- ytab_glabrata_annotation_required_columns()
@@ -173,4 +184,14 @@ ytab_glabrata_regular_display_columns <- function(data, repo_root, id_col,
   )
   if (isTRUE(include_details)) out <- cbind(out, ytab_glabrata_gene_detail_columns(data))
   out
+}
+
+# Display names for a table's genes by the rule above (S. cerevisiae names for C. glabrata, the species' own common
+# names otherwise); a gene the lookup does not know keeps the table's own name, then its ID.
+ytab_display_gene_names <- function(ids, names = "", repo_root) {
+  ids <- as.character(ids); if (!length(ids)) return(character())
+  d <- ytab_join_glabrata_display(data.frame(feature_id = ids, stringsAsFactors = FALSE), repo_root, "feature_id")
+  known <- !is.na(d$gene_display_name) & nzchar(d$gene_display_name) & d$gene_display_name != ids
+  own <- ytab_first_nonempty(if (length(names) == length(ids)) names else rep("", length(ids)), ids)
+  ifelse(known, d$gene_display_name, own)
 }
