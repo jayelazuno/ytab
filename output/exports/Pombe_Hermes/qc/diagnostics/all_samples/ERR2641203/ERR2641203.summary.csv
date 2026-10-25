@@ -1,2 +1,2 @@
 sample,input_path,total_reads,unique_sites,jackpot_top_frac,jackpot_frac_reads,n_jackpot_sites,midlc_est,depth_ratio_R_over_midlc,per_gene_top_site_removed,per_gene_sites_removed,normalize_target,reads_target,thinning_p,reads_after_norm,normalized_written,normalized_output,midlc_points,midlc_max_sampled,seqbias_done,centromere_done
-ERR2641203,/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641203/ERR2641203_hits.txt,696174,68378,0.001,0.376838,69,172239,4.04191,0,0,NA,NA,NA,NA,0,NA,8,696174,1,0
+ERR2641203,/Users/joshuaayelazuno/Desktop/ytab/output/projects/Pombe_Hermes/create_hit_file/ERR2641203/ERR2641203_hits.txt,696174,68378,0.001,0.376838,69,172239,4.04191,0,0,NA,NA,NA,NA,0,NA,8,696174,1,0

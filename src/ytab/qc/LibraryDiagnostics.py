@@ -1047,6 +1047,8 @@ def main() -> None:
         tss_anchors = load_anchors_from_gff(args.metaplot_gff, gene_fts, anchor_kind="tss")
         tts_anchors = load_anchors_from_gff(args.metaplot_gff, gene_fts, anchor_kind="tts")
         trna_anchors = load_anchors_from_gff(args.metaplot_gff, ["tRNA"], anchor_kind="trna_center")
+        if not trna_anchors:   # Ensembl GFFs type tRNAs as tRNA_gene only
+            trna_anchors = load_anchors_from_gff(args.metaplot_gff, ["tRNA_gene"], anchor_kind="trna_center")
 
     genes_by_chrom: Optional[GeneIntervalsByChrom] = None
     if args.remove_top_site_per_gene:

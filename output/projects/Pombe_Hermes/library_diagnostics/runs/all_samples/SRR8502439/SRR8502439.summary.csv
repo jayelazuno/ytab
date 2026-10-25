@@ -1,2 +1,2 @@
 sample,input_path,total_reads,unique_sites,jackpot_top_frac,jackpot_frac_reads,n_jackpot_sites,midlc_est,depth_ratio_R_over_midlc,per_gene_top_site_removed,per_gene_sites_removed,normalize_target,reads_target,thinning_p,reads_after_norm,normalized_written,normalized_output,midlc_points,midlc_max_sampled,seqbias_done,centromere_done
-SRR8502439,/old_Users/jayelazuno/workspace/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439/SRR8502439_hits.txt,11494959,572340,0.001,0.470231,573,1836773,6.25824,0,0,NA,NA,NA,NA,0,NA,10,11494959,1,0
+SRR8502439,/Users/joshuaayelazuno/Desktop/ytab/output/projects/Pombe_Hermes/create_hit_file/SRR8502439/SRR8502439_hits.txt,11494959,572340,0.001,0.470231,573,1836773,6.25824,0,0,NA,NA,NA,NA,0,NA,10,11494959,1,0

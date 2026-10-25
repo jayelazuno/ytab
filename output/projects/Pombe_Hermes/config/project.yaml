@@ -19,7 +19,7 @@ reference:
   bowtie2_index_complete: true
   bowtie2_index_type: bt2
   centromere_bed: null
-  trna_bed: null
+  trna_bed: resources/species/pombe/reference_genome/tRNAs.bed
   orthology_file: resources/species/pombe/orthologs/pombe_cerevisiae_orthologs.txt
   warnings:
   - Bowtie2 index found; indexing skipped.
