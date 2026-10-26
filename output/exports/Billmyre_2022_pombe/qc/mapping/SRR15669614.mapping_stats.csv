@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR15669614,11079352,11079352,10040415,1038937,90.623,0,0.0,9722273,96.831,40.59,/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2022_pombe/mapfastq/SRR15669614/SRR15669614.sam
