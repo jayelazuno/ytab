@@ -1,0 +1,19 @@
+{
+  "species": "glabrata_CBS138",
+  "species_dir": "resources/species/glabrata/strains/CBS138",
+  "reference_dir": "resources/species/glabrata/strains/CBS138/reference_genome",
+  "fasta": "resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta",
+  "feature_table": null,
+  "gff": "resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff",
+  "gtf": null,
+  "gffutils_db": "resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff.gffutils_db.sqlite",
+  "bowtie2_index_prefix": "resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes",
+  "bowtie2_index_complete": true,
+  "bowtie2_index_type": "bt2",
+  "centromere_bed": "resources/species/glabrata/strains/CBS138/reference_genome/centromeres.CGD.bed",
+  "trna_bed": "resources/species/glabrata/strains/CBS138/reference_genome/tRNAs.bed",
+  "orthology_file": "resources/species/glabrata/strains/CBS138/orthologs/C_glabrata_CBS138_S_cerevisiae_orthologs.txt",
+  "warnings": [
+    "Bowtie2 index found; indexing skipped."
+  ]
+}
