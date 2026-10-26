@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR29743986,3669440,3669440,3501933,167507,95.435,0,0.0,3325966,94.975,39.7,/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2024_glabrata/mapfastq/SRR29743986/SRR29743986.sam

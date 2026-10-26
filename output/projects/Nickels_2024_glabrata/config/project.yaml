@@ -1,0 +1,137 @@
+project_id: Nickels_2024_glabrata
+repo_root: ../../../..
+fastq_dir: output/projects/Nickels_2024_glabrata/config/argon_fastq_inputs
+fastq_paths_relative_to: fastq_dir
+output_project_dir: output/projects/Nickels_2024_glabrata
+output_export_dir: output/exports/Nickels_2024_glabrata
+species: glabrata_CBS138
+threads: 8
+reference:
+  species: glabrata_CBS138
+  species_dir: resources/species/glabrata/strains/CBS138
+  reference_dir: resources/species/glabrata/strains/CBS138/reference_genome
+  fasta: resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta
+  feature_table: null
+  gff: resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff
+  gtf: null
+  gffutils_db: resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/glabrata/strains/CBS138/reference_genome/centromeres.CGD.bed
+  trna_bed: resources/species/glabrata/strains/CBS138/reference_genome/tRNAs.bed
+  orthology_file: resources/species/glabrata/strains/CBS138/orthologs/C_glabrata_CBS138_S_cerevisiae_orthologs.txt
+  warnings:
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: SRR29743982
+  fastq_1: SRR29743982_1.fastq.gz
+  fastq_2: SRR29743982_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743983
+  fastq_1: SRR29743983_1.fastq.gz
+  fastq_2: SRR29743983_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743984
+  fastq_1: SRR29743984_1.fastq.gz
+  fastq_2: SRR29743984_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743985
+  fastq_1: SRR29743985_1.fastq.gz
+  fastq_2: SRR29743985_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743986
+  fastq_1: SRR29743986_1.fastq.gz
+  fastq_2: SRR29743986_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743987
+  fastq_1: SRR29743987_1.fastq.gz
+  fastq_2: SRR29743987_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743988
+  fastq_1: SRR29743988_1.fastq.gz
+  fastq_2: SRR29743988_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743989
+  fastq_1: SRR29743989_1.fastq.gz
+  fastq_2: SRR29743989_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743990
+  fastq_1: SRR29743990_1.fastq.gz
+  fastq_2: SRR29743990_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743991
+  fastq_1: SRR29743991_1.fastq.gz
+  fastq_2: SRR29743991_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743992
+  fastq_1: SRR29743992_1.fastq.gz
+  fastq_2: SRR29743992_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR29743993
+  fastq_1: SRR29743993_1.fastq.gz
+  fastq_2: SRR29743993_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+sample_sheet: output/projects/Nickels_2024_glabrata/config/sample_sheet.csv
+created_at: '2026-10-26T04:38:01.486082+00:00'
+ytab_version_or_git_commit_if_available: eaa18c9

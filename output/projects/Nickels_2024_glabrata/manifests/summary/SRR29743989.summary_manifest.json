@@ -1,0 +1,43 @@
+{
+  "project_id": "Nickels_2024_glabrata",
+  "sample": "SRR29743989",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2024_glabrata/create_hit_file/SRR29743989/SRR29743989_hits.txt",
+  "species": "glabrata_CBS138",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/orthologs/C_glabrata_CBS138_S_cerevisiae_orthologs.txt"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2024_glabrata/summary/SRR29743989",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2024_glabrata/summary/SRR29743989/SRR29743989.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2024_glabrata/logs/summary/SRR29743989.log",
+  "status": "success",
+  "start_time": "2026-10-26T06:20:24.782325+00:00",
+  "end_time": "2026-10-26T06:20:38.607943+00:00",
+  "elapsed_seconds": 13.826,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2024_glabrata/create_hit_file/SRR29743989",
+    "--hit-glob",
+    "SRR29743989_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2024_glabrata/summary/SRR29743989",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta"
+  ],
+  "warnings": [],
+  "error_message": null
+}
