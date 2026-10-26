@@ -1,0 +1,2 @@
+sample,input_path,total_reads,unique_sites,jackpot_top_frac,jackpot_frac_reads,n_jackpot_sites,midlc_est,depth_ratio_R_over_midlc,per_gene_top_site_removed,per_gene_sites_removed,normalize_target,reads_target,thinning_p,reads_after_norm,normalized_written,normalized_output,midlc_points,midlc_max_sampled,seqbias_done,centromere_done
+SRR15669615,/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2022_pombe/create_hit_file/SRR15669615/SRR15669615_hits.txt,9915298,461207,0.001,0.170232,462,1040768,9.52691,0,0,NA,NA,NA,NA,0,NA,10,9915298,1,0
