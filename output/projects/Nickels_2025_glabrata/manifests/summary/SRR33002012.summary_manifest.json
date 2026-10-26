@@ -1,0 +1,45 @@
+{
+  "project_id": "Nickels_2025_glabrata",
+  "sample": "SRR33002012",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2025_glabrata/create_hit_file/SRR33002012/SRR33002012_hits.txt",
+  "species": "glabrata",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "gtf": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf",
+    "feature_table": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab",
+    "orthology_file": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/orthologs/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2025_glabrata/summary/SRR33002012",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2025_glabrata/summary/SRR33002012/SRR33002012.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2025_glabrata/logs/summary/SRR33002012.log",
+  "status": "success",
+  "start_time": "2026-10-26T12:12:13.579100+00:00",
+  "end_time": "2026-10-26T12:12:20.684487+00:00",
+  "elapsed_seconds": 7.105,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2025_glabrata/create_hit_file/SRR33002012",
+    "--hit-glob",
+    "SRR33002012_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2025_glabrata/summary/SRR33002012",
+    "--feature-db",
+    "glabrata",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "--scer-orthologs",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/orthologs/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}
