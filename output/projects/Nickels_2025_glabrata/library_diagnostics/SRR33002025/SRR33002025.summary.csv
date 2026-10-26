@@ -1,0 +1,2 @@
+sample,input_path,total_reads,unique_sites,jackpot_top_frac,jackpot_frac_reads,n_jackpot_sites,midlc_est,depth_ratio_R_over_midlc,per_gene_top_site_removed,per_gene_sites_removed,normalize_target,reads_target,thinning_p,reads_after_norm,normalized_written,normalized_output,midlc_points,midlc_max_sampled,seqbias_done,centromere_done
+SRR33002025,/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2025_glabrata/create_hit_file/SRR33002025/SRR33002025_hits.txt,2837401,219444,0.001,0.0625248,220,326494,8.69051,0,0,NA,NA,NA,NA,0,NA,9,2837401,1,1
