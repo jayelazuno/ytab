@@ -178,10 +178,13 @@ sra_run() {
     fasterq-dump "$sra" --split-3 --threads "$threads" --outdir "$stage/fastq" --temp "$stage/work" >/dev/null \
         || { echo "fasterq-dump failed for $run"; return 1; }
     [[ -s "$stage/fastq/${names[0]}" ]] || { echo "Missing ${names[0]} for $run"; return 1; }
-    # Reads = mate-1 (or single) records plus any unpaired orphans; must equal ENA's read count.
+    # Reads = mate-1 (or single) records plus any unpaired orphans; must equal ENA's read count. ENA counts a pair
+    # once for most paired runs but both mates for some submissions, so a paired run may match either.
     reads=$(( $(wc -l < "$stage/fastq/${names[0]}") / 4 ))
     if [[ "$layout" == "PAIRED" && -f "$stage/fastq/$run.fastq" ]]; then reads=$(( reads + $(wc -l < "$stage/fastq/$run.fastq") / 4 )); fi
-    if [[ "$reads" != "$expected" ]]; then echo "Read count mismatch for $run: $reads, ENA $expected"; return 1; fi
+    if [[ "$reads" != "$expected" && ! ( "$layout" == "PAIRED" && $(( 2 * reads )) == "$expected" ) ]]; then
+        echo "Read count mismatch for $run: $reads, ENA $expected"; return 1
+    fi
     for n in "${names[@]}"; do
         [[ -s "$stage/fastq/$n" ]] || { echo "Missing $n"; return 1; }
         pigz -p "$threads" "$stage/fastq/$n" && pigz -t "$stage/fastq/$n.gz" || { echo "Compression failed for $n"; return 1; }
