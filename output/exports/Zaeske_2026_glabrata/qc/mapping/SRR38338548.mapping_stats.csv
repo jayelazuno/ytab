@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR38338548,13718929,13718929,11122415,2596514,81.073,0,0.0,10066410,90.506,37.67,/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata/mapfastq/SRR38338548/SRR38338548.sam
