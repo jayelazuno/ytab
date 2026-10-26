@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "mode": "designated-junction-mate",
+  "junction_index": 0,
+  "junction_read_end": "start",
+  "retained_reads_or_pairs": 26333391,
+  "input_files": [
+    "/nfsscratch/jayelazuno/workspace/public_data/nickels_2025_glabrata/fastq/Nickels2025/SRR33002019/SRR33002019.fastq.gz"
+  ],
+  "mates": [
+    {
+      "input_reads": 26793989,
+      "too_short": 460598,
+      "adapter_3p_reads": 81460,
+      "trimmed_3p_bases": 4489175,
+      "signature:Illumina-P7:rc": 14297,
+      "signature:Spl-Top:rc": 10776,
+      "signature:P7-sequencing:rc": 13345,
+      "signature:P7-index-sequencing:rc": 31451,
+      "signature:Hermes_left:rc": 8135,
+      "signature:Spl-Bot:forward": 903,
+      "signature:Hermes_right:forward": 473,
+      "signature:Hermes_left:forward": 1131,
+      "hermes_5p_reads": 445,
+      "hermes_overlap_bases": 18937,
+      "trimmed_5p_bases": 19197,
+      "signature:Hermes_left": 439,
+      "signature:P7-SplAP2:rc": 705,
+      "signature:Illumina-P5:forward": 72,
+      "signature:Hermes-sequencing:rc": 27,
+      "signature:Spl-Top-index-core:rc": 28,
+      "signature:HR-1:forward": 57,
+      "signature:Spl-Bot:rc": 53,
+      "signature:Hermes_right": 6,
+      "signature:SplAP1:rc": 2,
+      "signature:SplAP1:forward": 2,
+      "adapter_5p_reads": 5,
+      "signature:Spl-Bot": 5,
+      "signature:HR-1:rc": 1,
+      "signature:HR-2-PCR:forward": 2
+    }
+  ],
+  "cutadapt_version": "5.2",
+  "parameters": {
+    "overlap": 16,
+    "error_rate": 0.1,
+    "min_length": 25
+  },
+  "catalogue": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/primers.json",
+  "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
+  "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
+  "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
+  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "junction_mate": "R1",
+  "require_mate_alignment": false
+}

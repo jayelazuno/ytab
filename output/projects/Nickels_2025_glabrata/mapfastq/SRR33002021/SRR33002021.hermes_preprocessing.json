@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "mode": "designated-junction-mate",
+  "junction_index": 0,
+  "junction_read_end": "start",
+  "retained_reads_or_pairs": 3361421,
+  "input_files": [
+    "/nfsscratch/jayelazuno/workspace/public_data/nickels_2025_glabrata/fastq/Nickels2025/SRR33002021/SRR33002021_1.fastq.gz"
+  ],
+  "mates": [
+    {
+      "input_reads": 3381773,
+      "adapter_3p_reads": 226503,
+      "trimmed_3p_bases": 7690695,
+      "signature:P7-SplAP2:rc": 94907,
+      "too_short": 20352,
+      "signature:Spl-Bot:forward": 99522,
+      "signature:P7-index-sequencing:rc": 17437,
+      "signature:Spl-Top:rc": 5358,
+      "signature:Spl-Top-index-core:rc": 8068,
+      "signature:Illumina-P7:rc": 185,
+      "signature:Hermes_left:rc": 837,
+      "signature:Spl-Bot:rc": 6,
+      "signature:Hermes_right:forward": 81,
+      "hermes_5p_reads": 34,
+      "hermes_overlap_bases": 1115,
+      "trimmed_5p_bases": 1115,
+      "signature:Hermes_left": 23,
+      "signature:HR-1:forward": 43,
+      "signature:SplAP1:rc": 15,
+      "signature:Hermes_right": 11,
+      "signature:Hermes_left:forward": 34,
+      "signature:P7-sequencing:rc": 7,
+      "signature:Hermes-sequencing:rc": 2,
+      "signature:Spl-Top:forward": 1
+    }
+  ],
+  "cutadapt_version": "5.2",
+  "parameters": {
+    "overlap": 16,
+    "error_rate": 0.1,
+    "min_length": 25
+  },
+  "catalogue": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/primers.json",
+  "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
+  "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
+  "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
+  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "junction_mate": "R1",
+  "require_mate_alignment": false
+}
