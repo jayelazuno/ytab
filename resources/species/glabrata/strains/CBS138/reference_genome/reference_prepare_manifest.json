@@ -1,0 +1,27 @@
+{
+  "species": "glabrata_CBS138",
+  "fasta": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta",
+  "index_prefix": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes",
+  "bowtie2_index_complete_before": false,
+  "bowtie2_index_complete_after": true,
+  "fasta_index_created": true,
+  "commands_run": [
+    [
+      "samtools",
+      "faidx",
+      "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta"
+    ],
+    [
+      "bowtie2-build",
+      "--threads",
+      "4",
+      "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta",
+      "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes"
+    ]
+  ],
+  "warnings": [
+    "No complete Bowtie2 index found. Run reference preparation before alignment.",
+    "gffutils DB missing; DB generation will be added in a later reference-prep step."
+  ],
+  "timestamp": "2026-10-26T03:02:02.558379+00:00"
+}

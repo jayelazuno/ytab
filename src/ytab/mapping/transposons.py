@@ -1,7 +1,7 @@
 """Transposon profiles: how reads of each transposon and library design are trimmed before mapping.
 
 resources/transposons/<transposon>/profile.json lists the transposon's library designs, each with the MapFastq
-settings it needs (hermes_cleanup, trim_5p_seq, trim_5p_overlap, discard_untrimmed, trim_3p_seq). A project selects
+settings it needs (hermes_cleanup, trim_5p_seq, trim_5p_overlap, trim_5p_times, discard_untrimmed, trim_3p_seq). A project selects
 one with `transposon` and `library_design` in its config's `mapping` block or as sample-sheet columns; explicit
 settings there override the design's. Without a selection the transposon is Hermes with its default design.
 """
@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 DEFAULT_TRANSPOSON = "hermes"
-MAPPING_KEYS = ("hermes_cleanup", "trim_5p_seq", "trim_5p_overlap", "discard_untrimmed", "trim_3p_seq")
+MAPPING_KEYS = ("hermes_cleanup", "trim_5p_seq", "trim_5p_overlap", "trim_5p_times", "discard_untrimmed", "trim_3p_seq")
 
 
 def profile_path(transposon: str, root: Path) -> Path:

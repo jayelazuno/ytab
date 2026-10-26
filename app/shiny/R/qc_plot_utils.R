@@ -34,7 +34,7 @@ qc_plot_glabrata_chromosome_map <- function(project = NULL) {
   repo_root <- qc_plot_repo_root(project)
   # Other species: reference_genome/chromosome_names.tsv (contig, display, order; ytab_build_species_resources.py).
   if (nzchar(species) && !identical(species, "glabrata")) {
-    path <- file.path(repo_root, "resources", "species", species, "reference_genome", "chromosome_names.tsv")
+    path <- file.path(ytab_species_dir(repo_root, species), "reference_genome", "chromosome_names.tsv")
     map <- if (file.exists(path)) tryCatch(utils::read.delim(path, stringsAsFactors = FALSE), error = function(e) data.frame()) else data.frame()
     if (!nrow(map) || !all(c("contig", "display", "order") %in% names(map))) return(data.frame())
     return(map[order(map$order), c("contig", "display", "order"), drop = FALSE])

@@ -120,15 +120,16 @@ ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifes
     roc$tier <- factor(roc$tier, unique(c("All labelled genes", levels(roc$tier))))
     auc <- unique(roc[, c("model", "tier", "genes", "essential", "auc")])
     auc$label <- sprintf("%s %.3f", sub(" \\(label-free\\)", "", auc$model), auc$auc)
+    # labels centred inside the panel: plotly ignores hjust, so right-aligned labels were clipped at the panel edge
     auc$y <- .05 + .08 * (stats::ave(seq_len(nrow(auc)), auc$tier, FUN = seq_along) - 1)
     roc$tip <- sprintf("%s<br>%s<br>FPR %.3f, TPR %.3f<br>AUC %.3f (%s genes, %s essential)", roc$model, roc$tier, roc$fpr, roc$tpr, roc$auc,
                        format(roc$genes, big.mark = ","), format(roc$essential, big.mark = ","))
     return(ggplot2::ggplot(roc, ggplot2::aes(fpr, tpr, colour = model, group = model, text = tip)) +
       ggplot2::geom_abline(linetype = "dotted", colour = "grey50") + ggplot2::geom_step(linewidth = .9) +
-      ggplot2::geom_text(data = auc, ggplot2::aes(x = .98, y = y, label = label, colour = model), hjust = 1, fontface = "bold", size = 3.6, inherit.aes = FALSE, show.legend = FALSE) +
+      ggplot2::geom_text(data = auc, ggplot2::aes(x = .7, y = y, label = label, colour = model), fontface = "bold", size = 3.6, inherit.aes = FALSE, show.legend = FALSE) +
       ggplot2::facet_wrap(~tier, nrow = 1) + ggplot2::scale_colour_manual(values = essentiality_model_colours) + ggplot2::coord_equal() +
       ggplot2::scale_x_continuous(breaks = c(0, .5, 1)) + ggplot2::scale_y_continuous(breaks = c(0, .5, 1)) +
-      ggplot2::labs(x = "False positive rate", y = "True positive rate", colour = NULL) + base + ggplot2::theme(legend.position = "top"))
+      ggplot2::labs(x = "False positive rate", y = "True positive rate", colour = NULL) + base + ggplot2::theme(legend.position = "bottom"))
   }
   if (identical(choice, "track")) {
     w <- windows[windows$chromosome == chromosome, , drop = FALSE]

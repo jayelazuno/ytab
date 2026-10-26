@@ -1,8 +1,8 @@
 sample,study,library_role,condition,background,pool,culture_replicate,display_name,transposon,library_design,include,notes
-SRR11561502,Gale2020,treated,treated,BG14,Cg1,2,Cg1 — FLU-treated 2,hermes,splinkerette_pcr,True,FLU culture derived from Cg1; not an independently induced pool
-SRR11561503,Gale2020,treated,treated,BG14,Cg1,1,Cg1 — FLU-treated 1,hermes,splinkerette_pcr,True,FLU culture derived from Cg1; not an independently induced pool
-SRR11561504,Gale2020,control,control,BG14,Cg1,2,Cg1 — no-drug control 2,hermes,splinkerette_pcr,True,Regrown no-drug culture from Cg1; exclude from the three-parent classifier input selection
-SRR11561505,Gale2020,control,control,BG14,Cg1,1,Cg1 — no-drug control 1,hermes,splinkerette_pcr,True,Regrown no-drug culture from Cg1; exclude from the three-parent classifier input selection
-SRR11561506,Gale2020,parent,parent,BG14,Cg3,,Cg3 — parent library,hermes,splinkerette_pcr,True,Independent induction pool Cg3; include in parent classifier branch
-SRR11561507,Gale2020,parent,parent,BG14,Cg2,,Cg2 — parent library,hermes,splinkerette_pcr,True,Independent induction pool Cg2; include in parent classifier branch
-SRR11561508,Gale2020,parent,parent,BG14,Cg1,,Cg1 — parent library,hermes,splinkerette_pcr,True,Independent induction pool Cg1; include in parent classifier branch
+SRR11561502,Gale2020,treated,treated,BG14,Cg1,2,Fluconazole_2,hermes,splinkerette_pcr,True,FLU culture derived from Cg1; not an independently induced pool
+SRR11561503,Gale2020,treated,treated,BG14,Cg1,1,Fluconazole_1,hermes,splinkerette_pcr,True,FLU culture derived from Cg1; not an independently induced pool
+SRR11561504,Gale2020,control,control,BG14,Cg1,2,Wild_Type_2,hermes,splinkerette_pcr,True,Regrown no-drug culture from Cg1; exclude from the three-parent classifier input selection
+SRR11561505,Gale2020,control,control,BG14,Cg1,1,Wild_Type_1,hermes,splinkerette_pcr,True,Regrown no-drug culture from Cg1; exclude from the three-parent classifier input selection
+SRR11561506,Gale2020,parent,parent,BG14,Cg3,,Induction_40_Tubes,hermes,splinkerette_pcr,True,Independent induction pool Cg3; include in parent classifier branch
+SRR11561507,Gale2020,parent,parent,BG14,Cg2,,Induction_1_Tube,hermes,splinkerette_pcr,True,Independent induction pool Cg2; include in parent classifier branch
+SRR11561508,Gale2020,parent,parent,BG14,Cg1,,Induction_1,hermes,splinkerette_pcr,True,Independent induction pool Cg1; include in parent classifier branch

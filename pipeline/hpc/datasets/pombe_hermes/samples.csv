@@ -1,27 +1,27 @@
 sample,study,library_role,condition,background,pool,culture_replicate,display_name,transposon,library_design,include,notes
-SRR327340,Guo2013,parent,parent,HL_Hermes,Guo2013,1,Guo 2013 Hermes,hermes,terminal_10bp,True,In vivo Hermes insertions (Guo et al. 2013); the library used by Segal et al. 2018
-SRR836165,Levin_in_vitro,in_vitro,in_vitro,naked_DNA,in_vitro,1,Hermes in vitro,hermes,splinkerette_pcr,False,Hermes transposition into naked DNA in vitro: target-sequence preference without chromatin or selection. Not a fitness library; map separately (include it with --samples) for insertion-bias analysis
-ERR2641199,Grech2019,parent,parent,Grech2019,LG1_LG2,1,Grech LG1_LG2_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG1_LG2_1)
-ERR2641200,Grech2019,parent,parent,Grech2019,LG1_LG2,2,Grech LG1_LG2_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG1_LG2_2)
-ERR2641201,Grech2019,parent,parent,Grech2019,LG3_LG4,1,Grech LG3_LG4_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG3_LG4_1)
-ERR2641202,Grech2019,parent,parent,Grech2019,LG3_LG4,2,Grech LG3_LG4_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG3_LG4_2)
-ERR2641203,Grech2019,parent,parent,Grech2019,LG7_LG8,1,Grech LG7_LG8_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG7_LG8_1)
-ERR2641204,Grech2019,parent,parent,Grech2019,LG7_LG8,2,Grech LG7_LG8_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG7_LG8_2)
-ERR2641205,Grech2019,parent,parent,Grech2019,LG10_LG11,1,Grech LG10_LG11_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG10_LG11_1)
-ERR2641206,Grech2019,parent,parent,Grech2019,LG10_LG11,2,Grech LG10_LG11_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG10_LG11_2)
-ERR2641207,Grech2019,parent,parent,Grech2019,LG12_LG13,1,Grech LG12_LG13_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG12_LG13_1)
-ERR2641208,Grech2019,parent,parent,Grech2019,LG12_LG13,2,Grech LG12_LG13_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG12_LG13_2)
-ERR2641209,Grech2019,parent,parent,Grech2019,HL_B,1,Grech HL_B_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias HL_B_1)
-ERR2641210,Grech2019,parent,parent,Grech2019,HL_B,2,Grech HL_B_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias HL_B_2)
-ERR2641211,Grech2019,parent,parent,Grech2019,HL_D,1,Grech HL_D_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias HL_D_1)
-ERR2641212,Grech2019,parent,parent,Grech2019,HL_D,2,Grech HL_D_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias HL_D_2)
-ERR2641213,Grech2019,parent,parent,Grech2019,V2,1,Grech V2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias V2)
-ERR2641214,Grech2019,parent,parent,Grech2019,V3,1,Grech V3,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias V3)
-SRR8502438,Levin2020,control,T0,otr1R::ura4,10160B,1,10160B otr1R::ura4 T0,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL10160B otr1R::ura4, generation 0; T80 vs T0 is a growth comparison"
-SRR8502434,Levin2020,treated,T80,otr1R::ura4,10160B,1,10160B otr1R::ura4 T80,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL10160B otr1R::ura4, generation 80; T80 vs T0 is a growth comparison"
-SRR8502437,Levin2020,control,T0,otr1R::ura4,10161B,1,10161B otr1R::ura4 T0,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL10161B otr1R::ura4, generation 0; T80 vs T0 is a growth comparison"
-SRR8502433,Levin2020,treated,T80,otr1R::ura4,10161B,1,10161B otr1R::ura4 T80,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL10161B otr1R::ura4, generation 80; T80 vs T0 is a growth comparison"
-SRR8502440,Levin2020,control,T0,WT,9451A,1,9451A WT T0,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL9451A WT, generation 0; T80 vs T0 is a growth comparison"
-SRR8502436,Levin2020,treated,T80,WT,9451A,1,9451A WT T80,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL9451A WT, generation 80; T80 vs T0 is a growth comparison"
-SRR8502439,Levin2020,control,T0,WT,9451C,1,9451C WT T0,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL9451C WT, generation 0; T80 vs T0 is a growth comparison"
-SRR8502435,Levin2020,treated,T80,WT,9451C,1,9451C WT T80,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL9451C WT, generation 80; T80 vs T0 is a growth comparison"
+SRR327340,Guo2013,parent,parent,HL_Hermes,Guo2013,1,HL-Hermes-Illumina,hermes,terminal_10bp,True,In vivo Hermes insertions (Guo et al. 2013); the library used by Segal et al. 2018
+SRR836165,Levin_in_vitro,in_vitro,in_vitro,naked_DNA,in_vitro,1,HL-Hermes-invitro,hermes,splinkerette_pcr,False,Hermes transposition into naked DNA in vitro: target-sequence preference without chromatin or selection. Not a fitness library; map separately (include it with --samples) for insertion-bias analysis
+ERR2641199,Grech2019,parent,parent,Grech2019,LG1_LG2,1,LG1_LG2_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG1_LG2_1)
+ERR2641200,Grech2019,parent,parent,Grech2019,LG1_LG2,2,LG1_LG2_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG1_LG2_2)
+ERR2641201,Grech2019,parent,parent,Grech2019,LG3_LG4,1,LG3_LG4_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG3_LG4_1)
+ERR2641202,Grech2019,parent,parent,Grech2019,LG3_LG4,2,LG3_LG4_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG3_LG4_2)
+ERR2641203,Grech2019,parent,parent,Grech2019,LG7_LG8,1,LG7_LG8_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG7_LG8_1)
+ERR2641204,Grech2019,parent,parent,Grech2019,LG7_LG8,2,LG7_LG8_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG7_LG8_2)
+ERR2641205,Grech2019,parent,parent,Grech2019,LG10_LG11,1,LG10_LG11_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG10_LG11_1)
+ERR2641206,Grech2019,parent,parent,Grech2019,LG10_LG11,2,LG10_LG11_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG10_LG11_2)
+ERR2641207,Grech2019,parent,parent,Grech2019,LG12_LG13,1,LG12_LG13_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG12_LG13_1)
+ERR2641208,Grech2019,parent,parent,Grech2019,LG12_LG13,2,LG12_LG13_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias LG12_LG13_2)
+ERR2641209,Grech2019,parent,parent,Grech2019,HL_B,1,HL_B_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias HL_B_1)
+ERR2641210,Grech2019,parent,parent,Grech2019,HL_B,2,HL_B_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias HL_B_2)
+ERR2641211,Grech2019,parent,parent,Grech2019,HL_D,1,HL_D_1,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias HL_D_1)
+ERR2641212,Grech2019,parent,parent,Grech2019,HL_D,2,HL_D_2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias HL_D_2)
+ERR2641213,Grech2019,parent,parent,Grech2019,V2,1,V2,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias V2)
+ERR2641214,Grech2019,parent,parent,Grech2019,V3,1,V3,hermes,end_ligated_adapter,True,Grech et al. 2019 high-density Hermes library (sample alias V3)
+SRR8502438,Levin2020,control,T0,otr1R::ura4,10160B,1,10160B_T0,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL10160B otr1R::ura4, generation 0; T80 vs T0 is a growth comparison"
+SRR8502434,Levin2020,treated,T80,otr1R::ura4,10160B,1,10160B_T80,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL10160B otr1R::ura4, generation 80; T80 vs T0 is a growth comparison"
+SRR8502437,Levin2020,control,T0,otr1R::ura4,10161B,1,10161B_T0,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL10161B otr1R::ura4, generation 0; T80 vs T0 is a growth comparison"
+SRR8502433,Levin2020,treated,T80,otr1R::ura4,10161B,1,10161B_T80,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL10161B otr1R::ura4, generation 80; T80 vs T0 is a growth comparison"
+SRR8502440,Levin2020,control,T0,WT,9451A,1,9451A_T0,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL9451A WT, generation 0; T80 vs T0 is a growth comparison"
+SRR8502436,Levin2020,treated,T80,WT,9451A,1,9451A_T80,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL9451A WT, generation 80; T80 vs T0 is a growth comparison"
+SRR8502439,Levin2020,control,T0,WT,9451C,1,9451C_T0,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL9451C WT, generation 0; T80 vs T0 is a growth comparison"
+SRR8502435,Levin2020,treated,T80,WT,9451C,1,9451C_T80,hermes,end_ligated_adapter,True,"Levin lab (PRJNA517661), strain YHL9451C WT, generation 80; T80 vs T0 is a growth comparison"

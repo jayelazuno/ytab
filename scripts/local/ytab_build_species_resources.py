@@ -24,7 +24,7 @@ Essentiality label rules (they never look at any YTAB model output):
   python scripts/local/ytab_build_species_resources.py --species albicans --cgd-phenotypes C_albicans_SC5314_phenotype_data.tab \\
       --sgd-phenotypes phenotype_data.tab.gz --sgd-gff saccharomyces_cerevisiae_R64-5-1_20240529.gff
 
-Any other species (--annotation-only): only annotation/gene_annotation.tsv, from the species' registered reference GFF
+Any other species or strain (--annotation-only; --tracks adds the centromere/tRNA BEDs and chromosome names): annotation/gene_annotation.tsv, from the species' registered reference GFF
 (gene name and description) and its ortholog table to S. cerevisiae (resources/species/<species>/orthologs/, read as
 `ytab cross-species` reads it), with S. cerevisiae names and viability from resources/species/cerevisiae. With
 --viability FILE (tab-separated gene ID and null-mutant viability, e.g. PomBase FYPOviability.tsv), also
@@ -101,11 +101,13 @@ def install_sgd_release(archive: Path, reference: Path) -> tuple[Path, Path, str
 
 
 def chromosome_display(contig: str) -> tuple[str, int]:
-    if re.search(r"(chrmt|chrM)", contig):return "Mito", 99
+    if re.search(r"(chrmt|chrM$|^mito)", contig):return "Mito", 99
     m = re.match(r"chr([IVX]+)$", contig)
     if m and m.group(1) in ROMAN:return f"Chr {m.group(1)}", ROMAN.index(m.group(1))+1
     m = re.match(r"Ca\d+chr([0-9R])[AB]?_", contig)
     if m:return f"Chr {m.group(1)}", 8 if m.group(1) == "R" else int(m.group(1))
+    m = re.match(r"Chr([A-Z])_", contig)   # CGD lettered chromosomes, e.g. ChrA_C_glabrata_CBS138
+    if m:return f"Chr {m.group(1)}", ord(m.group(1))-64
     return contig, 98
 
 
@@ -272,16 +274,18 @@ def build(species: str, args) -> dict:
     return summary
 
 
-def annotation_only(species: str, viability: Path | None = None) -> dict:
-    """gene_annotation.tsv for a species from its reference GFF and its S. cerevisiae ortholog table."""
-    from ytab.pipeline.reference_registry import resolve_reference
+def annotation_only(species: str, viability: Path | None = None, with_tracks: bool = False) -> dict:
+    """gene_annotation.tsv for a species from its reference GFF and its S. cerevisiae ortholog table; with_tracks also
+    writes the centromere and tRNA BEDs and chromosome_names.tsv from the same GFF."""
+    from ytab.pipeline.reference_registry import resolve_reference, species_resource_dir
     sys.path.append(str(ROOT/"scripts/local"))
     from ytab_cross_species import read_orthologs
-    base = SPECIES/species; info = resolve_reference(species, ROOT)
+    base = species_resource_dir(SPECIES, species); info = resolve_reference(species, ROOT)
     tables = sorted((base/"orthologs").glob("*cerevisiae*orthologs*"))
     ortho = read_orthologs(tables[0]) if tables else {}
     sc = {r["gene_id"]:r for r in csv.DictReader(open(SPECIES/"cerevisiae/annotation/gene_annotation.tsv"), delimiter="\t")}
     contigs = set(fasta_names(info.fasta)); rows = []
+    n_tracks = tracks(info.gff, contigs, info.reference_dir, "CGD" if "CGD" in open(info.gff).read(4096) else "GFF") if with_tracks else None
     for g in annotations(info.gff):
         if g["chrom"] not in contigs:continue
         bare = re.sub(r"^[a-z]+:", "", g["id"])   # GFF IDs such as gene:SPAC1002.01 (kept as gene_id: the pipeline's feature IDs)
@@ -304,7 +308,7 @@ def annotation_only(species: str, viability: Path | None = None) -> dict:
             viability=str(Path(viability).resolve().relative_to(ROOT)), viability_sha256=sha256(Path(viability)),
             rule="inviable -> essential, viable -> nonessential (gold); other values unlabelled"), indent=2)+"\n")
         labelled = {l:sum(r["label"] == l for r in labels) for l in ("essential", "nonessential")}
-    return dict(species=species, genes=len(rows), labels=labelled, named=sum(bool(r["gene_name"]) for r in rows), scer_1to1=sum(bool(r["scer_gene_id"]) for r in rows),
+    return dict(species=species, genes=len(rows), labels=labelled, centromeres_trnas=n_tracks, named=sum(bool(r["gene_name"]) for r in rows), scer_1to1=sum(bool(r["scer_gene_id"]) for r in rows),
                 ortholog_table=str(tables[0].relative_to(ROOT)) if tables else None)
 
 
@@ -313,10 +317,11 @@ def main():
     p.add_argument("--species", required=True)
     p.add_argument("--annotation-only", action="store_true", help="Write only annotation/gene_annotation.tsv (any species with a registered reference)")
     p.add_argument("--viability", type=Path, help="With --annotation-only: gene ID and null-mutant viability (viable/inviable), written as labels")
+    p.add_argument("--tracks", action="store_true", help="With --annotation-only: also write centromere/tRNA BEDs and chromosome_names.tsv from the GFF")
     p.add_argument("--sgd-release", type=Path); p.add_argument("--sgd-phenotypes", type=Path)
     p.add_argument("--cgd-phenotypes", type=Path); p.add_argument("--sgd-gff", type=Path)
     a = p.parse_args()
-    if a.annotation_only:print(json.dumps(annotation_only(a.species, a.viability), indent=1)); return
+    if a.annotation_only:print(json.dumps(annotation_only(a.species, a.viability, a.tracks), indent=1)); return
     if a.species not in ("cerevisiae", "albicans"):p.error("full builds are for cerevisiae and albicans; use --annotation-only for other species")
     if not a.sgd_phenotypes:p.error("--sgd-phenotypes is required")
     if a.species == "cerevisiae" and not a.sgd_release:p.error("--sgd-release is required for cerevisiae")

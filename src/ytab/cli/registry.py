@@ -50,6 +50,7 @@ MODULES = {m.name: m for m in (
     Module("essentiality", "ytab_essentiality.py", "Essentiality for a project in one step: Hermes HMM (label-free), current RF scores and the hybrid when labels are given", project_option=None, force_option=None),
     Module("cross-species", "ytab_cross_species.py", "Essentiality across species: HMM calls of one-to-one orthologs (S. cerevisiae hub) in two or more projects", project_option=None, force_option=None),
     Module("hermes-hmm", "ytab_hermes_hmm.py", "Label-free Hermes window HMM essentiality for any yeast (haploid reference FASTA + GFF + hit files)", project_option=None, force_option=None),
+    Module("resource-bundle", "ytab_resource_bundle.py", "Bundle reprocessed projects (results, no FASTQ/BAM) with a checksum manifest, to open them in the app elsewhere", project_option=None, force_option=None),
     Module("library-correlation", "ytab_library_correlation.py", "Correlate Hermes libraries across pools, strains, conditions and species (gene insertion density)", project_option=None, force_option=None),
     Module("comparison-design", "ytab_init_comparison_design.py", "Create explicit fitness comparisons", force_option="--overwrite"),
     Module("fitness", "ytab_run_treated_vs_parent.py", "Treated vs control, local-abundance z-score for a project (CPM by default, or any site normalization)"),

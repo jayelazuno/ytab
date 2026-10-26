@@ -48,6 +48,7 @@ usage = """MapFastq.py
    --trim-5p-seq           [str]   5' transposon/primer sequence to trim (optional).
    --trim-5p-seq-r2        [str]   (PE only) 5' sequence for R2 (only used when trimming both mates)
    --trim-5p-overlap       [int]   cutadapt --overlap for 5' trimming (default 24 if -p else 37)
+   --trim-5p-times         [int]   cutadapt --times for 5' trimming: remove up to this many copies (default 1)
    --discard-untrimmed             If set, discard reads lacking the 5' sequence match.
    --trim-3p-seq           [str]   3' sequence to trim (repeatable); with -a, all are trimmed in one pass.
                                    A transposon profile (resources/transposons/<name>/profile.json) sets these.
@@ -114,11 +115,11 @@ def CutAdaptOutput(output: str):
 
 
 def RemoveTn_SE(InputFName: str, Trim5Seq: str, overlap: int, CleanfName: str,
-                CutAdaptPath: str, discard_untrimmed: bool):
+                CutAdaptPath: str, discard_untrimmed: bool, times: int = 1):
     discard_flag = " --discard-untrimmed" if discard_untrimmed else ""
     cmd = (
         f'{CutAdaptPath} -m 2 -g {shlex.quote(Trim5Seq)} '
-        f'-o "{CleanfName}" "{InputFName}"{discard_flag} --overlap {overlap}'
+        f'-o "{CleanfName}" "{InputFName}"{discard_flag} --overlap {overlap} --times {times}'
     )
     rc, out, err = run_cmd(cmd)
     return CutAdaptOutput(out + "\n" + err), out, err, rc
@@ -130,8 +131,9 @@ def RemoveTn_PE(R1: str, R2: str,
                 CleanR1: str, CleanR2: str,
                 CutAdaptPath: str,
                 discard_untrimmed: bool,
-                trim_mate_mode: str):
-    discard_flag = " --discard-untrimmed" if discard_untrimmed else ""
+                trim_mate_mode: str,
+                times: int = 1):
+    discard_flag = (" --discard-untrimmed" if discard_untrimmed else "") + f" --times {times}"
     if trim_mate_mode == "R1":
         cmd = (
             f'{CutAdaptPath} -m 2 -g {shlex.quote(Trim5Seq_R1)} '
@@ -262,6 +264,7 @@ def main():
     parser.add_argument("--trim-5p-seq", default=None)
     parser.add_argument("--trim-5p-seq-r2", default=None)
     parser.add_argument("--trim-5p-overlap", type=int, default=None)
+    parser.add_argument("--trim-5p-times", type=int, default=1)
     parser.add_argument("--discard-untrimmed", action="store_true")
     parser.add_argument("--trim-3p-seq", action="append", default=[],
                         help="3' sequence to trim (repeatable; a transposon profile's restriction-site or adaptor sequences)")
@@ -386,7 +389,8 @@ def main():
                 CleanR1, CleanR2,
                 CutAdaptPath,
                 args.discard_untrimmed,
-                trim_mate_mode=trim_mate_mode
+                trim_mate_mode=trim_mate_mode,
+                times=args.trim_5p_times
             )
             LogFile.write(
                 f"{header}\r\n{CurrRes[0]} reads; of these:\r\n"
@@ -503,7 +507,8 @@ def main():
                 overlap,
                 CleanfName,
                 CutAdaptPath,
-                args.discard_untrimmed
+                args.discard_untrimmed,
+                times=args.trim_5p_times
             )
 
             LogFile.write(

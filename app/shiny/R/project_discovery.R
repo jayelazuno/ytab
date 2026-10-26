@@ -1,3 +1,16 @@
+# Resource folder of a species (resources/species/<species>) or of another strain with its own reference
+# (resources/species/<species>/strains/<strain>, named <species>_<strain>); as ytab.pipeline.reference_registry.
+ytab_species_dir <- function(repo_root, species) {
+  base <- file.path(repo_root, "resources", "species")
+  species <- as.character(species %||% "")
+  direct <- file.path(base, species)
+  if (!nzchar(species) || dir.exists(direct) || !grepl("_", species, fixed = TRUE)) return(direct)
+  parent <- sub("_.*", "", species); strain <- sub("^[^_]*_", "", species)
+  strains <- list.dirs(file.path(base, parent, "strains"), recursive = FALSE, full.names = TRUE)
+  hit <- strains[tolower(basename(strains)) == tolower(strain)]
+  if (length(hit)) hit[[1]] else direct
+}
+
 # Display aliases never replace sample identifiers in paths, joins or selections.
 # Accept project metadata, a sample table, or a project root for saved results.
 ytab_sample_labels <- function(sample, project = NULL) {

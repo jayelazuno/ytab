@@ -53,15 +53,17 @@ def get_species_dir(species_name):
     Parameters
     ----------
     species_name : str
-        Species folder name, e.g. 'glabrata'.
+        Species folder name, e.g. 'glabrata', or a strain with its own reference, e.g. 'glabrata_CBS138'
+        (resources/species/glabrata/strains/CBS138).
 
     Returns
     -------
     str
         Absolute path to the species resource directory.
     """
+    from ytab.pipeline.reference_registry import species_resource_dir
 
-    return os.path.join(get_resources_dir(), species_name)
+    return str(species_resource_dir(get_resources_dir(), species_name))
 
 
 def get_dependency(*path_components):

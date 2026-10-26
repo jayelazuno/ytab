@@ -16,7 +16,8 @@ chromatin-biased), so this module:
 - fits transitions, initial probabilities and all emission parameters by Baum-Welch (EM), deterministically;
 - reports per-gene posterior state probabilities (window posteriors weighted by overlap with the trimmed
   CDS) and, as the essentiality score, P_ES_run: the exact posterior probability that the trimmed CDS
-  contains a run of >= min_es_windows consecutive ES windows (mappable windows count toward the run; an
+  contains a run of >= min_es_windows consecutive ES windows, or of es_run_fraction of the gene's mappable windows
+  when that is longer (capped at the gene's windows; mappable windows count toward the run; an
   unmappable ES window neither extends nor breaks it), from a dynamic program over the posterior Markov
   chain. ES call when P_ES_run >= es_call_threshold; otherwise the largest mean posterior of GD/NE/GA
   (v2; v1 called the largest mean posterior, which misses genes with an essential domain).
@@ -24,6 +25,7 @@ Forward-backward uses prefix products of scaled 4x4 matrices (exact up to floati
 """
 from dataclasses import asdict, dataclass
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -54,6 +56,7 @@ class Settings:
     cterm: float = 10.
     min_gene_mappable: float = .5       # genes with less mappable trimmed CDS are reported but not called
     min_es_windows: int = 3             # v2: essential run length (windows) for P_ES_run
+    es_run_fraction: float = .2         # ... or of this fraction of the gene's mappable windows when longer (pre-registered R20/R21; 0 = fixed run)
     es_call_threshold: float = .5
 
     def validate(self):
@@ -61,7 +64,8 @@ class Settings:
                 not 0 < self.unmappable_fraction <= 1 or self.max_iterations < 1 or not self.tolerance > 0 or
                 len(self.init_r) != 4 or not all(np.diff(self.init_r) > 0) or self.init_r[2] != 1 or not 0 < self.init_stay < 1 or
                 not 0 <= self.nterm < 100 or not 0 <= self.cterm < 100 or self.nterm+self.cterm >= 100 or not 0 <= self.min_gene_mappable <= 1 or
-                not isinstance(self.min_es_windows, int) or self.min_es_windows < 1 or not 0 < self.es_call_threshold < 1):
+                not isinstance(self.min_es_windows, int) or self.min_es_windows < 1 or not 0 <= self.es_run_fraction <= 1 or
+                not 0 < self.es_call_threshold < 1):
             raise ValueError("Invalid HMM settings")
 
 
@@ -364,7 +368,7 @@ def gene_table(genes, chrom_index, gamma_by_chrom, keep_by_chrom, settings, chai
         if chain_by_chrom is not None:
             span = np.arange(idx.min(), idx.max()+1); inside = np.isin(span, idx[kp])   # only the gene's mappable windows count
             Bs, beta = chain_by_chrom[gene["chrom"]]
-            m = max(1, min(settings.min_es_windows, int(kp.sum())))
+            m = max(1, min(max(settings.min_es_windows, math.ceil(settings.es_run_fraction*kp.sum())), int(kp.sum())))
             row["P_ES_run"] = run_probability(gam[span[0]], A, Bs[span], beta[span], inside, m)
             row["es_run_windows"] = m
             call = "ES" if row["P_ES_run"] >= settings.es_call_threshold else STATES[1+int(g[1:].argmax())]

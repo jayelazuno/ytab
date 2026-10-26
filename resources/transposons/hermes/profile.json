@@ -8,7 +8,9 @@
       "description": "Reads start inside the Hermes end and run into the genome (e.g. ...TTGAAGTTCTCTG|genome). Terminal Hermes and adaptor sequence is detected and trimmed automatically from primers.json and the Hermes reference.",
       "used_by": [
         "Gale et al. 2020 (C. glabrata)",
-        "Levin lab 2020 (S. pombe, PRJNA517661)"
+        "Levin lab 2020 (S. pombe, PRJNA517661)",
+        "Nickels et al. 2024, 2025 (C. glabrata CBS138, BG2 and pdr1 strains, PRJNA1133102, PRJNA1247003)",
+        "Prototrophic C. glabrata pools (Microbiology Spectrum 2026, PRJNA1460454)"
       ],
       "mapping": {
         "hermes_cleanup": true
@@ -39,6 +41,23 @@
         "hermes_cleanup": false,
         "trim_5p_seq": "GTGGCTTGTTGAAGTTCTCTG",
         "trim_5p_overlap": 21,
+        "discard_untrimmed": true,
+        "trim_3p_seq": [
+          "GTCCCTTAAGCGGAG",
+          "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+        ]
+      }
+    },
+    "left_end_adapter_umi": {
+      "description": "Reads start in the Hermes LEFT end (reverse complement, ...AAGCCACTTGTTGTTGTTCTCTG), after a variable stagger, and run into the genome; the mate starts with a T7 adapter, a unique molecular identifier and the ligated adapter (GTCCCTTAAGCGGAG). The left-end sequence is trimmed wherever it occurs; reads without it are discarded; the adapter and Illumina read-through are trimmed from the 3' end. Reads from the donor plasmid (pBluescript polylinker after the end) do not map. UMIs are not used: reads, not molecules, are counted, as for every other design.",
+      "used_by": [
+        "Billmyre et al. 2022 (S. pombe sexual reproduction, PRJNA758956)"
+      ],
+      "source": "read structure checked on 2,000 reads of SRR15669611 (96% carry the left end; genomic reads map at MAPQ >= 20)",
+      "mapping": {
+        "hermes_cleanup": false,
+        "trim_5p_seq": "AAGCCACTTGTTGTTGTTCTCTG",
+        "trim_5p_overlap": 23,
         "discard_untrimmed": true,
         "trim_3p_seq": [
           "GTCCCTTAAGCGGAG",

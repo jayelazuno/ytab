@@ -32,6 +32,23 @@ def _repo_root(repo_root: Path | None) -> Path:
     return (repo_root or Path(__file__).resolve().parents[3]).expanduser().resolve()
 
 
+def species_resource_dir(resources_dir: Path, species: str) -> Path:
+    """The resource folder of a species or of one of its strains.
+
+    A species is resources/species/<species>/. Another strain of a species, with its own genome and annotation, is
+    resources/species/<species>/strains/<strain>/ (same layout) and is named <species>_<strain>, e.g. glabrata_CBS138;
+    reads from that strain are mapped and annotated against its own reference.
+    """
+    resources_dir = Path(resources_dir)
+    direct = resources_dir / species
+    if direct.is_dir() or "_" not in species:
+        return direct
+    parent, strain = species.split("_", 1)
+    strains = resources_dir / parent / "strains"
+    matches = [d for d in strains.iterdir() if d.is_dir() and d.name.lower() == strain.lower()] if strains.is_dir() else []
+    return matches[0] if matches else direct
+
+
 def list_available_species(resources_dir: Path) -> list[str]:
     resources_dir = Path(resources_dir)
     if not resources_dir.is_dir():
@@ -42,11 +59,13 @@ def list_available_species(resources_dir: Path) -> list[str]:
     )
     available = []
     for species_dir in resources_dir.iterdir():
-        reference_dir = species_dir / "reference_genome"
-        if (species_dir.is_dir() and not species_dir.name.startswith(".")
-                and reference_dir.is_dir()
-                and any(_glob_many(reference_dir, reference_patterns))):
-            available.append(species_dir.name)
+        if not species_dir.is_dir() or species_dir.name.startswith("."):
+            continue
+        strains = (species_dir / "strains").iterdir() if (species_dir / "strains").is_dir() else []
+        for name, folder in [(species_dir.name, species_dir)] + [(f"{species_dir.name}_{s.name}", s) for s in strains if s.is_dir()]:
+            reference_dir = folder / "reference_genome"
+            if reference_dir.is_dir() and any(_glob_many(reference_dir, reference_patterns)):
+                available.append(name)
     return sorted(available)
 
 
@@ -105,7 +124,7 @@ def _glob_many(directory: Path, patterns: tuple[str, ...]) -> list[Path]:
 
 def resolve_reference(species: str, repo_root: Path | None = None) -> ReferenceInfo:
     root = _repo_root(repo_root)
-    species_dir = root / "resources" / "species" / species
+    species_dir = species_resource_dir(root / "resources" / "species", species)
     if not species_dir.is_dir():
         available = ", ".join(list_available_species(root / "resources" / "species")) or "none"
         raise ValueError(f"Unknown species '{species}'. Available species: {available}")

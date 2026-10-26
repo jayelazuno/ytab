@@ -122,7 +122,7 @@ essentiality_classifier_resources <- function(project, repo_root, target_tag = "
   feature <- if (nzchar(target_tag)) file.path(project$project_root, "summary_combined", target_tag,
                                                paste0("combined_feature_table.", target_tag, ".txt")) else ""
   # S. cerevisiae orthologs only annotate the output: the species' gene_annotation.tsv, else the project's orthology file.
-  annotation <- file.path(repo_root, "resources", "species", as.character(project$species %||% ""), "annotation", "gene_annotation.tsv")
+  annotation <- file.path(ytab_species_dir(repo_root, project$species), "annotation", "gene_annotation.tsv")
   resources <- list(
     `S. cerevisiae orthology map` = if (file.exists(annotation)) annotation else resolve(reference$orthology_file),
     `Kornmann WildType WIG tracks` = kornmann,

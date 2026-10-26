@@ -1,0 +1,2 @@
+sample,study,library_role,condition,background,pool,culture_replicate,display_name,transposon,library_design,include,notes
+SRR38338546,Zaeske2026,parent,parent,CBS138r,CBS138r_pool1,1,CBS138r_pool_1,hermes,splinkerette_pcr,True,"Prototrophic Hermes pool (Illumina MiSeq, single end; Zaeske et al. 2026, PRJNA1460454)"

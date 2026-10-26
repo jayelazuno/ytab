@@ -24,6 +24,16 @@ accession, with role, pool, transposon and library design) and `dataset.env` (pr
 | `pombe_hermes` | pombe | 26 (25 included) | `hermes` / `terminal_10bp` (Guo 2013), `end_ligated_adapter` (Grech 2019, Levin 2020) |
 | `michel_2017_satay` | cerevisiae | 7 (WT ×2, rapamycin, 4 mutants) | `ac_ds` / `satay_restriction` |
 | `gale_2020_glabrata` | glabrata | 7 | `hermes` / `splinkerette_pcr` (re-download only; the project exists) |
+| `nickels_2024_glabrata` | glabrata_CBS138 | 12 (CBS138u and 2001u, micafungin) | `hermes` / `splinkerette_pcr` |
+| `nickels_2025_glabrata` | glabrata | 44 (BG2u, PDR1 gain of function, pdr1Δ; echinocandins, ibrexafungerp) | `hermes` / `splinkerette_pcr` |
+| `nickels_2025_glabrata_cbs138` | glabrata_CBS138 | 5 (2001u, caspofungin) | `hermes` / `splinkerette_pcr` |
+| `zaeske_2026_glabrata` | glabrata | 4 (prototrophic pools of BG2, BG14, DPL1021) | `hermes` / `splinkerette_pcr` |
+| `zaeske_2026_glabrata_cbs138` | glabrata_CBS138 | 1 (prototrophic CBS138 pool) | `hermes` / `splinkerette_pcr` |
+| `billmyre_2022_pombe` | pombe | 16 (library, mitotic, after sexual reproduction) | `hermes` / `left_end_adapter_umi` |
+| `kingma_2025_satay` | cerevisiae | 44 (43 included; wild-type replicates, nrp1Δ DpnII/NlaIII replicates) | `ac_ds` / `satay_ds_end` (NovaSeq), `satay_restriction` (HiSeq) |
+
+Strains of the CBS138 background are mapped to their own reference (`resources/species/glabrata/strains/CBS138`,
+species `glabrata_CBS138`). DPL1021 has no public assembly, so its pool is mapped to BG2; check its mapping rate.
 
 ```bash
 cd /Users/jayelazuno/workspace/ytab
@@ -31,6 +41,9 @@ cd /Users/jayelazuno/workspace/ytab
 bash pipeline/hpc/ytab_public_dataset.sh segal_2018_albicans download
 bash pipeline/hpc/ytab_public_dataset.sh pombe_hermes download
 bash pipeline/hpc/ytab_public_dataset.sh michel_2017_satay download
+for d in nickels_2024_glabrata nickels_2025_glabrata nickels_2025_glabrata_cbs138 zaeske_2026_glabrata zaeske_2026_glabrata_cbs138 \
+         billmyre_2022_pombe kingma_2025_satay; do
+  bash pipeline/hpc/ytab_public_dataset.sh $d download; done
 bash pipeline/hpc/ytab_public_dataset.sh pombe_hermes status       # files verified so far
 # 2. When a download has finished, create its project and submit the stage chain
 #    (reference, mapping, hit files, SummaryTable, library diagnostics, report, export):

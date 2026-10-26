@@ -22,6 +22,7 @@ Sequence covariate: `--sequence-covariate motif` (default, hermes_hmm_v2) counts
 `learned` (hermes_hmm_v3) learns the target-site preference from the libraries' own insertion sites (YTAB hit files
 with their W/C strand), so any transposon (Hermes, Ac/Ds, ...) can be modelled; it also writes target_model.tsv.
 Writes genes.tsv, windows.npz, fit.json. Reads no essentiality labels.
+  ytab hermes-hmm FIT_DIR --rescore     rewrite FIT_DIR/genes.tsv with the current gene-scoring defaults (no refit)
 """
 import argparse
 from dataclasses import asdict
@@ -140,10 +141,11 @@ def check_inputs(feats, genes, libraries, names, settings, allow_high_mask=False
 
 
 def run(output, samples, settings, label, *, fasta=FASTA, gff=GFF, hits=None, project="Gale_2020", allow_high_mask=False,
-        sequence_covariate="motif", target=None):
+        sequence_covariate="motif", target=None, rescore=None):
     """samples: names; hits: matching hit-file paths (default: the project's create_hit_file outputs).
     sequence_covariate: "motif" (v2) or "learned" (v3; `target` reuses a model learned elsewhere, else it is learned
-    from these libraries)."""
+    from these libraries). rescore: {name: Settings} with other gene-scoring settings (run length, CDS trimming);
+    each writes genes.<name>.tsv from the same fit."""
     start = time.time(); genes = ccg.annotations(Path(gff).resolve())
     paths = list(hits) if hits else [None]*len(samples)
     if sequence_covariate not in ("motif", "learned"):raise ValueError("sequence_covariate must be motif or learned")
@@ -164,6 +166,9 @@ def run(output, samples, settings, label, *, fasta=FASTA, gff=GFF, hits=None, pr
     output.mkdir(parents=True, exist_ok=True)
     if sequence_covariate == "learned":write_target_model(output/"target_model.tsv", target)
     write_table(output/"genes.tsv", list(dict.fromkeys(k for r in rows for k in r)), rows)
+    for name, alt in (rescore or {}).items():
+        alt_rows = hh.gene_table(genes, {c["name"] for c in chroms}, gamma, keep, alt, chain, fitres["A"])
+        write_table(output/f"genes.{name}.tsv", list(dict.fromkeys(k for r in alt_rows for k in r)), alt_rows)
     np.savez_compressed(output/"windows.npz", **{f"{c['name']}_gamma":gamma[c["name"]] for c in chroms}, **{f"{c['name']}_Y":c["Y"] for c in chroms},
                         **{f"{c['name']}_keep":c["keep"] for c in chroms})
     calls = {s:sum(r["call"] == s for r in rows) for s in hh.STATES+("uncertain", "N/A")}
@@ -186,6 +191,45 @@ def run(output, samples, settings, label, *, fasta=FASTA, gff=GFF, hits=None, pr
     return summary, rows
 
 
+def rescore(fit_dir):
+    """Rewrite genes.tsv of a saved fit with the current gene-scoring settings (run length, trims, thresholds), without
+    refitting. The posterior chains are rebuilt by one forward-backward pass from the fitted parameters in fit.json;
+    for a converged fit the rebuilt window posteriors equal the saved ones (checked). For a fit stopped at the iteration
+    cap they come from the final parameters, one M-step after the saved posteriors. The previous genes.tsv is moved to
+    archive/ (same relative path, with its time stamp)."""
+    fit_dir = Path(fit_dir).resolve(); info = json.loads((fit_dir/"fit.json").read_text())
+    fixed = ("window", "min_reads", "kmer", "unmappable_fraction", "max_iterations", "tolerance", "mstep_iterations", "init_r", "init_stay")
+    settings = hh.Settings(**{k:tuple(v) if k == "init_r" else v for k, v in info["settings"].items() if k in fixed})  # scoring: current defaults
+    hits = info["inputs"]["hits"]; samples = info["samples"]
+    project = hits.split("/")[2] if isinstance(hits, str) else "Gale_2020"
+    paths = [Path(h) for h in hits] if isinstance(hits, list) else [None]*len(samples)
+    fasta, gff = Path(info["inputs"]["fasta"]), Path(info["inputs"]["gff"])
+    genes = ccg.annotations(gff.resolve())
+    target = learn_target(samples, paths, settings, project, fasta) if info["sequence_covariate"] == "learned" else None
+    feats = features(settings, genes, fasta, target)
+    libraries = [hit_sites(s, settings.min_reads, project, p) for s, p in zip(samples, paths)]
+    genes, _ = check_inputs(feats, genes, libraries, samples, settings, True)
+    chroms, _ = design(feats, libraries, settings)
+    theta = hh.pack(np.log(np.array(info["r"])), np.array(info["a"]), np.array(info["b"]), np.log(info["psi"]))
+    A, pi = np.array(info["A"]), np.array(info["pi"]); saved = np.load(fit_dir/"windows.npz")
+    gamma, chain, diff = {}, {}, 0.
+    for c in chroms:
+        g, _, _, B, beta = hh.forward_backward(hh.emission_loglik(c["Y"], c["X"], c["keep"], theta), A, pi, full=True)
+        diff = max(diff, float(np.abs(g-saved[f"{c['name']}_gamma"]).max())); gamma[c["name"]], chain[c["name"]] = g, (B, beta)
+    if info["converged"] and diff > 1e-6:raise ValueError(f"{fit_dir}: rebuilt posteriors differ from the saved fit ({diff:.2e})")
+    rows = hh.gene_table(genes, {c["name"] for c in chroms}, gamma, {c["name"]:c["keep"] for c in chroms}, settings, chain, A)
+    old = fit_dir/"genes.tsv"
+    if old.exists():
+        stamp = time.strftime("%Y%m%dT%H%M%S", time.localtime(old.stat().st_mtime))
+        dest = ROOT/"archive"/old.relative_to(ROOT).parent/f"genes.{stamp}.tsv"; dest.parent.mkdir(parents=True, exist_ok=True); old.rename(dest)
+    write_table(old, list(dict.fromkeys(k for r in rows for k in r)), rows)
+    info["gene_calls"] = {s:sum(r["call"] == s for r in rows) for s in hh.STATES+("uncertain", "N/A")}
+    info["settings"] |= {k:v for k, v in asdict(settings).items() if k not in fixed}
+    info["rescored"] = dict(when=time.strftime("%Y-%m-%dT%H:%M:%S"), max_posterior_difference=diff, implementation_sha256=sha256(Path(hh.__file__)))
+    (fit_dir/"fit.json").write_text(json.dumps(hh._json_ready(info), indent=2)+"\n")
+    return info
+
+
 def project_reference(project):
     config = yaml.safe_load((ROOT/"output/projects"/project/"config/project.yaml").read_text())
     return ROOT/config["reference"]["fasta"], ROOT/config["reference"]["gff"]
@@ -204,7 +248,11 @@ def main():
     p.add_argument("--allow-high-mask", action="store_true", help="run even if > 50%% of windows are unmappable")
     p.add_argument("--sequence-covariate", choices=("motif", "learned"), default="motif",
                    help="motif: Hermes nTnnnnAn count (v2); learned: target preference learned from the libraries' sites (v3, any transposon)")
+    p.add_argument("--rescore", action="store_true",
+                   help="OUTPUT is a saved fit (fit.json, windows.npz): rewrite its genes.tsv with the current gene-scoring defaults, without refitting")
     a = p.parse_args(); settings = hh.Settings(window=a.window, min_reads=a.min_reads)
+    if a.rescore:
+        info = rescore(a.output); print(json.dumps(dict(rescored=str(a.output), gene_calls=info["gene_calls"], **info["rescored"]), indent=1)); return
     if a.hits:
         if not (a.fasta and a.gff):p.error("--hits needs --fasta and --gff")
         samples, fasta, gff, hits = [h.name.removesuffix("_hits.txt") for h in a.hits], a.fasta, a.gff, a.hits

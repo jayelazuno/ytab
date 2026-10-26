@@ -38,6 +38,10 @@ resources/species/
                                (e.g. cerevisiae/tnseq_data/michel_2017_satay, pombe/tnseq_data/guo_2013_hermes)
 ```
 
+A strain whose genome differs enough to need its own reference (for example *C. glabrata* CBS138, about 1% divergent
+from the BG2 reference) has the same layout under `<species>/strains/<strain>/` and is selected as species
+`<species>_<strain>` (e.g. `glabrata_CBS138`); its reads are mapped to, and its genes annotated from, that folder.
+
 Only the folders a species needs exist. A species becomes selectable when `reference_genome/` contains at least one
 recognized reference file. Files are inputs to the pipelines and app, never outputs.
 

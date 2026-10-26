@@ -224,6 +224,8 @@ def build_mapfastq_command(sample: dict, config: dict, threads: int | None = Non
             command.extend(["--trim-5p-seq", str(design["trim_5p_seq"])])
             if design.get("trim_5p_overlap") not in (None, ""):
                 command.extend(["--trim-5p-overlap", str(design["trim_5p_overlap"])])
+            if design.get("trim_5p_times") not in (None, ""):
+                command.extend(["--trim-5p-times", str(design["trim_5p_times"])])
             if _as_bool(design.get("discard_untrimmed", False)):
                 command.append("--discard-untrimmed")
         for sequence in design.get("trim_3p_seq") or []:

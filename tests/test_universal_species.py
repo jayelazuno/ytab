@@ -70,3 +70,16 @@ def test_midlc_target_units(tmp_path):
         normalization_runner.check_target_units(409600, saturation)       # the old read-count targets
     est, p = midlc([8, 1])
     assert 0 < p < 1 and est == pytest.approx(p*9)
+
+
+def test_strain_reference_folders(tmp_path):
+    """A strain with its own genome lives in <species>/strains/<strain> and is named <species>_<strain>."""
+    from ytab.pipeline.reference_registry import list_available_species, species_resource_dir
+    for folder in ("glabrata", "glabrata/strains/CBS138", "pombe"):
+        (tmp_path/folder/"reference_genome").mkdir(parents=True)
+        (tmp_path/folder/"reference_genome"/"ref.fasta").write_text(">c\nA\n")
+    assert species_resource_dir(tmp_path, "glabrata") == tmp_path/"glabrata"
+    assert species_resource_dir(tmp_path, "glabrata_CBS138") == tmp_path/"glabrata/strains/CBS138"
+    assert species_resource_dir(tmp_path, "glabrata_cbs138") == tmp_path/"glabrata/strains/CBS138"
+    assert species_resource_dir(tmp_path, "glabrata_BG2") == tmp_path/"glabrata_BG2"   # unknown strain: not found, as before
+    assert list_available_species(tmp_path) == ["glabrata", "glabrata_CBS138", "pombe"]
