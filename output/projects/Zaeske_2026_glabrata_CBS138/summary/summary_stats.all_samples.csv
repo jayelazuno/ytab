@@ -1,0 +1,2 @@
+sample,total_reads,total_hits,percent_hits_in_features,percent_intergenic_hits,percent_features_hit,mean_hits_per_feature,mean_reads_per_feature,mean_reads_per_hit,mean_reads_per_hit_in_feature
+SRR38338546,1446319,245188,29.94%,70.06%,86.34%,16.1,71.8225488045624,5.898816418421783,4.460839475225808
