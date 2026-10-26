@@ -1,0 +1,22 @@
+=== Trimming step skipped ===
+
+
+=== Sequence alignment ===
+2259215 reads; of these:
+  2259215 (100.00%) were unpaired; of these:
+    652086 (28.86%) aligned 0 times
+    1553515 (68.76%) aligned exactly 1 time
+    53614 (2.37%) aligned >1 times
+71.14% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 2259215
+primary_records: 2259215
+primary_mapped: 1607129
+primary_unmapped: 652086
+percent_mapped: 71.137
+mapq_ge_threshold: 1446319
+percent_mapq_ge_threshold: 89.994
+avg_mapq_mapped_primary: 37.47
+mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/mapfastq/SRR38338546/SRR38338546.mapping_stats.csv

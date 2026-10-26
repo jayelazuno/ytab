@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "mode": "designated-junction-mate",
+  "junction_index": 0,
+  "junction_read_end": "start",
+  "retained_reads_or_pairs": 2259215,
+  "input_files": [
+    "/nfsscratch/jayelazuno/workspace/public_data/zaeske_2026_glabrata_cbs138/fastq/Zaeske2026/SRR38338546/SRR38338546.fastq.gz"
+  ],
+  "mates": [
+    {
+      "input_reads": 2287800,
+      "adapter_3p_reads": 242619,
+      "trimmed_3p_bases": 8480070,
+      "signature:P7-SplAP2:rc": 101499,
+      "too_short": 28585,
+      "signature:Spl-Bot:forward": 103764,
+      "signature:P7-index-sequencing:rc": 16429,
+      "signature:Hermes_left:rc": 6741,
+      "signature:Spl-Top-index-core:rc": 7851,
+      "signature:Spl-Top:rc": 5460,
+      "signature:Hermes_left:forward": 364,
+      "signature:Illumina-P7:rc": 118,
+      "signature:Hermes_right:forward": 139,
+      "signature:SplAP1:rc": 163,
+      "signature:Spl-Bot:rc": 7,
+      "signature:HR-1:forward": 68,
+      "hermes_5p_reads": 79,
+      "hermes_overlap_bases": 2747,
+      "trimmed_5p_bases": 2852,
+      "signature:Hermes_left": 54,
+      "signature:Hermes-sequencing:rc": 13,
+      "signature:Hermes_right": 25,
+      "adapter_5p_reads": 4,
+      "signature:HR-1": 3,
+      "signature:P7-sequencing:rc": 3,
+      "signature:SplAP1": 1
+    }
+  ],
+  "cutadapt_version": "5.2",
+  "parameters": {
+    "overlap": 16,
+    "error_rate": 0.1,
+    "min_length": 25
+  },
+  "catalogue": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/primers.json",
+  "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
+  "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
+  "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
+  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "junction_mate": "R1",
+  "require_mate_alignment": false
+}
