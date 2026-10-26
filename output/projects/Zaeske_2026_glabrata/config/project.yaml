@@ -1,0 +1,67 @@
+project_id: Zaeske_2026_glabrata
+repo_root: ../../../..
+fastq_dir: output/projects/Zaeske_2026_glabrata/config/argon_fastq_inputs
+fastq_paths_relative_to: fastq_dir
+output_project_dir: output/projects/Zaeske_2026_glabrata
+output_export_dir: output/exports/Zaeske_2026_glabrata
+species: glabrata
+threads: 8
+reference:
+  species: glabrata
+  species_dir: resources/species/glabrata
+  reference_dir: resources/species/glabrata/reference_genome
+  fasta: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna
+  feature_table: resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab
+  gff: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff
+  gtf: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf
+  gffutils_db: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/glabrata/reference_genome/centromeres.NCBI.bed
+  trna_bed: resources/species/glabrata/reference_genome/tRNAs.bed
+  orthology_file: resources/species/glabrata/orthologs/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+  warnings:
+  - Multiple feature table candidates found; selected C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab.
+  - Multiple centromere BED candidates found; selected centromeres.NCBI.bed.
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: SRR38338545
+  fastq_1: SRR38338545.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR38338547
+  fastq_1: SRR38338547.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR38338548
+  fastq_1: SRR38338548.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR38338549
+  fastq_1: SRR38338549.fastq.gz
+  fastq_2: ''
+  layout: single
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+sample_sheet: output/projects/Zaeske_2026_glabrata/config/sample_sheet.csv
+created_at: '2026-10-26T04:43:43.019625+00:00'
+ytab_version_or_git_commit_if_available: eaa18c9

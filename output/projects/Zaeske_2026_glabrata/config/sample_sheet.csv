@@ -1,0 +1,5 @@
+sample,study,library_role,condition,background,pool,culture_replicate,display_name,transposon,library_design,include,notes,fastq_1,fastq_2,layout
+SRR38338547,Zaeske2026,parent,parent,BG14,BG14_pool1,1,BG14_pool_1,hermes,splinkerette_pcr,True,"Prototrophic Hermes pool (Element AVITI, single end; Zaeske et al. 2026, PRJNA1460454)",SRR38338547.fastq.gz,,single
+SRR38338549,Zaeske2026,parent,parent,BG2r,BG2r_pool1,1,BG2r_pool_1,hermes,splinkerette_pcr,True,"Prototrophic Hermes pool (Illumina MiSeq, single end; Zaeske et al. 2026, PRJNA1460454)",SRR38338549.fastq.gz,,single
+SRR38338548,Zaeske2026,parent,parent,BG2r,BG2r_pool2,2,BG2r_pool_2,hermes,splinkerette_pcr,True,"Prototrophic Hermes pool (Illumina MiSeq, single end; Zaeske et al. 2026, PRJNA1460454)",SRR38338548.fastq.gz,,single
+SRR38338545,Zaeske2026,parent,parent,DPL1021r,DPL1021r_pool1,1,DPL1021r_pool_1,hermes,splinkerette_pcr,True,"Prototrophic Hermes pool (Element AVITI, single end; Zaeske et al. 2026, PRJNA1460454); no DPL1021 assembly is available, so it is mapped to the BG2 reference",SRR38338545.fastq.gz,,single
