@@ -1,0 +1,43 @@
+{
+  "project_id": "Billmyre_2022_pombe",
+  "sample": "SRR15669607",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2022_pombe/create_hit_file/SRR15669607/SRR15669607_hits.txt",
+  "species": "pombe",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/orthologs/pombe_cerevisiae_orthologs.txt"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2022_pombe/summary/SRR15669607",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2022_pombe/summary/SRR15669607/SRR15669607.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2022_pombe/logs/summary/SRR15669607.log",
+  "status": "success",
+  "start_time": "2026-10-26T08:11:53.136222+00:00",
+  "end_time": "2026-10-26T08:12:30.577677+00:00",
+  "elapsed_seconds": 37.441,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2022_pombe/create_hit_file/SRR15669607",
+    "--hit-glob",
+    "SRR15669607_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2022_pombe/summary/SRR15669607",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa"
+  ],
+  "warnings": [],
+  "error_message": null
+}
