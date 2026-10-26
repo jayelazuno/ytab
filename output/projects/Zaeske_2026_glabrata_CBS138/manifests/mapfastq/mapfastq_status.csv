@@ -1,0 +1,2 @@
+sample,status,layout,fastq_1,fastq_2,output_dir,log_file,elapsed_seconds,message
+SRR38338546,success,single,/nfsscratch/jayelazuno/workspace/public_data/zaeske_2026_glabrata_cbs138/fastq/Zaeske2026/SRR38338546/SRR38338546.fastq.gz,,/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/mapfastq/SRR38338546,/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/logs/mapfastq/SRR38338546.log,160.941,

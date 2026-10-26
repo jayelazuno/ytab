@@ -1,0 +1,47 @@
+{
+  "project_id": "Zaeske_2026_glabrata_CBS138",
+  "sample": "SRR38338546",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/mapfastq/SRR38338546/SRR38338546.sorted.bam",
+  "species": "glabrata_CBS138",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/create_hit_file/SRR38338546",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/create_hit_file/SRR38338546/SRR38338546_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/logs/create_hit_file/SRR38338546.log",
+  "status": "success",
+  "start_time": "2026-10-26T05:32:01.169987+00:00",
+  "end_time": "2026-10-26T05:33:41.148952+00:00",
+  "elapsed_seconds": 99.979,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/mapfastq/SRR38338546/SRR38338546.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/create_hit_file/SRR38338546",
+    "--out-prefix",
+    "SRR38338546",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/create_hit_file/SRR38338546/SRR38338546.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/create_hit_file/SRR38338546/SRR38338546.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/create_hit_file/SRR38338546/SRR38338546.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/create_hit_file/SRR38338546/SRR38338546_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Zaeske_2026_glabrata_CBS138/create_hit_file/SRR38338546/SRR38338546_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}
