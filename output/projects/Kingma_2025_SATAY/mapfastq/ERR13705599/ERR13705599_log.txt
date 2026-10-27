@@ -1,0 +1,26 @@
+=== Trimming step skipped ===
+
+
+=== Adapter removal ===
+5153796 reads; of these:
+  5153047 (99.99%) contained the adapter
+
+=== Sequence alignment ===
+5153047 reads; of these:
+  5153047 (100.00%) were unpaired; of these:
+    528604 (10.26%) aligned 0 times
+    4061116 (78.81%) aligned exactly 1 time
+    563327 (10.93%) aligned >1 times
+89.74% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 5153047
+primary_records: 5153047
+primary_mapped: 4624443
+primary_unmapped: 528604
+percent_mapped: 89.742
+mapq_ge_threshold: 3974584
+percent_mapq_ge_threshold: 85.947
+avg_mapq_mapped_primary: 35.49
+mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/mapfastq/ERR13705599/ERR13705599.mapping_stats.csv
