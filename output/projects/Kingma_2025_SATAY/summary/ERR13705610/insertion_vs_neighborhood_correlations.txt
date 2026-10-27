@@ -1,0 +1,3 @@
+ERR13705610
+Pearson: PearsonRResult(statistic=np.float64(0.08161919139044396), pvalue=np.float64(2.4852799109598656e-11))
+Spearman: SignificanceResult(statistic=np.float64(0.9166509737939916), pvalue=np.float64(0.0))
