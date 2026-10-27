@@ -90,3 +90,7 @@ the app. Experienced users can wrap the portable CLI for their own scheduler.
 The workspace keeps an active-job banner visible across tabs. Persistent progress files record the current sample, confirmed completions, elapsed time, recent state, and an approximate ETA after the first non-cached item finishes. Estimates vary with storage and system load. Cancelling preserves completed outputs so later cache-aware runs can resume without repeating successful samples.
 
 Quality Control presents compact Mapping QC and raw Summary QC tables; secondary summary metrics and project-relative source paths remain available under **Detailed metrics**. Library Diagnostics has an independent searchable sample selection with all-eligible, parent, treated, and custom presets. **Preview command** validates inputs without scientific execution; **Run diagnostics** performs or reuses an exact sample-set-aware cached run, while **Force rerun** only bypasses a matching cache. Concise results remain separate from collapsed technical logs and paths.
+
+## Licence
+
+YTAB is released under the GNU General Public License v3.0 (see `LICENSE`), the licence of TRANSIT, from which several of its methods are adapted.
