@@ -1,0 +1,27 @@
+=== Transposon removal (searched with primer+Tn tail) ===
+72188215 reads; of these:
+  34992665 (48.47%) contained the transposon
+
+=== Adapter removal ===
+34992665 reads; of these:
+  34988964 (99.99%) contained the adapter
+
+=== Sequence alignment ===
+34988964 reads; of these:
+  34988964 (100.00%) were unpaired; of these:
+    3834938 (10.96%) aligned 0 times
+    29297692 (83.73%) aligned exactly 1 time
+    1856334 (5.31%) aligned >1 times
+89.04% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 34988964
+primary_records: 34988964
+primary_mapped: 31154026
+primary_unmapped: 3834938
+percent_mapped: 89.04
+mapq_ge_threshold: 29003322
+percent_mapq_ge_threshold: 93.097
+avg_mapq_mapped_primary: 38.78
+mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/mapfastq/ERR13705635/ERR13705635.mapping_stats.csv
