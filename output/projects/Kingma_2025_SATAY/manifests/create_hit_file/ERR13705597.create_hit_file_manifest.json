@@ -1,0 +1,47 @@
+{
+  "project_id": "Kingma_2025_SATAY",
+  "sample": "ERR13705597",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/mapfastq/ERR13705597/ERR13705597.sorted.bam",
+  "species": "cerevisiae",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705597",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705597/ERR13705597_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/logs/create_hit_file/ERR13705597.log",
+  "status": "success",
+  "start_time": "2026-10-26T20:04:24.784819+00:00",
+  "end_time": "2026-10-26T20:06:08.711810+00:00",
+  "elapsed_seconds": 103.927,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/mapfastq/ERR13705597/ERR13705597.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705597",
+    "--out-prefix",
+    "ERR13705597",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705597/ERR13705597.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705597/ERR13705597.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705597/ERR13705597.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705597/ERR13705597_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705597/ERR13705597_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}

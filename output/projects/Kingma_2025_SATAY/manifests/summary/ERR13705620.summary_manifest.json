@@ -1,0 +1,43 @@
+{
+  "project_id": "Kingma_2025_SATAY",
+  "sample": "ERR13705620",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705620/ERR13705620_hits.txt",
+  "species": "cerevisiae",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": null
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/summary/ERR13705620",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/summary/ERR13705620/ERR13705620.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/logs/summary/ERR13705620.log",
+  "status": "success",
+  "start_time": "2026-10-26T23:07:11.221940+00:00",
+  "end_time": "2026-10-26T23:07:30.354037+00:00",
+  "elapsed_seconds": 19.132,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/create_hit_file/ERR13705620",
+    "--hit-glob",
+    "ERR13705620_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Kingma_2025_SATAY/summary/ERR13705620",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta"
+  ],
+  "warnings": [],
+  "error_message": null
+}
