@@ -34,6 +34,7 @@ from ytab_hybrid_inputs import build as build_hybrid_inputs
 ROOT_SRC = Path(__file__).resolve().parents[2]/"src"
 if str(ROOT_SRC) not in sys.path:sys.path.insert(0, str(ROOT_SRC))
 from ytab.essentiality import contract  # noqa: E402
+from ytab.pipeline.project_config import load_project_config  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT/"scripts/local"
@@ -61,7 +62,16 @@ def export_windows(hmm_dir, path):
     return len(chromosomes)
 
 
-def export_target_model(hmm_dir, path, project, libraries, min_reads):
+def project_files(project_config, libraries):
+    """The reference FASTA and GFF and each library's hit file, resolved from the project's own config, so a project
+    works wherever it lives (not only under output/projects/)."""
+    cfg = load_project_config(project_config); root = Path(cfg["_repo_root"])
+    resolve = lambda value:Path(value) if Path(value).is_absolute() else root/value
+    hits = resolve(cfg["output_project_dir"])/"create_hit_file"
+    return resolve(cfg["reference"]["fasta"]), resolve(cfg["reference"]["gff"]), [hits/s/f"{s}_hits.txt" for s in libraries]
+
+
+def export_target_model(hmm_dir, path, project_config, libraries, min_reads):
     """The insertion-target preference (position weight matrix, information per offset): the model the HMM fitted with
     when it learned one (sequence covariate "learned"); otherwise learned the same way from the same libraries' distinct
     sites as a diagnostic only (the fit used the Hermes motif). Returns True / False (used in the fit), None if unavailable."""
@@ -70,8 +80,8 @@ def export_target_model(hmm_dir, path, project, libraries, min_reads):
         rows = list(csv.DictReader(open(hmm_dir/"target_model.tsv"), delimiter="\t")); used = True
     else:
         try:
-            fasta, _ = hmm.project_reference(project)
-            model = hmm.learn_target(libraries, [None]*len(libraries), hmm.hh.Settings(min_reads=min_reads), project, fasta)
+            fasta, _, hits = project_files(project_config, libraries)
+            model = hmm.learn_target(libraries, hits, hmm.hh.Settings(min_reads=min_reads), None, fasta)
         except (ValueError, OSError, KeyError):return None
         hmm.write_target_model(path, model); rows = list(csv.DictReader(open(path), delimiter="\t")); used = False
     write_rows(path, [dict(r, used_in_fit=used) for r in rows]); return used
@@ -119,10 +129,10 @@ def write_rows(path, rows):
         w = csv.DictWriter(handle, fieldnames=list(rows[0]), delimiter="\t", lineterminator="\n"); w.writeheader(); w.writerows(rows)
 
 
-def plot_summaries(out, hmm_dir, project, min_reads, species=None):
+def plot_summaries(out, hmm_dir, project_config, min_reads, species=None):
     fit = json.loads((hmm_dir/"fit.json").read_text())
     labels = ROOT/"resources/species"/species/"essentiality_labels/labels.tsv" if species else None
-    used = export_target_model(hmm_dir, out/"plots/target_model.tsv", project, fit["samples"], min_reads)
+    used = export_target_model(hmm_dir, out/"plots/target_model.tsv", project_config, fit["samples"], min_reads)
     return dict(target_model=None if used is None else dict(file="plots/target_model.tsv", used_in_fit=used),
                 evaluation=export_roc(out/"models/genes.tsv", out/"plots/roc.tsv", labels) or None)
 
@@ -157,9 +167,8 @@ def main():
     a = p.parse_args()
     if a.refresh_plots:
         run = a.refresh_plots.resolve(); m = json.loads((run/"manifest.json").read_text())
-        project = a.project_config.resolve().parents[1].name
         cfg = yaml.safe_load(a.project_config.read_text())
-        extra = plot_summaries(run, Path(m["hmm_run"]), project, int(m.get("hmm", {}).get("settings", {}).get("min_reads", 1)),
+        extra = plot_summaries(run, Path(m["hmm_run"]), a.project_config, int(m.get("hmm", {}).get("settings", {}).get("min_reads", 1)),
                                cfg.get("species") or cfg.get("reference", {}).get("species"))
         print(json.dumps(dict(status="success", refreshed=str(run), **extra), default=str)); return
     if not a.output:p.error("--output is required")
@@ -177,7 +186,10 @@ def main():
             print("1/3 Fitting the Hermes window HMM (several minutes)", file=sys.stderr, flush=True)
             covariate = a.sequence_covariate if a.sequence_covariate != "auto" else auto_sequence_covariate(cfg, a.libraries)
             print(f"   sequence covariate: {covariate}", file=sys.stderr, flush=True)
-            step([SCRIPTS/"ytab_hermes_hmm.py", out/"hmm", "--project", project, "--libraries", *a.libraries,
+            fasta, gff, hits = project_files(a.project_config, a.libraries)
+            missing = [str(h) for h in hits if not h.exists()]
+            if missing:raise ValueError(f"No hit file for: {', '.join(missing)}")
+            step([SCRIPTS/"ytab_hermes_hmm.py", out/"hmm", "--fasta", fasta, "--gff", gff, *[x for h in hits for x in ("--hits", h)],
                   "--window", a.window, "--min-reads", a.min_reads, "--sequence-covariate", covariate])
             hmm_dir = out/"hmm/joint"
         hybrid_inputs = None
@@ -193,7 +205,7 @@ def main():
               *(["--labels", a.labels] if a.labels else [])])
         print("3/3 Writing plot summaries", file=sys.stderr, flush=True)
         (out/"plots").mkdir(); chromosomes = export_windows(hmm_dir, out/"plots/windows.tsv.gz")
-        extra = plot_summaries(out, hmm_dir, project, a.min_reads, cfg.get("species") or cfg.get("reference", {}).get("species"))
+        extra = plot_summaries(out, hmm_dir, a.project_config, a.min_reads, cfg.get("species") or cfg.get("reference", {}).get("species"))
     except (ValueError, KeyError, OSError) as error:
         p.exit(1, f"ERROR: {error}\n")
     fit = json.loads((hmm_dir/"fit.json").read_text()); models = json.loads((out/"models/summary.json").read_text())

@@ -1,0 +1,35 @@
+{
+  "status": "success",
+  "project": "Nickels_2025_glabrata",
+  "project_config": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Nickels_2025_glabrata/config/project.yaml",
+  "libraries": 44,
+  "libraries_without_hits": [],
+  "catalogue_sites": 755195,
+  "genome_bp": 12696838,
+  "flag_counts": {
+    "red": 87,
+    "yellow": 35,
+    "green": 890,
+    "grey": 264
+  },
+  "rules": {
+    "rule_of_thumb": "Tn-seq rule of thumb (skewness)",
+    "relative": "Compared with the project's libraries of the same role (robust z; Leys et al. 2013)",
+    "yellow": 2.5,
+    "red": 3.0,
+    "min_role_libraries": 4,
+    "min_relative_spread": 0.1,
+    "comparison": "within role (parents with parents, treated with treated)"
+  },
+  "created": "2026-10-26T18:25:38.119464+00:00",
+  "files": {
+    "table": "qc_table.tsv",
+    "flags": "qc_flags.tsv",
+    "metrics": "metrics.tsv",
+    "excel": "qc_table.xlsx",
+    "histogram": "plots/histogram.tsv.gz",
+    "qq": "plots/qq.tsv.gz",
+    "ranked": "plots/ranked.tsv.gz",
+    "lorenz": "plots/lorenz.tsv.gz"
+  }
+}

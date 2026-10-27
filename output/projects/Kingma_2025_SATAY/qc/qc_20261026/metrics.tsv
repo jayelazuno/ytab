@@ -1,0 +1,30 @@
+metric	theme	label	bad_direction	rule	comment
+input_reads	Reads & Mapping	Reads sequenced	low	relative	Reads entering Hermes cleanup (the junction read).
+retained_fraction	Reads & Mapping	Reads retained after cleanup	low	relative	Fraction of reads kept after Hermes/adaptor trimming and the length filter.
+adapter_fraction	Reads & Mapping	Reads with 3' adaptor	high	relative	Fraction of reads with adaptor at the 3' end (short fragments or primer dimers).
+mapped_reads	Reads & Mapping	Mapped reads	low	relative	Primary alignments that map to the reference.
+percent_mapped	Reads & Mapping	Mapped (%)	low	relative	Primary alignments that map to the reference.
+percent_mapq	Reads & Mapping	Mapped with MAPQ above threshold (%)	low	relative	Uniquely placed alignments; low values mean repeats or the wrong reference.
+mean_mapq	Reads & Mapping	Mean MAPQ	low	relative	Mean mapping quality of mapped primary alignments.
+total_cts	Insertions	Reads at insertion sites	low	relative	Reads supporting called insertions.
+unique_sites	Insertions	Insertion sites	low	relative	Distinct insertion positions (strands combined).
+insertions_per_kb	Insertions	Insertions per kb of genome	low	relative	Insertion sites per kilobase of reference: how densely the genome is covered (Hermes has no fixed set of possible sites).
+density	Insertions	Catalogue density	low	relative	Fraction of the project's catalogue (positions with an insertion in any library) that this library hits. Hermes has no fixed set of possible sites, so there is no absolute target.
+mean_ct	Insertions	Mean reads per catalogue site		descriptive	Mean reads per catalogue position, empty positions included.
+NZmean	Insertions	Mean reads per occupied site	both	relative	Mean reads per position with an insertion; too high or too low can indicate problems.
+NZmedian	Insertions	Median reads per occupied site	both	relative	Median reads per position with an insertion; robust to spikes.
+max_ct	Insertions	Max reads at a site		descriptive	Largest read count at one position; depends on depth, see the top site's share.
+max_share	Insertions	Top site's share of reads	high	relative	Fraction of all reads at the single largest site (a PCR jackpot or strong selection).
+top1pct_share	Insertions	Top 1% of sites' share of reads	high	relative	Fraction of reads at the top 1% of sites; high values mean a few sites dominate.
+skewness	Insertions	Skewness	high	rule_of_thumb	Skewness of the read counts at occupied sites: above 30 often signals a problem, below 50 is desired (can be higher under strong selection).
+kurtosis	Insertions	Kurtosis		descriptive	Excess kurtosis of the read counts at occupied sites; not very meaningful on its own.
+pickands_tail_index	Insertions	Tail index (Pickands)	high	relative	Heaviness of the upper tail of the read counts; higher means a few sites carry more of the reads.
+fr_corr	Insertions	Strand correlation (W vs C)		descriptive	Correlation of read counts on the two strands at a position. For Hermes the two orientations are separate insertions, so it is shown, not flagged.
+percent_features_hit	Genes	Genes hit (%)	low	relative	SummaryTable: features with at least one insertion.
+mean_hits_per_feature	Genes	Insertions per gene	low	relative	SummaryTable: mean insertion sites per feature.
+percent_hits_in_features	Genes	Insertions in genes (%)	both	relative	SummaryTable: share of insertion sites inside features.
+neighborhood_spearman	Genes	Insertion-neighbourhood correlation	low	relative	SummaryTable: Spearman correlation between a gene's insertions and its neighbourhood's.
+midlc_est	Saturation	MidLC estimate		descriptive	Library diagnostics: reads at which half the discoverable sites are found.
+depth_ratio	Saturation	Depth / MidLC		descriptive	Reads at insertion sites divided by the MidLC estimate (above 1: sequenced past half-saturation).
+jackpot_frac_reads	Saturation	Reads in jackpot sites	high	relative	Library diagnostics: fraction of reads in the top jackpot sites.
+n_jackpot_sites	Saturation	Jackpot sites	high	relative	Library diagnostics: number of sites flagged as jackpots.

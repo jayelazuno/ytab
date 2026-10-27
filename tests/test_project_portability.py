@@ -102,3 +102,18 @@ def test_imported_hits_do_not_become_fastq_projects(initialized):
     with pytest.raises(ValueError, match='Imported-hit'):
         project_config.update_fastq_base(cfg, fastqs)
     assert cfg.read_bytes() == before
+
+
+def test_essentiality_reads_hits_and_reference_from_a_project_anywhere(tmp_path):
+    """ytab essentiality takes the HMM's hit files and reference from the project's config, not from its folder name."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'scripts/local'))
+    from ytab_essentiality import project_files
+    repo, elsewhere = tmp_path/'repo', tmp_path/'somewhere else/my screen'
+    (elsewhere/'config').mkdir(parents=True)
+    cfg = elsewhere/'config/project.yaml'
+    cfg.write_text(yaml.safe_dump(dict(project_id='screen', repo_root=str(repo), output_project_dir=str(elsewhere),
+                                       reference=dict(fasta='resources/ref.fna', gff='resources/ref.gff'))))
+    fasta, gff, hits = project_files(cfg, ['lib1', 'lib2'])
+    assert fasta == repo/'resources/ref.fna' and gff == repo/'resources/ref.gff'
+    assert hits == [elsewhere/'create_hit_file/lib1/lib1_hits.txt', elsewhere/'create_hit_file/lib2/lib2_hits.txt']

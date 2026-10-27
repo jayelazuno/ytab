@@ -7,10 +7,18 @@ source(file.path(repo_root, "app/shiny/R/project_discovery.R"), local = TRUE)
 
 failures <- character()
 check <- function(ok, label) if (!isTRUE(ok)) failures <<- c(failures, label)
+# a throwaway test project (named like the app-initialization smoke's), removed on exit
+smoke_id <- sprintf("app_init_command_smoke_%s", format(Sys.time(), "%Y%m%d%H%M%S"))
+smoke_dir <- file.path(repo_root, "output", "projects", smoke_id)
+dir.create(file.path(smoke_dir, "config"), recursive = TRUE)
+on.exit(unlink(smoke_dir, recursive = TRUE), add = TRUE)
+writeLines(c("sample,library_role,condition,include", "S1,parent,control,True"), file.path(smoke_dir, "config", "sample_sheet.csv"))
+yaml::write_yaml(list(project_id = smoke_id, species = "glabrata",
+  sample_sheet = file.path("output", "projects", smoke_id, "config", "sample_sheet.csv")), file.path(smoke_dir, "config", "project.yaml"))
+
 visible <- discover_ytab_projects(repo_root)
 all_projects <- discover_ytab_projects(repo_root, include_tests = TRUE)
 labels <- if (nrow(all_projects)) vapply(seq_len(nrow(all_projects)), function(i) project_display_label(as.list(all_projects[i, ])), "") else character()
-smoke_id <- "app_init_command_smoke_20260720114148"
 
 check(nrow(visible) > 0L, "valid user projects are discovered")
 check(all(labels %in% all_projects$display_name), "option labels contain display name only")
@@ -29,5 +37,6 @@ refreshed <- discover_ytab_projects(repo_root)
 preserved <- if (current %in% refreshed$project_config) current else ""
 check(identical(preserved, current), "refresh preserves a valid selection")
 
+unlink(smoke_dir, recursive = TRUE)
 if (length(failures)) { cat("FAIL\n", paste("-", failures, collapse = "\n"), "\n", sep = ""); quit(status = 1L) }
 cat("PASS\n")
