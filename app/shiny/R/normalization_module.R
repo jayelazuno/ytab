@@ -260,10 +260,12 @@ norm_ggplot <- function(data, choice = "sites", genes = NULL) {
                   data.frame(d[, c("method", "comparison_id", "kind")], metric = "Spread of log2 ratios (IQR)", value = d$log2_ratio_iqr_shared))
     zero <- data.frame(metric = "Median log2 ratio (shift)")
   }
-  long$method <- norm_method_short_label(long$method); long$kind <- norm_pair_kind(long$kind)
-  ggplot2::ggplot(long, ggplot2::aes(method, value, colour = kind, text = sprintf("%s<br>%s<br>%s: %.3f", comparison_id, method, metric, value))) +
+  # Unnormalized first, then the methods; one line per pair joins its values, so the change each method makes reads left to right.
+  long$method <- norm_method_short_label(long$method); long$method <- factor(long$method, unique(c("Unnormalized", levels(long$method))))
+  long$method <- droplevels(long$method); long$kind <- norm_pair_kind(long$kind)
+  ggplot2::ggplot(long, ggplot2::aes(method, value, colour = kind, group = comparison_id, text = sprintf("%s<br>%s<br>%s: %.3f", comparison_id, method, metric, value))) +
     ggplot2::geom_hline(ggplot2::aes(yintercept = 0), data = zero, linetype = "dashed", colour = "grey50") +
-    ggplot2::geom_point(size = 3, position = ggplot2::position_dodge(width = .4)) + ggplot2::facet_wrap(~metric, scales = "free_y") +
+    ggplot2::geom_line(linewidth = .7, alpha = .7) + ggplot2::geom_point(size = 3) + ggplot2::facet_wrap(~metric, scales = "free_y") +
     ggplot2::scale_colour_manual(values = c(`control vs control` = YTAB_FOCAL, `treated vs control` = YTAB_ACCENT)) + base +
     ggplot2::labs(x = NULL, y = NULL, colour = "Pair")
 }

@@ -39,11 +39,12 @@ xs_sets_ggplot <- function(inter, species, html = TRUE, top = 15L) {
   ticks <- pretty(c(0, ymax)); ticks <- ticks[ticks <= ymax * 1.05]
   labels <- if (html) c(format(ticks, big.mark = ","), xs_species_labels(species)) else c(parse(text = sprintf('bold("%s")', format(ticks, big.mark = ","))), xs_species_labels(species, FALSE))
   p <- ggplot2::ggplot(d, ggplot2::aes(set, genes)) + ggplot2::geom_col(ggplot2::aes(fill = group, text = tip), width = .7) +
-    ggplot2::geom_text(ggplot2::aes(label = format(genes, big.mark = ",")), vjust = -.4, size = 3.4, fontface = "bold") +
+    # Placed above the bar by position, not vjust: plotly ignores vjust and would centre the count on the bar top.
+    ggplot2::geom_text(ggplot2::aes(y = genes + ymax * .045, label = format(genes, big.mark = ",")), size = 3.4, fontface = "bold") +
     ggplot2::geom_point(data = dots, ggplot2::aes(set, y, colour = on), size = 3.2, inherit.aes = FALSE) +
     ggplot2::scale_colour_manual(values = c(`TRUE` = "black", `FALSE` = "grey85"), guide = "none") +
     ggplot2::scale_fill_manual(values = fills, guide = "none") +
-    ggplot2::scale_y_continuous(breaks = c(ticks, rows), labels = labels, expand = ggplot2::expansion(mult = c(.02, .08))) +
+    ggplot2::scale_y_continuous(breaks = c(ticks, rows), labels = labels, expand = ggplot2::expansion(mult = c(.02, .1))) +
     ggplot2::scale_x_discrete(labels = NULL) +
     ggplot2::labs(x = "Set of species in which the genes are essential", y = "One-to-one orthologs") +
     ggplot2::theme_minimal(base_size = 12) + ggplot2::theme(panel.grid.major.x = ggplot2::element_blank())
