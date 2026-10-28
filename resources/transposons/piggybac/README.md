@@ -13,6 +13,12 @@ built for (Hermes, Ac/Ds), which insert almost anywhere:
 - **The HMM needs no change.** The window HMM learns its target preference from the library's own sites
   (`--sequence-covariate learned`), which is how it already handles Ac/Ds; it is not given the TTAA motif.
 
+**Counting convention.** Gao et al. 2021 counted insertions at one position in opposite orientations as two
+independent insertions. `ytab hit-files` instead unites adjacent positions, as it does for the 8-bp duplications of
+Hermes and Ac/Ds, so YTAB's site counts are not expected to match a piggyBac paper's exactly; gene-level counts are
+the comparable quantity. The same paper's analysis keeps reads "that have a prefix matching the terminus of the PB
+transposon (TTTCTAGGG)" and removes it, which is what `pb_tr_end` trims.
+
 `profile.json` holds the read structure (`pb_tr_end`), which was checked against the first reads of one run of each
 published piggyBac dataset; `used_by` lists them. The terminal-repeat sequence trimmed here is the 3' end of the
 element as it appears in the read, ending at the TTAA junction.
