@@ -436,7 +436,9 @@ go_analysis_plot_semantic_heatmap <- function(data, text_size = 13L, top_n = 35L
 }
 
 go_analysis_plot_height <- function(input, id) {
+  # GO plots draw one row per enriched term, so "auto" fits the number of terms the viewer asked for.
   height <- ytab_plot_customization_values(input, id)$height
+  if (identical(height, "auto")) height <- ytab_auto_plot_height_px(input$go_top_terms %||% 15L)
   height <- sub("px$", "", as.character(height))
   value <- suppressWarnings(as.integer(height))
   if (is.na(value)) 700L else value

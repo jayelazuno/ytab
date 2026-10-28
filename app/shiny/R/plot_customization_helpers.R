@@ -2,8 +2,9 @@ ytab_plot_style_choices <- function() {
   c("Clean" = "clean", "Compact" = "compact", "Presentation" = "presentation")
 }
 
-ytab_plot_height_choices <- function() {
-  c("Auto (fit the samples)" = "auto", "Small" = "small", "Medium" = "medium", "Large" = "large", "Extra large" = "xlarge")
+ytab_plot_height_choices <- function(include_auto = FALSE) {
+  fixed <- c("Small" = "small", "Medium" = "medium", "Large" = "large", "Extra large" = "xlarge")
+  if (isTRUE(include_auto)) c("Auto (fit the contents)" = "auto", fixed) else fixed
 }
 
 # Height for a plot with one item (library, sample, gene) per category: grows with the number of items so a project
@@ -82,7 +83,7 @@ ytab_plot_customization_controls <- function(
   ns_id <- function(suffix) paste0(id, "_", suffix)
   controls <- list(
     selectInput(ns_id("plot_style"), "Plot style", as.list(ytab_plot_style_choices()), selected = "clean"),
-    selectInput(ns_id("plot_height"), "Plot height", as.list(ytab_plot_height_choices()), selected = default_height),
+    selectInput(ns_id("plot_height"), "Plot height", as.list(ytab_plot_height_choices(identical(default_height, "auto"))), selected = default_height),
     selectInput(ns_id("plot_width"), "Plot width", as.list(ytab_plot_width_choices()), selected = default_width),
     selectInput(ns_id("text_size"), "Text size", as.list(ytab_text_size_choices()), selected = "medium")
   )
@@ -111,7 +112,7 @@ ytab_plot_customization_controls <- function(
                                                "Show value labels", default_show_value_labels)))
   if (include_heatmap) {
     controls <- c(controls, list(
-      selectInput(ns_id("heatmap_height"), "Heatmap height", as.list(ytab_plot_height_choices()), selected = "large"),
+      selectInput(ns_id("heatmap_height"), "Heatmap height", as.list(ytab_plot_height_choices(TRUE)), selected = "large"),
       sliderInput(ns_id("row_label_size"), "Row label size", min = 6, max = 18, value = 10, step = 1),
       selectInput(ns_id("column_label_angle"), "Column label angle", as.list(ytab_label_angle_choices()), selected = "45"),
       checkboxInput(ns_id("show_row_labels"), "Show row labels", TRUE),
@@ -145,7 +146,7 @@ ytab_plot_customization_values <- function(input, id, build = NULL) {
   value <- function(suffix, fallback = NULL) input[[paste0(id, "_", suffix)]] %||% fallback
   list(
     style = value("plot_style", "clean"),
-    height = ytab_resolve_plot_height(ytab_plot_height_px(value("plot_height", "auto")), build),
+    height = ytab_resolve_plot_height(ytab_plot_height_px(value("plot_height", "medium")), build),
     width = value("plot_width", "standard"),
     text_size = ytab_text_size_px(value("text_size", "medium")),
     label_mode = value("label_mode", "full"),
