@@ -1,0 +1,87 @@
+# Strain comparison of this public dataset, as streamed by the app (ytab run --workflow config/analyses_workflow.yaml).
+# nrp1 deletion against wild type: independently made libraries, normalized together (merged sequencing runs: ytab merge-runs).
+version: 1
+project_config: project.yaml
+steps:
+- id: normalize
+  module: normalize-project
+  args:
+  - --project-config
+  - project.yaml
+  - --method
+  - betageom
+  - --method
+  - ttr
+  - --method
+  - totreads
+  - --normalize-together
+  - --sample
+  - nrp1D_1_nrp1_deletion_libERR13705597
+  - --sample
+  - nrp1D_2_nrp1_deletion_libERR13705613
+  - --sample
+  - ERR13705629
+  - --sample
+  - ERR13705630
+  - --sample
+  - ERR13705631
+  - --sample
+  - ERR13705632
+  - --sample
+  - ERR13705633
+  - --sample
+  - ERR13705634
+  - --sample
+  - ERR13705635
+  - --sample
+  - ERR13705636
+  - --sample
+  - ERR13705637
+  - --sample
+  - ERR13705638
+  - --sample
+  - ERR13705639
+  - --output
+  - ../normalization/conditions_v1
+- id: multicondition_nrp1_deletion_vs_wild_type
+  module: multicondition-project
+  depends_on:
+  - normalize
+  args:
+  - --project-config
+  - project.yaml
+  - --normalized
+  - ../normalization/conditions_v1/experiment/methods
+  - --normalization
+  - betageom
+  - --sample
+  - Kingma_2025_SATAY::nrp1D_1_nrp1_deletion_libERR13705597=nrp1_deletion
+  - --sample
+  - Kingma_2025_SATAY::nrp1D_2_nrp1_deletion_libERR13705613=nrp1_deletion
+  - --sample
+  - Kingma_2025_SATAY::ERR13705629=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705630=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705631=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705632=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705633=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705634=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705635=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705636=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705637=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705638=wild_type
+  - --sample
+  - Kingma_2025_SATAY::ERR13705639=wild_type
+  - --reference-condition
+  - wild_type
+  - --independent-libraries
+  - --output
+  - ../multicondition/nrp1_deletion_vs_wild_type_BGC

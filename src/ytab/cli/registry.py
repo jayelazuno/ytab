@@ -25,6 +25,7 @@ MODULES = {m.name: m for m in (
     Module("mapfastq", "ytab_run_mapfastq.py", "FASTQ clipping and reference alignment", threads=True),
     Module("hit-files", "ytab_run_create_hit_file.py", "Create unnormalized insertion hit files", threads=True),
     Module("summary", "ytab_run_summary_table.py", "Raw per-sample gene summaries", threads=True),
+    Module("merge-runs", "ytab_merge_runs.py", "Merge sequencing runs of one library into one sample (summed hit file; runs excluded) so analyses count it once", force_option="--force"),
     Module("library-qc", "ytab_run_library_diagnostics.py", "Library diagnostics and insertion architecture", threads=True),
     Module("qc", "ytab_qc.py", "Library QC table for a project: all QC metrics, flagged (rule of thumb / project-relative) and commented, plus plot data", force_option=None),
     Module("tnseq-stats", "ytab_tnseq_stats.py", "Per-library Tn-seq count statistics plus saved Hermes QC", project_option=None, force_option=None),

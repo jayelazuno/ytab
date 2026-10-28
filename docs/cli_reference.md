@@ -69,6 +69,7 @@ P/config/project.yaml --profile core|classifier|fitness|all` runs the standard p
 | `preprocess` | Mapping, hit files and SummaryTable for selected samples in one run (skips stages already done) |
 | `mapfastq` | FASTQ clipping and reference alignment |
 | `hit-files` | Create unnormalized insertion hit files |
+| `merge-runs` | Merge sequencing runs of one library into one sample (summed hit file; runs excluded) so analyses count it once |
 | `summary` | Raw per-sample gene summaries |
 
 ### Quality control
@@ -377,6 +378,33 @@ options:
   --keep-going
   --job-id JOB_ID
   --progress-file PROGRESS_FILE
+```
+
+### merge-runs
+
+Merge sequencing runs of one library into one sample (summed hit file; runs excluded) so analyses count it once. Stage: Sequencing and mapping. Takes `--project-config`.
+
+```text
+usage: ytab_merge_runs.py [-h] --project-config PROJECT_CONFIG
+                          --library LIBRARY --runs RUNS [RUNS ...] [--force]
+
+Merge sequencing runs of one library into one project sample, so analyses count the library once.
+
+A library sequenced on several lanes or runs has one row per run in the sample sheet. Comparisons and essentiality
+treat each included sample as an independent library, so the runs must be summed first: this writes
+<project>/create_hit_file/<library>/<library>_hits.txt (read counts summed per chromosome, strand and position), adds the
+library to the sample sheet (role, condition, strain and pool taken from its runs, which must agree) and excludes the
+runs, keeping their rows and QC. Then build the library's gene summary with `ytab summary --samples LIBRARY`.
+
+  ytab merge-runs --project-config output/projects/P/config/project.yaml --library P_lib1 --runs RUN1 RUN2
+
+options:
+  -h, --help            show this help message and exit
+  --project-config PROJECT_CONFIG
+  --library LIBRARY     Name of the merged sample (letters, numbers, - and _)
+  --runs RUNS [RUNS ...]
+                        Sample IDs of the runs of this library
+  --force               Replace an existing merged sample of this name
 ```
 
 ### summary
@@ -1126,6 +1154,7 @@ Create explicit fitness comparisons. Stage: Condition comparisons. Takes `--proj
 ```text
 usage: ytab_init_comparison_design.py [-h] --project-config PROJECT_CONFIG
                                       [--overwrite] [--print-design]
+                                      [--controls {one,all}]
 
 Create and validate a parent-treated comparison design.
 
@@ -1134,6 +1163,11 @@ options:
   --project-config PROJECT_CONFIG
   --overwrite
   --print-design
+  --controls {one,all}  one: each treated library with the single parent of
+                        its pool; all: with every control of its background
+                        and pool (or its parents), one comparison per treated
+                        condition (dose series, several conditions from one
+                        pool)
 ```
 
 ### fitness

@@ -1,0 +1,89 @@
+# Condition analyses of this public dataset, as streamed by the app (ytab run --workflow config/analyses_workflow.yaml).
+# Comparisons follow config/comparison_design.csv (ytab comparison-design --controls all): each treated library against every control
+# (or parent) of its strain and pool; multi-condition tests run per strain and drug series against its untreated reference.
+# z-score (Gale et al. 2020): each outgrowth against the two mitotic libraries, raw CPM.
+version: 1
+project_config: project.yaml
+steps:
+- id: normalize
+  module: normalize-project
+  args:
+  - --project-config
+  - project.yaml
+  - --method
+  - betageom
+  - --method
+  - ttr
+  - --method
+  - totreads
+  - --normalize-together
+  - --sample
+  - 3786_mitotic_libSRR15669611
+  - --sample
+  - 3786_meiotic_longOutgrowth_libSRR15669613
+  - --sample
+  - 3786_mitotic_libSRR15669619
+  - --sample
+  - 3786_meiotic_longOutgrowth_libSRR15669615
+  - --sample
+  - 3786_meiotic_shortOutgrowth_libSRR15669605
+  - --sample
+  - 3786_meiotic_shortOutgrowth_libSRR15669617
+  - --output
+  - ../normalization/conditions_v1
+- id: resampling_bgc
+  module: treated-vs-control
+  depends_on:
+  - normalize
+  args:
+  - --project-config
+  - project.yaml
+  - --method
+  - resampling
+  - --normalization-run
+  - ../normalization/conditions_v1
+  - --normalization
+  - betageom
+  - --output
+  - ../treated_vs_control/treated_vs_control_BGC
+- id: multicondition_3786_conditions
+  module: multicondition-project
+  depends_on:
+  - normalize
+  args:
+  - --project-config
+  - project.yaml
+  - --normalized
+  - ../normalization/conditions_v1/experiment/methods
+  - --normalization
+  - betageom
+  - --sample
+  - Billmyre_2022_pombe::3786_mitotic_libSRR15669611=mitotic
+  - --sample
+  - Billmyre_2022_pombe::3786_meiotic_longOutgrowth_libSRR15669613=meiotic_longOutgrowth
+  - --sample
+  - Billmyre_2022_pombe::3786_mitotic_libSRR15669619=mitotic
+  - --sample
+  - Billmyre_2022_pombe::3786_meiotic_longOutgrowth_libSRR15669615=meiotic_longOutgrowth
+  - --sample
+  - Billmyre_2022_pombe::3786_meiotic_shortOutgrowth_libSRR15669605=meiotic_shortOutgrowth
+  - --sample
+  - Billmyre_2022_pombe::3786_meiotic_shortOutgrowth_libSRR15669617=meiotic_shortOutgrowth
+  - --reference-condition
+  - mitotic
+  - --output
+  - ../multicondition/3786_conditions_BGC
+- id: zscore_meiotic_longOutgrowth
+  module: fitness
+  args:
+  - --analysis-id
+  - meiotic_longOutgrowth_vs_mitotic
+  - --comparisons
+  - 3786_meiotic_longOutgrowth_libSRR15669613_vs_3786_mitotic_libSRR15669611,3786_meiotic_longOutgrowth_libSRR15669613_vs_3786_mitotic_libSRR15669619,3786_meiotic_longOutgrowth_libSRR15669615_vs_3786_mitotic_libSRR15669611,3786_meiotic_longOutgrowth_libSRR15669615_vs_3786_mitotic_libSRR15669619
+- id: zscore_meiotic_shortOutgrowth
+  module: fitness
+  args:
+  - --analysis-id
+  - meiotic_shortOutgrowth_vs_mitotic
+  - --comparisons
+  - 3786_meiotic_shortOutgrowth_libSRR15669605_vs_3786_mitotic_libSRR15669611,3786_meiotic_shortOutgrowth_libSRR15669605_vs_3786_mitotic_libSRR15669619,3786_meiotic_shortOutgrowth_libSRR15669617_vs_3786_mitotic_libSRR15669611,3786_meiotic_shortOutgrowth_libSRR15669617_vs_3786_mitotic_libSRR15669619

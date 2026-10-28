@@ -1,0 +1,70 @@
+# Condition analyses of this public dataset, as streamed by the app (ytab run --workflow config/analyses_workflow.yaml).
+# Comparisons follow config/comparison_design.csv (ytab comparison-design --controls all): each treated library against every control
+# (or parent) of its strain and pool; multi-condition tests run per strain and drug series against its untreated reference.
+version: 1
+project_config: project.yaml
+steps:
+- id: normalize
+  module: normalize-project
+  args:
+  - --project-config
+  - project.yaml
+  - --method
+  - betageom
+  - --method
+  - ttr
+  - --method
+  - totreads
+  - --normalize-together
+  - --sample
+  - SRR33001998
+  - --sample
+  - SRR33001994
+  - --sample
+  - SRR33001997
+  - --sample
+  - SRR33001996
+  - --sample
+  - SRR33001995
+  - --output
+  - ../normalization/conditions_v1
+- id: resampling_bgc
+  module: treated-vs-control
+  depends_on:
+  - normalize
+  args:
+  - --project-config
+  - project.yaml
+  - --method
+  - resampling
+  - --normalization-run
+  - ../normalization/conditions_v1
+  - --normalization
+  - betageom
+  - --output
+  - ../treated_vs_control/treated_vs_control_BGC
+- id: multicondition_CBS138_2001_caspofungin_series
+  module: multicondition-project
+  depends_on:
+  - normalize
+  args:
+  - --project-config
+  - project.yaml
+  - --normalized
+  - ../normalization/conditions_v1/experiment/methods
+  - --normalization
+  - betageom
+  - --sample
+  - Nickels_2025_glabrata_CBS138::SRR33001998=caspofungin_no_drug
+  - --sample
+  - Nickels_2025_glabrata_CBS138::SRR33001994=caspofungin_16ng
+  - --sample
+  - Nickels_2025_glabrata_CBS138::SRR33001997=caspofungin_2ng
+  - --sample
+  - Nickels_2025_glabrata_CBS138::SRR33001996=caspofungin_4ng
+  - --sample
+  - Nickels_2025_glabrata_CBS138::SRR33001995=caspofungin_8ng
+  - --reference-condition
+  - caspofungin_no_drug
+  - --output
+  - ../multicondition/CBS138_2001_caspofungin_series_BGC

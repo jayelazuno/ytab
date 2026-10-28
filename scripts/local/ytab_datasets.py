@@ -27,7 +27,7 @@ PROJECTS = ROOT/"output/projects"
 # result folder -> (app tab, file that marks a finished run)
 RESULTS = [("essentiality", "Essentiality", "models/genes.tsv"), ("normalization", "Site normalization", "manifest.json"),
            ("treated_vs_parent", "Treated vs control (z-score)", "zscore_manifest.json"), ("treated_vs_control", "Treated vs control (resampling/Gumbel)", "manifest.json"),
-           ("multicondition", "Multi-condition", "manifest.json"), ("genetic_interactions", "Genetic interactions", "manifest.json"),
+           ("multicondition", "Multi-condition", "manifest.json"), ("genetic_interactions", "Genetic interactions", "run_manifest.json"),
            ("library_correlation", "Library correlation", "manifest.json")]
 
 

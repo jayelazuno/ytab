@@ -1,0 +1,105 @@
+# Condition analyses of this public dataset, as streamed by the app (ytab run --workflow config/analyses_workflow.yaml).
+# Comparisons follow config/comparison_design.csv (ytab comparison-design --controls all): each treated library against every control
+# (or parent) of its strain and pool; multi-condition tests run per strain and drug series against its untreated reference.
+version: 1
+project_config: project.yaml
+steps:
+- id: normalize
+  module: normalize-project
+  args:
+  - --project-config
+  - project.yaml
+  - --method
+  - betageom
+  - --method
+  - ttr
+  - --method
+  - totreads
+  - --normalize-together
+  - --sample
+  - SRR29743993
+  - --sample
+  - SRR29743986
+  - --sample
+  - SRR29743989
+  - --sample
+  - SRR29743988
+  - --sample
+  - SRR29743987
+  - --sample
+  - SRR29743985
+  - --sample
+  - SRR29743991
+  - --sample
+  - SRR29743990
+  - --sample
+  - SRR29743983
+  - --sample
+  - SRR29743982
+  - --output
+  - ../normalization/conditions_v1
+- id: resampling_bgc
+  module: treated-vs-control
+  depends_on:
+  - normalize
+  args:
+  - --project-config
+  - project.yaml
+  - --method
+  - resampling
+  - --normalization-run
+  - ../normalization/conditions_v1
+  - --normalization
+  - betageom
+  - --output
+  - ../treated_vs_control/treated_vs_control_BGC
+- id: multicondition_CBS138_micafungin_series
+  module: multicondition-project
+  depends_on:
+  - normalize
+  args:
+  - --project-config
+  - project.yaml
+  - --normalized
+  - ../normalization/conditions_v1/experiment/methods
+  - --normalization
+  - betageom
+  - --sample
+  - Nickels_2024_glabrata::SRR29743993=parent
+  - --sample
+  - Nickels_2024_glabrata::SRR29743986=micafungin_16ng
+  - --sample
+  - Nickels_2024_glabrata::SRR29743989=micafungin_2ng
+  - --sample
+  - Nickels_2024_glabrata::SRR29743988=micafungin_4ng
+  - --sample
+  - Nickels_2024_glabrata::SRR29743987=micafungin_8ng
+  - --reference-condition
+  - parent
+  - --output
+  - ../multicondition/CBS138_micafungin_series_BGC
+- id: multicondition_CBS138_2001_micafungin_series
+  module: multicondition-project
+  depends_on:
+  - normalize
+  args:
+  - --project-config
+  - project.yaml
+  - --normalized
+  - ../normalization/conditions_v1/experiment/methods
+  - --normalization
+  - betageom
+  - --sample
+  - Nickels_2024_glabrata::SRR29743985=parent
+  - --sample
+  - Nickels_2024_glabrata::SRR29743991=micafungin_16ng
+  - --sample
+  - Nickels_2024_glabrata::SRR29743990=micafungin_32ng
+  - --sample
+  - Nickels_2024_glabrata::SRR29743983=micafungin_4ng
+  - --sample
+  - Nickels_2024_glabrata::SRR29743982=micafungin_8ng
+  - --reference-condition
+  - parent
+  - --output
+  - ../multicondition/CBS138_2001_micafungin_series_BGC

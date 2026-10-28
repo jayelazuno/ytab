@@ -163,8 +163,10 @@ def load_design(path: Path, comparisons: list[str] | None = None):
     contrasts = design[design.comparison_id.isin(ids)]
     if contrasts.empty:raise ValueError("No selected comparisons were found in the design.")
     design = design[design.background.isin(contrasts.background)]  # the noise model is per background; other backgrounds are not needed
-    samples = pd.concat([design.rename(columns=dict(parent_sample="sample", parent_condition="condition"))[["sample", "condition", "background", "pool"]],
-                         design.rename(columns=dict(treated_sample="sample", treated_condition="condition"))[["sample", "condition", "background", "pool"]]])
+    # role: the design column a sample is in; controls are found by it, so a control may carry its own condition label
+    # (e.g. "mitotic" or "micafungin_no_drug") rather than "parent"
+    samples = pd.concat([design.rename(columns=dict(parent_sample="sample", parent_condition="condition"))[["sample", "condition", "background", "pool"]].assign(role="control"),
+                         design.rename(columns=dict(treated_sample="sample", treated_condition="condition"))[["sample", "condition", "background", "pool"]].assign(role="treated")])
     return contrasts, samples.drop_duplicates("sample", keep="first").reset_index(drop=True)
 
 
@@ -342,7 +344,7 @@ def run(comparison_design: Path, output: Path, sample_files: dict | None = None,
     if missing:raise ValueError("No gene values for: " + ", ".join(missing))
 
     models, thresholds, coefs, control_rows = {}, [], [], []
-    controls_by_bg = sample_map[sample_map.condition == "parent"].groupby("background", sort=True)["sample"].apply(lambda x:list(dict.fromkeys(x)))
+    controls_by_bg = sample_map[sample_map.role == "control"].groupby("background", sort=True)["sample"].apply(lambda x:list(dict.fromkeys(x)))
     for bg, controls in controls_by_bg.items():
         if len(controls) < 2:raise ValueError("Each background requires at least two control (parent) samples for the noise model.")
         c1, c2 = controls[:2]; model = control_model(values, c1, c2, s)

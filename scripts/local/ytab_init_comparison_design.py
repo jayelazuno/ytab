@@ -11,8 +11,11 @@ from ytab.pipeline.treated_vs_parent_runner import (infer_comparison_design, loa
 def main():
     parser=argparse.ArgumentParser(description="Create and validate a parent-treated comparison design.")
     parser.add_argument("--project-config", type=Path, required=True); parser.add_argument("--overwrite", action="store_true")
-    parser.add_argument("--print-design", action="store_true"); args=parser.parse_args()
-    config=load_project_for_treated_vs_parent(args.project_config); path=infer_comparison_design(config,args.overwrite)
+    parser.add_argument("--print-design", action="store_true")
+    parser.add_argument("--controls", choices=("one", "all"), default="one", help="one: each treated library with the single parent of its pool; all: with every control of its "
+                        "background and pool (or its parents), one comparison per treated condition (dose series, several conditions from one pool)")
+    args=parser.parse_args()
+    config=load_project_for_treated_vs_parent(args.project_config); path=infer_comparison_design(config,args.overwrite,args.controls)
     rows=load_comparison_design(path); result=validate_comparison_design(config,rows)
     root=Path(config["_repo_root"]);sample_sheet=Path(config.get("sample_sheet") or "")
     if not sample_sheet.is_absolute():sample_sheet=(root/sample_sheet).resolve()

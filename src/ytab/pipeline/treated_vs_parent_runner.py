@@ -144,7 +144,11 @@ def _write_design_issues(path: Path, rows: list[dict]) -> Path:
     return path
 
 
-def infer_comparison_design(config: dict, overwrite: bool = False) -> Path:
+def infer_comparison_design(config: dict, overwrite: bool = False, controls: str = "one") -> Path:
+    """controls="one": each treated library with the single parent of its background and pool (pairs left out when
+    there are several). controls="all": each treated library with every control of its background and pool (library
+    role control, or the parents when the pool has none), labelled by the samples' own conditions, so a dose series or
+    several conditions grown from one pool become one comparison per treated condition."""
     path = _paths(config)["design"]
     if path.is_file() and not overwrite:
         return path
@@ -152,6 +156,24 @@ def infer_comparison_design(config: dict, overwrite: bool = False) -> Path:
     parents = [row for row in samples if _condition(row) == "parent"]
     treated = [row for row in samples if _condition(row) == "treated"]
     rows = []
+    if controls == "all":
+        for child in treated:
+            background, pool = _metadata(child, "background"), _metadata(child, "pool")
+            same = [p for p in parents if _metadata(p, "background") == background and _metadata(p, "pool") == pool]
+            chosen = [p for p in same if str(p.get("library_role") or "").strip().lower() == "control"] or same
+            condition = str(child.get("condition") or "").strip() or "treated"
+            for parent in chosen:
+                cid = re.sub(r"[^A-Za-z0-9_-]+", "_", f"{child['sample']}_vs_{parent['sample']}").strip("_")
+                rows.append({"comparison_id": cid, "pair_id": cid, "parent_sample": parent["sample"], "treated_sample": child["sample"],
+                             "background": background, "pool": pool, "parent_condition": str(parent.get("condition") or "").strip() or "parent",
+                             "treated_condition": condition, "include": "true", "notes": ""})
+            if not chosen:
+                rows.append({"comparison_id": re.sub(r"[^A-Za-z0-9_-]+", "_", f"{child['sample']}_vs_none"), "pair_id": "", "parent_sample": "",
+                             "treated_sample": child["sample"], "background": background, "pool": pool, "parent_condition": "parent",
+                             "treated_condition": condition, "include": "false", "notes": "No control or parent in this background and pool."})
+        write_comparison_design(path, rows)
+        _write_design_issues(_paths(config)["issues"], validate_comparison_design(config, rows)["issues"])
+        return path
     for child in treated:
         background, pool = _metadata(child, "background"), _metadata(child, "pool")
         matches = [parent for parent in parents if _metadata(parent, "background") == background and _metadata(parent, "pool") == pool]
@@ -183,7 +205,7 @@ def load_comparison_design(design_file: Path) -> list[dict]:
 def validate_comparison_design(config: dict, design_rows: list[dict]) -> dict:
     samples = {str(row.get("sample") or ""): row for row in config.get("samples", [])}
     issues = []
-    seen_comparisons, seen_pairs, parent_use, treated_use = set(), set(), {}, {}
+    seen_comparisons, seen_pairs, pair_use = set(), set(), set()
     def issue(row, code, message):
         issues.append({"comparison_id": row.get("comparison_id", ""), "pair_id": row.get("pair_id", ""),
                        "issue": code, "message": message})
@@ -211,11 +233,11 @@ def validate_comparison_design(config: dict, design_rows: list[dict]) -> dict:
                 try: detect_raw_summary_feature_table(config,sample)
                 except FileNotFoundError as exc: issue(row,"missing_raw_summary",str(exc))
                 except ValueError as exc: issue(row,"ambiguous_raw_summary",str(exc))
-        parent_use[parent] = parent_use.get(parent, 0) + 1; treated_use[treated] = treated_use.get(treated, 0) + 1
-    for sample, count in parent_use.items():
-        if sample and count > 1: issue({}, "parent_reused", f"Parent sample {sample} occurs in {count} included pairs.")
-    for sample, count in treated_use.items():
-        if sample and count > 1: issue({}, "treated_reused", f"Treated sample {sample} occurs in {count} included pairs.")
+        # A control may serve several treated libraries (a dose series, or every no-drug control of a pool as in Gale et
+        # al. 2020): calls are made per background x treated condition with each library counted once. Only a repeated
+        # control/treated pair is an error.
+        if (parent, treated) in pair_use: issue(row, "duplicate_pair", f"{parent} -> {treated} occurs twice.")
+        pair_use.add((parent, treated))
     return {"valid": not issues, "issues": issues, "included_count": sum(_bool(r.get("include", True)) for r in design_rows)}
 
 
@@ -289,9 +311,11 @@ def verify_cpm_normalization(script_inspection: dict) -> dict:
     return script_inspection
 
 
-def resolve_treated_vs_parent_inputs(config: dict, comparisons: list[dict], input_mode: str = "auto") -> dict:
+def resolve_treated_vs_parent_inputs(config: dict, comparisons: list[dict], input_mode: str = "auto", context: list[dict] | None = None) -> dict:
+    """Raw SummaryTables of the selected comparisons' samples and of `context` rows: the z-score's noise model uses every
+    design sample of the selected backgrounds (zscore.load_design), not only the selected pairs."""
     if input_mode not in {"auto", "raw-summary"}: raise ValueError(INPUT_MODE_ERROR)
-    samples = sorted({r[k] for r in comparisons for k in ("parent_sample", "treated_sample") if r.get(k)})
+    samples = sorted({r[k] for r in [*comparisons, *(context or [])] for k in ("parent_sample", "treated_sample") if r.get(k)})
     files = {sample: detect_raw_summary_feature_table(config, sample) for sample in samples}
     return {"requested_input_mode": input_mode, "input_mode": "raw-summary", "sample_files": files,
             "selected_comparisons": comparisons}
@@ -542,7 +566,9 @@ def run_treated_vs_parent_project(project_config: Path, analysis_id="treated_vs_
     _write_design_issues(_paths(config)["issues"], validation["issues"])
     if not validation["valid"]: raise ValueError("Comparison design has unresolved issues; review " + str(_paths(config)["issues"]))
     selected = get_included_comparisons(rows, comparisons)
-    resolved = resolve_treated_vs_parent_inputs(config, selected, input_mode)
+    backgrounds = {r.get("background") for r in selected}
+    context = [r for r in get_included_comparisons(rows, None) if r.get("background") in backgrounds]
+    resolved = resolve_treated_vs_parent_inputs(config, selected, input_mode, context)
     script = zscore_script(config)
     normalization = (normalization or "cpm").lower() if normalization != "cpm" else "cpm"
     normalized_input = None

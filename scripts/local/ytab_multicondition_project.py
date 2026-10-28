@@ -53,6 +53,9 @@ def main():
         write_manifest(out, cfg, a.normalization, a.normalized, plots_ok=(out/"plots/plots_manifest.json").exists(), plots_message=None, adopted=str(a.adopt.resolve()))
         return
     if not (a.normalized and a.sample and a.reference_condition):p.error("--normalized, --sample and --reference-condition are required")
+    # relative to the working directory, like --output (workflows run from their folder); kept relative to the repository
+    # when inside it, since the tests run from there and manifests must not hold local paths
+    normalized = Path(a.normalized).resolve(); a.normalized = str(normalized.relative_to(ROOT) if normalized.is_relative_to(ROOT) else normalized)
     resolve = lambda x:Path(x) if Path(x).is_absolute() else ROOT/x
     fasta, gff = resolve(cfg["reference"]["fasta"]), resolve(cfg["reference"]["gff"])
     command = [sys.executable, SCRIPTS/"ytab_multicondition.py", "--normalized", a.normalized, "--normalization", a.normalization,

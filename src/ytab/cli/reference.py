@@ -13,7 +13,7 @@ from .registry import MODULES, ROOT, command
 STAGES = [
     ("Start a project", ["init", "import-hits", "reference", "status"]),
     ("Run everything", ["pipeline"]),
-    ("Sequencing and mapping", ["preprocess", "mapfastq", "hit-files", "summary"]),
+    ("Sequencing and mapping", ["preprocess", "mapfastq", "hit-files", "merge-runs", "summary"]),
     ("Quality control", ["qc", "library-qc", "tnseq-stats", "library-correlation"]),
     ("Normalization", ["normalize-project", "normalize", "normalize-experiment", "normalize-genes", "ttr", "bgc-audit", "abgc-audit",
                        "normalization", "summary-normalized", "combine-hits", "summary-combined"]),
