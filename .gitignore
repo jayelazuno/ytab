@@ -66,3 +66,20 @@ __pycache__/
 
 # Obsolete material kept for reference, not part of the app (see archive/ARCHIVE_MANIFEST.md)
 /archive/
+
+# Research, benchmarking and presentation material: kept locally, not part of the app or its data.
+# The app, its documentation, the pipelines and the reprocessed project data all stay tracked.
+/docs/manuscript/
+/scripts/paper/
+/output/paper/
+/output/e2e_benchmark/
+/output/ui_benchmark/
+/output/public_expansion/
+/output/public_expansion_2/
+/output/ade2_jackpot/
+/scripts/local/ytab_e2e_benchmark.py
+/scripts/local/ytab_ui_benchmark.R
+/scripts/local/ytab_pool_comparison_slides.R
+/scripts/local/ytab_public_expansion.py
+/scripts/local/ytab_power_audit.py
+/scripts/local/ytab_ade2_jackpot.py
