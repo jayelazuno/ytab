@@ -1,4 +1,4 @@
 sample,study,library_role,condition,background,pool,culture_replicate,display_name,transposon,library_design,include,notes
-SRR36343507,Yao2026,parent,parent,GS115,G15P,1,parent,piggybac,pb_tr_end,True,"P.pg0015P piggyBac library, parent (Yao et al. 2026, PRJNA1376236)"
-SRR36343506,Yao2026,treated,passage_4,GS115,G15P,1,passage_4,piggybac,pb_tr_end,True,"P.pg0015P piggyBac library, passage 4 (Yao et al. 2026, PRJNA1376236)"
-SRR36343505,Yao2026,treated,passage_67,GS115,G15P,1,passage_67,piggybac,pb_tr_end,True,"P.pg0015P piggyBac library, passage 67 (Yao et al. 2026, PRJNA1376236)"
+SRR36343507,Yao2026,parent,parent,P_pg0015P,G15P,1,G15P,piggybac,pb_tr_end,True,"unsorted PB insertion library after methanol-induced transposition (Yao et al. 2026, PRJNA1376236)"
+SRR36343506,Yao2026,treated,egfp_low,P_pg0015P,G15P,1,G15P-P4,piggybac,pb_tr_end,True,"FACS-sorted population with LOW eGFP expression (named G15P-P4 in the paper) (Yao et al. 2026, PRJNA1376236)"
+SRR36343505,Yao2026,treated,egfp_high,P_pg0015P,G15P,1,G15P-P67,piggybac,pb_tr_end,True,"FACS-sorted population with HIGH eGFP expression (named G15P-P67 in the paper) (Yao et al. 2026, PRJNA1376236)"
