@@ -1,0 +1,3 @@
+3786_mitotic_libSRR15669619
+Pearson: PearsonRResult(statistic=np.float64(0.6893405669588476), pvalue=np.float64(0.0))
+Spearman: SignificanceResult(statistic=np.float64(0.9417595753813239), pvalue=np.float64(0.0))
