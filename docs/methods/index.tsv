@@ -14,5 +14,6 @@ order	section	title	file
 13	Screen planning	Coverage planning	docs/screen_coverage.md
 14	Screen planning	Identifying single mutants (bench protocol)	docs/methods/02_identifying_single_mutants.md
 15	Screen planning	Mutant identification	docs/mutant_identification.md
-16	Reference	Command line	docs/command_line.md
-17	Reference	References	docs/references.md
+16	Reference	Command line: workflows and outputs	docs/command_line.md
+17	Reference	Command-line reference: every command and its options	docs/cli_reference.md
+18	Reference	References	docs/references.md

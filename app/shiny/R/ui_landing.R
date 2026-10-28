@@ -17,7 +17,7 @@ landing_ui <- function(species_choices, detected_cpu, shinyfiles_available) {
           tags$span("Gene explorer"),
           tags$span("Screen planning")),
         tags$div(class = "ytab-hero-help",
-          actionLink("open_help_methods", "Methods"), actionLink("open_help_tutorial", "Tutorial"),
+          actionLink("open_help_methods", "Methods"), actionLink("open_datasets", "Datasets"), actionLink("open_help_tutorial", "Tutorial"),
           actionLink("open_help_release", "Release notes"), actionLink("open_search", "Search")))),
     uiOutput("landing_warning"),
     tags$section(class = "ytab-entry-grid",

@@ -11,7 +11,7 @@ def help_text():
     return f"""YTAB — modular analysis CLI
 
 Usage:
-  ytab modules [--json]
+  ytab modules [--json | --markdown]
   ytab <module> --help
   ytab <module> <module options>
   ytab run --project-config PROJECT.yaml --profile core|classifier|fitness|all
@@ -32,9 +32,13 @@ def main(argv=None):
         print(help_text())
         return 0
     if argv[0] == "modules":
-        if argv[1:] not in ([], ["--json"]):
-            print("Usage: ytab modules [--json]", file=sys.stderr)
+        if argv[1:] not in ([], ["--json"], ["--markdown"]):
+            print("Usage: ytab modules [--json | --markdown]", file=sys.stderr)
             return 2
+        if argv[1:] == ["--markdown"]:
+            from .reference import markdown
+            print(markdown())
+            return 0
         print(json.dumps(inventory(), indent=2) if argv[1:] else help_text())
         return 0
     if argv[0] == "run":

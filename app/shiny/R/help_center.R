@@ -1,4 +1,4 @@
-# Help center: methods pages, tutorial, release notes and search. Content is Markdown in docs/ (docs/methods/index.tsv
+# Help center: methods pages, tutorial, release notes, datasets and search. Content is Markdown in docs/ (docs/methods/index.tsv
 # lists the methods pages); the app only renders it. Images use paths relative to their page (e.g. img/qc.png), served
 # under the resource path "ytab-docs".
 
@@ -27,7 +27,7 @@ help_render <- function(repo_root, file) {
 # Plain text of a page for search (Markdown syntax stripped).
 help_plain_text <- function(repo_root, file) {
   text <- help_markdown(repo_root, file)
-  text <- gsub("```[\\s\\S]*?```", " ", text, perl = TRUE)
+  text <- gsub("```[A-Za-z]*", " ", text)   # code stays searchable (commands and their options)
   text <- gsub("!\\[[^]]*\\]\\([^)]*\\)", " ", text)
   text <- gsub("\\[([^]]*)\\]\\([^)]*\\)", "\\1", text)
   text <- gsub("[#*`|>_]", " ", text)
@@ -49,7 +49,7 @@ help_tab_index <- data.frame(
   stringsAsFactors = FALSE)
 
 # Search: tabs whose name or keywords match, then pages ranked by the number of query words they contain.
-help_search <- function(repo_root, query, pages = help_pages(repo_root), max_hits = 12L) {
+help_search <- function(repo_root, query, pages = help_pages(repo_root), max_hits = 12L, datasets = NULL) {
   words <- unique(tolower(strsplit(trimws(query %||% ""), "\\s+")[[1]])); words <- words[nchar(words) >= 2L]
   empty <- data.frame(kind = character(), id = character(), title = character(), section = character(), snippet = character(), stringsAsFactors = FALSE)
   if (!length(words)) return(empty)
@@ -68,7 +68,8 @@ help_search <- function(repo_root, query, pages = help_pages(repo_root), max_hit
   })
   found <- do.call(rbind, Filter(Negate(is.null), rows))
   if (!is.null(found) && nrow(found)) found <- found[order(-found$score), setdiff(names(found), "score"), drop = FALSE] else found <- empty
-  utils::head(rbind(tabs, found), max_hits)
+  sets <- if (!is.null(datasets)) datasets_search(datasets, words) else found[0, , drop = FALSE]
+  utils::head(rbind(tabs, sets, found), max_hits)
 }
 
 help_center_modal <- function(pages, selected) {
@@ -84,12 +85,13 @@ help_center_modal <- function(pages, selected) {
 }
 
 help_search_modal <- function() modalDialog(title = "Search YTAB", size = "m", easyClose = TRUE, footer = modalButton("Close"),
-  textInput("help_search_query", NULL, placeholder = "e.g. BGC, essential, top hits, colonies, IGV", width = "100%"),
+  textInput("help_search_query", NULL, placeholder = "e.g. BGC, essential, micafungin, pombe, --min-reads, SRR29743984", width = "100%"),
   uiOutput("help_search_results"))
 
-help_center_server <- function(input, output, session, repo_root, go_to = NULL) {
+help_center_server <- function(input, output, session, repo_root, go_to = NULL, open_project = NULL) {
   if (dir.exists(file.path(repo_root, "docs"))) addResourcePath("ytab-docs", file.path(repo_root, "docs"))
   pages <- help_pages(repo_root); current <- reactiveVal(if (nrow(pages)) pages$id[[1]] else "")
+  datasets <- datasets_catalog(repo_root); sets <- datasets_server(input, output, session, repo_root, datasets, open_project)
   open_page <- function(id) { current(id); showModal(help_center_modal(pages, id)) }
   output$help_page_body <- renderUI({ id <- current(); req(nzchar(id)); help_render(repo_root, pages$file[match(id, pages$id)]) })
   for (i in seq_len(nrow(pages))) local({ id <- pages$id[[i]]; observeEvent(input[[paste0("help_page_", id)]], open_page(id), ignoreInit = TRUE) })
@@ -101,8 +103,8 @@ help_center_server <- function(input, output, session, repo_root, go_to = NULL) 
   observeEvent(input$open_search, showModal(help_search_modal()), ignoreInit = TRUE)
   observeEvent(input$open_search_nav, showModal(help_search_modal()), ignoreInit = TRUE)
   output$help_search_results <- renderUI({
-    hits <- help_search(repo_root, input$help_search_query %||% "", pages)
-    if (!nzchar(trimws(input$help_search_query %||% ""))) return(tags$p(class = "text-muted", "Search the methods, the tutorial, the release notes and the tabs."))
+    hits <- help_search(repo_root, input$help_search_query %||% "", pages, datasets = datasets)
+    if (!nzchar(trimws(input$help_search_query %||% ""))) return(tags$p(class = "text-muted", "Search the methods, the public datasets, the command-line reference, the tutorial, the release notes and the tabs."))
     if (!nrow(hits)) return(tags$p(class = "text-muted", "Nothing found."))
     tags$ul(class = "ytab-search-results", lapply(seq_len(nrow(hits)), function(i) tags$li(
       tags$a(href = "#", class = "ytab-search-hit", `data-kind` = hits$kind[[i]], `data-id` = hits$id[[i]], hits$title[[i]]),
@@ -111,7 +113,9 @@ help_center_server <- function(input, output, session, repo_root, go_to = NULL) 
   })
   observeEvent(input$help_search_open, {
     hit <- input$help_search_open
-    if (identical(hit$kind, "tab") && is.function(go_to)) { removeModal(); go_to(hit$id) } else open_page(hit$id)
+    if (identical(hit$kind, "tab") && is.function(go_to)) { removeModal(); go_to(hit$id) }
+    else if (identical(hit$kind, "dataset")) sets$open(hit$id)
+    else open_page(hit$id)
   }, ignoreInit = TRUE)
   invisible(pages)
 }

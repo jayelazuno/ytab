@@ -26,5 +26,6 @@ workspace_ui <- function(detected_cpu) {
       tabPanel("Screen Planning",value="screen_coverage",screen_coverage_ui()),
       bslib::nav_item(tags$div(class="ytab-nav-tools",
         actionLink("open_search_nav", tagList(icon("magnifying-glass"), "Search"), title = "Search the methods, tutorial and tabs"),
-        actionLink("open_help_methods_nav", tagList(icon("book"), "Methods"), title = "Methods and help")))))
+        actionLink("open_help_methods_nav", tagList(icon("book"), "Methods"), title = "Methods and help"),
+        actionLink("open_datasets_nav", tagList(icon("database"), "Datasets"), title = "Public datasets reprocessed with YTAB")))))
 }
