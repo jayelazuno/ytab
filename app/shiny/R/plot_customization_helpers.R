@@ -3,7 +3,26 @@ ytab_plot_style_choices <- function() {
 }
 
 ytab_plot_height_choices <- function() {
-  c("Small" = "small", "Medium" = "medium", "Large" = "large", "Extra large" = "xlarge")
+  c("Auto (fit the samples)" = "auto", "Small" = "small", "Medium" = "medium", "Large" = "large", "Extra large" = "xlarge")
+}
+
+# Height for a plot with one item (library, sample, gene) per category: grows with the number of items so a project
+# with dozens of libraries is not squeezed into the height that suits a project with five. Clamped to the same range
+# as the fixed choices, so a very large project stays scrollable rather than endless.
+ytab_auto_plot_height_px <- function(n) {
+  n <- suppressWarnings(as.integer(n %||% 0L)); if (is.na(n)) n <- 0L
+  paste0(max(380L, min(1400L, as.integer(420 + 14 * n))), "px")
+}
+
+# Items a built plot draws one of per category. Universal: any plot data frame carrying a library or sample column,
+# whatever the project or species; otherwise NA, and the caller keeps its fixed height.
+ytab_plot_item_count <- function(build) {
+  d <- if (is.data.frame(build)) build else build$data
+  if (!is.data.frame(d) || !nrow(d)) return(NA_integer_)
+  for (column in c(".library", "sample", "Sample", "library", "display_name")) {
+    if (column %in% names(d)) return(length(unique(d[[column]])))
+  }
+  NA_integer_
 }
 
 ytab_text_size_choices <- function() {
@@ -36,6 +55,7 @@ ytab_plot_height_px <- function(choice, custom = NULL, default = "medium") {
     value <- suppressWarnings(as.integer(custom))
     if (!is.na(value)) return(paste0(max(250L, min(value, 1400L)), "px"))
   }
+  if (identical(choice, "auto")) return("auto")   # resolved by the caller, which knows how many items the plot draws
   heights <- c(small = "380px", medium = "520px", large = "700px", xlarge = "860px")
   unname(heights[[choice]] %||% heights[[default]] %||% heights[["medium"]])
 }
@@ -113,11 +133,19 @@ ytab_plot_customization_controls <- function(
   )
 }
 
-ytab_plot_customization_values <- function(input, id) {
+# A height of "auto" is resolved against the built plot; without one it falls back to the fixed default, so a caller
+# that does not pass `build` keeps working.
+ytab_resolve_plot_height <- function(height, build = NULL, fallback = "520px") {
+  if (!identical(height, "auto")) return(height)
+  n <- ytab_plot_item_count(build)
+  if (is.na(n)) fallback else ytab_auto_plot_height_px(n)
+}
+
+ytab_plot_customization_values <- function(input, id, build = NULL) {
   value <- function(suffix, fallback = NULL) input[[paste0(id, "_", suffix)]] %||% fallback
   list(
     style = value("plot_style", "clean"),
-    height = ytab_plot_height_px(value("plot_height", "medium")),
+    height = ytab_resolve_plot_height(ytab_plot_height_px(value("plot_height", "auto")), build),
     width = value("plot_width", "standard"),
     text_size = ytab_text_size_px(value("text_size", "medium")),
     label_mode = value("label_mode", "full"),
@@ -127,7 +155,7 @@ ytab_plot_customization_values <- function(input, id) {
     point_opacity = suppressWarnings(as.numeric(value("point_opacity", 0.55))),
     bar_orientation = value("bar_orientation", "vertical"),
     show_value_labels = isTRUE(value("show_value_labels", TRUE)),
-    heatmap_height = ytab_plot_height_px(value("heatmap_height", "large"), default = "large"),
+    heatmap_height = ytab_resolve_plot_height(ytab_plot_height_px(value("heatmap_height", "large"), default = "large"), build, "700px"),
     row_label_size = suppressWarnings(as.numeric(value("row_label_size", 10))),
     column_label_angle = suppressWarnings(as.integer(value("column_label_angle", 45))),
     heatmap_palette = value("heatmap_palette", "blue_red"),

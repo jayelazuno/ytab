@@ -64,7 +64,7 @@ qc_plot_descriptions <- c(
   pair_scatter = "Gene insertion density of two libraries, gene by gene; the Spearman correlation is in the title.")
 
 qc_display_controls <- function(id, heatmap = FALSE) ytab_plot_customization_controls(id, include_points = TRUE, include_bars = TRUE,
-  include_heatmap = heatmap, default_height = "medium", default_bar_orientation = "auto", default_show_value_labels = FALSE)
+  include_heatmap = heatmap, default_height = "auto", default_bar_orientation = "auto", default_show_value_labels = FALSE)
 
 qc_theme_ui <- function(id, extra = NULL) ytab_two_column_layout(
   controls = tagList(ytab_control_panel("Plot",
@@ -341,7 +341,7 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
     })
     built[[id]] <<- plot_reactive
     output[[paste0(prefix, "_card")]] <- renderUI({
-      choice <- input[[paste0(prefix, "_plot")]] %||% ""; s <- ytab_plot_customization_values(input, prefix)
+      choice <- input[[paste0(prefix, "_plot")]] %||% ""; s <- ytab_plot_customization_values(input, prefix, tryCatch(plot_reactive(), error = function(e) NULL))
       key <- if (startsWith(choice, "metric:")) "metric" else choice
       label <- qc_menu_label(id, choice)
       height <- if (choice %in% c("cor_heatmap", "gene_heatmap")) s$heatmap_height else s$height
@@ -355,7 +355,7 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
       ext <- format
       output[[paste0(prefix, "_download_", ext)]] <- downloadHandler(
         filename = function() paste0(active()$project_id, "_qc_", gsub("[^A-Za-z0-9]+", "_", input[[paste0(prefix, "_plot")]] %||% id), ".", ext),
-        content = function(file) { s <- ytab_plot_customization_values(input, prefix)
+        content = function(file) { s <- ytab_plot_customization_values(input, prefix, plot_reactive())
           ytab_save_ggplot(file, plot_reactive()$plot, width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) })
     })
     output[[paste0(prefix, "_download_data")]] <- downloadHandler(

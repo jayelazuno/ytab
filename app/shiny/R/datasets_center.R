@@ -9,7 +9,9 @@ datasets_catalog <- function(repo_root) {
   }
   catalog <- read("catalog.tsv"); libraries <- read("libraries.tsv")
   if (nrow(catalog)) {
-    catalog$id <- paste(catalog$study, catalog$project, sep = "::")
+    # One row per study, not per project: a study whose strains need different references is processed as separate
+    # projects (a project has one reference), but it is still one study and is listed once.
+    catalog$id <- catalog$study
     catalog$open_config <- ifelse(file.exists(file.path(repo_root, catalog$project_config)), catalog$project_config, "")
   }
   list(catalog = catalog, libraries = libraries)
@@ -38,8 +40,24 @@ datasets_modal <- function() modalDialog(title = "Public datasets", size = "xl",
     tags$p(class = "text-muted", "Published Hermes and Ac/Ds libraries reprocessed with YTAB from raw reads. Search any field, including drug, strain or run ID; select a row for its conditions, QC, results and libraries. Sites per kb: median insertion density of the analysed libraries; top site: the largest share of a library's reads at one site."),
     DT::DTOutput("datasets_table"), uiOutput("datasets_detail")))
 
+# Catalog rows of one study, in the order they appear.
+datasets_studies <- function(x) if (!nrow(x)) list() else split(x, factor(x$study, levels = unique(x$study)))
+
+# One study's rows as a single row: its projects joined, its libraries summed, its conditions and results unioned.
+datasets_merge_group <- function(g) {
+  if (nrow(g) == 1) return(g)
+  join <- function(column) paste(unique(unlist(strsplit(g[[column]], "; ", fixed = TRUE))), collapse = "; ")
+  g$runs <- as.character(sum(suppressWarnings(as.integer(g$runs)), na.rm = TRUE))
+  g$runs_included <- as.character(sum(suppressWarnings(as.integer(g$runs_included)), na.rm = TRUE))
+  g$conditions <- join("conditions"); g$in_app <- join("in_app"); g$backgrounds <- join("backgrounds")
+  g$project <- paste(g$project, collapse = " ")
+  g[1, , drop = FALSE]
+}
+
 datasets_table_data <- function(x, libraries) {
   if (!nrow(x)) return(data.frame())
+  groups <- datasets_studies(x)
+  x <- do.call(rbind, lapply(groups, datasets_merge_group))
   study <- ifelse(nzchar(x$doi), sprintf('<a href="https://doi.org/%s" target="_blank" rel="noopener">%s</a>', x$doi, htmltools::htmlEscape(x$citation)), htmltools::htmlEscape(x$citation))
   n_conditions <- vapply(strsplit(x$conditions, "; ", fixed = TRUE), length, 1L)
   short <- function(v) paste(unique(sub(" \\(.*", "", sub("^Treated vs control.*", "Treated vs control", strsplit(v, "; ", fixed = TRUE)[[1]]))), collapse = ", ")
@@ -59,7 +77,8 @@ datasets_table_data <- function(x, libraries) {
 datasets_detail_ui <- function(row, libraries) {
   field <- function(label, value) if (inherits(value, "shiny.tag") || (length(value) == 1L && !is.na(value) && nzchar(value))) tags$tr(tags$th(label), tags$td(value))
   link <- function(url, text) tags$a(href = url, target = "_blank", rel = "noopener", text)
-  libs <- libraries[libraries$study == row$study & libraries$project == row$project, , drop = FALSE]
+  projects <- strsplit(row$project, " ")[[1]]
+  libs <- libraries[libraries$study == row$study & libraries$project %in% projects, , drop = FALSE]
   share <- suppressWarnings(as.numeric(row$max_top_site_share))
   tags$div(class = "ytab-dataset-detail",
     tags$h4(row$title),
@@ -73,29 +92,40 @@ datasets_detail_ui <- function(row, libraries) {
       field("Strains in the project", row$backgrounds), field("Conditions", row$conditions),
       field("Density", if (nzchar(row$median_sites_per_kb)) sprintf("median %s insertion sites per kb across the analysed libraries", datasets_number(row$median_sites_per_kb))),
       field("Top site", if (!is.na(share)) sprintf("up to %.1f%% of a library's reads at one site (%s)", 100 * share, row$max_top_site)),
-      field("Results in the app", row$in_app), field("Project", tags$code(row$project)),
+      field("Results in the app", row$in_app),
+      field(if (length(projects) > 1) "Projects" else "Project",
+            if (length(projects) > 1)
+              tagList(lapply(projects, function(p) tags$div(tags$code(p), " - ",
+                sprintf("%d libraries", sum(libs$project == p & nzchar(libs$library))))),
+                tags$p(class = "text-muted", "One study, processed as separate projects because its strains are mapped to different reference genomes; a project has one reference."))
+            else tags$code(row$project)),
       field("Experimental design", "Which runs make each library and which analyses use it: Methods > Experimental designs of the public datasets, or ytab datasets --find RUN"))),
     tags$div(class = "ytab-actions",
-      if (nzchar(row$open_config)) actionButton("datasets_open_project", "Open project", class = "btn-primary ytab-button")
+      if (nzchar(row$open_config))
+        tagList(lapply(seq_along(projects), function(i) actionButton(paste0("datasets_open_project_", i),
+          if (length(projects) > 1) paste("Open", projects[[i]]) else "Open project", class = "btn-primary ytab-button")))
       else tags$span(class = "text-muted", "This project is not on this computer; download the YTAB projects bundle to open it.")),
     if (nrow(libs)) tagList(tags$h5("Libraries"), DT::DTOutput("datasets_libraries")))
 }
 
 datasets_server <- function(input, output, session, repo_root, data, open_project = NULL) {
+  # The table shows one row per study, so a clicked row index must be read against the grouped rows, not the catalog.
+  grouped <- do.call(rbind, lapply(datasets_studies(data$catalog), datasets_merge_group))
   selected <- reactiveVal("")
   open_datasets <- function(id = "") { selected(id); showModal(datasets_modal()) }
   observeEvent(input$open_datasets, open_datasets(), ignoreInit = TRUE)
   observeEvent(input$open_datasets_nav, open_datasets(), ignoreInit = TRUE)
   output$datasets_table <- DT::renderDT({
-    x <- data$catalog; req(nrow(x)); pre <- match(isolate(selected()), x$id)
-    DT::datatable(datasets_table_data(x, data$libraries), escape = FALSE, rownames = FALSE, filter = "none",
+    x <- grouped; req(nrow(x)); pre <- match(isolate(selected()), x$id)
+    DT::datatable(datasets_table_data(data$catalog, data$libraries), escape = FALSE, rownames = FALSE, filter = "none",
       selection = list(mode = "single", selected = if (!is.na(pre)) pre else NULL, target = "row"), class = "compact stripe hover",
       options = list(pageLength = 15, lengthMenu = c(15, 50), scrollX = TRUE, autoWidth = FALSE,
                      search = list(search = ""), dom = "ftip", columnDefs = list(list(className = "dt-right", targets = c(4, 5, 7, 8)), list(visible = FALSE, targets = 10))))
   })
-  observeEvent(input$datasets_table_rows_selected, { i <- input$datasets_table_rows_selected; if (length(i)) selected(data$catalog$id[[i]]) }, ignoreInit = TRUE)
-  current <- reactive({ x <- data$catalog; i <- match(selected(), x$id); if (is.na(i)) NULL else x[i, , drop = FALSE] })
+  observeEvent(input$datasets_table_rows_selected, { i <- input$datasets_table_rows_selected; if (length(i)) selected(grouped$id[[i]]) }, ignoreInit = TRUE)
+  current <- reactive({ x <- data$catalog; g <- x[x$id == selected(), , drop = FALSE]; if (!nrow(g)) NULL else datasets_merge_group(g) })
   output$datasets_detail <- renderUI({ row <- current(); if (is.null(row)) return(NULL); datasets_detail_ui(as.list(row), data$libraries) })
+  current_projects <- reactive({ row <- current(); if (is.null(row)) character() else strsplit(row$project, " ")[[1]] })
   output$datasets_libraries <- DT::renderDT({
     row <- current(); req(row); l <- data$libraries; l <- l[l$study == row$study & l$project == row$project, , drop = FALSE]
     t <- data.frame(Run = l$sample, Name = l$display_name, Role = l$role, Condition = l$condition, Strain = l$background, Pool = l$pool,
@@ -108,8 +138,11 @@ datasets_server <- function(input, output, session, repo_root, data, open_projec
                   options = list(pageLength = 10, scrollX = TRUE, dom = "ftip"))
     DT::formatRound(t, c("Reads", "Insertion sites"), digits = 0)
   })
-  observeEvent(input$datasets_open_project, {
-    row <- current(); req(row, nzchar(row$open_config), is.function(open_project)); removeModal(); open_project(normalizePath(file.path(repo_root, row$open_config), winslash = "/"))
-  }, ignoreInit = TRUE)
+  for (i in 1:4) local({ k <- i
+    observeEvent(input[[paste0("datasets_open_project_", k)]], {
+      p <- current_projects(); req(length(p) >= k, is.function(open_project)); removeModal()
+      open_project(normalizePath(file.path(repo_root, "output/projects", p[[k]], "config/project.yaml"), winslash = "/"))
+    }, ignoreInit = TRUE)
+  })
   list(open = open_datasets)
 }

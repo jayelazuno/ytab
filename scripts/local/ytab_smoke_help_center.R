@@ -23,5 +23,6 @@ hits <- help_search(root, "--project-config", pages); stopifnot("cli_reference" 
 sets <- datasets_catalog(root); stopifnot(nrow(sets$catalog) > 0, nrow(sets$libraries) > 0)
 for (i in seq_len(nrow(sets$catalog))) stopifnot(nchar(as.character(datasets_detail_ui(as.list(sets$catalog[i, ]), sets$libraries))) > 200)
 run <- sets$libraries$sample[[1]]; hits <- help_search(root, run, pages, datasets = sets)
-stopifnot(any(hits$kind == "dataset" & hits$id == paste(sets$libraries$study[[1]], sets$libraries$project[[1]], sep = "::")))
+stopifnot(any(hits$kind == "dataset" & hits$id == sets$libraries$study[[1]]))
+studies <- unique(sets$catalog$study); stopifnot(nrow(datasets_table_data(sets$catalog, sets$libraries)) == length(studies))
 cat("PASS\n")
