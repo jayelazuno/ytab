@@ -35,6 +35,7 @@ def main():
     cfg = yaml.safe_load(a.project_config.read_text()); base = resolve(cfg.get("repo_root", "."), a.project_config.parent)
     project = resolve(cfg["output_project_dir"], base); sheet_path = resolve(cfg.get("sample_sheet") or a.project_config.parent/"sample_sheet.csv", base)
     with open(sheet_path, newline="", encoding="utf-8") as h:rows = list(csv.DictReader(h)); fields = list(rows[0])
+    if "runs" not in fields:fields.append("runs")   # the runs a library sample was merged from
     by = {r["sample"]:r for r in rows}
     if len(a.runs) < 2:sys.exit("give at least two runs")
     if not a.library.replace("-", "").replace("_", "").isalnum():sys.exit("library name may contain only letters, numbers, - and _")
@@ -58,7 +59,7 @@ def main():
 
     first = by[a.runs[0]]; runs = " ".join(a.runs)
     library = {f:"" for f in fields} | {f:first[f] for f in SAME + ("study", "culture_replicate") if f in fields}
-    library.update(sample=a.library, display_name=a.library, include="True", notes=f"Library of sequencing runs {runs} (ytab merge-runs: read counts summed per site)")
+    library.update(sample=a.library, display_name=a.library, include="True", runs=runs, notes=f"Library of sequencing runs {runs} (ytab merge-runs: read counts summed per site)")
     rows = [r for r in rows if r["sample"] != a.library]
     for r in rows:
         if r["sample"] in a.runs:

@@ -1862,7 +1862,8 @@ options:
 Catalogue of the reprocessed public datasets (study, strain, transposon, accession, QC, results in the app) for the Datasets page. Stage: Datasets, results and sharing.
 
 ```text
-usage: ytab_datasets.py [-h] [--output OUTPUT]
+usage: ytab_datasets.py [-h] [--output OUTPUT] [--designs DESIGNS]
+                        [--find TEXT [TEXT ...]]
 
 Catalogue of the public Tn-seq datasets YTAB has reprocessed, for the app's Datasets page and its search.
 
@@ -1872,14 +1873,23 @@ the catalogue adds what the runs are (roles, strains, conditions), their QC (new
 the app can open without computing anything (QC, essentiality, normalization, condition comparisons, genome browser,
 library correlation, cross-species).
 
-  ytab datasets                      # writes resources/datasets/catalog.tsv and libraries.tsv
-  ytab datasets --output DIR
+  ytab datasets                      # writes resources/datasets/catalog.tsv, libraries.tsv and docs/experimental_designs.md
+  ytab datasets --find SRR29743984   # which study, library and analyses a run belongs to (also: a strain, drug or condition)
+
+libraries.tsv gives each run its library (runs merged by `ytab merge-runs` share one) and every analysis that uses it, with
+its role there (control, treated, reference condition, ...); experimental_designs.md lists the same per study, with the
+commands that reproduce each analysis.
 
 A new dataset appears once it has a dataset folder and a row in studies.tsv; nothing here names a study.
 
 options:
-  -h, --help       show this help message and exit
-  --output OUTPUT  Folder for catalog.tsv and libraries.tsv
+  -h, --help            show this help message and exit
+  --output OUTPUT       Folder for catalog.tsv and libraries.tsv
+  --designs DESIGNS     Experimental-design page (searchable in the app)
+  --find TEXT [TEXT ...]
+                        Print the studies and runs matching TEXT (run ID,
+                        strain, drug, condition) and the analyses using them;
+                        writes nothing
 ```
 
 ### report

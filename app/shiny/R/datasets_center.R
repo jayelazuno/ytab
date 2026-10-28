@@ -73,7 +73,8 @@ datasets_detail_ui <- function(row, libraries) {
       field("Strains in the project", row$backgrounds), field("Conditions", row$conditions),
       field("Density", if (nzchar(row$median_sites_per_kb)) sprintf("median %s insertion sites per kb across the analysed libraries", datasets_number(row$median_sites_per_kb))),
       field("Top site", if (!is.na(share)) sprintf("up to %.1f%% of a library's reads at one site (%s)", 100 * share, row$max_top_site)),
-      field("Results in the app", row$in_app), field("Project", tags$code(row$project)))),
+      field("Results in the app", row$in_app), field("Project", tags$code(row$project)),
+      field("Experimental design", "Which runs make each library and which analyses use it: Methods > Experimental designs of the public datasets, or ytab datasets --find RUN"))),
     tags$div(class = "ytab-actions",
       if (nzchar(row$open_config)) actionButton("datasets_open_project", "Open project", class = "btn-primary ytab-button")
       else tags$span(class = "text-muted", "This project is not on this computer; download the YTAB projects bundle to open it.")),
@@ -98,11 +99,12 @@ datasets_server <- function(input, output, session, repo_root, data, open_projec
   output$datasets_libraries <- DT::renderDT({
     row <- current(); req(row); l <- data$libraries; l <- l[l$study == row$study & l$project == row$project, , drop = FALSE]
     t <- data.frame(Run = l$sample, Name = l$display_name, Role = l$role, Condition = l$condition, Strain = l$background, Pool = l$pool,
-                    Analysed = ifelse(l$included == "True", "yes", "no"), Reads = suppressWarnings(as.numeric(l$input_reads)),
+                    Library = if ("library" %in% names(l)) ifelse(nzchar(l$library), l$library, "not analysed") else "",
+                    `Used in` = if ("used_in" %in% names(l)) gsub("; ", "<br>", htmltools::htmlEscape(l$used_in)) else "", Reads = suppressWarnings(as.numeric(l$input_reads)),
                     `Mapped (%)` = suppressWarnings(as.numeric(datasets_number(l$percent_mapped))), `Insertion sites` = suppressWarnings(as.numeric(l$insertion_sites)),
                     `Sites per kb` = suppressWarnings(as.numeric(datasets_number(l$sites_per_kb))),
                     `Top site share (%)` = suppressWarnings(round(100 * as.numeric(l$top_site_share), 1)), check.names = FALSE)
-    t <- DT::datatable(t, rownames = FALSE, filter = "top", selection = "none", class = "compact stripe hover",
+    t <- DT::datatable(t, rownames = FALSE, filter = "top", selection = "none", class = "compact stripe hover", escape = setdiff(seq_along(t), which(names(t) == "Used in")),
                   options = list(pageLength = 10, scrollX = TRUE, dom = "ftip"))
     DT::formatRound(t, c("Reads", "Insertion sites"), digits = 0)
   })

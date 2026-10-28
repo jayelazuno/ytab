@@ -2,6 +2,7 @@ order	section	title	file
 1	Building a pool	Making a Hermes Tn-seq pool	docs/methods/01_making_a_hermes_pool.md
 2	Sequencing and mapping	Read alignment: Hermes and Ac/Ds	docs/hermes_alignment.md
 3	Sequencing and mapping	Public datasets: sources, trimming and references	docs/public_datasets.md
+3	Sequencing and mapping	Experimental designs of the public datasets: runs, libraries and analyses	docs/experimental_designs.md
 4	Quality control	Library QC table	docs/library_qc.md
 5	Quality control	Insertion statistics	docs/tnseq_stats.md
 6	Normalization	Site normalization methods	docs/normalization_methods.md
