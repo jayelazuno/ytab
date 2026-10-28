@@ -1,11 +1,13 @@
 # Song et al. 2026 - Candida auris piggyBac, fluconazole series (PRJNA1273510)
 
-piggyBac pools of *C. auris* grown without drug and at three fluconazole levels; Song Y et al. (2026) Nat Microbiol,
-doi:10.1038/s41564-026-02270-1 (vacuolar calcium pump, fluconazole efflux and resistance evolution).
+piggyBac pools of *C. auris* grown without drug and at three fluconazole concentrations; Song Y et al. (2026)
+Nat Microbiol, doi:10.1038/s41564-026-02270-1 (vacuolar calcium pump, fluconazole efflux and resistance evolution).
 
-Three pools (`n1`, `n2`, `n3`), each with an untreated control (deposit `Cau0n*`) and three fluconazole levels
-(`Cau30n*`, `Cau60n*`, `Cau120n*`). The deposit labels the levels 30, 60 and 120 without units; the units must be
-read from the paper before any dose statement. Three controls in three pools make the z-score, resampling and the
+Three replicates (`n1`, `n2`, `n3`), each at 0 (control), 30, 60 and 120 ug/mL fluconazole. The doses come from the
+**SRA experiment titles** (`<n> g/mL fluconazole treatment replicate <r>`, where `g/mL` is ug/mL); the BioSample
+records give only the `Cau30n1`-style labels. Whether the three replicates are independent pools or cultures split
+from one is not stated, so each is treated as its own pool, which is the conservative reading: a treated library is
+compared only with the control of its own replicate. Three controls make the z-score, resampling and the
 multi-condition dose test all available.
 
 Read structure as `auris_2021_piggybac` (`piggybac` / `pb_tr_end`; 70% of the first 2,000 reads of SRR33878342 carry
