@@ -1,4 +1,5 @@
 order	section	title	file
+0	Getting started	Choosing the analysis for your experimental design	docs/design_guide.md
 1	Building a pool	Making a Hermes Tn-seq pool	docs/methods/01_making_a_hermes_pool.md
 2	Sequencing and mapping	Read alignment: Hermes and Ac/Ds	docs/hermes_alignment.md
 3	Sequencing and mapping	Public datasets: sources, trimming and references	docs/public_datasets.md

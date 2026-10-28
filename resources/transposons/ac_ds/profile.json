@@ -53,6 +53,23 @@
           "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
         ]
       }
+    },
+    "ds_tir_restriction": {
+      "description": "A Ds-derived element mobilised by Ac transposase (Billmyre et al. 2025): reads start inside the Ds terminal repeat (...CGGTACGGGATTTTCCCATCCTACTTTCATCCCTG) and run into the genome; the library is split between two restriction digests of the same culture, which are sequencing runs of one library and must be merged (`ytab merge-runs`). The terminal repeat is trimmed wherever it occurs; reads without it are discarded; the ligated adapter and Illumina read-through are trimmed from the 3' end. Paired runs: R1 carries the junction.",
+      "used_by": [
+        "Billmyre et al. 2025 (Cryptococcus neoformans H99, PRJNA1134100)"
+      ],
+      "source": "read structure checked on the first 2,000 reads of SRR29762408 (99% begin with this sequence; 71% of the trimmed reads map at MAPQ >= 20)",
+      "mapping": {
+        "hermes_cleanup": false,
+        "trim_5p_seq": "CGGTACGGGATTTTCCCATCCTACTTTCATCCCTG",
+        "trim_5p_overlap": 30,
+        "discard_untrimmed": true,
+        "trim_3p_seq": [
+          "GTCCCTTAAGCGGAG",
+          "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+        ]
+      }
     }
   }
 }

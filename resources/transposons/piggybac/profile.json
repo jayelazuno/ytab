@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "transposon": "piggybac",
+  "description": "piggyBac (Trichoplusia ni): inserts only at TTAA and duplicates it, so a library's sites are a subset of the genome's TTAA positions, unlike the near-unconstrained Hermes and Ac/Ds hAT elements. Pools are therefore sparser per induction at the same sequencing depth; compare density as sites per coding kb, and read every essentiality call against the TTAA opportunities of the gene, not its length.",
+  "target_site": {
+    "motif": "TTAA",
+    "duplication_bp": 4,
+    "note": "The TTAA is retained in the read: after 5' trimming the read begins at the first base of the TTAA. Reads from the two orientations of one insertion therefore map to the two ends of the same TTAA, 3 bp apart; `ytab hit-files` unites adjacent positions within its minimal distance."
+  },
+  "default_design": "pb_tr_end",
+  "designs": {
+    "pb_tr_end": {
+      "description": "Reads start inside the piggyBac terminal repeat (...CGTCAATTTTACGCAGACTATCTTTCTAGGG), then the TTAA target site and the genome. The terminal repeat is trimmed wherever it occurs at full length; reads without it are discarded; Illumina and Nextera read-through are trimmed from the 3' end. Paired runs: R1 carries the junction.",
+      "used_by": [
+        "Gao et al. 2021 (C. auris, PRJNA679970)",
+        "Song et al. 2026 (C. auris fluconazole, PRJNA1273510)",
+        "Chow et al. 2024 (C. glabrata, PRJNA967833)",
+        "Yao et al. 2026 (Komagataella phaffii, PRJNA1376236)"
+      ],
+      "source": "read structure checked on the first 2,000 reads of SRR33878342, SRR13106162, SRR24456510 and SRR36343507 (63-94% begin with this sequence; 70-85% of the trimmed reads map at MAPQ >= 20)",
+      "mapping": {
+        "hermes_cleanup": false,
+        "trim_5p_seq": "CATGCGTCAATTTTACGCAGACTATCTTTCTAGGG",
+        "trim_5p_overlap": 30,
+        "discard_untrimmed": true,
+        "trim_3p_seq": [
+          "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
+          "CTGTCTCTTATACACATCT"
+        ]
+      }
+    }
+  }
+}
