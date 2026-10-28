@@ -1,0 +1,43 @@
+{
+  "project_id": "Billmyre_2022_pombe",
+  "sample": "3786_glycerol_libSRR15669609",
+  "input_hits_file": "output/projects/Billmyre_2022_pombe/create_hit_file/3786_glycerol_libSRR15669609/3786_glycerol_libSRR15669609_hits.txt",
+  "species": "pombe",
+  "reference_files_used": {
+    "fasta": "resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa",
+    "gff": "resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": "resources/species/pombe/orthologs/pombe_cerevisiae_orthologs.txt"
+  },
+  "output_dir": "output/projects/Billmyre_2022_pombe/summary/3786_glycerol_libSRR15669609",
+  "detected_feature_tables": [
+    "output/projects/Billmyre_2022_pombe/summary/3786_glycerol_libSRR15669609/3786_glycerol_libSRR15669609.feature_table.RDF_1.csv"
+  ],
+  "log_file": "output/projects/Billmyre_2022_pombe/logs/summary/3786_glycerol_libSRR15669609.log",
+  "status": "success",
+  "start_time": "2026-10-28T04:40:09.076289+00:00",
+  "end_time": "2026-10-28T04:40:30.147934+00:00",
+  "elapsed_seconds": 21.072,
+  "command_run": [
+    "python",
+    "src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "output/projects/Billmyre_2022_pombe/create_hit_file/3786_glycerol_libSRR15669609",
+    "--hit-glob",
+    "3786_glycerol_libSRR15669609_hits.txt",
+    "--output-dir",
+    "output/projects/Billmyre_2022_pombe/summary/3786_glycerol_libSRR15669609",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "4",
+    "--overwrite",
+    "--feature-gff",
+    "resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3",
+    "--reference-fasta",
+    "resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa"
+  ],
+  "warnings": [],
+  "error_message": null
+}
