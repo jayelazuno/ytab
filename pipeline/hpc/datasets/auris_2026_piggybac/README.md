@@ -13,8 +13,11 @@ multi-condition dose test all available.
 Read structure as `auris_2021_piggybac` (`piggybac` / `pb_tr_end`; 70% of the first 2,000 reads of SRR33878342 carry
 the terminal repeat, 86% of the trimmed reads map at MAPQ >= 20).
 
-Reference: `auris_B11220` (GCF_003013715.1, clade II). The deposit does not name the strain, but Yabing Song is an
-author of Gao et al. 2021, whose libraries are documented as CBS10913 (clade II), and this deposit repeats that
-study's abstract wording and PB system; on the first 2,000 reads of SRR33878342 the two references gave 86%
-(B11220) and 85% (B8441) of trimmed reads at MAPQ >= 20. The strain should be confirmed from the paper, and the
-mapping rates of the full libraries against both references are recorded in QC before the data are used.
+**Strain, from the paper:** "The PB insertion library was constructed from the CauW08 or CauW156 strain" - CauW08
+is the Gao et al. 2021 library strain, from CBS10913 (clade II); CauW156 is its pet309 deletion derivative, used in
+the paper for a colony-based genetic-interaction screen rather than for sequenced pools. The twelve deposited runs
+are the fluconazole dose series.
+
+Reference: `auris` (B8441, clade I), for the reasons given in `auris_2021_piggybac` - the authors mapped to B8441
+and the CGD annotation is B8441-based - although the strain is clade II. `auris_B11220` is available for a
+sensitivity check.

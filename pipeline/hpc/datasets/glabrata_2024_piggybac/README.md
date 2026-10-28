@@ -13,5 +13,9 @@ replicate <r>`, where `g/mL` is ug/mL). Three controls support the z-score, resa
 Read structure: 150 bp paired end, R1 carries the junction (`piggybac` / `pb_tr_end`; 99% of the first 2,000 reads of
 SRR24456510 begin with the terminal repeat, 79% of the trimmed reads map at MAPQ >= 20 to the BG2 reference).
 
-Reference: `glabrata_CBS138`. YWCg03's background is not stated in the deposit; the first QC step compares the
-mapping rate against both the CBS138 and the BG2 references and the choice is recorded before any analysis.
+**Strain, from the paper:** every strain was built in the background of **ATCC2001 dHTL** (*his3* *trp1* *leu2*;
+Schwarzmueller et al. 2014), and ATCC2001 is CBS138. The library strain YWCg03 carries the PB[HIS3] cassette at
+ARG4 and CaPBase under PromMET3. The authors aligned to the Candida Genome Database CBS138 chromosomes.
+
+Reference: `glabrata_CBS138`, which matches both. The earlier note that the background was unstated and that both
+references would be compared is withdrawn: the paper states it.

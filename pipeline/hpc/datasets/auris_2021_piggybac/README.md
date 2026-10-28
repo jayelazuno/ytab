@@ -21,11 +21,19 @@ Read structure: 150 bp paired end, R1 carries the junction, `piggybac` / `pb_tr_
 keeps "reads that have a prefix matching the terminus of the PB transposon (TTTCTAGGG)" and removes it, which is
 the sequence this profile trims.
 
-**Reference: `auris_B11220`** (GCF_003013715.1, strain B11220, clade II), which matches the documented clade of
-CBS10913. The authors mapped to the clade I B8441 assembly (GCA_002759435.2) instead, so their published
-coordinates are B8441-based; on the first 2,000 reads of SRR13106162 the two references gave 65% (B11220) and 64%
-(B8441) of trimmed reads at MAPQ >= 20, so the choice barely changes yield and is made on the strain, not the rate.
-B8441 remains available as species `auris`.
+**Reference: `auris` (GCF_002759435.1, strain B8441, clade I)** — deliberately not the clade of the strain. The
+library is clade II (CBS10913), and the clade II assembly B11220 is installed as `auris_B11220`, but B8441 is used
+because:
+
+- the authors mapped to B8441 (GCA_002759435.2), so their published coordinates and gene identifiers are B8441's;
+- the Candida Genome Database annotation of *C. auris*, and therefore the gene names, the ortholog tables and every
+  published gene list for this species, are B8441-based. The reproduction targets below are counted on that
+  annotation and cannot be compared against a B11220 one;
+- the cost is about one percentage point of reads: on the first 2,000 reads of SRR13106162 the two references gave
+  64% (B8441) and 65% (B11220) of trimmed reads at MAPQ >= 20.
+
+The clade mismatch is a real limitation, not a detail: it is recorded in QC, and `auris_B11220` is kept so the same
+libraries can be remapped as a sensitivity check.
 
 **Published numbers to reproduce** (R26, descriptive): an average of 77 unique PB insertion sites per 10 kb;
 insertions in 4,503 of 5,417 genes (83%) across the three libraries, 3,568 of them in all three, leaving 914 genes
