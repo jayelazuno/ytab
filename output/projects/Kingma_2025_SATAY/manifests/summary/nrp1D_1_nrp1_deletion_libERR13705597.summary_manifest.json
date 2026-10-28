@@ -1,0 +1,43 @@
+{
+  "project_id": "Kingma_2025_SATAY",
+  "sample": "nrp1D_1_nrp1_deletion_libERR13705597",
+  "input_hits_file": "output/projects/Kingma_2025_SATAY/create_hit_file/nrp1D_1_nrp1_deletion_libERR13705597/nrp1D_1_nrp1_deletion_libERR13705597_hits.txt",
+  "species": "cerevisiae",
+  "reference_files_used": {
+    "fasta": "resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta",
+    "gff": "resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": null
+  },
+  "output_dir": "output/projects/Kingma_2025_SATAY/summary/nrp1D_1_nrp1_deletion_libERR13705597",
+  "detected_feature_tables": [
+    "output/projects/Kingma_2025_SATAY/summary/nrp1D_1_nrp1_deletion_libERR13705597/nrp1D_1_nrp1_deletion_libERR13705597.feature_table.RDF_1.csv"
+  ],
+  "log_file": "output/projects/Kingma_2025_SATAY/logs/summary/nrp1D_1_nrp1_deletion_libERR13705597.log",
+  "status": "success",
+  "start_time": "2026-10-28T04:42:16.500289+00:00",
+  "end_time": "2026-10-28T04:42:33.089930+00:00",
+  "elapsed_seconds": 16.59,
+  "command_run": [
+    "python",
+    "src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "output/projects/Kingma_2025_SATAY/create_hit_file/nrp1D_1_nrp1_deletion_libERR13705597",
+    "--hit-glob",
+    "nrp1D_1_nrp1_deletion_libERR13705597_hits.txt",
+    "--output-dir",
+    "output/projects/Kingma_2025_SATAY/summary/nrp1D_1_nrp1_deletion_libERR13705597",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "4",
+    "--overwrite",
+    "--feature-gff",
+    "resources/species/cerevisiae/reference_genome/saccharomyces_cerevisiae_R64-5-1_20240529.gff",
+    "--reference-fasta",
+    "resources/species/cerevisiae/reference_genome/S288C_reference_R64-5-1_20240529.fasta"
+  ],
+  "warnings": [],
+  "error_message": null
+}
