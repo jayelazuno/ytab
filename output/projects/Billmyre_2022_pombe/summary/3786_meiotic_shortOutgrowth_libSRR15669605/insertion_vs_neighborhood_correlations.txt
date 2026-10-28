@@ -1,0 +1,3 @@
+3786_meiotic_shortOutgrowth_libSRR15669605
+Pearson: PearsonRResult(statistic=np.float64(0.6630948358050772), pvalue=np.float64(0.0))
+Spearman: SignificanceResult(statistic=np.float64(0.9667768764522563), pvalue=np.float64(0.0))
