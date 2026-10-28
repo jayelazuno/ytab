@@ -28,6 +28,21 @@ Before any of these: **runs of one library** (lanes, sequencing runs, restrictio
 replicates. Merge them with `ytab merge-runs`; `design-check` flags runs that share strain, pool, condition and culture
 replicate.
 
+## Selection markers leave blind spots
+
+The scheme that enriches a pool can make genes look essential that are not, because the mutants that lost them were
+removed before sequencing. These are not statistical artefacts and no normalization repairs them; the genes must be
+masked before essentiality is read.
+
+| Scheme | Blind spot | Seen in |
+|---|---|---|
+| Hermes launched from a plasmid carrying wild-type *RPL28*, enriched with nourseothricin + **cycloheximide** (prototrophic *C. glabrata*, Zaeske et al. 2026) | **PDR1** and **CDR1**, both required for cycloheximide resistance, are called essential | every CHX-enriched library, in three strain backgrounds; neither gene is called essential in any FOA-enriched library of the same species |
+| Hermes launched from a *URA3* plasmid in a *ura3* auxotroph, enriched with nourseothricin + **5-FOA** (Gale et al. 2020 and after) | no gene blind spot, but every mutant is *ura3* and so is outcompeted in nutrient-limited or host environments | the uracil auxotrophy is carried by the whole pool |
+| Ac/Ds SATAY from a donor plasmid | the donor and marker loci pile up reads (up to 69% of a library at one site) | every SATAY library (R25) |
+
+Before trusting an essentiality call, ask what the pool was selected on. `ytab design-check` reports the design; the
+marker is in the protocol, not in the data.
+
 ## Design rules that follow from the reanalysis
 
 - **Grow control and treated cultures from the same pool.** The shared mutants carry the test's power; controls from
