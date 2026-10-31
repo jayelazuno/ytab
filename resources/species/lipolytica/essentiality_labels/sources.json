@@ -1,0 +1,20 @@
+{
+ "reference_gff": {
+  "path": "resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic.gff",
+  "sha256": "6a0f9ad5e09a35f95c842fdf80e344e1041aa21b08c0e6bb4784b1d5fcb103b7",
+  "note": "CLIB89 RefSeq annotation; the S. cerevisiae similarity notes are inherited from the Genolevures annotation of Y. lipolytica"
+ },
+ "cerevisiae_labels": {
+  "path": "resources/species/cerevisiae/essentiality_labels/labels.tsv",
+  "sha256": "f8c816cc856fed3ef2fc3e6cf7b844a6d13324f8276c3bbd75071f09fd1add67"
+ },
+ "patterson_2018": {
+  "citation": "Patterson K et al. (2018) Functional genomics for the oleaginous yeast Yarrowia lipolytica. Metab Eng 48:184-196",
+  "pmid": "29792930",
+  "use": "comparator only: their essential calls come from Hermes insertion density on PRJNA356612, the same runs R26 maps"
+ },
+ "script": {
+  "path": "scripts/local/ytab_curate_lipolytica_labels.py",
+  "sha256": "4125ffb49ee74d796400e558192f2a313235a3a8ff8b20cce23402957e2b2082"
+ }
+}

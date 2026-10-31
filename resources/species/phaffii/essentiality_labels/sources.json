@@ -1,0 +1,23 @@
+{
+ "zhu_2018": {
+  "citation": "Zhu J, Gong R, Zhu Q et al. (2018) Genome-wide determination of gene essentiality by transposon insertion sequencing in yeast Pichia pastoris. Sci Rep 8:10223",
+  "doi": "10.1038/s41598-018-28217-z",
+  "files": {
+   "Dataset S3 training gene sets.xlsx": "133537df512fdbf43be03a7c64f70d5c7b742fb89a37d58e7399fb8be987597a",
+   "Dataset S4 gene insertion index and essentiality.xlsx": "ea55a336da73d4c90ae3bb33d29e87b38e9c486b8db16d2eba3f898d79ea3066",
+   "Dataset S6 S cerevisiae ortholog comparison.xlsx": "2daffb9108627f6e247d00b3857c6dca94715ee0082c80cbff26ef49df5b4405"
+  }
+ },
+ "cerevisiae_labels": {
+  "path": "resources/species/cerevisiae/essentiality_labels/labels.tsv",
+  "sha256": "f8c816cc856fed3ef2fc3e6cf7b844a6d13324f8276c3bbd75071f09fd1add67"
+ },
+ "reference_gff": {
+  "path": "resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.gff",
+  "sha256": "138ace24be741b6d6135affd3b4777224b3be4e3e5e937f0655c6a786484dc26"
+ },
+ "script": {
+  "path": "scripts/local/ytab_curate_phaffii_labels.py",
+  "sha256": "122357a961df8dec3fd2cc4d15339cf048e7a2459ed478e3a40920c25670c07f"
+ }
+}

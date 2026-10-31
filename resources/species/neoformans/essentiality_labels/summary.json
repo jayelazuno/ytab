@@ -1,0 +1,26 @@
+{
+ "genes": 8334,
+ "reference_annotation": 8334,
+ "by_tier": {
+  "gold:nonessential": 4268,
+  "silver:essential": 709,
+  "silver:nonessential": 590,
+  "unlabelled:none": 2767
+ },
+ "silver_source": "1:1 S. cerevisiae ortholog viability (SGD, via this repository's curated cerevisiae labels)",
+ "gold_source": "viable deletion strain in the Madhani 2024 collection (Billmyre S1 Table)",
+ "one_to_one_orthologs": 2325,
+ "silver_labels": 2233,
+ "conflicts_gold_over_silver": 41,
+ "comparator_agreement": {
+  "labelled_and_called": 5510,
+  "agree": 5064,
+  "fraction": 0.9190562613430127,
+  "table": {
+   "essential vs essential": 653,
+   "essential vs nonessential": 50,
+   "nonessential vs essential": 396,
+   "nonessential vs nonessential": 4411
+  }
+ }
+}

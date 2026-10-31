@@ -1,0 +1,19 @@
+{
+ "genes": 8570,
+ "by_tier": {
+  "silver:essential": 404,
+  "silver:nonessential": 761,
+  "unlabelled:none": 7405
+ },
+ "gold_source": null,
+ "silver_source": "1:1 S. cerevisiae ortholog viability (SGD) through the CLIB89 annotation's 'similar to' / 'highly similar to' notes",
+ "similarity_notes": 3774,
+ "strong_notes": 2369,
+ "one_to_one": 1221,
+ "silver_labels": 1165,
+ "excluded_qualifiers": [
+  "weakly similar to",
+  "some similarities with"
+ ],
+ "caveat": "Similarity annotation, not curated orthology; weaker evidence than the ortholog tables used for C. neoformans and K. phaffii. No gold tier: no Y. lipolytica knockout set was obtained."
+}

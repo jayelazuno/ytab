@@ -45,6 +45,17 @@ ARMS = {  # arm -> (method, normalization, settings)
     "zscore_cpm_pairs": ("zscore", "cpm", dict(combine="pairs")), "zscore_ttr_pairs": ("zscore", "ttr", dict(combine="pairs")),
     "zscore_bgc_pairs": ("zscore", "betageom", dict(combine="pairs")),
 }
+# R27 (docs/manuscript/preregistration_normalization_arms.md): the normalizations each statistic accepts but R13
+# never measured. Gumbel takes only the scalar-factor methods, so quantile, aBGC and MidLC have no Gumbel arm.
+EXTENSION_ARMS = {
+    "zscore_totreads": ("zscore", "totreads", {}), "zscore_nzmean": ("zscore", "nzmean", {}),
+    "zscore_quantile": ("zscore", "quantile", {}), "zscore_aBGC": ("zscore", "aBGC", {}),
+    "zscore_zinfnb": ("zscore", "zinfnb", {}), "zscore_midlc": ("zscore", "midlc", {}),
+    "resampling_nzmean": ("resampling", "nzmean", dict(recenter="trimmed-sum")),
+    "resampling_aBGC": ("resampling", "aBGC", dict(recenter="trimmed-sum")),
+    "gumbel_nzmean": ("gumbel", "nzmean", {}),
+}
+ALL_ARMS = ARMS | EXTENSION_ARMS   # ARMS itself stays R13's set, so a rerun of that design is unchanged
 BINS = 20
 
 

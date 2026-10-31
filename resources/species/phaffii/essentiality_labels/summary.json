@@ -1,0 +1,26 @@
+{
+ "genes": 5040,
+ "reference_annotation": 5040,
+ "by_tier": {
+  "gold:nonessential": 171,
+  "silver:essential": 908,
+  "silver:nonessential": 2351,
+  "unlabelled:none": 1610
+ },
+ "gold_source": "viable knockout reported by Zhu et al. 2018 Dataset S3 (non-essential column)",
+ "silver_source": "1:1 S. cerevisiae ortholog viability (SGD, via this repository's curated cerevisiae labels)",
+ "one_to_one_orthologs": 3528,
+ "silver_labels": 3376,
+ "conflicts_gold_over_silver": 2,
+ "comparator_agreement": {
+  "labelled_and_called": 2334,
+  "agree": 1954,
+  "fraction": 0.8371893744644388,
+  "table": {
+   "essential vs essential": 566,
+   "essential vs nonessential": 25,
+   "nonessential vs essential": 355,
+   "nonessential vs nonessential": 1388
+  }
+ }
+}

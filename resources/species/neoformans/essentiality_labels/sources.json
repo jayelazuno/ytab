@@ -1,0 +1,26 @@
+{
+ "billmyre_2025": {
+  "citation": "Billmyre RB et al. (2025) Landscape of essential growth and fluconazole-resistance genes in the human fungal pathogen Cryptococcus neoformans. PLoS Biol 23:e3003184",
+  "doi": "10.1371/journal.pbio.3003184",
+  "files": {
+   "S1 Table essentiality predictions and fluconazole TN-seq.xlsx": "ad61739cb91bdb548255b67641fea75f62483c6f02ebcebfe07419fa37442366",
+   "S4 Table cross-species essentiality and orthologs.xlsx": "95d441b50f637920365504504138823b6de7c6eb64a315c5f0c16755b8072a91"
+  }
+ },
+ "cerevisiae_labels": {
+  "path": "resources/species/cerevisiae/essentiality_labels/labels.tsv",
+  "sha256": "f8c816cc856fed3ef2fc3e6cf7b844a6d13324f8276c3bbd75071f09fd1add67"
+ },
+ "sgd_features": {
+  "path": "resources/species/cerevisiae/reference_genome/SGD_features.tab",
+  "sha256": "ee5017b6e5a93c01ee245eae7c590e6fe194a3791e763b3651be977572df91e3"
+ },
+ "reference_gff": {
+  "path": "resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.gff",
+  "sha256": "46437497251b8f59b1cc2aa081ea9cd68250fa39209268ab8ee147ecf2b72393"
+ },
+ "script": {
+  "path": "scripts/local/ytab_curate_neoformans_labels.py",
+  "sha256": "ba458105dd5ba5e80ade1cb674f060c69442aee59f5522ac4d2f747768769763"
+ }
+}
