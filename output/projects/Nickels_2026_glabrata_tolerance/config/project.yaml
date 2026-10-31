@@ -1,0 +1,85 @@
+project_id: Nickels_2026_glabrata_tolerance
+repo_root: ../../../..
+fastq_dir: output/projects/Nickels_2026_glabrata_tolerance/config/argon_fastq_inputs
+fastq_paths_relative_to: fastq_dir
+output_project_dir: output/projects/Nickels_2026_glabrata_tolerance
+output_export_dir: output/exports/Nickels_2026_glabrata_tolerance
+species: glabrata
+threads: 8
+reference:
+  species: glabrata
+  species_dir: resources/species/glabrata
+  reference_dir: resources/species/glabrata/reference_genome
+  fasta: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna
+  feature_table: resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab
+  gff: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff
+  gtf: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf
+  gffutils_db: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/glabrata/reference_genome/centromeres.NCBI.bed
+  trna_bed: resources/species/glabrata/reference_genome/tRNAs.bed
+  orthology_file: resources/species/glabrata/orthologs/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+  warnings:
+  - Multiple feature table candidates found; selected C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab.
+  - Multiple centromere BED candidates found; selected centromeres.NCBI.bed.
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: SRR34963229
+  fastq_1: SRR34963229_1.fastq.gz
+  fastq_2: SRR34963229_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR34963230
+  fastq_1: SRR34963230_1.fastq.gz
+  fastq_2: SRR34963230_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR34963231
+  fastq_1: SRR34963231_1.fastq.gz
+  fastq_2: SRR34963231_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR34963232
+  fastq_1: SRR34963232_1.fastq.gz
+  fastq_2: SRR34963232_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR34963233
+  fastq_1: SRR34963233_1.fastq.gz
+  fastq_2: SRR34963233_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR34963234
+  fastq_1: SRR34963234_1.fastq.gz
+  fastq_2: SRR34963234_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+sample_sheet: output/projects/Nickels_2026_glabrata_tolerance/config/sample_sheet.csv
+created_at: '2026-10-28T20:15:36.507809+00:00'
+ytab_version_or_git_commit_if_available: a4538e6
