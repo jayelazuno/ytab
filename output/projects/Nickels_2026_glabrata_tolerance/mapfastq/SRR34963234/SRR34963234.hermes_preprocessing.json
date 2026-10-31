@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "mode": "designated-junction-mate",
+  "junction_index": 0,
+  "junction_read_end": "start",
+  "retained_reads_or_pairs": 4371386,
+  "input_files": [
+    "/nfsscratch/jayelazuno/workspace/public_data/glabrata_2026_micafungin_tolerance/fastq/Nickels2026/SRR34963234/SRR34963234_1.fastq.gz"
+  ],
+  "mates": [
+    {
+      "input_reads": 4404364,
+      "adapter_3p_reads": 429807,
+      "trimmed_3p_bases": 14054763,
+      "signature:Spl-Bot:forward": 203643,
+      "signature:P7-SplAP2:rc": 162991,
+      "too_short": 32978,
+      "signature:P7-index-sequencing:rc": 33030,
+      "signature:Spl-Top-index-core:rc": 16032,
+      "signature:Spl-Top:rc": 12322,
+      "signature:Hermes_left:rc": 1039,
+      "hermes_5p_reads": 113,
+      "hermes_overlap_bases": 4202,
+      "trimmed_5p_bases": 4223,
+      "signature:Hermes_left": 102,
+      "signature:Hermes_left:forward": 138,
+      "signature:Illumina-P7:rc": 311,
+      "signature:Hermes_right:forward": 177,
+      "signature:HR-1:forward": 77,
+      "signature:Spl-Bot:rc": 21,
+      "signature:SplAP1:rc": 14,
+      "signature:Hermes-sequencing:rc": 5,
+      "adapter_5p_reads": 1,
+      "signature:SplAP1": 1,
+      "signature:Hermes_right": 11,
+      "signature:P7-sequencing:rc": 5,
+      "signature:SplAP1:forward": 2
+    }
+  ],
+  "cutadapt_version": "5.2",
+  "parameters": {
+    "overlap": 16,
+    "error_rate": 0.1,
+    "min_length": 25
+  },
+  "catalogue": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/primers.json",
+  "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
+  "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
+  "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
+  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "junction_mate": "R1",
+  "require_mate_alignment": false
+}
