@@ -1,0 +1,27 @@
+=== Transposon removal (searched with primer+Tn tail) ===
+29740073 reads; of these:
+  24938052 (83.85%) contained the transposon
+
+=== Adapter removal ===
+24938052 reads; of these:
+  24933284 (99.98%) contained the adapter
+
+=== Sequence alignment ===
+24933284 reads; of these:
+  24933284 (100.00%) were unpaired; of these:
+    1437721 (5.77%) aligned 0 times
+    23072236 (92.54%) aligned exactly 1 time
+    423327 (1.70%) aligned >1 times
+94.23% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 24933284
+primary_records: 24933284
+primary_mapped: 23495563
+primary_unmapped: 1437721
+percent_mapped: 94.234
+mapq_ge_threshold: 23079412
+percent_mapq_ge_threshold: 98.229
+avg_mapq_mapped_primary: 40.88
+mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/mapfastq/SRR24456505/SRR24456505.mapping_stats.csv
