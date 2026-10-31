@@ -1,0 +1,19 @@
+{
+  "species": "neoformans",
+  "species_dir": "resources/species/neoformans",
+  "reference_dir": "resources/species/neoformans/reference_genome",
+  "fasta": "resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.fna",
+  "feature_table": null,
+  "gff": "resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.gff",
+  "gtf": null,
+  "gffutils_db": null,
+  "bowtie2_index_prefix": "resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic",
+  "bowtie2_index_complete": true,
+  "bowtie2_index_type": "bt2",
+  "centromere_bed": null,
+  "trna_bed": null,
+  "orthology_file": null,
+  "warnings": [
+    "Bowtie2 index found; indexing skipped."
+  ]
+}
