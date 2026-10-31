@@ -1,0 +1,27 @@
+=== Transposon removal (searched with primer+Tn tail) ===
+10328699 reads; of these:
+  8138091 (78.79%) contained the transposon
+
+=== Adapter removal ===
+8138091 reads; of these:
+  8136890 (99.99%) contained the adapter
+
+=== Sequence alignment ===
+8136890 reads; of these:
+  8136890 (100.00%) were unpaired; of these:
+    573136 (7.04%) aligned 0 times
+    7527412 (92.51%) aligned exactly 1 time
+    36342 (0.45%) aligned >1 times
+92.96% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 8136890
+primary_records: 8136890
+primary_mapped: 7563754
+primary_unmapped: 573136
+percent_mapped: 92.956
+mapq_ge_threshold: 7187601
+percent_mapq_ge_threshold: 95.027
+avg_mapq_mapped_primary: 38.89
+mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/mapfastq/SRR33878338/SRR33878338.mapping_stats.csv
