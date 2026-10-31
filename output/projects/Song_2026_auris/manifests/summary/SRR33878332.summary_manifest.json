@@ -1,0 +1,43 @@
+{
+  "project_id": "Song_2026_auris",
+  "sample": "SRR33878332",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878332/SRR33878332_hits.txt",
+  "species": "auris",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.fna",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.gff",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": null
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/summary/SRR33878332",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/summary/SRR33878332/SRR33878332.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/logs/summary/SRR33878332.log",
+  "status": "success",
+  "start_time": "2026-10-28T21:45:34.621925+00:00",
+  "end_time": "2026-10-28T21:45:50.262171+00:00",
+  "elapsed_seconds": 15.64,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878332",
+    "--hit-glob",
+    "SRR33878332_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/summary/SRR33878332",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.gff",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.fna"
+  ],
+  "warnings": [],
+  "error_message": null
+}

@@ -1,0 +1,47 @@
+{
+  "project_id": "Song_2026_auris",
+  "sample": "SRR33878333",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/mapfastq/SRR33878333/SRR33878333.sorted.bam",
+  "species": "auris",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.fna",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878333",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878333/SRR33878333_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/logs/create_hit_file/SRR33878333.log",
+  "status": "success",
+  "start_time": "2026-10-28T21:37:09.951760+00:00",
+  "end_time": "2026-10-28T21:38:01.270826+00:00",
+  "elapsed_seconds": 51.319,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/mapfastq/SRR33878333/SRR33878333.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878333",
+    "--out-prefix",
+    "SRR33878333",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.fna",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878333/SRR33878333.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878333/SRR33878333.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878333/SRR33878333.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878333/SRR33878333_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878333/SRR33878333_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}
