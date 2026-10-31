@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR36343506,13715304,13715304,9583959,4131345,69.878,0,0.0,9440326,98.501,41.19,/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/mapfastq/SRR36343506/SRR36343506.sam
