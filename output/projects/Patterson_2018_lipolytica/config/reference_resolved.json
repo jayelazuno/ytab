@@ -1,0 +1,19 @@
+{
+  "species": "lipolytica",
+  "species_dir": "resources/species/lipolytica",
+  "reference_dir": "resources/species/lipolytica/reference_genome",
+  "fasta": "resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic.fna",
+  "feature_table": null,
+  "gff": "resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic.gff",
+  "gtf": null,
+  "gffutils_db": null,
+  "bowtie2_index_prefix": "resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic",
+  "bowtie2_index_complete": true,
+  "bowtie2_index_type": "bt2",
+  "centromere_bed": null,
+  "trna_bed": null,
+  "orthology_file": null,
+  "warnings": [
+    "Bowtie2 index found; indexing skipped."
+  ]
+}
