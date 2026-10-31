@@ -1,0 +1,110 @@
+project_id: Chow_2024_glabrata
+repo_root: ../../../..
+fastq_dir: output/projects/Chow_2024_glabrata/config/argon_fastq_inputs
+fastq_paths_relative_to: fastq_dir
+output_project_dir: output/projects/Chow_2024_glabrata
+output_export_dir: output/exports/Chow_2024_glabrata
+species: glabrata_CBS138
+threads: 8
+reference:
+  species: glabrata_CBS138
+  species_dir: resources/species/glabrata/strains/CBS138
+  reference_dir: resources/species/glabrata/strains/CBS138/reference_genome
+  fasta: resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes.fasta
+  feature_table: null
+  gff: resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff
+  gtf: null
+  gffutils_db: resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff.gffutils_db.sqlite
+  bowtie2_index_prefix: resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_chromosomes
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: resources/species/glabrata/strains/CBS138/reference_genome/centromeres.CGD.bed
+  trna_bed: resources/species/glabrata/strains/CBS138/reference_genome/tRNAs.bed
+  orthology_file: resources/species/glabrata/strains/CBS138/orthologs/C_glabrata_CBS138_S_cerevisiae_orthologs.txt
+  warnings:
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: SRR24456502
+  fastq_1: SRR24456502_1.fastq.gz
+  fastq_2: SRR24456502_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR24456503
+  fastq_1: SRR24456503_1.fastq.gz
+  fastq_2: SRR24456503_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR24456504
+  fastq_1: SRR24456504_1.fastq.gz
+  fastq_2: SRR24456504_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR24456505
+  fastq_1: SRR24456505_1.fastq.gz
+  fastq_2: SRR24456505_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR24456506
+  fastq_1: SRR24456506_1.fastq.gz
+  fastq_2: SRR24456506_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR24456507
+  fastq_1: SRR24456507_1.fastq.gz
+  fastq_2: SRR24456507_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR24456508
+  fastq_1: SRR24456508_1.fastq.gz
+  fastq_2: SRR24456508_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR24456509
+  fastq_1: SRR24456509_1.fastq.gz
+  fastq_2: SRR24456509_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR24456510
+  fastq_1: SRR24456510_1.fastq.gz
+  fastq_2: SRR24456510_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+sample_sheet: output/projects/Chow_2024_glabrata/config/sample_sheet.csv
+created_at: '2026-10-30T18:04:28.080119+00:00'
+ytab_version_or_git_commit_if_available: a4538e6
