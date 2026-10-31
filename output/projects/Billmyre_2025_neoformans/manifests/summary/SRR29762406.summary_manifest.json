@@ -1,0 +1,43 @@
+{
+  "project_id": "Billmyre_2025_neoformans",
+  "sample": "SRR29762406",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762406/SRR29762406_hits.txt",
+  "species": "neoformans",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.fna",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.gff",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": null
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/summary/SRR29762406",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/summary/SRR29762406/SRR29762406.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/logs/summary/SRR29762406.log",
+  "status": "success",
+  "start_time": "2026-10-28T21:59:44.440063+00:00",
+  "end_time": "2026-10-28T22:00:15.344682+00:00",
+  "elapsed_seconds": 30.905,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762406",
+    "--hit-glob",
+    "SRR29762406_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/summary/SRR29762406",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.gff",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.fna"
+  ],
+  "warnings": [],
+  "error_message": null
+}

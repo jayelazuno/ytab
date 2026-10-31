@@ -1,0 +1,47 @@
+{
+  "project_id": "Billmyre_2025_neoformans",
+  "sample": "SRR29762405",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/mapfastq/SRR29762405/SRR29762405.sorted.bam",
+  "species": "neoformans",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.fna",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762405",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762405/SRR29762405_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/logs/create_hit_file/SRR29762405.log",
+  "status": "success",
+  "start_time": "2026-10-28T21:35:49.590995+00:00",
+  "end_time": "2026-10-28T21:41:48.494098+00:00",
+  "elapsed_seconds": 358.903,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/mapfastq/SRR29762405/SRR29762405.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762405",
+    "--out-prefix",
+    "SRR29762405",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.fna",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/neoformans/reference_genome/GCF_000149245.1_CNA3_genomic.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762405/SRR29762405.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762405/SRR29762405.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762405/SRR29762405.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762405/SRR29762405_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/create_hit_file/SRR29762405/SRR29762405_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}
