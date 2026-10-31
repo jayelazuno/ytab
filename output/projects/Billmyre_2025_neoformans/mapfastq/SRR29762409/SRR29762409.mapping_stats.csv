@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR29762409,16290814,16290814,15660883,629931,96.133,0,0.0,15244851,97.343,40.62,/old_Users/jayelazuno/workspace/ytab/output/projects/Billmyre_2025_neoformans/mapfastq/SRR29762409/SRR29762409.sam
