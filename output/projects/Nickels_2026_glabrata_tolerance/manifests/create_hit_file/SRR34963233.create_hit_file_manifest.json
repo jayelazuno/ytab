@@ -1,0 +1,47 @@
+{
+  "project_id": "Nickels_2026_glabrata_tolerance",
+  "sample": "SRR34963233",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/mapfastq/SRR34963233/SRR34963233.sorted.bam",
+  "species": "glabrata",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963233",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963233/SRR34963233_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/logs/create_hit_file/SRR34963233.log",
+  "status": "success",
+  "start_time": "2026-10-28T21:13:49.580519+00:00",
+  "end_time": "2026-10-28T21:15:29.357344+00:00",
+  "elapsed_seconds": 99.777,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/mapfastq/SRR34963233/SRR34963233.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963233",
+    "--out-prefix",
+    "SRR34963233",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963233/SRR34963233.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963233/SRR34963233.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963233/SRR34963233.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963233/SRR34963233_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963233/SRR34963233_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}

@@ -1,0 +1,45 @@
+{
+  "project_id": "Nickels_2026_glabrata_tolerance",
+  "sample": "SRR34963232",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963232/SRR34963232_hits.txt",
+  "species": "glabrata",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "gtf": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf",
+    "feature_table": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab",
+    "orthology_file": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/orthologs/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/summary/SRR34963232",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/summary/SRR34963232/SRR34963232.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/logs/summary/SRR34963232.log",
+  "status": "success",
+  "start_time": "2026-10-28T21:25:01.470121+00:00",
+  "end_time": "2026-10-28T21:25:08.814106+00:00",
+  "elapsed_seconds": 7.344,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963232",
+    "--hit-glob",
+    "SRR34963232_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/summary/SRR34963232",
+    "--feature-db",
+    "glabrata",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "--scer-orthologs",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/orthologs/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}
