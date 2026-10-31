@@ -1,0 +1,9 @@
+
+=== Finding hits ===
+8547147 reads found of map quality >= 20; in these:
+  4734 hits were found; of these:
+    4734 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505.insertions.bedgraph
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505.insertions.wig
+    (bigwig_path)
