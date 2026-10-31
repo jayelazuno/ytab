@@ -1,0 +1,103 @@
+{
+  "project_id": "Yao_2026_phaffii",
+  "species": "phaffii",
+  "selected_samples_sorted": [
+    "SRR36343505",
+    "SRR36343506",
+    "SRR36343507"
+  ],
+  "selected_samples_sha256": "439238409c5f1b41539f6ba6841d827be6dd0a9d8d5f55cdcb8acf1750cb99ad",
+  "input_hit_files": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt"
+  ],
+  "input_hit_file_hashes": {
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505_hits.txt": "3e1301b112a07aa05d9485e033680ffe4845ed98c7d6e06b896eb33c1b7e187c",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt": "0dc2e6b71a011f645fc2c2f186e4918b5126212a478aaaf9096b71ac176bf299",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt": "2f2f99df08c3533ced42378822285a2d922b68b30af95232cbe14b5739a2bd72"
+  },
+  "reference_hashes": {
+    "fasta": "9dabe7b9a2cb29508806e8e6d946789a39ba803566c0ab07258fd7678602aa60",
+    "gff": "138ace24be741b6d6135affd3b4777224b3be4e3e5e937f0655c6a786484dc26"
+  },
+  "library_diagnostics_script_hash": "6db1dfcb385167353da8bcb58d2e5ebecd89f53dee50118106590a8a4b55fe00",
+  "scientific_parameters": {
+    "threads": 8,
+    "normalization_flags": [],
+    "scientific_cli_options": {}
+  },
+  "run_mode": "library_diagnostics",
+  "input_files_sha256": "7e501493302566e7d434c2c42d75d050b710d92af156361d54515f1ddf1fb884",
+  "cache_signature": "beb2848871efcac005c72dd8edc9f96897acd3116e8e428f072fd1d43d469f27",
+  "run_id": "all_samples",
+  "sample_set_label": "All eligible samples",
+  "selected_samples": [
+    "SRR36343505",
+    "SRR36343506",
+    "SRR36343507"
+  ],
+  "input_files": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt"
+  ],
+  "input_hashes": {
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505_hits.txt": "3e1301b112a07aa05d9485e033680ffe4845ed98c7d6e06b896eb33c1b7e187c",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt": "0dc2e6b71a011f645fc2c2f186e4918b5126212a478aaaf9096b71ac176bf299",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt": "2f2f99df08c3533ced42378822285a2d922b68b30af95232cbe14b5739a2bd72"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples",
+  "export_dir": "/old_Users/jayelazuno/workspace/ytab/output/exports/Yao_2026_phaffii/qc/diagnostics/all_samples",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/logs/library_diagnostics/all_samples.log",
+  "manifest_path": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/manifests/library_diagnostics/runs/all_samples/manifest.json",
+  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/manifests/jobs/library_diagnostics_20261028T220205Z_20dddd.progress.json",
+  "status": "success",
+  "cached_from": null,
+  "start_time": "2026-10-28T22:02:05.311700+00:00",
+  "end_time": "2026-10-28T22:03:11.762623+00:00",
+  "elapsed_seconds": 66.451,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/qc/LibraryDiagnostics.py",
+    "--hits-txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt",
+    "--outdir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.fna",
+    "--metaplot-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.gff"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343505/SRR36343505.metaplots.png",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343505/SRR36343505.midlc.csv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343505/SRR36343505.seqbias_2_7.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343505/SRR36343505.summary.csv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343505/SRR36343505.trna_metaplot.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343505/SRR36343505.tss_metaplot.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343505/SRR36343505.tts_metaplot.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343506/SRR36343506.metaplots.png",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343506/SRR36343506.midlc.csv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343506/SRR36343506.seqbias_2_7.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343506/SRR36343506.summary.csv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343506/SRR36343506.trna_metaplot.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343506/SRR36343506.tss_metaplot.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343506/SRR36343506.tts_metaplot.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343507/SRR36343507.metaplots.png",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343507/SRR36343507.midlc.csv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343507/SRR36343507.seqbias_2_7.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343507/SRR36343507.summary.csv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343507/SRR36343507.trna_metaplot.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343507/SRR36343507.tss_metaplot.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/SRR36343507/SRR36343507.tts_metaplot.tsv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples/library_diagnostics.summary.csv"
+  ],
+  "warnings": [
+    "Centromere BED is missing; centromere-bias diagnostics will be skipped.",
+    "tRNA BED is missing; no separate tRNA BED diagnostics will be available."
+  ],
+  "error_message": null
+}

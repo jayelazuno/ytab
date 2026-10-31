@@ -1,0 +1,43 @@
+{
+  "project_id": "Yao_2026_phaffii",
+  "sample": "SRR36343507",
+  "input_hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt",
+  "species": "phaffii",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.fna",
+    "gff": "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.gff",
+    "gtf": null,
+    "feature_table": null,
+    "orthology_file": null
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/summary/SRR36343507",
+  "detected_feature_tables": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/summary/SRR36343507/SRR36343507.feature_table.RDF_1.csv"
+  ],
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/logs/summary/SRR36343507.log",
+  "status": "success",
+  "start_time": "2026-10-28T22:01:34.958801+00:00",
+  "end_time": "2026-10-28T22:01:45.558178+00:00",
+  "elapsed_seconds": 10.599,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507",
+    "--hit-glob",
+    "SRR36343507_hits.txt",
+    "--output-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/summary/SRR36343507",
+    "--feature-db",
+    "gff",
+    "--threads",
+    "8",
+    "--overwrite",
+    "--feature-gff",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.gff",
+    "--reference-fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.fna"
+  ],
+  "warnings": [],
+  "error_message": null
+}

@@ -1,0 +1,47 @@
+{
+  "project_id": "Yao_2026_phaffii",
+  "sample": "SRR36343507",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/mapfastq/SRR36343507/SRR36343507.sorted.bam",
+  "species": "phaffii",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.fna",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/logs/create_hit_file/SRR36343507.log",
+  "status": "success",
+  "start_time": "2026-10-28T21:57:42.665753+00:00",
+  "end_time": "2026-10-28T21:59:52.270373+00:00",
+  "elapsed_seconds": 129.605,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/mapfastq/SRR36343507/SRR36343507.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507",
+    "--out-prefix",
+    "SRR36343507",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.fna",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}
