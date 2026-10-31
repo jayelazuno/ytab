@@ -1,6 +1,6 @@
 """Proper ZINB likelihood, deterministic histogram fitting and scalar scaling.
 
-Unlike the inspected TRANSIT objective, the zero mass includes (1-pi).
+Unlike the inspected TRANSIT objective (DeJesus et al. 2015), the zero mass includes (1-pi).
 The empirical catalogue defines the population of zeros; it is not ground truth.
 """
 import numpy as np

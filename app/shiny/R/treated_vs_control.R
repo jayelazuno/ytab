@@ -1,6 +1,6 @@
 # Treated vs Control: three ways to call genes depleted or enriched in treated libraries relative to their controls.
 # The local-abundance z-score (default) uses the Fitness run and results views (ytab fitness); resampling and the
-# control-conditioned Gumbel run on a Site Normalization run (ytab treated-vs-control) and have their own views here.
+# control-conditioned Gumbel run on a normalization run (ytab treated-vs-control) and have their own views here.
 
 tvc_method_choices <- c("Local-abundance z-score" = "zscore",
                         "Resampling" = "resampling",
@@ -10,7 +10,7 @@ tvc_method_choices <- c("Local-abundance z-score" = "zscore",
 # resampling takes the scalar methods and the beta-geometric corrections.
 tvc_allowed_methods <- list(resampling = c("betageom", "aBGC", "ttr", "totreads", "nzmean"), gumbel = c("ttr", "totreads", "nzmean"))
 
-# Normalization choices grouped by Site Normalization run, latest first; values are "<run>|<method>". `allowed`: the
+# Normalization choices grouped by normalization run, latest first; values are "<run>|<method>". `allowed`: the
 # methods a test accepts (NULL: every method of the run, plus Unnormalized when the run has it).
 tvc_norm_choices <- function(runs, allowed = NULL) {
   choices <- list()
@@ -32,7 +32,7 @@ tvc_norm_default <- function(choices, preferred, current = NULL) {
 }
 
 tvc_methods_text <- function() ytab_methods_drawer(
-  tags$p(tags$b("Local-abundance z-score (default). "), "The replicate libraries of each condition are averaged; each gene's log2 fold change between the treated and control means is divided by the noise expected at the gene's abundance. The noise model is fitted to the two controls of each background (running SD of control–control log2 ratios against abundance, SD = m1 + m2·A^m3), and the call threshold is the 99th percentile of control–control |z|. Default input: BGC from the latest Site Normalization run (gene totals of its normalized site counts, expressed per million of the mean library total so the 0.5 pseudocount means the same as with counts per million); total reads (counts per million) and any other Site Normalization method can be chosen. Calls: depleted, enriched or none (one call per gene from the replicate means); the per-pool z-scores are kept as a diagnostic."),
+  tags$p(tags$b("Local-abundance z-score (default). "), "The replicate libraries of each condition are averaged; each gene's log2 fold change between the treated and control means is divided by the noise expected at the gene's abundance. The noise model is fitted to the two controls of each background (running SD of control–control log2 ratios against abundance, SD = m1 + m2·A^m3), and the call threshold is the 99th percentile of control–control |z|. Default input: BGC from the latest normalization run (gene totals of its normalized site counts, expressed per million of the mean library total so the 0.5 pseudocount means the same as with counts per million); total reads (counts per million) and any other normalization method can be chosen. Calls: depleted, enriched or none (one call per gene from the replicate means); the per-pool z-scores are kept as a diagnostic."),
   tags$p(tags$b("Resampling. "), "A permutation test on the gene's normalized site counts in controls versus treated libraries (permuted within each pool when there are several), two-sided, Benjamini–Hochberg FDR. With BGC the treated libraries are recentred (trimmed sum) so that typical genes show no change. ", tags$b("Validation: "), "passed its pre-registered calibration gates with BGC (false discovery rate 6% on simulated Gale-like screens; 4.5% of null genes at p ≤ 0.05). Use it for hit lists with error control; the z-score ranks genes better but its calls are not error-controlled."),
   tags$p(tags$b("Control-conditioned Gumbel. "), "Finds runs of consecutive sites depleted in the treated libraries, compared with the longest runs expected from the controls' count model (exact tail probability; Gumbel fit reported as a diagnostic). Depletion only; needs at least two controls per background; scalar normalizations only (TTR, total reads, nonzero mean). ", tags$b("Validation: "), "passed its pre-registered calibration gates with TTR (false discovery rate 1%, no calls on null screens); depletion only."),
   ytab_reference("The z-score follows Gale et al. 2020 (G3 10:3859–3870). The resampling test is adapted from TRANSIT's resampling (DeJesus et al. 2015, PLoS Comput Biol 11:e1004401); the Gumbel test is adapted from TRANSIT's Gumbel method (DeJesus et al. 2013, Bioinformatics 29:695–703)."),
@@ -159,10 +159,10 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
     d[tolower(trimws(as.character(d$include))) %in% c("1", "true", "yes", "y"), , drop = FALSE]
   })
 
-  # Z-score input: total reads (CPM) or any method of a Site Normalization run ("<run>|<method>").
+  # Z-score input: total reads (CPM) or any method of a normalization run ("<run>|<method>").
   output$fitness_normalization_selector <- renderUI({
     # Default: BGC of the latest run that has it (total reads only when no run has BGC); a valid earlier choice is kept.
-    choices <- c(list("Without a Site Normalization run" = c("Total reads (CPM)" = "cpm")), tvc_norm_choices(norm_runs()))
+    choices <- c(list("Without a normalization run" = c("Total reads (CPM)" = "cpm")), tvc_norm_choices(norm_runs()))
     selected <- if (length(choices) > 1L) tvc_norm_default(choices[-1L], "betageom", isolate(input$fitness_normalization)) else "cpm"
     if (identical(isolate(input$fitness_normalization), "cpm")) selected <- "cpm"
     selectInput("fitness_normalization", "Normalization", choices, selected)
@@ -174,9 +174,9 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
   # for the Gumbel).
   output$tvc_inputs <- renderUI({
     runs <- norm_runs(); method <- input$tvc_method %||% "resampling"; allowed <- tvc_allowed_methods[[method]] %||% character()
-    if (!nrow(runs)) return(tags$p(class = "text-warning", "No normalization run yet. Run Normalization → Site Normalization first."))
+    if (!nrow(runs)) return(tags$p(class = "text-warning", "No normalization run yet. Run Normalization first."))
     choices <- tvc_norm_choices(runs, allowed)
-    if (!length(choices)) return(tags$p(class = "text-warning", sprintf("No Site Normalization run has a normalization the %s accepts (%s). Add one in Site Normalization.",
+    if (!length(choices)) return(tags$p(class = "text-warning", sprintf("No normalization run has a normalization the %s accepts (%s). Add one in Normalization.",
       if (identical(method, "gumbel")) "Gumbel" else "resampling", paste(as.character(norm_method_label(allowed)), collapse = ", "))))
     selectInput("tvc_norm_choice", "Normalization", choices, tvc_norm_default(choices, if (identical(method, "gumbel")) "ttr" else "betageom", isolate(input$tvc_norm_choice)))
   })

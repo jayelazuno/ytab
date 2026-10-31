@@ -31,6 +31,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gene", help="Gene identifier/name to resolve and plot")
     parser.add_argument("--query", help="Query only; print candidate genes")
     parser.add_argument("--list-tracks", action="store_true", help="List available insertion tracks")
+    parser.add_argument(
+        "--reference-config",
+        action="append",
+        default=[],
+        metavar="PROJECT_CONFIG",
+        help="Another project whose tracks for the same gene are drawn below this one's, for a sense of what other "
+             "libraries look like. Repeatable. Placed by position within the gene, not by coordinate.",
+    )
     parser.add_argument("--track-source", default="raw", choices=("raw", "combined", "combined_parent", "all"))
     parser.add_argument(
         "--track-preset",
@@ -116,6 +124,7 @@ def main() -> int:
             show_site_counts=not args.hide_site_counts,
             output=args.output,
             force=args.force,
+            reference_configs=args.reference_config,
         )
     except Exception as exc:
         if args.json:

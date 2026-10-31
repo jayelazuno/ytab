@@ -12,14 +12,14 @@ Given one or more insertion-site count tables (per library / replicate), compute
    - Outputs: <sample>.midlc.csv
    - Also estimates a MidLC scalar (half-saturation proxy) from the curve for reporting/normalization.
 
-2) OPTIONAL: MidLC-based library depth normalization (Gale et al. "depth correction" idea)
+2) OPTIONAL: MidLC-based library depth normalization (Gale et al. 2020 "depth correction" idea)
    - If --normalize-to-midlc TARGET is provided:
        For each library, compute MidLC_est = depth at which half the occupied sites are expected (exact, under binomial thinning)
        Compute reads_target = TARGET * MidLC_est   (TARGET is a multiple of MidLC, i.e. a depth/MidLC ratio, not a read count)
        If total_reads > reads_target: downsample counts by binomial thinning p = reads_target/total_reads
        If total_reads <= reads_target: do nothing (never upsample)
 
-3) Jackpot estimate (Gale-style spirit; reads concentrated in the highest-frequency sites)
+3) Jackpot estimate (Gale et al. 2020 style; reads concentrated in the highest-frequency sites)
    - Jackpot fraction = fraction of total reads contributed by the top X% insertion sites ranked by read count
    - Controlled by --jackpot-top-frac (default 0.001 = top 0.1% sites)
    - Written to per-sample summary and combined summary

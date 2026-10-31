@@ -66,10 +66,12 @@ qc_plot_descriptions <- c(
 qc_display_controls <- function(id, heatmap = FALSE) ytab_plot_customization_controls(id, include_points = TRUE, include_bars = TRUE,
   include_heatmap = heatmap, default_height = "auto", default_bar_orientation = "auto", default_show_value_labels = FALSE)
 
-qc_theme_ui <- function(id, extra = NULL) ytab_two_column_layout(
+# `lead` sits directly under the plot menu, above the display options; `extra` goes below everything.
+qc_theme_ui <- function(id, extra = NULL, lead = NULL) ytab_two_column_layout(
   controls = tagList(ytab_control_panel("Plot",
       uiOutput(paste0("qcp_", id, "_choice")),
       uiOutput(paste0("qcp_", id, "_options")),
+      lead,
       ytab_plot_downloads_ui(paste0("qcp_", id), c(data = "Download plotted data (TSV)")),
       qc_display_controls(paste0("qcp_", id), heatmap = id %in% c("saturation_bias", "agreement"))),
     extra),
@@ -118,9 +120,10 @@ qc_agreement_run_ui <- function() ytab_control_panel("Compare libraries",
 
 quality_control_ui <- function() navset_tab(id = "qc_tabs",
   nav_panel("Overview", value = "overview", qc_overview_ui()),
-  nav_panel("Reads & Mapping", value = "reads_mapping", qc_theme_ui("reads_mapping")),
-  nav_panel("Insertions & Genes", value = "insertions", qc_theme_ui("insertions")),
-  nav_panel("Saturation & Bias", value = "saturation_bias", qc_theme_ui("saturation_bias", qc_library_diagnostics_run_ui())),
+  nav_panel("Reads & Mapping", value = "reads_mapping", qc_theme_ui("reads_mapping", lead = ytab_reference_projects_ui("qcp_reads_mapping"))),
+  nav_panel("Insertions & Genes", value = "insertions", qc_theme_ui("insertions", lead = ytab_reference_projects_ui("qcp_insertions"))),
+  nav_panel("Saturation & Bias", value = "saturation_bias", qc_theme_ui("saturation_bias", qc_library_diagnostics_run_ui(),
+    lead = ytab_reference_projects_ui("qcp_saturation_bias"))),
   nav_panel("Library Agreement", value = "agreement", qc_theme_ui("agreement", qc_agreement_run_ui()),
     uiOutput("libcor_summary"), ytab_table_card("Library pairs", DT::DTOutput("libcor_pairs_table")),
     ytab_methods_drawer(
@@ -182,20 +185,69 @@ qc_bar_horizontal <- function(s, labels) identical(s$bar_orientation, "horizonta
 
 qc_label_libraries <- function(x, s) if (identical(s$label_mode, "compact")) qc_compact_labels(x) else as.character(x)
 
-qc_metric_plot <- function(f, s, companions = NULL) {
+# Reference projects join the plot as bars of their own, coloured by project instead of by QC flag; `mode` decides
+# whether they sit on the same axis, get a panel each, or shrink to their median and spread.
+qc_metric_plot <- function(f, s, companions = NULL, reference = NULL, mode = "auto", project_label = "This project") {
   f$value <- suppressWarnings(as.numeric(f$value)); f <- f[!is.na(f$value), , drop = FALSE]; validate(need(nrow(f) > 0, "No values for this metric."))
-  f$library <- qc_label_libraries(f$display_name, s); horizontal <- qc_bar_horizontal(s, f$library)
-  f$library <- factor(f$library, levels = if (horizontal) rev(unique(f$library)) else unique(f$library))
+  metric_label <- f$label[[1L]]
   extra <- if (is.data.frame(companions) && nrow(companions)) vapply(f$sample, function(x) {
     c2 <- companions[companions$sample == x, , drop = FALSE]; if (!nrow(c2)) return("")
     paste0("\n", paste(sprintf("%s: %s", c2$label, qc_format_value(suppressWarnings(as.numeric(c2$value)))), collapse = "\n"))
   }, "") else ""
-  f$tip <- sprintf("%s\n%s: %s%s\n%s", f$display_name, f$label, qc_format_value(f$value), extra, f$reason)
-  p <- ggplot2::ggplot(f, ggplot2::aes(x = library, y = value, fill = flag, text = tip)) + ggplot2::geom_col(width = .7) +
-    ggplot2::scale_fill_manual(values = YTAB_FLAG_COLOURS, drop = FALSE) + ggplot2::labs(x = NULL, y = f$label[[1L]], fill = "Flag")
+  mine <- data.frame(.key = f$display_name, .axis = f$display_name, value = f$value, .fill = f$flag, .panel = project_label,
+    tip = sprintf("%s\n%s: %s%s\n%s", f$display_name, f$label, qc_format_value(f$value), extra, f$reason), stringsAsFactors = FALSE)
+
+  values <- if (is.null(reference)) data.frame() else reference$values
+  draw <- ytab_reference_mode(mode, nrow(mine), nrow(values))
+  d <- mine
+  if (nrow(values) && !identical(draw, "lines")) {
+    # Library names repeat between projects, so the bar's identity carries the project; the axis shows the plain name
+    # once a panel already names the project.
+    d <- rbind(mine, data.frame(.key = paste0(values$display_name, " (", values$.project, ")"),
+      .axis = if (identical(draw, "panels")) values$display_name else paste0(values$display_name, " (", values$.project, ")"),
+      value = values$value, .fill = values$.project, .panel = values$.project,
+      tip = sprintf("%s — %s\n%s: %s", values$.project, values$display_name, metric_label, qc_format_value(values$value)),
+      stringsAsFactors = FALSE))
+  }
+  d$.axis <- qc_label_libraries(d$.axis, s); horizontal <- qc_bar_horizontal(s, d$.axis)
+  d$.key <- factor(d$.key, levels = if (horizontal) rev(unique(d$.key)) else unique(d$.key))
+  # The open project's panel comes first, before the references it is being compared with.
+  d$.panel <- factor(d$.panel, levels = c(project_label, setdiff(unique(d$.panel), project_label)))
+  # `display_name` is what the automatic plot height counts: with the reference libraries in the frame the plot grows
+  # to hold them instead of crushing every bar into the height of one project's worth.
+  d$display_name <- as.character(d$.key)
+  projects <- setdiff(unique(d$.fill), names(YTAB_FLAG_COLOURS))
+  d$.fill <- factor(d$.fill, levels = c(names(YTAB_FLAG_COLOURS), projects))
+  labels <- stats::setNames(d$.axis, as.character(d$.key))
+  # Horizontal bars map the library to y directly rather than being drawn upright and flipped. coord_flip fixes every
+  # panel to the same height, so a panel of 44 libraries would be squeezed into the height of one holding 8; mapping
+  # to y lets facet_grid give each panel height in proportion to the libraries it holds.
+  p <- if (horizontal)
+    ggplot2::ggplot(d, ggplot2::aes(y = .key, x = value, fill = .fill, text = tip)) + ggplot2::geom_col(width = .7) +
+      ggplot2::scale_y_discrete(labels = labels) + ggplot2::labs(y = NULL, x = metric_label)
+  else
+    ggplot2::ggplot(d, ggplot2::aes(x = .key, y = value, fill = .fill, text = tip)) + ggplot2::geom_col(width = .7) +
+      ggplot2::scale_x_discrete(labels = labels) + ggplot2::labs(x = NULL, y = metric_label)
+  p <- p + ggplot2::scale_fill_manual(values = ytab_reference_fill_values(projects), drop = FALSE) +
+    ggplot2::labs(fill = if (length(projects)) "Flag / project" else "Flag")
   if (isTRUE(s$show_value_labels)) p <- p + ggplot2::geom_text(ggplot2::aes(label = qc_format_value(value)), size = s$text_size / 4.2,
                                                                hjust = if (horizontal) -.1 else .5, vjust = if (horizontal) .5 else -.4)
-  if (horizontal) qc_apply_display(p + ggplot2::coord_flip(), s, "y") else qc_apply_display(p, s, "x")
+  # Panel heights now follow their contents, so the plot needs room for every library plus each panel's own axis.
+  panels <- levels(droplevels(d$.panel))
+  items <- length(unique(d$.key)); panel_rows <- NULL
+  if (identical(draw, "panels") && length(projects)) {
+    p <- p + if (horizontal) ggplot2::facet_grid(rows = ggplot2::vars(.panel), scales = "free_y", space = "free_y")
+             else ggplot2::facet_grid(cols = ggplot2::vars(.panel), scales = "free_x", space = "free_x")
+    items <- items + 4L * length(panels)
+    # Libraries per panel, top panel first: the interactive plot needs them to reproduce facet_grid's free spacing.
+    if (horizontal) panel_rows <- as.integer(table(d$.panel)[panels])
+  }
+  if (identical(draw, "lines")) p <- ytab_reference_overlay(p, reference$summary, horizontal = horizontal)
+  p <- qc_apply_display(p, s, if (horizontal) "y" else "x")
+  # Set last: every `+` on a ggplot returns a fresh object, which would drop an attribute set before it.
+  attr(p, "ytab_items") <- as.integer(items)
+  attr(p, "ytab_panel_rows") <- panel_rows
+  p
 }
 
 qc_bar_plot <- function(d, x, y, fill, s, ylab) {
@@ -249,7 +301,8 @@ qc_annotate <- function(d, info, sample_col = "sample") {
 
 qc_colour_column <- function(colour_by) switch(colour_by %||% "library", role = ".role", pool = ".pool", ".library")
 
-qc_table_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin) {
+qc_table_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin,
+                            projects = reactive(data.frame()), reference_state = NULL) {
   runs_dir <- reactive(file.path(active()$project_root, "qc"))
   runs <- reactivePoll(3000, session,
     checkFunc = function() { x <- ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")); paste(x$path, x$modified, collapse = "|") },
@@ -324,9 +377,28 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
     has_values <- vapply(all, function(v) !startsWith(v, "metric:") || any(!is.na(suppressWarnings(as.numeric(f$value[f$metric == sub("^metric:", "", v)])))), TRUE)
     if (any(has_values)) all[has_values][[1L]] else all[[1L]]
   }
+  # --- reference projects: the opt-in comparison set drawn behind this project's libraries ---------------------------
+  if (is.null(reference_state)) reference_state <- ytab_reference_state()
+  for (ref_prefix in qc_reference_subtabs)
+    ytab_reference_server(ref_prefix, input, output, session, repo_root, active, projects, reference_state)
+  reference_metas <- reactive(ytab_reference_metas(reference_state(), repo_root))
+  # `kind` says which table holds the quantity: a QC-table metric, or the mapping statistics.
+  reference_for <- function(kind, key, roles = character()) {
+    metas <- reference_metas()
+    if (!length(metas)) return(NULL)
+    values <- if (identical(kind, "mapping")) ytab_reference_mapping_values(metas, repo_root, key)
+              else ytab_reference_metric_values(metas, repo_root, key, roles)
+    list(values = values, summary = ytab_reference_summary(values))
+  }
+
   sources <- list(
     flags = function() { validate(need(has_table(), "Build the QC table in Overview first.")); flags() },
-    distribution = distribution, project = active, info = info, libcor = libcor_results)
+    distribution = distribution, project = active, info = info, libcor = libcor_results,
+    reference = reference_for,
+    reference_curves = function(reader) {
+      metas <- reference_metas(); if (!length(metas)) return(data.frame())
+      ytab_reference_curves(metas, reader)
+    })
   built <- list()
   for (theme_id in names(qc_plot_menus)) local({
     id <- theme_id; prefix <- paste0("qcp_", id)
@@ -345,8 +417,16 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
       key <- if (startsWith(choice, "metric:")) "metric" else choice
       label <- qc_menu_label(id, choice)
       height <- if (choice %in% c("cor_heatmap", "gene_heatmap")) s$heatmap_height else s$height
+      about <- if (is.na(qc_plot_descriptions[key])) "" else unname(qc_plot_descriptions[key])
+      # A plot with a median and spread reports them; the others (curves, grouped bars) still say which projects are
+      # drawn and what the comparison is for.
+      reference <- tryCatch({
+        built <- plot_reactive()
+        caption <- ytab_reference_caption(built$reference$summary, active()$species)
+        if (nzchar(caption) || !qc_reference_enabled(prefix)) caption else ytab_reference_note(reference_metas())
+      }, error = function(e) "")
       ytab_plot_card(if (is.na(label %||% NA)) "Plot" else label, ytab_plot_frame(plotly::plotlyOutput(paste0(prefix, "_plotly"), height = height), s$width),
-                     description = if (is.na(qc_plot_descriptions[key])) "" else unname(qc_plot_descriptions[key]))
+                     description = if (nzchar(reference)) tagList(about, tags$p(class = "text-muted", reference)) else about)
     })
     output[[paste0(prefix, "_plotly")]] <- plotly::renderPlotly({
       b <- plot_reactive(); ytab_ggplotly(b$plot) |> plotly::layout(legend = list(orientation = "h", y = -0.32, yanchor = "top"), margin = list(b = 90))
@@ -360,7 +440,8 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
     })
     output[[paste0(prefix, "_download_data")]] <- downloadHandler(
       filename = function() paste0(active()$project_id, "_qc_", gsub("[^A-Za-z0-9]+", "_", input[[paste0(prefix, "_plot")]] %||% id), ".tsv"),
-      content = function(file) { d <- plot_reactive()$data; d <- d[, !startsWith(names(d), "."), drop = FALSE]
+      content = function(file) { b <- plot_reactive(); d <- b$data[, !startsWith(names(b$data), "."), drop = FALSE]
+        if (!is.null(b$reference)) d <- ytab_reference_download(d, b$reference, active()$project_id)
         utils::write.table(d, file, sep = "\t", quote = FALSE, row.names = FALSE, na = "") })
   })
 
@@ -402,6 +483,11 @@ qc_libcor_shown <- function(names, r, input, prefix, projects_root) {
 
 qc_role_filter <- function(d, input, prefix) { roles <- input[[paste0(prefix, "_roles")]]; if (length(roles)) d[d$.role %in% roles, , drop = FALSE] else d }
 
+# Reference projects are offered on every themed subtab. Library Agreement is left out: it already compares across
+# projects through `ytab library-correlation`, which computes a correlation rather than drawing the two side by side.
+qc_reference_subtabs <- c("qcp_reads_mapping", "qcp_insertions", "qcp_saturation_bias")
+qc_reference_enabled <- function(prefix) prefix %in% qc_reference_subtabs
+
 qc_distribution_plot <- function(d, kind, s, colour) switch(kind,
   histogram = qc_line_plot(d[d$sites > 0, , drop = FALSE], "bin_start", "sites", colour, s, "Reads at a position (log bins)", "Positions", TRUE, TRUE),
   qq = qc_line_plot(d, "geometric", "observed", colour, s, "Geometric quantile (fit to the mean)", "Observed quantile", TRUE, TRUE, diagonal = TRUE),
@@ -416,58 +502,92 @@ qc_build_plot <- function(choice, input, prefix, s, src) {
   if (startsWith(choice, "metric:")) {
     key <- sub("^metric:", "", choice); all <- src$flags(); f <- all[all$metric == key, , drop = FALSE]
     companions <- all[all$metric %in% qc_metric_companions[[key]], , drop = FALSE]
-    return(list(plot = qc_metric_plot(f, s, companions), data = rbind(f, companions)))
+    ref <- if (qc_reference_enabled(prefix)) src$reference("metric", key) else NULL
+    p <- qc_metric_plot(f, s, companions, ref, input[[paste0(prefix, "_reference_mode")]], project$project_id)
+    # The bars drawn, not the rows of the QC table: with reference projects the plot holds their libraries too, and
+    # the automatic height has to grow for them.
+    return(list(plot = p, data = rbind(f, companions), reference = ref, items = attr(p, "ytab_items")))
+  }
+  # Curves and per-library bars take the reference projects' libraries as further series, read with the same reader.
+  with_reference <- function(d, reader) {
+    if (!qc_reference_enabled(prefix)) return(d)
+    ytab_reference_bind(d, qc_role_filter(src$reference_curves(reader), input, prefix), project$project_id)
   }
   if (startsWith(choice, "dist_")) {
-    kind <- sub("^dist_", "", choice); d <- qc_role_filter(src$distribution(kind), input, prefix)
-    return(list(plot = qc_distribution_plot(d, kind, s, colour), data = d))
+    kind <- sub("^dist_", "", choice)
+    d <- with_reference(qc_role_filter(src$distribution(kind), input, prefix),
+                        function(m) ytab_reference_distribution(m, kind))
+    return(list(plot = qc_distribution_plot(d, kind, s, colour), data = d, items = length(unique(d$.library))))
   }
   switch(choice,
     read_counts = {
       d <- qc_role_filter(qc_annotate(need_rows(qc_mapping_stats_plot_data(project), "mapping statistics"), info), input, prefix)
       long <- rbind(data.frame(.library = d$.library, Reads = "Alignment records", value = as.numeric(d$total_records)),
                     data.frame(.library = d$.library, Reads = "Primary mapped", value = as.numeric(d$primary_mapped)))
-      list(plot = qc_bar_plot(long, ".library", "value", "Reads", s, "Reads") + ggplot2::scale_fill_manual(values = c("#9AA0A6", "#1A73E8")), data = long)
+      # Two series share the axis, so the reference bands show the primary mapped reads only and say so.
+      ref <- if (qc_reference_enabled(prefix)) src$reference("mapping", "primary_mapped") else NULL
+      p <- qc_bar_plot(long, ".library", "value", "Reads", s, "Reads") + ggplot2::scale_fill_manual(values = c("#9AA0A6", "#1A73E8"))
+      list(plot = ytab_reference_overlay(p, ref$summary, "primary mapped"), data = long, reference = ref)
     },
     gene_hit_bins = {
       d <- qc_role_filter(qc_annotate(need_rows(summary_qc_gene_hit_bins_raw(project), "SummaryTable gene counts"), info), input, prefix)
+      d <- with_reference(d, summary_qc_gene_hit_bins_raw)
       d$bin <- factor(d[["Hit bin"]], levels = unique(d[["Hit bin"]])); d$.tip <- sprintf("%s\n%s insertion sites: %s genes", d$.library, d$bin, d$Genes)
       p <- ggplot2::ggplot(d, ggplot2::aes(x = bin, y = Genes, fill = .library, text = .tip)) + ggplot2::geom_col(position = "dodge") +
         ggplot2::labs(x = "Insertion sites in the gene", y = "Genes", fill = NULL)
       list(plot = qc_apply_display(p, utils::modifyList(s, list(label_angle = 0L)), "x"), data = d)
     },
     combined_features = {
-      d <- need_rows(qc_summary_combined_features_hit_data(project), "SummaryTable results"); d$measure <- "Genes hit (%)"
+      d <- need_rows(qc_summary_combined_features_hit_data(project), "SummaryTable results")
+      d <- with_reference(d, qc_summary_combined_features_hit_data)
+      d$display_group <- ytab_reference_group(d$display_group, d$.project); d$measure <- "Genes hit (%)"
       list(plot = qc_bar_plot(d, "display_group", "percent_features_hit", "measure", s, "Genes hit (%)") + ggplot2::scale_fill_manual(values = "#1A73E8", guide = "none"), data = d)
     },
     genome_bins = {
-      d <- need_rows(qc_summary_binned_plot_data(project), "binned SummaryTable signal"); d$chrom <- factor(d$chrom, levels = unique(d$chrom))
-      d$.tip <- sprintf("%s: %s", d$chrom, qc_format_value(d$mean_bin_signal))
-      p <- ggplot2::ggplot(d, ggplot2::aes(x = chrom, y = mean_bin_signal)) + ggplot2::geom_boxplot(fill = "#D2E3FC", outlier.shape = NA) +
-        ggplot2::geom_point(ggplot2::aes(text = .tip), position = ggplot2::position_jitter(width = .15, seed = 1), size = s$point_size, alpha = s$point_opacity) +
-        ggplot2::labs(x = NULL, y = "Mean signal per genome bin")
+      d <- need_rows(qc_summary_binned_plot_data(project), "binned SummaryTable signal")
+      d <- with_reference(d, qc_summary_binned_plot_data)
+      d$chrom <- factor(d$chrom, levels = unique(d$chrom))
+      d$.tip <- sprintf("%s — %s: %s", d$.project, d$chrom, qc_format_value(d$mean_bin_signal))
+      several <- length(unique(d$.project)) > 1L
+      # Chromosome names belong to a species, so a reference of another species simply adds its own boxes.
+      p <- ggplot2::ggplot(d, ggplot2::aes(x = chrom, y = mean_bin_signal, fill = .project)) +
+        ggplot2::geom_boxplot(outlier.shape = NA) +
+        ggplot2::geom_point(ggplot2::aes(text = .tip), position = ggplot2::position_jitterdodge(jitter.width = .15, seed = 1), size = s$point_size, alpha = s$point_opacity) +
+        ggplot2::scale_fill_manual(values = ytab_reference_project_fills(unique(d$.project), project$project_id), guide = if (several) "legend" else "none") +
+        ggplot2::labs(x = NULL, y = "Mean signal per genome bin", fill = NULL)
       list(plot = qc_apply_display(p, s, "x"), data = d)
     },
     midlc = {
       d <- qc_role_filter(qc_annotate(need_rows(qc_library_midlc_plot_data(project), "saturation curves (run library diagnostics)"), info), input, prefix)
-      list(plot = qc_line_plot(d, "reads_sampled", "unique_sites", colour, s, "Reads sampled", "Unique insertion sites", logx = TRUE), data = d)
+      d <- with_reference(d, qc_library_midlc_plot_data)
+      list(plot = qc_line_plot(d, "reads_sampled", "unique_sites", colour, s, "Reads sampled", "Unique insertion sites", logx = TRUE), data = d,
+           items = length(unique(d$.library)))
     },
     centromere = {
       d <- qc_role_filter(qc_annotate(need_rows(qc_library_centromere_plot_data(project), "centromere profiles (run library diagnostics)"), info), input, prefix)
-      list(plot = qc_line_plot(d, "distance_kb", "mean_reads", colour, s, "Distance from the centromere (kb)", "Mean reads"), data = d)
+      d <- with_reference(d, qc_library_centromere_plot_data)
+      list(plot = qc_line_plot(d, "distance_kb", "mean_reads", colour, s, "Distance from the centromere (kb)", "Mean reads"), data = d,
+           items = length(unique(d$.library)))
     },
     metaplot_TSS = , metaplot_TTS = , metaplot_tRNA = {
       feature <- sub("^metaplot_", "", choice); d <- need_rows(qc_library_metaplot_plot_data(project), "metaplots (run library diagnostics)")
       d <- need_rows(d[tolower(d$feature) == tolower(feature), , drop = FALSE], paste(feature, "metaplots"))
       d <- qc_role_filter(qc_annotate(d, info), input, prefix)
-      list(plot = qc_line_plot(d, "rel_bp", "mean_reads_per_site", colour, s, sprintf("Position relative to the %s (bp)", feature), "Mean reads per site"), data = d)
+      d <- with_reference(d, function(m) { r <- qc_library_metaplot_plot_data(m); if (!is.data.frame(r) || !nrow(r)) return(NULL)
+        r[tolower(r$feature) == tolower(feature), , drop = FALSE] })
+      list(plot = qc_line_plot(d, "rel_bp", "mean_reads_per_site", colour, s, sprintf("Position relative to the %s (bp)", feature), "Mean reads per site"), data = d,
+           items = length(unique(d$.library)))
     },
     sequence_bias = {
       # Grouped bars as in the former Library Diagnostics plot: one group per dinucleotide at +2/+7, one bar per role
       # (mean over the role's libraries) or per library; dashed line at 1 = no enrichment over the genome background.
       d <- qc_role_filter(qc_annotate(need_rows(qc_library_sequence_bias_plot_data(project), "sequence bias (run library diagnostics)"), info), input, prefix)
+      d <- with_reference(d, qc_library_sequence_bias_plot_data)
       d$enrichment <- as.numeric(d$enrichment); by <- input[[paste0(prefix, "_colour")]] %||% "role"
-      d$.group <- if (identical(by, "library")) qc_label_libraries(d$.library, s) else if (identical(by, "pool")) d$.pool else d$.role
+      # Averaging a role across projects would hide the very difference being looked for, so the group carries the
+      # project whenever more than one is drawn. Library names already do.
+      d$.group <- if (identical(by, "library")) qc_label_libraries(d$.library, s)
+                  else ytab_reference_group(if (identical(by, "pool")) d$.pool else d$.role, d$.project)
       bars <- stats::aggregate(enrichment ~ pair + .group, d, mean)
       bars$n <- stats::aggregate(enrichment ~ pair + .group, d, length)$enrichment
       bars$.tip <- sprintf("%s\n%s: %.2f%s", bars$.group, bars$pair, bars$enrichment, ifelse(bars$n > 1, sprintf(" (mean of %d libraries)", bars$n), ""))

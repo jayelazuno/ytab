@@ -1,4 +1,4 @@
-"""Experimental control-conditioned Hermes Gumbel (count-aware longest-run extension).
+"""Experimental control-conditioned Hermes Gumbel (count-aware longest-run extension), adapted from TRANSIT's Gumbel method (DeJesus et al. 2013).
 
 Input is a YTAB scalar site normalization (ttr, totreads or nzmean); no normalization
 is computed here. The model uses the catalogue's raw integer counts with each

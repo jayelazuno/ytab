@@ -1,6 +1,7 @@
 """Adaptive beta-geometric correction with explicit search and tail conventions.
 
-Retains TRANSIT's positive-count estimators and maximum discrepancy score.
+Retains TRANSIT's positive-count estimators and maximum discrepancy score
+(AdaptiveBGCNorm; the beta-geometric correction is DeJesus & Ioerger 2016).
 Analytic CDF default; upstream-style seeded simulation is an optional engine.
 """
 import hashlib

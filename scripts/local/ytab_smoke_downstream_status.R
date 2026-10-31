@@ -5,7 +5,7 @@ args<-commandArgs(trailingOnly=TRUE);stopifnot(length(args)==1L)
 repo_root<-normalizePath(args[[1L]],mustWork=TRUE)
 library(shiny);library(bslib)
 `%||%`<-function(x,y)if(is.null(x)||!length(x))y else x
-for(name in c("ui_helpers.R","ui_components.R","reference_readiness.R","preprocessing_status.R","sample_selector.R","navigation.R","ui_workspace.R"))
+for(name in c("ui_helpers.R","reference_projects.R","ui_components.R","reference_readiness.R","preprocessing_status.R","sample_selector.R","navigation.R","ui_workspace.R"))
   if(file.exists(file.path(repo_root,"app/shiny/R",name)))source(file.path(repo_root,"app/shiny/R",name))
 root<-tempfile("downstream_status_");dir.create(root)
 put<-function(...){path<-file.path(root,...);dir.create(dirname(path),recursive=TRUE,showWarnings=FALSE);writeLines("x",path)}

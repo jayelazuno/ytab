@@ -1,7 +1,7 @@
 """Hermes multi-condition tests: site-restricted permutation ANOVA and all-pairs resampling.
 
 Adapts the purpose of TRANSIT's ANOVA (does a gene respond in any of K conditions?) and U-test (compare
-two conditions) to Hermes designs, where one library (pool) is split into several conditions so every
+two conditions), both from DeJesus et al. 2015, to Hermes designs, where one library (pool) is split into several conditions so every
 insertion site is the same clone in every condition. TRANSIT's versions pool site x replicate counts as
 independent observations; with Hermes clone-abundance variation that loses nearly all power (see
 output/essentiality/transit_tests/fit_check/RESULT.md). Here, as in resampling v3:

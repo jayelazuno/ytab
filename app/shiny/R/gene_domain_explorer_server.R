@@ -1,6 +1,10 @@
 gene_domain_explorer_server <- function(input, output, session, active,
                                         active_project_path, repo_root,
-                                        python_bin, log_text) {
+                                        python_bin, log_text,
+                                        projects = reactive(data.frame()), reference_state = NULL) {
+  if (is.null(reference_state)) reference_state <- ytab_reference_state()
+  ytab_reference_server("gene_domain", input, output, session, repo_root, active, projects, reference_state,
+                        display_modes = FALSE)
   search_state <- reactiveVal(list(status = "idle", candidates = list()))
   selected_gene <- reactiveVal("")
   plot_state <- reactiveVal(NULL)
@@ -196,7 +200,9 @@ gene_domain_explorer_server <- function(input, output, session, active,
       "--label-mode", input$gene_domain_label_mode %||% "full",
       if (!isTRUE(input$gene_domain_show_site_counts)) "--hide-site-counts",
       if (!isTRUE(input$gene_domain_show_domains)) "--hide-domains",
-      if (!isTRUE(input$gene_domain_show_direction)) "--hide-direction"
+      if (!isTRUE(input$gene_domain_show_direction)) "--hide-direction",
+      # Each chosen project draws its own copy of the gene below this one's tracks.
+      as.character(rbind("--reference-config", reference_state() %||% character()))
     )
     result <- tryCatch(
       gene_domain_json(python_bin, repo_root, active_project_path(), args),

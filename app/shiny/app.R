@@ -8,7 +8,7 @@ options(scipen = 999)
 app_file <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL) %||% file.path(getwd(), "app.R")
 app_dir <- normalizePath(dirname(app_file), winslash = "/", mustWork = TRUE)
 repo_root <- normalizePath(file.path(app_dir, "../.."), winslash = "/", mustWork = TRUE)
-for (helper in c("datasets_center.R", "help_center.R", "project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "analysis_runs.R", "qc_library_correlation.R", "ui_qc.R", "qc_module.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_generated_plots.R", "fitness_condition_control_plot.R", "fitness_plot_utils.R", "ui_fitness.R", "treated_vs_control.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "normalization_module.R", "essentiality_module.R", "comparisons_module.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "cross_species.R", "go_analysis.R", "ui_workspace.R"))
+for (helper in c("datasets_center.R", "help_center.R", "project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "analysis_runs.R", "reference_projects.R", "qc_library_correlation.R", "ui_qc.R", "qc_module.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_generated_plots.R", "fitness_condition_control_plot.R", "fitness_plot_utils.R", "ui_fitness.R", "treated_vs_control.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "normalization_module.R", "essentiality_module.R", "comparisons_module.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "cross_species.R", "go_analysis.R", "ui_workspace.R"))
   source(file.path(app_dir, "R", helper), local = TRUE)
 source(file.path(app_dir, "R", "screen_planning.R"), local = TRUE)
 source(file.path(app_dir, "R", "mutant_screen.R"), local = TRUE)
@@ -35,6 +35,8 @@ ui <- tagList(
 server <- function(input, output, session) {
   state <- new_project_state()
   projects <- reactiveVal(discover_ytab_projects(repo_root, include_tests = FALSE))
+  # The comparison set a user picks once; every tab that can overlay other projects reads this one choice.
+  reference_projects <- ytab_reference_state()
   new_project_open <- reactiveVal(FALSE)
   import_project_open <- reactiveVal(FALSE)
   fastq_directory <- reactiveVal("")
@@ -617,7 +619,7 @@ server <- function(input, output, session) {
   essentiality_server(input,output,session,active,active_project_path,repo_root,
                       jobs,status_tick,go_to,python_bin,log_text)
   gene_domain_explorer_server(input,output,session,active,active_project_path,
-                              repo_root,python_bin,log_text)
+                              repo_root,python_bin,log_text,projects,reference_projects)
   genome_browser_built <- reactiveVal(0L)  # bumped when the browser-tracks pipeline rewrote the files
   genome_browser_tracks <- reactive({
     status_tick(); genome_browser_built()
@@ -1399,9 +1401,12 @@ server <- function(input, output, session) {
 
   screen_coverage_server(input, output, session, repo_root, active, active_project_path, python_bin)
   qc_library_correlation_server(input, output, session, repo_root, active, active_project_path, projects, jobs, python_bin)
-  qc_table_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin)
-  normalization_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin)
-  essentiality_module_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin)
+  qc_table_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin,
+                  projects, reference_projects)
+  normalization_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin,
+                       projects, reference_projects)
+  essentiality_module_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin,
+                             projects, reference_projects)
   comparisons_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin)
   mutant_screen_server(input, output, session, repo_root, active, active_project_path, python_bin, go_to)
 

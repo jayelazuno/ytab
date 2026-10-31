@@ -22,7 +22,7 @@ fitness_run_ui <- function() tagList(
   panel_card(
     "Local-abundance z-score",
     uiOutput("fitness_normalization_selector"),
-    helpText("BGC from the latest Site Normalization run is the default; gene values are the normalized site counts summed per gene, per million. Total reads (CPM) needs no normalization run."),
+    helpText("BGC from the latest normalization run is the default; gene values are the normalized site counts summed per gene, per million. Total reads (CPM) needs no normalization run."),
     selectizeInput("fitness_comparisons", "Comparisons to analyze", choices = character(),
                    multiple = TRUE, options = list(placeholder = "Select valid comparisons…")),
     uiOutput("fitness_selection_summary"),

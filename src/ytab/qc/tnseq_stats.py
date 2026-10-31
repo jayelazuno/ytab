@@ -119,7 +119,7 @@ def run(catalogue, output, diagnostics=None):
     result = dict(status="success", samples=len(metadata), catalogue=str(catalogue),
         reference_sha256=manifest.get("reference_sha256"), universe_sites=matrix.shape[0],
         source_hashes=inputs, implementation_sha256=sha256(__file__), count_state="raw; no normalization",
-        statistics_conventions="tnseq_stats columns (adapted from TRANSIT); positive-only biased skew and excess kurtosis; guarded PTI m=10..99, zero-based indices",
+        statistics_conventions="tnseq_stats columns (adapted from TRANSIT, DeJesus et al. 2015); positive-only biased skew and excess kurtosis; guarded PTI m=10..99, zero-based indices",
         limitations=["Density is empirical catalogue occupancy, not genome saturation",
             "No absolute QC thresholds, automatic exclusions or biological pass/fail calls",
             "Existing Hermes outputs are reused, not recomputed; historical source identity is not revalidated",

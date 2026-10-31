@@ -43,7 +43,7 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
     (for comparisons between strains or conditions that are not pool-matched pairs: multi-condition tests). With a
     sample list, the sample sheet's role says control (parent/control) or treated, and no pairing is required. together=True (sample list only) normalizes all listed samples as one group
     (the project) instead of within each library, so independently made libraries are on one scale (TRANSIT's
-    convention); library_id still records each sample's library."""
+    convention, DeJesus et al. 2015); library_id still records each sample's library."""
     if together and not sample_list:raise ValueError("Normalizing together needs an explicit sample list")
     catalogue, output = Path(catalogue).resolve(), Path(output).resolve()
     if output == catalogue or output in catalogue.parents:

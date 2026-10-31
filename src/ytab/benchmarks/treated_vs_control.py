@@ -1,4 +1,4 @@
-"""Treated-vs-control benchmark: Gale-calibrated simulation, method x normalization arms, metrics and paired tests.
+"""Treated-vs-control benchmark: Gale-calibrated simulation (Gale et al. 2020), method x normalization arms, metrics and paired tests.
 
 Design: docs/manuscript/preregistration_treated_vs_control.md. Steps:
 - calibrate(): site abundances, library exposures and abundance-dependent negative-binomial dispersions from real

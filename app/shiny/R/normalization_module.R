@@ -11,14 +11,16 @@ normalization_method_short <- c(betageom = "BGC", ttr = "TTR", totreads = "Total
 norm_shown_methods <- setdiff(names(normalization_method_short), "nonorm")
 
 normalization_site_ui <- function() ytab_two_column_layout(
-  controls = ytab_control_panel("Site normalization",
-    checkboxGroupInput("norm_methods", "Show methods", stats::setNames(norm_shown_methods, normalization_method_labels[norm_shown_methods]),
-                       selected = "betageom"),
-    helpText("Each run normalizes with every method; tick the ones to look at. BGC is suggested for condition comparisons (see Methods)."),
+  controls = ytab_control_panel("Normalization",
+    selectizeInput("norm_methods", "Show methods", stats::setNames(norm_shown_methods, normalization_method_labels[norm_shown_methods]),
+                   selected = "betageom", multiple = TRUE,
+                   options = list(placeholder = "Choose methods to show\u2026", plugins = list("remove_button"))),
+    helpText("Each run normalizes with every method; choose the ones to look at. BGC is suggested for condition comparisons (see Methods)."),
     tags$details(class = "ytab-more-options", tags$summary("Settings"),
       numericInput("norm_trim", "Trim per tail (TTR and BGC scaling)", .05, min = 0, max = .45, step = .01),
       numericInput("norm_target", "Target scale", 100, min = 1, step = 1)),
     actionButton("norm_run", "Run normalization", class = "btn-primary"),
+    ytab_reference_projects_ui("norm", display_modes = FALSE),
     tags$hr(),
     uiOutput("norm_result_selector"),
     radioButtons("norm_plot", "View", c("Each normalization, before and after" = "native", "Replicate agreement (methods side by side)" = "pairs")),
@@ -28,7 +30,7 @@ normalization_site_ui <- function() ytab_two_column_layout(
       ytab_plot_downloads_ui("norm", c(pairs = "Download pair diagnostics (TSV)", gene_agreement = "Download gene-level agreement (TSV)"))),
     downloadButton("norm_download_stats", "Download per-sample statistics (TSV)")),
   main = tagList(
-    # The window height sizes the panels so that all ticked methods fit on screen.
+    # The window height sizes the panels so that all chosen methods fit on screen.
     tags$script(HTML("(function(){var t;function send(){if(window.Shiny&&Shiny.setInputValue)Shiny.setInputValue('norm_viewport_h',window.innerHeight);}
       $(document).on('shiny:connected',send);$(window).on('resize',function(){clearTimeout(t);t=setTimeout(send,300);});})();")),
     uiOutput("norm_status"),
@@ -47,7 +49,7 @@ normalization_site_ui <- function() ytab_two_column_layout(
       tags$p("Command: ", tags$code("ytab normalize-project"), ". The normalized counts for condition comparisons are written to the run's ", tags$code("experiment/methods"), " folder."))))
 
 normalization_module_ui <- function() navset_tab(id = "normalization_tabs",
-  nav_panel("Site Normalization", value = "site", normalization_site_ui()))
+  nav_panel("Normalization", value = "site", normalization_site_ui()))
 
 norm_plot_data <- function(run_dir) {
   read <- function(...) ytab_read_analysis_tsv(file.path(run_dir, ...))
@@ -270,7 +272,12 @@ norm_ggplot <- function(data, choice = "sites", genes = NULL) {
     ggplot2::labs(x = NULL, y = NULL, colour = "Pair")
 }
 
-normalization_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin) {
+normalization_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin,
+                                 projects = reactive(data.frame()), reference_state = NULL) {
+  if (is.null(reference_state)) reference_state <- ytab_reference_state()
+  ytab_reference_server("norm", input, output, session, repo_root, active, projects, reference_state, display_modes = FALSE)
+  reference_normalization <- reactive(
+    ytab_reference_normalization(ytab_reference_metas(reference_state(), repo_root), norm_plot_data))
   runs_dir <- reactive(file.path(active()$project_root, "normalization"))
   runs <- reactivePoll(3000, session,
     checkFunc = function() { x <- ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")); paste(x$path, x$modified, collapse = "|") },
@@ -317,7 +324,8 @@ normalization_server <- function(input, output, session, repo_root, active, acti
       system2(python_bin(), c(file.path(repo_root, "scripts", "local", "ytab_normalize_project.py"), "--refresh-summaries", run), stdout = FALSE, stderr = FALSE)
       d <- norm_plot_data(run)
     }
-    d
+    # Reference samples join as samples of their own, so every view and the legend pick them up unchanged.
+    ytab_reference_normalization_bind(d, reference_normalization())
   })
   shown <- reactive(norm_filter(data(), input$norm_methods %||% character()))
   missing_methods <- reactive(setdiff(input$norm_methods %||% character(), unique(data()$scale$method)))   # nonorm is never a choice
@@ -334,7 +342,7 @@ normalization_server <- function(input, output, session, repo_root, active, acti
   pair_choice <- reactive(input$norm_pair_plot %||% "sites")
   pair_genes <- reactive(norm_filter(list(g = norm_pair_genes(selected_run())), input$norm_methods %||% character())$g)
   pair_plot <- reactive({
-    d <- shown(); validate(need(length(input$norm_methods), "Tick at least one method to show."))
+    d <- shown(); validate(need(length(input$norm_methods), "Choose at least one method to show."))
     if (identical(pair_choice(), "sites")) req(nrow(d$pairs) > 0)
     norm_ggplot(d, pair_choice(), if (identical(pair_choice(), "gene_ratios")) pair_genes())
   })

@@ -253,7 +253,7 @@ class Cglabrata(Organism):
     C. glabrata (BG2-style FeatureDB)
 
     By default, no masking files are applied (deleted/homologous regions empty),
-    matching Gale et al.-style assumptions (no region masking).
+    matching Gale et al. 2020 assumptions (no region masking).
     """
 
     def _get_feature_db(self):

@@ -8,7 +8,7 @@ root <- normalizePath(file.path(dirname(self), "../.."), winslash = "/")
 suppressPackageStartupMessages({library(shiny); library(bslib)})
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
 for (name in c("project_discovery.R", "job_manager.R", "job_progress.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R",
-               "table_display_helpers.R", "analysis_runs.R", "qc_library_correlation.R", "qc_module.R"))
+               "table_display_helpers.R", "analysis_runs.R","reference_projects.R", "qc_library_correlation.R", "qc_module.R"))
   source(file.path(root, "app/shiny/R", name))
 
 fixture <- file.path(root, "output/essentiality/species_readiness/albicans/library_correlation")

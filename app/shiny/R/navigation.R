@@ -47,7 +47,7 @@ navigation_translate_legacy <- function(top, nested_value = "") {
   top <- as.character(top %||% "")[1L]
   nested_value <- as.character(nested_value %||% "")[1L]
   # MidLC moved from Essentiality ("Normalize & Choose Target") to the Normalization module, and from its own subtab
-  # into Site Normalization as the "MidLC common saturation" method.
+  # into Normalization as the "MidLC common saturation" method.
   if (!is.na(top) && identical(top, "essentiality") && nested_value %in% c("normalize", "evaluate"))
     return(list(top = "normalization", nested_value = "site"))
   if (!is.na(top) && identical(top, "normalization") && identical(nested_value, "midlc"))

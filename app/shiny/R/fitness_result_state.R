@@ -5,7 +5,7 @@ discover_fitness_results <- function(project) {
 }
 choose_latest_fitness_result <- function(results){if(!length(results))return(NULL);times<-vapply(results,function(x){value<-file.info(x$table)$mtime;if(length(value)&&!is.na(value))as.numeric(value)else 0},0);results[[which.max(times)]]}
 resolve_fitness_result_state <- function(selected_comparisons,current_cache_signature="",available_results=list(),design_available=TRUE){selected<-sort(as.character(selected_comparisons));matching<-Filter(function(x)!x$legacy&&nzchar(current_cache_signature)&&identical(x$cache_signature,current_cache_signature)&&setequal(x$selected_comparisons,selected),available_results);match<-choose_latest_fitness_result(matching);latest<-choose_latest_fitness_result(available_results);same_subset<-any(vapply(available_results,function(x)setequal(x$selected_comparisons,selected),FALSE));status<-if(!design_available)"no_design"else if(!length(selected))"no_selection"else if(!length(available_results))"no_result"else if(!is.null(match)&&match$status=="failed")"failed_result"else if(!is.null(match)&&match$status=="cached")"matching_cached_result"else if(!is.null(match))"matching_completed_result"else if(!is.null(latest)&&latest$legacy)"legacy_result"else if(!same_subset)"incompatible_result"else"historical_result_only";list(status=status,selection_count=length(selected),matching_result=match,latest_historical_result=latest)}
-# normalization: "CPM" or a Site Normalization method; normalization_run: that run's folder ("" for CPM).
+# normalization: "CPM" or a normalization method; normalization_run: that run's folder ("" for CPM).
 fitness_current_cache_signature <- function(results,selected,project,analysis_id,classifier_annotation=FALSE,classifier_target="",normalization="CPM",normalization_run="") {
   design<-fitness_design_path(project);if(!file.exists(design)||!requireNamespace("digest",quietly=TRUE))return("");sha<-function(path)digest::digest(file=path,algo="sha256",serialize=FALSE);design_hash<-sha(design);hits<-Filter(function(x){if(x$legacy||!isTRUE(x$current)||!identical(x$analysis_id,analysis_id)||!setequal(x$selected_comparisons,selected)||!identical(x$design_sha256,design_hash)||!identical(x$classifier_annotation,isTRUE(classifier_annotation))||!identical(tolower(x$normalization%||%"CPM"),tolower(normalization))||!identical(normalizePath(x$normalization_run%||%"",mustWork=FALSE),normalizePath(normalization_run,mustWork=FALSE)))return(FALSE);if(classifier_annotation&&!identical(x$classifier_target,classifier_target))return(FALSE);hashes<-x$input_summary_hashes;if(!length(hashes))return(FALSE);all(vapply(names(hashes),function(path)file.exists(path)&&identical(sha(path),as.character(hashes[[path]])),FALSE))},results);if(length(hits))hits[[1]]$cache_signature else""
 }
@@ -60,7 +60,7 @@ fitness_result_facts <- function(result) {
   comparisons <- if (length(ids) > 3L) sprintf("%s and %d more", paste(ids[1:3], collapse = ", "), length(ids) - 3L) else paste(ids, collapse = ", ")
   norm <- result$normalization %||% "CPM"; run <- result$normalization_run %||% ""
   normalization <- if (toupper(norm) == "CPM") "Total reads (CPM)" else as.character(norm_method_label(norm))
-  if (nzchar(run) && file.exists(file.path(run, "manifest.json"))) normalization <- sprintf("%s, Site Normalization run of %s", normalization, format(file.mtime(file.path(run, "manifest.json")), "%d %b %Y %H:%M"))
+  if (nzchar(run) && file.exists(file.path(run, "manifest.json"))) normalization <- sprintf("%s, normalization run of %s", normalization, format(file.mtime(file.path(run, "manifest.json")), "%d %b %Y %H:%M"))
   rule <- switch(result$call_rule %||% "", replicates = "Replicates averaged per condition, one z per gene",
                  pairs = "Each comparison called separately, then combined", "Not recorded (earlier pipeline version)")
   n <- result$calls %||% numeric(); get <- function(k) as.integer(if (k %in% names(n)) n[[k]] else 0L)
@@ -73,7 +73,7 @@ fitness_result_facts <- function(result) {
 fitness_result_differences <- function(result, comparisons, method = "CPM", run = "") {
   out <- character()
   if (!identical(toupper(result$normalization %||% "CPM"), toupper(method)) || (!identical(toupper(method), "CPM") && !identical(normalizePath(result$normalization_run %||% "", mustWork = FALSE), normalizePath(run, mustWork = FALSE))))
-    out <- c(out, sprintf("normalization (Run is set to %s)", if (toupper(method) == "CPM") "Total reads (CPM)" else paste0(norm_method_label(method), if (file.exists(file.path(run, "manifest.json"))) format(file.mtime(file.path(run, "manifest.json")), ", Site Normalization run of %d %b %Y %H:%M") else "")))
+    out <- c(out, sprintf("normalization (Run is set to %s)", if (toupper(method) == "CPM") "Total reads (CPM)" else paste0(norm_method_label(method), if (file.exists(file.path(run, "manifest.json"))) format(file.mtime(file.path(run, "manifest.json")), ", normalization run of %d %b %Y %H:%M") else "")))
   if (!setequal(result$selected_comparisons %||% character(), comparisons %||% character())) out <- c(out, "comparisons")
   out
 }

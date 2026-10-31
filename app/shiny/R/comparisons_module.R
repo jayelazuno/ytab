@@ -29,7 +29,7 @@ cmp_label_columns <- function(obs) {
 }
 
 cmp_input_selectors <- function(prefix, runs) {
-  if (!nrow(runs)) return(tags$p(class = "text-warning", "No normalization run yet. Run Normalization → Site Normalization first."))
+  if (!nrow(runs)) return(tags$p(class = "text-warning", "No normalization run yet. Run Normalization first."))
   tagList(selectInput(paste0(prefix, "_norm_run"), "Normalization run", ytab_run_choices(runs)), uiOutput(paste0(prefix, "_method_selector")))
 }
 

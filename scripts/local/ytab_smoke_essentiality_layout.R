@@ -16,7 +16,7 @@ source(file.path(root, "app/shiny/R/essentiality_state.R"))
 source(file.path(root, "app/shiny/R/essentiality_results.R"))
 source(file.path(root, "app/shiny/R/ui_helpers.R"))
 source(file.path(root, "app/shiny/R/ui_essentiality.R"))
-for (name in c("ui_components.R", "analysis_runs.R", "essentiality_module.R", "normalization_module.R")) source(file.path(root, "app/shiny/R", name))
+for (name in c("ui_components.R", "analysis_runs.R","reference_projects.R", "essentiality_module.R", "normalization_module.R")) source(file.path(root, "app/shiny/R", name))
 
 project <- read_project_summary(args[[1L]], root)
 parents <- detect_essentiality_parent_samples(project)

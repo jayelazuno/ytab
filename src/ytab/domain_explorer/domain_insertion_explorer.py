@@ -18,6 +18,7 @@ import re
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
+from collections.abc import Sequence
 from typing import Any
 
 import yaml
@@ -755,6 +756,43 @@ def _record_by_gene_id(project_config: str | Path, gene_id: str) -> GeneRecord |
     return None
 
 
+def _place_on_reference_axis(
+    position: int,
+    source: tuple[int, int],
+    source_strand: str,
+    target: tuple[int, int],
+    target_strand: str,
+    region: tuple[int, int],
+) -> int | None:
+    """Put an insertion from another project's copy of the gene on this gene's axis.
+
+    Two projects' genes sit at different coordinates and can be different lengths, so an absolute position means
+    nothing across them. Inside the coding sequence the insertion keeps its position as a fraction of the gene, which
+    is what makes two tracks readable side by side; in the flanks it keeps its distance in base pairs from the gene
+    edge, so flanking density is not stretched. A gene read on the opposite strand is reversed, so both tracks run
+    5' to 3' left to right. Anything that lands outside the drawn region is dropped.
+    """
+    source_start, source_end = source
+    target_start, target_end = target
+    if source_end <= source_start or target_end <= target_start:
+        return None
+    flip = (str(source_strand) or "").strip() != (str(target_strand) or "").strip()
+    if source_start <= position <= source_end:
+        fraction = (position - source_start) / (source_end - source_start)
+        if flip:
+            fraction = 1.0 - fraction
+        placed = target_start + fraction * (target_end - target_start)
+    else:
+        offset = position - source_start if position < source_start else position - source_end
+        if flip:
+            offset = -offset
+            placed = (target_end if offset > 0 else target_start) + offset
+        else:
+            placed = (target_start if offset < 0 else target_end) + offset
+    placed = int(round(placed))
+    return placed if region[0] <= placed <= region[1] else None
+
+
 def collect_gene_insertions(
     project_config: str | Path,
     gene_id: str,
@@ -847,12 +885,89 @@ def collect_gene_insertions(
         "track_preset": track_preset,
         "selected_samples": samples or ["all"],
         "tracks": track_summaries,
+        "reference_projects": [],
         "insertions": selected_rows,
         "domains": [list(x) for x in domains],
         "domain_source": record.domain_source if domains else "",
         "domains_available": bool(domains),
         "domain_message": "Domain annotations available." if domains else "No domain annotation available for this gene.",
     }
+
+
+def add_reference_tracks(
+    payload: dict[str, Any],
+    reference_configs: Sequence[str | Path],
+    track_source: str = "raw",
+    track_preset: str = "all",
+    flank_bp: int = 1000,
+) -> dict[str, Any]:
+    """Append other projects' tracks for the same gene, placed on this gene's axis.
+
+    This is for seeing what another library looks like in the gene — a Hermes pool beside an Ac/Ds or piggyBac one —
+    not for comparing numbers: the projects differ in transposon, insertion density, sequencing depth and strain. A
+    reference project that does not have the gene, or has no insertion data for it, is skipped and reported.
+    """
+    gene = payload["gene"]
+    region = (int(payload["region"]["start"]), int(payload["region"]["end"]))
+    target = (int(gene["start"]), int(gene["end"]))
+    target_strand = str(gene.get("strand") or "")
+    query = str(gene.get("display_name") or gene.get("gene_id") or "").strip()
+    notes: list[dict[str, Any]] = []
+    for config in reference_configs:
+        config = str(config)
+        try:
+            context = load_project_gene_context(config)
+            label = str(context["project_id"])
+            resolved = resolve_gene(config, query)
+            if resolved.get("status") != "resolved":
+                notes.append({"project": label, "status": "gene_not_found", "query": query})
+                continue
+            other = collect_gene_insertions(
+                config,
+                resolved["gene"]["gene_id"],
+                flank_bp=flank_bp,
+                track_source=track_source,
+                track_preset=track_preset,
+                show_domains=False,
+            )
+        except Exception as exc:  # a reference must never break the figure of the project being looked at
+            notes.append({"project": str(config), "status": "failed", "error": str(exc)})
+            continue
+        source = (int(other["gene"]["start"]), int(other["gene"]["end"]))
+        source_strand = str(other["gene"].get("strand") or "")
+        placed_by_sample: dict[str, int] = {}
+        for row in other["insertions"]:
+            placed = _place_on_reference_axis(int(row["position"]), source, source_strand, target, target_strand, region)
+            if placed is None:
+                continue
+            moved = dict(row)
+            moved["sample"] = f"{label}::{row['sample']}"
+            moved["position"] = placed
+            moved["original_position"] = int(row["position"])
+            moved["reference_project"] = label
+            payload["insertions"].append(moved)
+            placed_by_sample[moved["sample"]] = placed_by_sample.get(moved["sample"], 0) + 1
+        added = 0
+        for track in other["tracks"]:
+            sample = f"{label}::{track['sample']}"
+            if not placed_by_sample.get(sample):
+                continue
+            summary = dict(track)
+            summary["sample"] = sample
+            summary["track_name"] = f"{label} · {track['track_name']}"
+            summary["reference_project"] = label
+            summary["species"] = other.get("species", "")
+            payload["tracks"].append(summary)
+            added += 1
+        notes.append({
+            "project": label,
+            "status": "added" if added else "no_insertions",
+            "species": other.get("species", ""),
+            "gene": other["gene"].get("display_name") or other["gene"].get("gene_id"),
+            "tracks": added,
+        })
+    payload["reference_projects"] = notes
+    return payload
 
 
 def _format_track_label(track_name: str, site_count: int, label_mode: str = "full", show_site_counts: bool = True) -> str:
@@ -876,6 +991,9 @@ def _gene_title(gene: dict[str, Any]) -> str:
     if display and gene_id and display != gene_id:
         return f"{display} ({gene_id})"
     return display or gene_id or "Selected gene"
+
+
+_REFERENCE_TRACK_COLOURS = ("#1A73E8", "#8E24AA", "#00897B", "#E8710A", "#5D4037")
 
 
 def draw_gene_domain_insertion_figure(
@@ -947,6 +1065,7 @@ def draw_gene_domain_insertion_figure(
     ax_tracks.tick_params(axis="y", labelsize=8.5, length=0)
     ax_gene.tick_params(axis="y", left=False, labelleft=False)
 
+    reference_colours: dict[str, str] = {}
     by_track: dict[str, list[dict[str, Any]]] = {}
     for row in insertions:
         by_track.setdefault(row["sample"], []).append(row)
@@ -965,6 +1084,15 @@ def draw_gene_domain_insertion_figure(
                 show_site_counts,
             )
         )
+        # A reference project's track is drawn in its own colour, so it is never mistaken for one of this project's.
+        reference = str(track.get("reference_project") or "")
+        if reference:
+            colours = reference_colours.setdefault(
+                reference, _REFERENCE_TRACK_COLOURS[len(reference_colours) % len(_REFERENCE_TRACK_COLOURS)]
+            )
+            in_colour, out_colour = colours, colours
+        else:
+            in_colour, out_colour = "#303030", "#9a9a9a"
         for row in rows:
             read_count = max(0, int(row.get("read_count") or 0))
             linewidth = min(3.0, max(1.0, math.log10(read_count + 1))) if read_count else 1.2
@@ -973,7 +1101,7 @@ def draw_gene_domain_insertion_figure(
                 int(row["position"]),
                 y - 0.25,
                 y + 0.25,
-                color="#303030" if in_gene else "#9a9a9a",
+                color=in_colour if in_gene else out_colour,
                 linewidth=linewidth,
                 alpha=0.95 if in_gene else 0.45,
             )
@@ -1064,7 +1192,23 @@ def draw_gene_domain_insertion_figure(
     )
     ax_gene.set_xlabel(f"{display_chromosome} coordinate (bp)", fontsize=11, fontweight="bold")
     ax_gene.xaxis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{int(value):,}"))
-    fig.subplots_adjust(left=0.30, right=0.98, top=0.90, bottom=0.16)
+    # Say on the figure itself what a reference track is and is not: it travels separately from the app.
+    drawn = [n for n in payload.get("reference_projects") or [] if n.get("status") == "added"]
+    if drawn:
+        named = "; ".join(f"{n['project']} ({n.get('species', '')}, {n.get('gene', '')})" for n in drawn)
+        fig.text(
+            0.5,
+            0.012,
+            f"Reference projects: {named}. Placed by position within the gene, not by coordinate, and shown for a "
+            "sense of what other libraries look like \u2014 not as a numerical comparison: transposon, insertion "
+            "density, sequencing depth and strain all differ.",
+            ha="center",
+            va="bottom",
+            fontsize=8.5,
+            color="#666666",
+            wrap=True,
+        )
+    fig.subplots_adjust(left=0.30, right=0.98, top=0.90, bottom=0.16 if not drawn else 0.22)
     fig.savefig(output_png, bbox_inches="tight")
     plt.close(fig)
     return str(output_png)
@@ -1138,6 +1282,7 @@ def run_gene_domain_explorer(
     show_site_counts: bool = True,
     output: str | Path | None = None,
     force: bool = False,
+    reference_configs: Sequence[str | Path] = (),
 ) -> dict[str, Any]:
     """Resolve a gene, generate/reuse PNG/table/manifest, and return paths."""
     resolved = resolve_gene(project_config, query)
@@ -1153,6 +1298,9 @@ def run_gene_domain_explorer(
         track_preset=track_preset,
         show_domains=show_domains,
     )
+    if reference_configs:
+        payload = add_reference_tracks(payload, reference_configs, track_source=track_source,
+                                       track_preset="all", flank_bp=flank_bp)
     payload["query"] = query
     payload["show_direction"] = bool(show_direction)
     requested_samples = samples or ["all"]
@@ -1172,6 +1320,7 @@ def run_gene_domain_explorer(
         "label_mode": label_mode,
         "show_site_counts": bool(show_site_counts),
         "chromosome_display_version": 1,
+        "reference_configs": [str(_repo_path(c)) for c in reference_configs],
     }
     key = _hash_params(cache_params)
     project_root = Path(payload["project_root"])
@@ -1226,6 +1375,7 @@ def run_gene_domain_explorer(
         "status": "cached" if cached else "success",
         "domain_message": payload["domain_message"],
         "track_count": len(payload["tracks"]),
+        "reference_projects": payload.get("reference_projects") or [],
         "insertion_count": len(payload["insertions"]),
         "track_summaries": payload["tracks"],
         "width_px": int(width_px),

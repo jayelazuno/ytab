@@ -10,14 +10,21 @@ ytab_plot_height_choices <- function(include_auto = FALSE) {
 # Height for a plot with one item (library, sample, gene) per category: grows with the number of items so a project
 # with dozens of libraries is not squeezed into the height that suits a project with five. Clamped to the same range
 # as the fixed choices, so a very large project stays scrollable rather than endless.
+# The ceiling allows a comparison across projects (a project's own libraries plus the reference projects', in one
+# panel each) to keep a readable row height; the page scrolls rather than the bars collapsing into a solid block.
 ytab_auto_plot_height_px <- function(n) {
   n <- suppressWarnings(as.integer(n %||% 0L)); if (is.na(n)) n <- 0L
-  paste0(max(380L, min(1400L, as.integer(420 + 14 * n))), "px")
+  paste0(max(380L, min(2200L, as.integer(420 + 14 * n))), "px")
 }
 
 # Items a built plot draws one of per category. Universal: any plot data frame carrying a library or sample column,
 # whatever the project or species; otherwise NA, and the caller keeps its fixed height.
 ytab_plot_item_count <- function(build) {
+  # A plot whose drawn categories are not the rows of its result table (a comparison that adds other projects'
+  # libraries) states its own count; everything else is counted from the table.
+  if (is.list(build) && !is.data.frame(build) && length(build$items %||% NULL)) {
+    n <- suppressWarnings(as.integer(build$items[[1L]])); if (!is.na(n)) return(n)
+  }
   d <- if (is.data.frame(build)) build else build$data
   if (!is.data.frame(d) || !nrow(d)) return(NA_integer_)
   for (column in c(".library", "sample", "Sample", "library", "display_name")) {

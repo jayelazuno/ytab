@@ -9,7 +9,7 @@ root <- normalizePath(file.path(dirname(self), "../.."), winslash = "/")
 suppressPackageStartupMessages({library(shiny); library(bslib)})
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
 for (name in c("job_manager.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R",
-               "table_display_helpers.R", "analysis_runs.R", "navigation.R", "normalization_module.R"))
+               "table_display_helpers.R", "analysis_runs.R","reference_projects.R", "navigation.R", "normalization_module.R"))
   source(file.path(root, "app/shiny/R", name))
 python <- unname(Sys.which("python"))
 config <- file.path(root, "output/projects/Zn_toxicity_screen/config/project.yaml")
@@ -26,10 +26,13 @@ stopifnot(file.exists(file.path(run_dir, "plots/native_stats.tsv"))); unlink(Sys
 
 essentiality_normalize_ui <- function() tags$div("MidLC placeholder")
 ui_html <- as.character(normalization_module_ui())
-# Method boxes show readable labels with method ids as values; BGC and TTR are preselected.
-stopifnot(grepl('value="betageom" checked="checked"', ui_html, fixed = TRUE), !grepl('value="ttr" checked', ui_html, fixed = TRUE),
-          grepl("<span>Beta-geometric correction (BGC)</span>", ui_html, fixed = TRUE), !grepl('value="quantile" checked', ui_html, fixed = TRUE),
+# The method chooser lists readable labels against method ids, with BGC chosen; unnormalized is never a choice.
+stopifnot(grepl('value="betageom" selected', ui_html, fixed = TRUE), grepl("selectize", ui_html, fixed = TRUE),
+          grepl("Beta-geometric correction (BGC)", ui_html, fixed = TRUE), !grepl('value="quantile" selected', ui_html, fixed = TRUE),
           !grepl('value="nonorm"', ui_html, fixed = TRUE), !grepl("baseline)", ui_html, fixed = TRUE))   # each panel already shows unnormalized counts
+# The tab is "Normalization": not every method it offers works at site level (MidLC thins whole libraries).
+stopifnot(grepl('data-value="site"', ui_html, fixed = TRUE), !grepl("Site Normalization", ui_html, fixed = TRUE),
+          !grepl("Site normalization", ui_html, fixed = TRUE))
 stopifnot(grepl("normalization_tabs", ui_html, fixed = TRUE), !grepl('data-value="midlc"', ui_html, fixed = TRUE), grepl("MidLC common saturation", ui_html, fixed = TRUE), !grepl("Classifier)", ui_html, fixed = TRUE),
           grepl("norm_download_pdf", ui_html, fixed = TRUE), grepl("12.4%", ui_html, fixed = TRUE))
 

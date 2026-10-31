@@ -53,6 +53,7 @@ essentiality_model_results_ui <- function() ytab_two_column_layout(
     radioButtons("ess_plot", "Plot", c("Chromosome track" = "track", "Model scores" = "scores", "Calls" = "calls",
                                        "Insertion-target preference" = "target", "ROC against curated labels" = "roc")),
     conditionalPanel("input.ess_plot === 'track'", uiOutput("ess_chromosome_selector")),
+    ytab_reference_projects_ui("ess", display_modes = FALSE),
     ytab_plot_downloads_ui("ess", c(genes = "Download gene table (TSV)"))),
   main = tagList(
     uiOutput("ess_summary"),
@@ -100,7 +101,8 @@ ess_track_plotly <- function(windows, chromosome, chrom_label = chromosome) {
 # Model colours: the label-free HMM in teal, the hybrid in brick red, the current random forest in grey.
 essentiality_model_colours <- c(`HMM (label-free)` = YTAB_FOCAL, Hybrid = YTAB_ACCENT, `Random forest` = YTAB_COMPARATOR)
 
-ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifest = list(), run_dir = NULL) {
+ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifest = list(), run_dir = NULL,
+                       reference = data.frame(), project_label = "This project") {
   base <- ggplot2::theme_minimal(base_size = 12)
   if (identical(choice, "target")) {
     tm <- ytab_read_analysis_tsv(file.path(run_dir %||% "", "plots", "target_model.tsv"))
@@ -157,6 +159,15 @@ ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifes
         ggplot2::labs(x = "HMM score (P_ES_run)", y = "Hybrid score", colour = "Agreement") + base)
     }
     d <- genes[!is.na(genes$hmm_score), , drop = FALSE]
+    if (is.data.frame(reference) && nrow(reference)) {
+      # Projects score different numbers of genes, so each is its own density: the shape is what carries across.
+      long <- rbind(data.frame(.project = project_label, hmm_score = d$hmm_score, stringsAsFactors = FALSE),
+                    data.frame(.project = reference$.project, hmm_score = reference$hmm_score, stringsAsFactors = FALSE))
+      long <- long[is.finite(long$hmm_score), , drop = FALSE]
+      return(ggplot2::ggplot(long, ggplot2::aes(hmm_score, colour = .project)) + ggplot2::geom_density(linewidth = .9) +
+        ggplot2::scale_colour_manual(values = ytab_reference_project_fills(unique(long$.project), project_label)) +
+        ggplot2::labs(x = "HMM score (P_ES_run)", y = "Density", colour = NULL) + base)
+    }
     return(ggplot2::ggplot(d, ggplot2::aes(hmm_score, fill = hmm_call)) + ggplot2::geom_histogram(bins = 50) +
       ggplot2::scale_fill_manual(values = c(essentiality_state_colours, uncertain = "grey70", `N/A` = "grey90")) +
       ggplot2::labs(x = "HMM score (P_ES_run)", y = "Genes", fill = "HMM call") + base)
@@ -167,6 +178,26 @@ ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifes
   if (is.null(calls) || !nrow(calls)) return(ggplot2::ggplot() + ggplot2::annotate("text", x = 0, y = 0, label = "Call counts are not in this run's manifest; run it again.") + ggplot2::theme_void())
   calls$label <- ifelse(calls$call %in% names(essentiality_state_labels), essentiality_state_labels[calls$call],
                         ifelse(calls$call %in% names(essentiality_agreement_labels), essentiality_agreement_labels[calls$call], calls$call))
+  if (is.data.frame(reference) && nrow(reference)) {
+    # Projects call different numbers of genes, so calls are shown as a share of each project's own genes.
+    hmm <- calls[calls$model == "HMM", , drop = FALSE]
+    share <- function(x) if (sum(x) > 0) 100 * x / sum(x) else x
+    by_project <- split(reference$hmm_call, reference$.project)
+    long <- rbind(
+      data.frame(.project = project_label, call = hmm$call, value = share(hmm$Freq), stringsAsFactors = FALSE),
+      do.call(rbind, lapply(names(by_project), function(name) {
+        counted <- table(by_project[[name]])
+        data.frame(.project = name, call = names(counted), value = share(as.numeric(counted)), stringsAsFactors = FALSE)
+      })))
+    long$.project <- factor(long$.project, levels = c(project_label, setdiff(unique(long$.project), project_label)))
+    long$label <- ifelse(long$call %in% names(essentiality_state_labels), essentiality_state_labels[long$call], long$call)
+    return(ggplot2::ggplot(long, ggplot2::aes(stats::reorder(call, -value), value, fill = .project,
+        text = sprintf("%s<br>%s: %.1f%% of its genes", .project, label, value))) +
+      ggplot2::geom_col(position = ggplot2::position_dodge(width = .8), width = .75) +
+      ggplot2::scale_fill_manual(values = ytab_reference_project_fills(unique(long$.project), project_label)) +
+      ggplot2::labs(x = NULL, y = "Genes of the project (%)", fill = NULL) + base +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 25, hjust = 1)))
+  }
   fills <- c(essentiality_state_colours, essentiality_agreement_colours, uncertain = "grey70")
   ggplot2::ggplot(calls, ggplot2::aes(stats::reorder(call, -Freq), Freq, fill = call, text = sprintf("%s: %s genes", label, format(Freq, big.mark = ",")))) +
     ggplot2::geom_col(show.legend = FALSE) + ggplot2::scale_fill_manual(values = fills) +
@@ -175,13 +206,17 @@ ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifes
     ggplot2::labs(x = NULL, y = "Genes") + base + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 25, hjust = 1))
 }
 
-essentiality_module_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin) {
+essentiality_module_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin,
+                                       projects = reactive(data.frame()), reference_state = NULL) {
+  if (is.null(reference_state)) reference_state <- ytab_reference_state()
+  ytab_reference_server("ess", input, output, session, repo_root, active, projects, reference_state, display_modes = FALSE)
+  reference_essentiality <- reactive(ytab_reference_essentiality(ytab_reference_metas(reference_state(), repo_root)))
   runs_dir <- reactive(file.path(active()$project_root, "essentiality"))
   runs <- reactivePoll(3000, session,
     checkFunc = function() { x <- ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")); paste(x$path, x$modified, collapse = "|") },
     valueFunc = function() { x <- ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")); x[file.exists(file.path(x$path, "models", "genes.tsv")), , drop = FALSE] })
   inventory <- reactive(essentiality_parent_inventory(active()))
-  # Normalizations the hybrid's gene features can use: the methods of the project's Site Normalization runs (MidLC
+  # Normalizations the hybrid's gene features can use: the methods of the project's normalization runs (MidLC
   # common saturation among them). BGC first when available (the app's suggested normalization).
   hybrid_normalizations <- reactive({
     root <- active()$project_root
@@ -209,7 +244,7 @@ essentiality_module_server <- function(input, output, session, repo_root, active
                   selected = labels[grepl(paste0("/species/", tolower(active()$species %||% ""), "/"), labels, fixed = TRUE)][1] %||% labels[1]),
       conditionalPanel("input.ess_labels === 'other'", textInput("ess_labels_path", "Label file (TSV: gene_id, label, tier)")),
       if (length(norms)) selectInput("ess_normalization", "Normalization for the gene features", norms)
-      else tags$p(class = "text-warning", "No normalization in this project yet. Run Normalization > Site Normalization (or MidLC) first."))
+      else tags$p(class = "text-warning", "No normalization in this project yet. Run Normalization (or MidLC) first."))
   })
 
   observeEvent(input$ess_run, {
@@ -310,7 +345,8 @@ essentiality_module_server <- function(input, output, session, repo_root, active
 
   plot_for_download <- function() {
     choice <- input$ess_plot %||% "track"
-    if (!identical(choice, "track")) return(ess_ggplot(choice, genes(), manifest = manifest(), run_dir = selected_run()))
+    if (!identical(choice, "track")) return(ess_ggplot(choice, genes(), manifest = manifest(), run_dir = selected_run(),
+                                                      reference = reference_essentiality(), project_label = active()$project_id))
     p <- ess_ggplot("track", genes(), windows(), input$ess_chromosome %||% unique(windows()$chromosome)[[1L]])
     p$bottom + ggplot2::geom_col(ggplot2::aes(start, insertions / max(insertions, 1)), data = windows()[windows()$chromosome == (input$ess_chromosome %||% ""), ],
                                  inherit.aes = FALSE, fill = "grey20", alpha = .5) +

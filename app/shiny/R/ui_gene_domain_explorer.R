@@ -6,6 +6,7 @@ gene_domain_explorer_ui <- function() {
         textInput("gene_domain_query", "Gene name or ID", "",
                   placeholder = "systematic name, standard name, locus tag, alias"),
         actionButton("gene_domain_search", "Search gene", class = "btn-primary"),
+        ytab_reference_projects_ui("gene_domain", display_modes = FALSE),
         tags$hr(),
         selectInput(
           "gene_domain_track_source", "Track source",

@@ -19,6 +19,8 @@ from .adaptive_bgc import correct as correct_adaptive_bgc, DEFAULT_FRACTIONS
 from .zinfnb import fit as fit_zinfnb, LOG_BOUNDS, START_SIZES
 from .midlc import thin as thin_midlc, SEED as MIDLC_SEED
 
+# The methods adapted here are published in DeJesus et al. 2015 (TRANSIT, PLoS Comput Biol 11:e1004401) and, for the
+# beta-geometric corrections, DeJesus & Ioerger 2016 (J Bioinform Comput Biol 14:1642004). See docs/references.md.
 TRANSIT_SOURCE = "https://github.com/ioerger/transit/blob/50e23d6bec2605a24835fbd67f33691e330f3361/src/pytransit/norm_tools.py"
 
 

@@ -1,4 +1,4 @@
-"""Empirical site catalogues and trimmed-total-reads (TTR) normalization for Hermes raw counts, adapted from TRANSIT's TTRNorm.
+"""Empirical site catalogues and trimmed-total-reads (TTR) normalization for Hermes raw counts, adapted from TRANSIT's TTRNorm (DeJesus et al. 2015).
 
 Independent implementation of density/trimmed-nonzero-mean scaling. Coordinates
 are those already called by YTAB, not inferred TA targets or genome-wide zeros.

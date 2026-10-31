@@ -101,6 +101,14 @@ ytab_plotly_style <- function(widget, axis_lines = TRUE, native = FALSE) {
       linewidth = YTAB_AXIS_LINE_MM * 96 / 25.4, tickwidth = YTAB_TICK_MM * 96 / 25.4))
     built$x$layout[[name]] <- axis
   }
+  # A plot with two discrete legends (a fill and a colour) comes back from ggplotly with every entry renamed
+  # "(level,1)": the level wrapped in the parentheses and trace index ggplot2 uses internally. Unwrap it so the
+  # legend reads as the plot's own labels. Plots with one legend are untouched.
+  for (i in seq_along(built$x$data)) {
+    name <- built$x$data[[i]]$name
+    if (length(name) == 1L && is.character(name) && grepl("^\\(.*,[0-9]+\\)$", name))
+      built$x$data[[i]]$name <- sub("^\\((.*),[0-9]+\\)$", "\\1", name)
+  }
   # Heatmap cells: ggplotly drops tile borders, so cells are separated by gaps over a dark plot background
   # (not for heatmaps with more than 80 rows or columns, whose cells would vanish behind the gaps).
   for (i in seq_along(built$x$data)) {
@@ -112,7 +120,60 @@ ytab_plotly_style <- function(widget, axis_lines = TRUE, native = FALSE) {
   built
 }
 
-ytab_ggplotly <- function(plot, tooltip = "text") ytab_plotly_style(plotly::ggplotly(ytab_style_ggplot(plot), tooltip = tooltip))
+# ggplotly gives every facet row the same height, so facet_grid(space = "free") survives into a saved PNG or PDF but
+# not into the interactive plot: a panel of 44 categories comes out as tall as one of 8, and its labels collapse into
+# each other. `rows` is how many categories each panel holds, top panel first; the panels, their strip backgrounds
+# and their strip labels are moved to heights in proportion to it, keeping the gaps the conversion chose.
+ytab_plotly_proportional_rows <- function(built, rows) {
+  rows <- suppressWarnings(as.numeric(rows))
+  axes <- grep("^yaxis[0-9]*$", names(built$x$layout), value = TRUE)
+  domains <- lapply(axes, function(a) suppressWarnings(as.numeric(built$x$layout[[a]]$domain)))
+  usable <- vapply(domains, function(d) length(d) == 2L && all(is.finite(d)), TRUE)
+  axes <- axes[usable]; domains <- domains[usable]
+  if (length(axes) < 2L || length(axes) != length(rows) || !all(is.finite(rows)) || sum(rows) <= 0) return(built)
+  top_first <- order(vapply(domains, `[`, 0, 1L), decreasing = TRUE)
+  axes <- axes[top_first]; domains <- domains[top_first]
+  span <- sum(vapply(domains, function(d) d[[2L]] - d[[1L]], 0))
+  gap <- (1 - span) / (length(axes) - 1L)
+  heights <- span * rows / sum(rows)
+  edge <- 1
+  moved <- vector("list", length(axes))
+  for (i in seq_along(axes)) {
+    moved[[i]] <- c(max(0, edge - heights[[i]]), edge)
+    built$x$layout[[axes[[i]]]]$domain <- moved[[i]]
+    edge <- edge - heights[[i]] - gap
+  }
+  # Anything positioned against the paper inside a panel moves with it.
+  remap <- function(y) {
+    for (i in seq_along(domains)) {
+      lo <- domains[[i]][[1L]]; hi <- domains[[i]][[2L]]
+      if (y >= lo - 1e-9 && y <= hi + 1e-9)
+        return(moved[[i]][[1L]] + if (hi > lo) (y - lo) / (hi - lo) * (moved[[i]][[2L]] - moved[[i]][[1L]]) else 0)
+    }
+    y
+  }
+  for (i in seq_along(built$x$layout$shapes)) {
+    shape <- built$x$layout$shapes[[i]]
+    if (identical(shape$yref, "paper") && length(shape$y0) && length(shape$y1)) {
+      built$x$layout$shapes[[i]]$y0 <- remap(as.numeric(shape$y0))
+      built$x$layout$shapes[[i]]$y1 <- remap(as.numeric(shape$y1))
+    }
+  }
+  for (i in seq_along(built$x$layout$annotations)) {
+    note <- built$x$layout$annotations[[i]]
+    # Row strip labels sit against the right edge; the axis titles elsewhere on the paper must not move.
+    if (identical(note$yref, "paper") && length(note$y) && length(note$x) && as.numeric(note$x) >= .99)
+      built$x$layout$annotations[[i]]$y <- remap(as.numeric(note$y))
+  }
+  built
+}
+
+ytab_ggplotly <- function(plot, tooltip = "text") {
+  built <- ytab_plotly_style(plotly::ggplotly(ytab_style_ggplot(plot), tooltip = tooltip))
+  rows <- attr(plot, "ytab_panel_rows")
+  if (length(rows) > 1L) built <- ytab_plotly_proportional_rows(built, rows)
+  built
+}
 
 # Writes a ggplot to PNG or PDF according to the file extension, in the house plot style, at publication quality: vector PDF through cairo (which keeps Δ, κ, ρ and other non-ASCII labels) or a 600-dpi PNG.
 ytab_save_ggplot <- function(file, plot, width = 9, height = 7) {

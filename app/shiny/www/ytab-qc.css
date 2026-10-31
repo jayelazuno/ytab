@@ -86,3 +86,9 @@ table.dataTable th:first-child,table.dataTable td:first-child { white-space: now
 .ytab-qc-summary-list dl>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.65rem;align-items:baseline;padding:.35rem .45rem;border-radius:.45rem;background:#fff}
 .ytab-qc-summary-list dt{font-weight:650;color:#263746;line-height:1.25}
 .ytab-qc-summary-list dd{margin:0;color:#087f85;font-weight:800;white-space:nowrap}
+
+/* Reference projects: other projects to draw beside this one's libraries. The chosen rows stay in the list (clicking
+   one removes it again), so they are marked rather than hidden. */
+.ytab-reference-projects .control-label { font-weight: 600; }
+.ytab-reference-projects .selectize-dropdown .option.selected::after { content: " \2713"; color: #087f85; font-weight: 700; }
+.ytab-reference-projects .selectize-dropdown .option.selected { background: #e8f3f4; }

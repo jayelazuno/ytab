@@ -7,7 +7,7 @@ root <- normalizePath(file.path(dirname(self), "../.."), winslash = "/")
 suppressPackageStartupMessages({library(shiny); library(bslib)})
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
 for (name in c("job_manager.R", "project_discovery.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R",
-               "table_display_helpers.R", "analysis_runs.R", "glabrata_annotation_lookup.R", "qc_plot_utils.R", "essentiality_state.R", "essentiality_module.R"))
+               "table_display_helpers.R", "analysis_runs.R","reference_projects.R", "glabrata_annotation_lookup.R", "qc_plot_utils.R", "essentiality_state.R", "essentiality_module.R"))
   source(file.path(root, "app/shiny/R", name))
 python <- unname(Sys.which("python"))
 config <- file.path(root, "output/projects/Gale_2020/config/project.yaml")

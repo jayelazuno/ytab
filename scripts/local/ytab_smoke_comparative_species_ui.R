@@ -39,7 +39,7 @@ source(file.path(root, "app/shiny/R/ui_essentiality.R"))
 source(file.path(root, "app/shiny/R/ui_gene_domain_explorer.R"))
 # The workspace now also uses these modules (GO, genome browser, screen coverage, analysis panels).
 for (name in c("go_analysis.R", "genome_browser_state.R", "ui_genome_browser.R", "screen_planning.R", "mutant_screen.R",
-               "analysis_runs.R", "qc_library_correlation.R", "normalization_module.R", "essentiality_module.R", "treated_vs_control.R", "comparisons_module.R"))
+               "analysis_runs.R","reference_projects.R", "qc_library_correlation.R", "normalization_module.R", "essentiality_module.R", "treated_vs_control.R", "comparisons_module.R"))
   source(file.path(root, "app/shiny/R", name))
 source(file.path(root, "app/shiny/R/ui_workspace.R"))
 

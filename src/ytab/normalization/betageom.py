@@ -1,4 +1,4 @@
-"""Beta-geometric count correction (BGC), adapted from TRANSIT's BetaGeomNorm with audited parameter estimators.
+"""Beta-geometric count correction (BGC), adapted from TRANSIT's BetaGeomNorm (DeJesus & Ioerger 2016) with audited parameter estimators.
 
 Primary evaluation uses the exact beta-geometric CDF; a seeded simulation engine
 retains the upstream approximation for sensitivity checks. Zeros are preserved.

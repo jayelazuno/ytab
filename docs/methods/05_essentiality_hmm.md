@@ -72,7 +72,7 @@ reference implementation is TRANSIT `pytransit/analysis/hmm.py`, commit 50e23d6 
 | replicates | averaged into one track | emitted jointly, one depth parameter per library | keeps per-library information |
 | unmappable DNA | not modelled (TA sites assumed mappable) | masked as missing emissions | repeated DNA cannot receive uniquely mapped reads |
 | decoding | Viterbi | full posterior (forward–backward) | gene-level probabilities |
-| gene call | ES if all sites ES, else majority state | P(run of ≥ 3 ES windows) ≥ 0.5 | captures domain-essential genes |
+| gene call | ES if all sites ES, else majority state | P(run of ≥ max(3, 20% of the gene's windows) ES windows) ≥ 0.5 | captures domain-essential genes |
 | on Gale 2020 | 0 ES genes | 1,382 ES genes | — |
 
 The TRANSIT port was run on the union-site catalogue, with TTR normalization and the replicate mean
@@ -232,9 +232,10 @@ are often tolerated. Windows are weighted by the number of overlapping base pair
 $$\bar P_g(k) = \frac{\sum_{w} o_w \gamma_{wk}}{\sum_w o_w}.$$
 
 **Essential-run probability** (gene score, v2). Let $R_g$ be the event that the gene's mappable windows
-contain a run of $\ge m = 3$ consecutive ES windows (300 bp, about one protein domain). A masked window
-neither extends nor breaks a run. For genes with fewer than 3 mappable windows, $m$ equals their number
-of mappable windows. Then
+contain a run of $\ge m$ consecutive ES windows, with $m = \max(3, \lceil 0.2\, n_g \rceil)$ for a gene with $n_g$
+mappable windows: at least 300 bp (about one protein domain), and at least a fifth of the gene for genes longer than
+about 1.6 kb. A masked window neither extends nor breaks a run. For genes with fewer than 3 mappable windows, $m$
+equals their number of mappable windows. Then
 
 $$P_{\mathrm{ES\text{-}run}}(g) = P(R_g \mid y).$$
 
@@ -251,8 +252,17 @@ $\gamma$ at the gene's first window. The dynamic program is tested against brute
 - Otherwise, $\arg\max_{k \in \{\mathrm{GD,NE,GA}\}} \bar P_g(k)$.
 - **Uncertain** if < 50% of the trimmed CDS is mappable.
 
-The run length and threshold were fixed before any simulation. GD, NE and GA are reported as
+The threshold and the 3-window floor were fixed before any simulation. GD, NE and GA are reported as
 insertion-density classes. Only ES is interpreted as essentiality.
+
+**Run length (2026-10-25).** Until then the run was a fixed 3 windows. Two pre-registered tests on the four-species
+fits (R20, R21; `output/essentiality/hmm_proportional_run/`, `hmm_run_density/`) compared runs of 20%, 33% and 50% of
+the gene. A run of at least 20% of the gene ranked essential genes better than the fixed run in all four species
+(ΔAUC +0.005 to +0.011) and in all 24 full and thinned fits; longer runs helped sparse libraries more but hurt the dense
+*S. pombe* libraries, whose insertions resolve tolerated stretches inside essential genes. The 20% run became the
+default (`Settings.es_run_fraction = 0.2`; 0 restores the fixed run). Earlier fits are rescored without refitting:
+`ytab hermes-hmm FIT_DIR --rescore`. Other settings (window 50–100 bp, 3′ trim 0–20%, 5′ trim 5%) change the ranking by
+less than 0.02 AUC; 200-bp windows are worse (R19, `output/essentiality/hmm_sensitivity/`).
 
 **Why a run score.** v1 called the state with the largest mean posterior. It failed its pre-registered
 recall gate on genes essential only in a central domain (recall 0.57). The run score recovers such genes

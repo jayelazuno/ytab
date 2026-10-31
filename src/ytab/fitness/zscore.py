@@ -1,4 +1,4 @@
-"""Treated-vs-control local-abundance z-score: call genes depleted or enriched in a treated library against its matched control.
+"""Treated-vs-control local-abundance z-score (Gale et al. 2020): call genes depleted or enriched in a treated library against its matched control.
 
 Port of the established YTAB fitness analysis (formerly scripts/ytab_treated_vs_parent_screen.R); the calculation is
 unchanged:

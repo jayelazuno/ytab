@@ -388,7 +388,7 @@ BG14, BG2r, DPL1021r, CBS138r; Hermes (NAT), splinkerette PCR. BioProject PRJNA1
 
 | library | runs | role | condition | strain | pool |
 |---|---|---|---|---|---|
-| SRR38338547 |  | parent | parent | BG14 | BG14_pool1 |
+| SRR38338547 (not analysed) |  | parent | parent | BG14 | BG14_pool1 |
 | SRR38338549 |  | parent | parent | BG2r | BG2r_pool1 |
 | SRR38338548 |  | parent | parent | BG2r | BG2r_pool2 |
 | SRR38338545 |  | parent | parent | DPL1021r | DPL1021r_pool1 |

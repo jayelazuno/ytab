@@ -75,9 +75,18 @@ On read samples of each dataset (about 50,000–80,000 reads each), mapped with 
 | Grech 2019 HL_D_2 / V3 | 99% | 89% / 44% (V3 is mostly donor-plasmid reads) |
 | SATAY Wild-type 1 / + rapamycin | — | 73% / 51% |
 
-- **Guo et al. 2013:** every YTAB insertion matches the authors' published position and strand.
-- **SATAY:** YTAB insertions match the published wild-type track at genomic sites, with a constant 1-bp offset on the
-  C strand (the track's convention).
+On the full libraries (`output/paper/figures/reproducibility/published_vs_ytab.tsv`):
+
+| library | published sites found by YTAB | YTAB sites in the published set | correlation of log reads at shared sites |
+|---|---|---|---|
+| Guo 2013 (same position and strand) | 92% | 86% | 0.94 |
+| SATAY WildType1 (C strand +1 bp, the track's convention) | 79% | 48% | 0.78 |
+| SATAY WildType2 (C strand +1 bp) | 87% | 53% | 0.87 |
+
+- **Guo et al. 2013:** in the read samples every YTAB insertion matched a published position and strand exactly; on the
+  full library the two sets share 86–92% of sites (the published table and YTAB filter reads differently).
+- **SATAY:** YTAB recovers most published sites, and reports about twice as many sites as the published tracks, which
+  were filtered by the authors' own pipeline.
 - **Donor loci:** reads from the SATAY donor plasmid pile up on ADE2, URA3, CYC1 and GAL1-10, and the albicans Ds donor
   sits in the ADE2 promoter. These loci are masked in essentiality benchmarks.
 

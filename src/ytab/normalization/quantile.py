@@ -1,6 +1,6 @@
 """Deterministic, zero-preserving positive-count quantile adaptation for Hermes.
 
-Not a literal port of TRANSIT QuantileNorm's dense-rank lookup. Each explicitly
+Not a literal port of TRANSIT QuantileNorm's dense-rank lookup (DeJesus et al. 2015). Each explicitly
 selected library group defines a mean positive empirical quantile function.
 Zeros remain undetected; tied counts share the mean target over their ranks.
 """
