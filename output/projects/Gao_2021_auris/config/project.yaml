@@ -1,0 +1,83 @@
+project_id: Gao_2021_auris
+repo_root: ../../../..
+fastq_dir: output/projects/Gao_2021_auris/config/argon_fastq_inputs
+fastq_paths_relative_to: fastq_dir
+output_project_dir: output/projects/Gao_2021_auris
+output_export_dir: output/exports/Gao_2021_auris
+species: auris
+threads: 8
+reference:
+  species: auris
+  species_dir: resources/species/auris
+  reference_dir: resources/species/auris/reference_genome
+  fasta: resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.fna
+  feature_table: null
+  gff: resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic.gff
+  gtf: null
+  gffutils_db: null
+  bowtie2_index_prefix: resources/species/auris/reference_genome/GCF_002759435.1_Cand_auris_B8441_V3_genomic
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: null
+  trna_bed: null
+  orthology_file: null
+  warnings:
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: SRR13106157
+  fastq_1: SRR13106157_1.fastq.gz
+  fastq_2: SRR13106157_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR13106158
+  fastq_1: SRR13106158_1.fastq.gz
+  fastq_2: SRR13106158_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR13106159
+  fastq_1: SRR13106159_1.fastq.gz
+  fastq_2: SRR13106159_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR13106160
+  fastq_1: SRR13106160_1.fastq.gz
+  fastq_2: SRR13106160_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR13106161
+  fastq_1: SRR13106161_1.fastq.gz
+  fastq_2: SRR13106161_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR13106162
+  fastq_1: SRR13106162_1.fastq.gz
+  fastq_2: SRR13106162_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+sample_sheet: output/projects/Gao_2021_auris/config/sample_sheet.csv
+created_at: '2026-10-28T20:10:19.472802+00:00'
+ytab_version_or_git_commit_if_available: a4538e6
