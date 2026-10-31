@@ -1,0 +1,19 @@
+{
+  "species": "phaffii",
+  "species_dir": "resources/species/phaffii",
+  "reference_dir": "resources/species/phaffii/reference_genome",
+  "fasta": "resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.fna",
+  "feature_table": null,
+  "gff": "resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.gff",
+  "gtf": null,
+  "gffutils_db": null,
+  "bowtie2_index_prefix": "resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic",
+  "bowtie2_index_complete": true,
+  "bowtie2_index_type": "bt2",
+  "centromere_bed": null,
+  "trna_bed": null,
+  "orthology_file": null,
+  "warnings": [
+    "Bowtie2 index found; indexing skipped."
+  ]
+}

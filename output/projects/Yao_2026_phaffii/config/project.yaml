@@ -1,0 +1,56 @@
+project_id: Yao_2026_phaffii
+repo_root: ../../../..
+fastq_dir: output/projects/Yao_2026_phaffii/config/argon_fastq_inputs
+fastq_paths_relative_to: fastq_dir
+output_project_dir: output/projects/Yao_2026_phaffii
+output_export_dir: output/exports/Yao_2026_phaffii
+species: phaffii
+threads: 8
+reference:
+  species: phaffii
+  species_dir: resources/species/phaffii
+  reference_dir: resources/species/phaffii/reference_genome
+  fasta: resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.fna
+  feature_table: null
+  gff: resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.gff
+  gtf: null
+  gffutils_db: null
+  bowtie2_index_prefix: resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic
+  bowtie2_index_complete: true
+  bowtie2_index_type: bt2
+  centromere_bed: null
+  trna_bed: null
+  orthology_file: null
+  warnings:
+  - Bowtie2 index found; indexing skipped.
+samples:
+- sample: SRR36343505
+  fastq_1: SRR36343505_1.fastq.gz
+  fastq_2: SRR36343505_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR36343506
+  fastq_1: SRR36343506_1.fastq.gz
+  fastq_2: SRR36343506_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+- sample: SRR36343507
+  fastq_1: SRR36343507_1.fastq.gz
+  fastq_2: SRR36343507_2.fastq.gz
+  layout: paired
+  guessed_condition: ''
+  guessed_background: ''
+  guessed_pool: ''
+  include: true
+  warnings: ''
+sample_sheet: output/projects/Yao_2026_phaffii/config/sample_sheet.csv
+created_at: '2026-10-28T20:13:17.033677+00:00'
+ytab_version_or_git_commit_if_available: a4538e6
