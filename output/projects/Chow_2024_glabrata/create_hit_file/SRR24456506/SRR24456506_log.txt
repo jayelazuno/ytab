@@ -1,0 +1,9 @@
+
+=== Finding hits ===
+22766417 reads found of map quality >= 20; in these:
+  107420 hits were found; of these:
+    107420 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456506/SRR24456506.insertions.bedgraph
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456506/SRR24456506.insertions.wig
+    (bigwig not written: Error - overlapping regions in bedGraph line 1104 of /old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456506/SRR24456506.insertions.bedgraph)
