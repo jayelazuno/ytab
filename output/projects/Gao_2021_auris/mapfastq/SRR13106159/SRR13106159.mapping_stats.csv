@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR13106159,8418489,8418489,7869789,548700,93.482,0,0.0,7588223,96.422,39.39,/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/mapfastq/SRR13106159/SRR13106159.sam
