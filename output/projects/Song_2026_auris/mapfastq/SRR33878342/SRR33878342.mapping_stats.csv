@@ -1,0 +1,2 @@
+sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
+SRR33878342,3852601,3852601,3550158,302443,92.15,0,0.0,3369093,94.9,38.79,/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/mapfastq/SRR33878342/SRR33878342.sam
