@@ -1,0 +1,2 @@
+sample,input_path,total_reads,unique_sites,jackpot_top_frac,jackpot_frac_reads,n_jackpot_sites,midlc_est,depth_ratio_R_over_midlc,per_gene_top_site_removed,per_gene_sites_removed,normalize_target,reads_target,thinning_p,reads_after_norm,normalized_written,normalized_output,midlc_points,midlc_max_sampled,seqbias_done,centromere_done
+SRR34963231,/old_Users/jayelazuno/workspace/ytab/output/projects/Nickels_2026_glabrata_tolerance/create_hit_file/SRR34963231/SRR34963231_hits.txt,3491708,168281,0.001,0.0521218,169,237793,14.6838,0,0,NA,NA,NA,NA,0,NA,9,3491708,1,1
