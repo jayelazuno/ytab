@@ -1,0 +1,47 @@
+{
+  "project_id": "Patterson_2018_lipolytica",
+  "sample": "SRR5084588",
+  "input_bam": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084588/SRR5084588.sorted.bam",
+  "species": "lipolytica",
+  "reference_files_used": {
+    "fasta": "/old_Users/jayelazuno/workspace/ytab/resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic.fna",
+    "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic.gff",
+    "feature_format": "gff"
+  },
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084588",
+  "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084588/SRR5084588_hits.txt",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/logs/create_hit_file/SRR5084588.log",
+  "status": "success",
+  "start_time": "2026-11-01T02:45:33.518176+00:00",
+  "end_time": "2026-11-01T02:46:33.751604+00:00",
+  "elapsed_seconds": 60.233,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
+    "--bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084588/SRR5084588.sorted.bam",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084588",
+    "--out-prefix",
+    "SRR5084588",
+    "--flat-output",
+    "--fasta",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic.fna",
+    "--features",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic.gff",
+    "--feature-format",
+    "gff",
+    "--threads",
+    "8",
+    "--write-browser-tracks"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084588/SRR5084588.insertions.bedgraph",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084588/SRR5084588.insertions.bw",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084588/SRR5084588.insertions.wig",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084588/SRR5084588_hits.txt",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084588/SRR5084588_log.txt"
+  ],
+  "warnings": [],
+  "error_message": null
+}

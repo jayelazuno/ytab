@@ -14,9 +14,9 @@
   "threads": 8,
   "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084557",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/logs/mapfastq/SRR5084557.log",
-  "status": "success",
+  "status": "skipped",
   "start_time": "2026-10-28T19:46:30.512282+00:00",
-  "end_time": "2026-10-28T20:27:03.399436+00:00",
+  "end_time": "2026-10-31T21:39:36.325348+00:00",
   "elapsed_seconds": 2432.887,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
@@ -42,7 +42,11 @@
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084557/SRR5084557.sorted.bam.bai",
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084557/SRR5084557_log.txt"
   ],
-  "warnings": [],
+  "warnings": [
+    "Successful cached outputs found; mapping skipped.",
+    "Successful cached outputs found; mapping skipped.",
+    "Successful cached outputs found; mapping skipped."
+  ],
   "request_fingerprint": "a39c83533bdf4b806ba1fe8de4c7bc9f11f2fa3f4835a05824b69366f4489595",
   "error_message": null,
   "hermes_cleanup": true,

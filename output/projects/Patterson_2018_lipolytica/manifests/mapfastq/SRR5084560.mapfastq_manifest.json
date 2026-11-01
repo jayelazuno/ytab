@@ -1,0 +1,103 @@
+{
+  "project_id": "Patterson_2018_lipolytica",
+  "sample": "SRR5084560",
+  "fastq_1": "/nfsscratch/jayelazuno/workspace/public_data/yarrowia_2018_hermes/fastq/Patterson2018/SRR5084560/SRR5084560.fastq.gz",
+  "fastq_2": null,
+  "layout": "single",
+  "sequencing_layout": "single_end",
+  "mapping_strategy": "single_mate",
+  "genome_mapping_mate": "R1",
+  "junction_mate": "R1",
+  "require_mate_alignment": false,
+  "species": "lipolytica",
+  "bowtie2_index_prefix": "/old_Users/jayelazuno/workspace/ytab/resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic",
+  "threads": 8,
+  "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084560",
+  "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/logs/mapfastq/SRR5084560.log",
+  "status": "skipped",
+  "start_time": "2026-10-31T16:35:38.312724+00:00",
+  "end_time": "2026-10-31T21:39:31.034216+00:00",
+  "elapsed_seconds": 2884.861,
+  "command_run": [
+    "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
+    "/old_Users/jayelazuno/workspace/ytab/src/ytab/mapping/MapFastq.py",
+    "--out-dir",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084560",
+    "--bt2-index",
+    "/old_Users/jayelazuno/workspace/ytab/resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic",
+    "--threads",
+    "8",
+    "--sample-name",
+    "SRR5084560",
+    "--hermes-preprocess",
+    "--input-file-name",
+    "/nfsscratch/jayelazuno/workspace/public_data/yarrowia_2018_hermes/fastq/Patterson2018/SRR5084560/SRR5084560.fastq.gz",
+    "--source-junction-mate",
+    "R1"
+  ],
+  "detected_outputs": [
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084560/SRR5084560.hermes_preprocessing.json",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084560/SRR5084560.mapping_stats.csv",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084560/SRR5084560.sorted.bam",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084560/SRR5084560.sorted.bam.bai",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084560/SRR5084560_log.txt"
+  ],
+  "warnings": [
+    "Successful cached outputs found; mapping skipped."
+  ],
+  "request_fingerprint": "a3fd7c6bff1949299925de5175dd302df13cc39fe3592425a261b91edf885559",
+  "error_message": null,
+  "hermes_cleanup": true,
+  "transposon": "hermes",
+  "library_design": "splinkerette_pcr",
+  "transposon_profile": "resources/transposons/hermes/profile.json",
+  "hermes_preprocessing": {
+    "schema_version": 1,
+    "mode": "designated-junction-mate",
+    "junction_index": 0,
+    "junction_read_end": "start",
+    "retained_reads_or_pairs": 15254866,
+    "input_files": [
+      "/nfsscratch/jayelazuno/workspace/public_data/yarrowia_2018_hermes/fastq/Patterson2018/SRR5084560/SRR5084560.fastq.gz"
+    ],
+    "mates": [
+      {
+        "input_reads": 15651656,
+        "hermes_5p_reads": 4568668,
+        "hermes_overlap_bases": 214624440,
+        "trimmed_5p_bases": 214624469,
+        "signature:Hermes_right": 4568668,
+        "adapter_3p_reads": 2717263,
+        "trimmed_3p_bases": 108161024,
+        "signature:Illumina-R1:forward": 2684098,
+        "too_short": 396790,
+        "signature:Illumina-P7:rc": 22758,
+        "signature:Hermes_left:rc": 10160,
+        "signature:Hermes_right:forward": 176,
+        "signature:Illumina-R2:rc": 37,
+        "signature:Illumina-R1:rc": 10,
+        "signature:Hermes_left:forward": 12,
+        "signature:Spl-Bot:rc": 5,
+        "adapter_5p_reads": 1,
+        "signature:Illumina-P5": 1,
+        "signature:Illumina-P5:forward": 3,
+        "signature:HR-1:forward": 1,
+        "signature:Illumina-R2:forward": 2,
+        "signature:HR-1:rc": 1
+      }
+    ],
+    "cutadapt_version": "5.2",
+    "parameters": {
+      "overlap": 16,
+      "error_rate": 0.1,
+      "min_length": 25
+    },
+    "catalogue": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/primers.json",
+    "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
+    "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
+    "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
+    "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+    "junction_mate": "R1",
+    "require_mate_alignment": false
+  }
+}
