@@ -1,0 +1,3 @@
+SRR5084589
+Pearson: PearsonRResult(statistic=np.float64(0.7918775473485422), pvalue=np.float64(0.0))
+Spearman: SignificanceResult(statistic=np.float64(0.9784822769530079), pvalue=np.float64(0.0))
