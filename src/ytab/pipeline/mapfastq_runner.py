@@ -209,7 +209,9 @@ def build_mapfastq_command(sample: dict, config: dict, threads: int | None = Non
         sys.executable, str(script), "--out-dir", str(output), "--bt2-index",
         str(prefix), "--threads", str(selected_threads), "--sample-name", name,
     ]
-    design = resolve_design(sample, root)["mapping"]
+    # The project's `mapping` block under any sample-sheet override, which is the contract transposons.py states
+    # and what the run manifest already records; without the merge a project-level selection was silently ignored.
+    design = resolve_design({**(config.get("mapping") or {}), **{k: v for k, v in sample.items() if v not in (None, "")}}, root)["mapping"]
     if _as_bool(design.get("hermes_cleanup", True)):
         command.append("--hermes-preprocess")
         for field, flag in (("primer_catalogue","--primer-catalogue"),("hermes_reference","--hermes-reference")):
@@ -218,6 +220,10 @@ def build_mapfastq_command(sample: dict, config: dict, threads: int | None = Non
         for field, flag in (("hermes_overlap","--hermes-overlap"),("adapter_error_rate","--adapter-error-rate"),("min_read_length","--min-read-length"),("junction_read_end","--junction-read-end")):
             if sample.get(field) not in (None, ""):
                 command.extend([flag,str(sample[field])])
+        # The design says whether its reads retain the transposon end. Where they do, a read without a junction is
+        # not evidence of an insertion; where they do not, requiring one would discard every read.
+        if _as_bool(design.get("discard_untrimmed", False)):
+            command.append("--require-junction")
     else:
         # Profile-defined trimming for transposons and library designs without automatic Hermes cleanup.
         if design.get("trim_5p_seq"):

@@ -275,6 +275,8 @@ def main():
     parser.add_argument("--adapter-error-rate", type=float, default=.1)
     parser.add_argument("--min-read-length", type=int, default=25)
     parser.add_argument("--junction-read-end", choices=("start","end"), default="start")
+    parser.add_argument("--require-junction", action="store_true",
+                        help="With --hermes-preprocess: discard reads with no detected transposon junction (for designs that retain the transposon end)")
     parser.add_argument("--require-mate-alignment", action="store_true", help="Retain only concordant pairs; emit only the designated junction mate")
 
     parser.add_argument("--mapq", type=int, default=20)
@@ -332,7 +334,8 @@ def main():
         print(f"Starting automatic Hermes/adaptor cleanup: {prefix}; junction mate={args.source_junction_mate or args.junction_mate}",flush=True)
         report = prepare_fastqs(inputs,outputs,
             junction_index=1 if pe_mode and args.junction_mate=="R2" else 0,
-            read_end=args.junction_read_end,catalogue=args.primer_catalogue or DEFAULT_CATALOGUE,
+            read_end=args.junction_read_end,require_junction=args.require_junction,
+            catalogue=args.primer_catalogue or DEFAULT_CATALOGUE,
             reference=args.hermes_reference,overlap=args.hermes_overlap,
             error_rate=args.adapter_error_rate,min_length=args.min_read_length)
         report["junction_mate"] = args.source_junction_mate or args.junction_mate

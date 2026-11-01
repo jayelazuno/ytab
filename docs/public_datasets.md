@@ -52,10 +52,25 @@ sheet's `transposon` and `library_design` columns select it. Sequences are writt
 | transposon / design | read (junction mate) | 5′ trimming | 3′ trimming | datasets |
 |---|---|---|---|---|
 | hermes / `splinkerette_pcr` | Hermes end, genome | automatic Hermes cleanup (Hermes ends and Gale primers, `primers.json`) | adaptors in `primers.json` | Gale 2020 |
+| hermes / `splinkerette_pcr_retained_end` | Hermes end retained, then genome | automatic Hermes cleanup; reads with no detected junction discarded | adaptors in `primers.json` | Patterson 2018 |
 | hermes / `end_ligated_adapter` | Hermes end, genome, adapter, tag | `GTGGCTTGTTGAAGTTCTCTG` (end of Hermes; overlap 21; reads without it discarded) | `GTCCCTTAAGCGGAG`; `AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC` | Grech 2019, Lee 2020 |
 | hermes / `terminal_10bp` | last 10 bp of the Hermes end, genome (50-bp reads) | `^AAGTTCTCTG` (anchored; reads without it discarded) | `GTCCCTTAAGCGGAG`; `AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC` | Guo 2013 |
 | ac_ds / `ds_primer_tail` | 6-nt tag, Ds primer and end, genome | `GTATTTTACCGACCGTTACCGACCGTTTTCATCCCTA` (overlap 37; reads without it discarded) | `AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC` | Segal 2018 |
 | ac_ds / `satay_restriction` | genome from the MiniDs junction to a DpnII (GATC) or NlaIII (CATG) site, then circularised Ds | none | `GTATCGGTTTTCGATTACCGTATTTATCCCGTTCG` (after GATC); `TGTGATTTTACCGAACAAAAATACCGGTTCCCGTCCG` (after CATG); `AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC` | Michel 2017 |
+| piggybac / `pb_tr_end` | piggyBac terminal repeat, TTAA target site, genome | `CATGCGTCAATTTTACGCAGACTATCTTTCTAGGG` (overlap 30; reads without it discarded) | `AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC`; `CTGTCTCTTATACACATCT` | Gao 2021, Chow 2024, Song 2026, Yao 2026 |
+
+### Target-site filtering
+
+A transposon profile may declare a `target_site`, and piggyBac does: `TTAA` with a 4-bp duplication. Because
+piggyBac can insert nowhere else, a called position off the motif is an artefact of read processing rather than a
+site, so the hit-file stage keeps only positions at one of the two ends of an occupied `TTAA` (the motif start, or
+`duplication_bp - 1` bases before it, since reads from the two orientations of one insertion land 3 bp apart). The
+filter is applied before adjacent positions are merged, so a discarded artefact cannot pull a real neighbour into
+its range, and the count kept and discarded is logged per sample.
+
+Transposons that declare no target site are untouched: the hAT elements (Hermes, Ac/Ds) insert at nearly any
+position, and filtering them on `TTAA` would discard almost everything — measured on a Hermes library, only 0.5%
+of its sites fall on a `TTAA`, against 53.8% of a piggyBac library's.
 
 Sources of the sequences: the Ds primer and end are those of the authors' pipeline (github.com/berman-lab/transposon-
 pipeline, `MapFastq.py`); the Hermes end is the Hermes sequence (GenBank L34807.1) and the Gale sequencing primer;

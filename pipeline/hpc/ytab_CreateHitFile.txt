@@ -12,7 +12,9 @@
 ## Personal University of Iowa Argon / SGE job; submit after successful mapping.
 ## qsub -v PROJECT_ID=Gale_2020 pipeline/hpc/ytab_CreateHitFile.txt
 ## Optional: PROJECT_CONFIG=/absolute/path/project.yaml, FORCE=1, DRY_RUN=1,
-## SAMPLES=one_sample, KEEP_GOING=0. Override slots with qsub -pe smp 4.
+## SAMPLES=one_sample, KEEP_GOING=0, SAMPLE_LIST=file_of_sample_names. Override slots with qsub -pe smp 4.
+## One task per sample, whole project as a single job:
+## qsub -t 1-33 -v PROJECT_ID=Patterson_2018_lipolytica pipeline/hpc/ytab_CreateHitFile.txt
 ## Input BAMs, reference, sample selection and outputs come from the project.
 
 set -euo pipefail
@@ -110,6 +112,47 @@ echo "Project: $PROJECT_CONFIG"
 echo "Temporary files/job log: $scratch_job"
 df -h "$SCRATCH_ROOT"
 "$PYTHON_BIN" --version
+
+## Array mode: with qsub -t, each task makes one sample's hit file, so a whole project goes in as one job and the tasks
+## beyond the per-user limit wait in the queue instead of being rejected at submit time.
+##   qsub -t 1-33 -v PROJECT_ID=Patterson_2018_lipolytica pipeline/hpc/ytab_CreateHitFile.txt
+## The task's sample is the SGE_TASK_ID'th included sample of the project, in sample-sheet order, so nothing has
+## to be prepared by hand. SAMPLE_LIST still overrides that with one sample name per line, for processing a subset.
+if [[ "${SGE_TASK_ID:-undefined}" =~ ^[1-9][0-9]*$ ]]; then
+    if [[ -n "${SAMPLE_LIST:-}" ]]; then
+        [[ "$SAMPLE_LIST" = /* ]] || SAMPLE_LIST="$PWD/$SAMPLE_LIST"
+        [[ -s "$SAMPLE_LIST" ]] || { echo "ERROR: SAMPLE_LIST not found or empty: $SAMPLE_LIST" >&2; exit 2; }
+        task_samples="$SAMPLE_LIST"
+        source_description="$SAMPLE_LIST"
+    else
+        # The project's own included samples, read through the pipeline's loader so the array maps exactly what
+        # a whole-project run would map, in the same order.
+        task_samples="$scratch_job/array_samples.txt"
+        (cd "$YTAB" && PYTHONPATH="$YTAB/src" "$PYTHON_BIN" -c '
+import sys
+from pathlib import Path
+from ytab.pipeline.mapfastq_runner import get_included_samples, load_project_for_mapping
+for sample in get_included_samples(load_project_for_mapping(Path(sys.argv[1]))):
+    print(sample["sample"])
+' "$PROJECT_CONFIG") > "$task_samples"
+        [[ -s "$task_samples" ]] || { echo "ERROR: No included samples in $PROJECT_CONFIG" >&2; exit 2; }
+        source_description="$PROJECT_CONFIG"
+    fi
+    SAMPLES="$(sed -n "${SGE_TASK_ID}p" "$task_samples" | tr -d '[:space:]')"
+    total="$(grep -c '[^[:space:]]' "$task_samples")"
+    [[ -n "$SAMPLES" ]] || {
+        echo "ERROR: Task $SGE_TASK_ID has no sample; $source_description lists $total. Submit with qsub -t 1-$total." >&2
+        exit 2
+    }
+    if [[ "${SGE_TASK_LAST:-$total}" != "$total" ]]; then
+        echo "WARNING: the array range ends at ${SGE_TASK_LAST}, but $source_description lists $total samples." >&2
+        echo "         Samples outside 1-${SGE_TASK_LAST} will not be processed; resubmit with qsub -t 1-$total." >&2
+    fi
+    echo "Array task $SGE_TASK_ID of $total: $SAMPLES"
+elif [[ -n "${SAMPLE_LIST:-}" ]]; then
+    echo "ERROR: SAMPLE_LIST requires an array job; submit with qsub -t 1-N." >&2
+    exit 2
+fi
 
 args=("$YTAB/scripts/local/ytab.py" hit-files
       --project-config "$PROJECT_CONFIG" --threads "$THREADS")

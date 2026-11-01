@@ -12,6 +12,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from ytab.core import Shared
+from ytab.mapping.transposons import on_target
 
 
 usage = '''CreateHitFile.py  
@@ -41,7 +42,7 @@ ChrFeatCols = ['FeatureName', 'GeneName','Aliases','FeatureType','Chromosome','S
         'Description','DateCreated','SeqCoordVerDate','Blank1','Blank2','GeneNameReserDate','ReservedIsstandardName','SC_ortholog']
 
 
-def FindHitsPerSample(SamAlign, ChrFeatMap, Sep0N = 2,MapQ=10):
+def FindHitsPerSample(SamAlign, ChrFeatMap, Sep0N = 2,MapQ=10, TargetSite=None, ChrSeq=None):
     """Goes through Bam file, checks for high confidence alignment, unites unique positions if they can be aligned with adjunct positions."""
     Chromosomes = SamAlign.references
     hit_map = {}
@@ -66,6 +67,7 @@ def FindHitsPerSample(SamAlign, ChrFeatMap, Sep0N = 2,MapQ=10):
     
     ChrHitList = {}
     TotalHits = 0
+    OffTargetPositions = 0
     for (Chr, source) in itertools.product(Chromosomes, ('W', 'C')):
         if Chr not in ChrFeatMap:
             print('{} not found in Chromosome feature file'.format(Chr))
@@ -77,6 +79,15 @@ def FindHitsPerSample(SamAlign, ChrFeatMap, Sep0N = 2,MapQ=10):
             continue
         PosCount = hit_map[Chr][source]
         HitsPos = np.where(PosCount>0)[0]
+        if TargetSite is not None:
+            # A transposon that inserts only at a fixed motif can have no insertion anywhere else, so a position
+            # off the motif is an artefact of read processing rather than a site. Positions are dropped before
+            # merging, so a discarded artefact cannot pull a neighbouring real site into its range. Transposons
+            # that declare no target site (the hAT elements) never reach here and are unaffected.
+            sequence = (ChrSeq or {}).get(Chr, "")
+            before = len(HitsPos)
+            HitsPos = np.array([p for p in HitsPos if on_target(sequence, int(p), TargetSite)], dtype=HitsPos.dtype)
+            OffTargetPositions += before - len(HitsPos)
         TotalHits += len(HitsPos)
 
         if Chr not in ChrHitList:
@@ -96,6 +107,9 @@ def FindHitsPerSample(SamAlign, ChrFeatMap, Sep0N = 2,MapQ=10):
             i+=1
     TotalUniqueHits = sum(len(chrom_hits) for chrom_hits in ChrHitList.values())
     total_reads = sum(hits.sum() for source in hit_map.values() for hits in source.values())
+    if TargetSite is not None:
+        print("Target site {}: {:,} positions kept, {:,} off-motif positions discarded".format(
+            TargetSite["motif"], TotalHits, OffTargetPositions))
     return ChrHitList, TotalHits, TotalUniqueHits, total_reads
 
 
@@ -199,6 +213,27 @@ def read_fasta_lengths(fasta_path: str):
         if name is not None:
             ChrLen[name] = seqlen
     return ChrLen
+
+
+def read_fasta_sequences(fasta_path: str):
+    """{chromosome: uppercase sequence}; needed only when a target-site motif is being enforced."""
+    sequences = {}
+    name = None
+    chunks = []
+    with _open_maybe_gz(fasta_path, "rt") as f:
+        for l in f:
+            if not l:
+                continue
+            if l[0] == '>':
+                if name is not None:
+                    sequences[name] = "".join(chunks)
+                name = l[1:].strip().split()[0]
+                chunks = []
+            else:
+                chunks.append(l.strip().upper())
+        if name is not None:
+            sequences[name] = "".join(chunks)
+    return sequences
 
 
 def _ncbi_pick_name(row):
@@ -520,6 +555,10 @@ if __name__ == '__main__':
     parser.add_argument("-m", "--merge-dist", default=0, type=int)
 
     parser.add_argument("-f", "--fasta", required=True)
+    parser.add_argument("--target-motif", default="",
+                        help="Keep only hits at this insertion motif (e.g. TTAA for piggyBac). Default: keep every position, as the hAT elements require.")
+    parser.add_argument("--target-duplication", type=int, default=0,
+                        help="Target-site duplication in bp; a hit counts as on target at the motif start or duplication-1 bases before it. Defaults to the motif length.")
     parser.add_argument("-g", "--features", required=True)
 
     parser.add_argument("--feature-format", default="ncbi_feature_table",
@@ -547,6 +586,11 @@ if __name__ == '__main__':
 
     # read chromosome lengths from fasta
     ChrLen = read_fasta_lengths(args.fasta)
+
+    # A motif is enforced only when the transposon declares one, and then the sequence itself is needed.
+    motif = args.target_motif.strip().upper()
+    TargetSite = dict(motif=motif, duplication_bp=args.target_duplication or len(motif)) if motif else None
+    ChrSeq = read_fasta_sequences(args.fasta) if TargetSite else None
 
     # read features
     ChrFeature = load_features(args.features, args.feature_format,
@@ -640,7 +684,7 @@ if __name__ == '__main__':
         Sami = pysam.AlignmentFile(bam_path, "rb")
         print("Parsing file %s..." % (prefix))
         
-        MyList,TotalHits, TotalUniqueHits, TotalReads = FindHitsPerSample(Sami,ChrFeatW, MergeDist,MapQ)
+        MyList,TotalHits, TotalUniqueHits, TotalReads = FindHitsPerSample(Sami,ChrFeatW, MergeDist,MapQ,TargetSite,ChrSeq)
 
         gene_count_path = os.path.join(rep_dir, prefix + "_GeneCount.csv")
         removed_gene_count_path = os.path.join(rep_dir, "removed" + prefix + "_GeneCount.csv")

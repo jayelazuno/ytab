@@ -9,10 +9,12 @@ reasonable approximation and disproportionate upper-tail counts are suspected
 to be technical. It cannot determine whether high counts are technical artifacts
 or real biological enrichment; the transformation can suppress genuine effects.
 
-This is an experimental, user-selectable option, not a preference over TTR, CPM
-or quantile. Evaluations below characterize behavior, not a method ranking.
-More extensive validation is needed before recommendations. No app defaults,
-existing fitness results or classifier workflows change.
+This is a validated, user-selectable option rather than a default. R13 measured
+it on the Gale-calibrated treated-vs-control benchmark: resampling under BGC
+cleared all three calibration gates (calls in 7.5% of null experiments, pooled
+FDR 0.063), and BGC is the reference arm the other normalizations are compared
+against. No app defaults, existing fitness results or classifier workflows
+change.
 
 Sources: [DeJesus and Ioerger, 2016](https://pubmed.ncbi.nlm.nih.gov/26932272/),
 [TRANSIT documentation](https://transit.readthedocs.io/en/latest/method_normalization.html),

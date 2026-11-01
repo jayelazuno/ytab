@@ -162,7 +162,8 @@ R2 and explicit concordant-pair requirements are supported. See
 
 **Transposons and library designs.** Trimming comes from a transposon profile
 (`resources/transposons/<transposon>/profile.json`): `hermes` (`splinkerette_pcr`, the default;
-`end_ligated_adapter`; `terminal_10bp`) and `ac_ds` (`ds_primer_tail`, the default; `satay_restriction`).
+`splinkerette_pcr_retained_end`; `end_ligated_adapter`; `terminal_10bp`), `piggybac` (`pb_tr_end`) and
+`ac_ds` (`ds_primer_tail`, the default; `satay_restriction`).
 Select one in the project config (`mapping: {transposon: ..., library_design: ...}`), per sample with `transposon`
 and `library_design` sample-sheet columns, or for one run:
 

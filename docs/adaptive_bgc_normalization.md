@@ -1,12 +1,17 @@
 # Adaptive beta-geometric correction: principle and Hermes adaptation
 
-`aBGC` is an optional experimental distribution correction, not a preferred
-normalization. It searches fitting settings that make corrected positive counts
-more geometric according to an explicit discrepancy score. It does not learn
-which genes are correct, optimize biological agreement or estimate an FDR.
-User selection should consider distribution assumptions, sample context,
-candidate stability and treatment-effect changes. Recommendations are deferred
-until broader testing of the method family is complete.
+`aBGC` is an optional distribution correction. It searches fitting settings that
+make corrected positive counts more geometric according to an explicit
+discrepancy score. It does not learn which genes are correct, optimize
+biological agreement or estimate an FDR.
+
+R27 measured it against BGC on the Gale-calibrated treated-vs-control
+benchmark. It ranked better than BGC in both families where it can be used
+(z-score +0.0016 AUC, resampling +0.0028, both 95% CIs excluding zero), and
+resampling under aBGC cleared all three calibration gates (calls in 7.5% of
+null experiments, pooled FDR 0.062). It is cleared for ranking and for calls.
+User selection should still consider distribution assumptions, sample context,
+candidate stability and treatment-effect changes.
 
 ## Source and differences from ordinary BGC
 

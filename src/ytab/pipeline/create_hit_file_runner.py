@@ -11,6 +11,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from ytab.mapping.transposons import resolve_design, target_site
+
 from .mapfastq_runner import get_included_samples as _get_included_samples
 from .mapfastq_runner import load_project_for_mapping
 from .progress_tracker import ProgressTracker, make_job_id
@@ -59,6 +61,17 @@ def _reference_files(config: dict) -> dict[str, Path | str]:
     else:
         features, feature_format = None, ""
     return {"fasta": fasta, "features": features, "feature_format": feature_format}
+
+
+def _target_site(sample: dict, config: dict) -> dict | None:
+    """The insertion motif this sample's transposon declares, or None when it inserts at any position.
+
+    Resolved the same way mapping resolves it — the project's `mapping` block under any sample-sheet override —
+    so the hits a project calls obey the chemistry it was mapped with, whatever transposon that is.
+    """
+    root = Path(config["_repo_root"])
+    settings = {**(config.get("mapping") or {}), **{k: v for k, v in sample.items() if v not in (None, "")}}
+    return target_site(resolve_design(settings, root)["transposon"], root)
 
 
 def _paths(config: dict, sample_name: str) -> dict[str, Path]:
@@ -144,6 +157,10 @@ def build_create_hit_file_command(
         "--threads", str(selected_threads),
         "--write-browser-tracks",
     ]
+    site = _target_site(sample, config)
+    if site:
+        command.extend(["--target-motif", site["motif"],
+                        "--target-duplication", str(site["duplication_bp"])])
     return command
 
 
@@ -174,6 +191,7 @@ def run_create_hit_file_sample(
             "fasta": str(reference["fasta"]), "features": str(reference["features"]),
             "feature_format": reference["feature_format"],
         },
+        "target_site": _target_site(sample, config),
         "output_dir": str(paths["output"]), "hits_file": str(paths["hits"]),
         "log_file": str(paths["log"]), "status": "failed",
         "start_time": _now(), "end_time": None, "elapsed_seconds": 0.0,

@@ -85,6 +85,7 @@ class Settings:
 def annotations(path):
     """Resolve CDS parents through transcript ancestry, using each gene's own CDS."""
     records = {}
+    ambiguous = set()
     cds = []
     with Path(path).open() as handle:
         for line in handle:
@@ -99,11 +100,15 @@ def annotations(path):
             if rec["start"]<1 or rec["end"]<rec["start"]:raise ValueError("Invalid inclusive GFF coordinates")
             if fields[2]=="CDS":cds.append(rec)
             elif attrs.get("ID"):
-                if attrs["ID"] in records:raise ValueError("Duplicate non-CDS GFF ID")
-                records[attrs["ID"]]=rec
+                # A feature split across several rows carries one ID on each (RefSeq does this for a misc_feature
+                # interrupted by another annotation). That is ambiguous only if a CDS resolves through it, so the
+                # error is deferred to ancestor() rather than rejecting an otherwise valid annotation.
+                if attrs["ID"] in records:ambiguous.add(attrs["ID"])
+                else:records[attrs["ID"]]=rec
     genes={}
     def ancestor(identifier,seen):
         if identifier in seen:raise ValueError("Cyclic GFF ancestry")
+        if identifier in ambiguous:raise ValueError(f"Duplicate non-CDS GFF ID in CDS ancestry: {identifier}")
         if identifier not in records:raise ValueError(f"Unresolved GFF CDS parent: {identifier}")
         record=records[identifier]
         if record["kind"] in {"gene","pseudogene"} or not record["attrs"].get("Parent"):

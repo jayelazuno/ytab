@@ -109,6 +109,7 @@ transposon is Hermes with its default design, the automatic cleanup above.
 | transposon | design | reads | trimming |
 |---|---|---|---|
 | hermes | `splinkerette_pcr` (default) | Hermes end, then genome (Gale et al. 2020) | automatic Hermes cleanup |
+| hermes | `splinkerette_pcr_retained_end` | as above, but the reads keep the Hermes end (Patterson et al. 2018) | automatic Hermes cleanup; reads with no detected junction discarded |
 | hermes | `end_ligated_adapter` | Hermes end, genome, ligated adapter `GTCCCTTAAGCGGAG` (Levin lab; Grech et al. 2019) | 5′ Hermes end (reads without it discarded); 3′ adapter and Illumina read-through |
 | hermes | `terminal_10bp` | last 10 bp of the Hermes end, then genome (Guo et al. 2013, 50-bp reads) | anchored 5′ `AAGTTCTCTG`; 3′ adapter |
 | ac_ds | `ds_primer_tail` (default) | tag, Ds primer and end, then genome (Segal et al. 2018) | 5′ primer and end (as in the authors' pipeline); 3′ Illumina |
@@ -118,6 +119,24 @@ In every design the insertion is the first genomic base of the junction read. Ch
 a sample of Guo et al. (2013) reads match the authors' published positions and strands exactly. SATAY hits match the
 published wild-type track at genomic sites, with a constant 1-bp offset on the C strand (the track's convention). A
 mapping manifest records the transposon, design and profile it used.
+
+### Choosing between the two splinkerette designs
+
+Both run the automatic cleanup; they differ in what happens to a read with no detectable Hermes end. The default
+keeps it, because in most splinkerette libraries the sequencing primer stops exactly at the junction, so there is
+no transposon sequence left in the read to find — `hermes_5p_reads` in the cleanup report is then ~0, and requiring
+a junction would discard every read. `splinkerette_pcr_retained_end` discards it, for libraries whose reads do
+retain the end; there a read without one is not evidence of an insertion.
+
+Read `<sample>.hermes_preprocessing.json` after a first run and compare `hermes_5p_reads` with `input_reads`:
+
+| `hermes_5p_reads` | meaning | design |
+|---|---|---|
+| ~0% | the primer ends at the junction; nothing to require | `splinkerette_pcr` |
+| substantial but well under 100% | the end is retained, and the rest of the reads carry no junction | `splinkerette_pcr_retained_end` |
+
+Measured over the Hermes projects in this repository: 0.0% for Gale 2020 and every Nickels and Zaeske set (88
+runs), against 28.6% for Patterson et al. 2018 (33 runs), whose mapping rate is also the lowest of the set.
 
 ## Alignment and reporting
 

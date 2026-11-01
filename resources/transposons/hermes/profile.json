@@ -16,6 +16,17 @@
         "hermes_cleanup": true
       }
     },
+    "splinkerette_pcr_retained_end": {
+      "description": "As splinkerette_pcr, but the reads retain the Hermes end rather than beginning at the junction, so a read with no detectable end carries no evidence of an insertion and is discarded. Choose this design when the cleanup report shows a substantial but partial hermes_5p_reads fraction; choose splinkerette_pcr when that fraction is ~0, which means the sequencing primer stops at the junction and there is nothing to require.",
+      "used_by": [
+        "Patterson et al. 2018 (Y. lipolytica, PRJNA356612)"
+      ],
+      "source": "hermes_5p_reads over the Hermes projects: 28.6% (Patterson, 33 runs) against 0.0% for Gale 2020 and every Nickels and Zaeske set (88 runs), so the retained end is a property of this library design, not of the cleaner",
+      "mapping": {
+        "hermes_cleanup": true,
+        "discard_untrimmed": true
+      }
+    },
     "terminal_10bp": {
       "description": "Short reads that begin with only the last 10 bp of the Hermes end (AAGTTCTCTG|genome) and may end in the ligated adapter (GTCCCTTAAGCGGAG). The end is trimmed when anchored at the read start; reads without it are discarded; the adapter and Illumina read-through are trimmed from the 3' end.",
       "used_by": [

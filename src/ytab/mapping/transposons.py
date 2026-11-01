@@ -22,6 +22,29 @@ def available_transposons(root: Path) -> list[str]:
     return sorted(p.parent.name for p in (Path(root)/"resources"/"transposons").glob("*/profile.json"))
 
 
+def target_site(transposon: str, root: Path) -> dict | None:
+    """{motif, duplication_bp} when the transposon inserts only at a fixed motif, otherwise None.
+
+    piggyBac declares TTAA with a 4 bp duplication; the hAT elements (Hermes, Ac/Ds) declare nothing, because they
+    insert at nearly any position. A recorded position is on target when the motif starts there or `duplication_bp-1`
+    bases before it, the two ends of the one duplicated site.
+    """
+    path = profile_path(transposon, root)
+    if not path.is_file():return None
+    site = json.loads(path.read_text()).get("target_site") or {}
+    motif = str(site.get("motif") or "").upper()
+    return dict(motif=motif, duplication_bp=int(site.get("duplication_bp") or len(motif))) if motif else None
+
+
+def on_target(sequence: str, position: int, site: dict) -> bool:
+    """Is a 1-based recorded hit position one of the two ends of an occupied target site in `sequence`?"""
+    motif, offset = site["motif"], site["duplication_bp"]-1
+    # Both starts are clamped at 0: a negative slice start would wrap to the end of the chromosome and compare
+    # against the wrong sequence for the first few bases.
+    return sequence[position-1:position-1+len(motif)] == motif or \
+           (position-1-offset >= 0 and sequence[position-1-offset:position-1-offset+len(motif)] == motif)
+
+
 def resolve_design(settings: dict, root: Path) -> dict:
     """{transposon, library_design, profile, mapping}: the design's settings under any explicit ones in `settings`."""
     transposon = str(settings.get("transposon") or DEFAULT_TRANSPOSON).strip()

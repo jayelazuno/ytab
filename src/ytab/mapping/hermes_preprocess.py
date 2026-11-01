@@ -68,9 +68,10 @@ class HermesCleaner:
                     catalogue_sha256=hashlib.sha256(self.path.read_bytes()).hexdigest(),
                     reference_sha256=hashlib.sha256(self.reference.read_bytes()).hexdigest())
 
-    def clean(self, record, junction=True, read_end="start"):
+    def clean(self, record, junction=True, read_end="start", require_junction=False):
         sequence, quality = record.sequence.upper(), record.qualities
         stats = Counter()
+        signature = False
         if junction and read_end == "end":
             sequence, quality = reverse_complement(sequence), quality[::-1]
             stats["reverse_complemented"] += 1
@@ -83,6 +84,7 @@ class HermesCleaner:
                     matches.append((match.score, name, match, hermes_start))
             if matches:
                 _, name, match, hermes_start = max(matches,key=lambda x:x[0])
+                signature = True
                 stats["hermes_5p_reads"] += 1
                 stats["hermes_overlap_bases"] += match.astop-max(match.astart,hermes_start)
                 stats["trimmed_5p_bases"] += match.rstop
@@ -98,10 +100,17 @@ class HermesCleaner:
                         candidates.append((name,match))
                 if candidates:
                     name,match=max(candidates,key=lambda x:x[1].score)
+                    signature = True
                     stats["adapter_5p_reads"] += 1
                     stats["trimmed_5p_bases"] += match.rstop
                     stats[f"signature:{name}"] += 1
                     sequence,quality=sequence[match.rstop:],quality[match.rstop:]
+        # A design whose reads retain the transposon end can require it: a read reaching the aligner without a
+        # junction has no evidence of coming from an insertion. Left off (the default), an absent end is allowed,
+        # because in most designs the sequencing primer stops exactly at the junction and there is nothing to find.
+        if junction and require_junction and not signature:
+            stats["no_junction"] += 1
+            return None, stats
         # Clip only demonstrated adapter read-through, not arbitrary low-quality
         # genomic bases at the junction-facing start (which would shift insertion sites).
         matches = [(name,a.match_to(sequence)) for name,a in self.back]
@@ -118,7 +127,7 @@ class HermesCleaner:
         return dnaio.SequenceRecord(record.name,sequence,quality),stats
 
 
-def prepare_fastqs(inputs, outputs, junction_index=0, read_end="start", **options):
+def prepare_fastqs(inputs, outputs, junction_index=0, read_end="start", require_junction=False, **options):
     if len(inputs) != len(outputs) or len(inputs) not in (1,2) or junction_index not in range(len(inputs)):
         raise ValueError("Invalid input/output mates")
     if read_end not in {"start","end"}:
@@ -143,7 +152,8 @@ def prepare_fastqs(inputs, outputs, junction_index=0, read_end="start", **option
                 counts[index]["input_reads"] += 1
                 if index==0 and counts[index]["input_reads"]%1000000==0:
                     print(f"Hermes cleanup: {counts[index]['input_reads']:,} reads/pairs examined; {kept:,} retained",flush=True)
-                value,stats=cleaner.clean(record,junction=index==junction_index,read_end=read_end)
+                value,stats=cleaner.clean(record,junction=index==junction_index,read_end=read_end,
+                                          require_junction=require_junction)
                 counts[index].update(stats)
                 cleaned.append(value)
             # Paired mode deliberately retains only pairs with both reads usable.
@@ -152,10 +162,14 @@ def prepare_fastqs(inputs, outputs, junction_index=0, read_end="start", **option
                 for writer,record in zip(writers,cleaned):
                     writer.write(record)
     if not kept:
-        raise ValueError("No reads remain after Hermes/adapter cleanup")
+        raise ValueError("No reads remain after Hermes/adapter cleanup"
+                         + (": every read lacked a transposon junction, so this design does not retain the "
+                            "transposon end and must not require it" if require_junction else ""))
     import cutadapt
     return dict(schema_version=1, mode="designated-junction-mate", junction_index=junction_index,
-                junction_read_end=read_end, retained_reads_or_pairs=kept,
+                junction_read_end=read_end, require_junction=require_junction, retained_reads_or_pairs=kept,
                 input_files=[str(p) for p in inputs], mates=[dict(c) for c in counts],
                 cutadapt_version=cutadapt.__version__, **cleaner.provenance(),
-                note="Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.")
+                note=("Only reads carrying a transposon junction are retained. No genomic strand is imposed; Bowtie2 searches both strands."
+                      if require_junction else
+                      "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands."))
