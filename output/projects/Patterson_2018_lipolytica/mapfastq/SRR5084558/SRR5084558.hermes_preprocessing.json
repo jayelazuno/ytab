@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "mode": "designated-junction-mate",
+  "junction_index": 0,
+  "junction_read_end": "start",
+  "retained_reads_or_pairs": 15152380,
+  "input_files": [
+    "/nfsscratch/jayelazuno/workspace/public_data/yarrowia_2018_hermes/fastq/Patterson2018/SRR5084558/SRR5084558.fastq.gz"
+  ],
+  "mates": [
+    {
+      "input_reads": 15453637,
+      "adapter_3p_reads": 2555681,
+      "trimmed_3p_bases": 100493299,
+      "signature:Illumina-R1:forward": 2523521,
+      "hermes_5p_reads": 3536501,
+      "hermes_overlap_bases": 166133221,
+      "trimmed_5p_bases": 166133613,
+      "signature:Hermes_right": 3536501,
+      "too_short": 301257,
+      "signature:Illumina-P7:rc": 24025,
+      "signature:Hermes_left:rc": 7877,
+      "signature:Hermes_right:forward": 136,
+      "signature:Illumina-R2:rc": 38,
+      "adapter_5p_reads": 13,
+      "signature:Illumina-R1": 6,
+      "signature:Illumina-R1:rc": 57,
+      "signature:Illumina-P5:forward": 6,
+      "signature:Hermes_right:rc": 1,
+      "signature:Illumina-P7": 3,
+      "signature:Spl-Bot:rc": 4,
+      "signature:Hermes-sequencing:rc": 6,
+      "signature:Illumina-P7:forward": 6,
+      "signature:Illumina-P5": 4,
+      "signature:Illumina-R2:forward": 2,
+      "signature:HR-1:forward": 2
+    }
+  ],
+  "cutadapt_version": "5.2",
+  "parameters": {
+    "overlap": 16,
+    "error_rate": 0.1,
+    "min_length": 25
+  },
+  "catalogue": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/primers.json",
+  "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
+  "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
+  "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
+  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "junction_mate": "R1",
+  "require_mate_alignment": false
+}
