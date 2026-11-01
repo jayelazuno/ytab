@@ -1,0 +1,22 @@
+=== Trimming step skipped ===
+
+
+=== Sequence alignment ===
+19345027 reads; of these:
+  19345027 (100.00%) were unpaired; of these:
+    8525975 (44.07%) aligned 0 times
+    10706992 (55.35%) aligned exactly 1 time
+    112060 (0.58%) aligned >1 times
+55.93% overall alignment rate
+
+
+=== Mapping QC summary ===
+total_records: 19345027
+primary_records: 19345027
+primary_mapped: 10819052
+primary_unmapped: 8525975
+percent_mapped: 55.927
+mapq_ge_threshold: 4971420
+percent_mapq_ge_threshold: 45.951
+avg_mapq_mapped_primary: 19.26
+mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084583/SRR5084583.mapping_stats.csv
