@@ -3,35 +3,31 @@
   "mode": "designated-junction-mate",
   "junction_index": 0,
   "junction_read_end": "start",
-  "retained_reads_or_pairs": 11316405,
+  "require_junction": true,
+  "retained_reads_or_pairs": 2792443,
   "input_files": [
     "/nfsscratch/jayelazuno/workspace/public_data/yarrowia_2018_hermes/fastq/Patterson2018/SRR5084559/SRR5084559.fastq.gz"
   ],
   "mates": [
     {
       "input_reads": 11641502,
+      "no_junction": 8524303,
       "hermes_5p_reads": 3117192,
       "hermes_overlap_bases": 146438692,
       "trimmed_5p_bases": 146438895,
       "signature:Hermes_right": 3117192,
-      "adapter_3p_reads": 2323307,
-      "trimmed_3p_bases": 92223238,
-      "signature:Illumina-R1:forward": 2297487,
-      "too_short": 325097,
-      "signature:Hermes_left:rc": 6408,
-      "signature:Illumina-P7:rc": 19226,
-      "signature:Hermes_right:forward": 119,
-      "signature:Illumina-R2:rc": 35,
-      "signature:Hermes_right:rc": 1,
-      "signature:HR-1:rc": 2,
-      "signature:Illumina-R2:forward": 4,
-      "signature:Illumina-P5:forward": 8,
-      "signature:Illumina-R1:rc": 6,
-      "signature:Spl-Bot:rc": 2,
-      "signature:Hermes_left:forward": 7,
+      "adapter_3p_reads": 530366,
+      "trimmed_3p_bases": 17574360,
+      "signature:Illumina-R1:forward": 525981,
+      "too_short": 324756,
+      "signature:Illumina-P7:rc": 1552,
+      "signature:Hermes_left:rc": 2763,
+      "signature:Hermes_right:forward": 60,
       "adapter_5p_reads": 7,
       "signature:Illumina-P5": 7,
-      "signature:Hermes-sequencing:rc": 2
+      "signature:Illumina-P5:forward": 5,
+      "signature:Hermes_left:forward": 4,
+      "signature:Illumina-R2:rc": 1
     }
   ],
   "cutadapt_version": "5.2",
@@ -44,7 +40,7 @@
   "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
   "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
   "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
-  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "note": "Only reads carrying a transposon junction are retained. No genomic strand is imposed; Bowtie2 searches both strands.",
   "junction_mate": "R1",
   "require_mate_alignment": false
 }
