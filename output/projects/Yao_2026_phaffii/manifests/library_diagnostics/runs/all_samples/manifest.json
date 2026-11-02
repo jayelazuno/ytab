@@ -13,9 +13,9 @@
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt"
   ],
   "input_hit_file_hashes": {
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505_hits.txt": "3e1301b112a07aa05d9485e033680ffe4845ed98c7d6e06b896eb33c1b7e187c",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt": "0dc2e6b71a011f645fc2c2f186e4918b5126212a478aaaf9096b71ac176bf299",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt": "2f2f99df08c3533ced42378822285a2d922b68b30af95232cbe14b5739a2bd72"
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505_hits.txt": "441e5b3b52cd19d2cc8cd859bc54d7bf7341cb2fc93e57c1ce36d9167539806a",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt": "fe1c11f83240d051650e5a7980ec72004153bc26787750d4fca189ef85c2a27e",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt": "4c608ade8dd326b1adc86c85af54eb0e81f1868363ee381b4d22f40532b98843"
   },
   "reference_hashes": {
     "fasta": "9dabe7b9a2cb29508806e8e6d946789a39ba803566c0ab07258fd7678602aa60",
@@ -28,8 +28,8 @@
     "scientific_cli_options": {}
   },
   "run_mode": "library_diagnostics",
-  "input_files_sha256": "7e501493302566e7d434c2c42d75d050b710d92af156361d54515f1ddf1fb884",
-  "cache_signature": "820793be4c6e4ad9a291a0e03970b47e861e5e0cf3b6501da56a82b5110f06f5",
+  "input_files_sha256": "19054bc0d45867503bcb78d33fc214d02224a293e2005f80adbb2cea0d1ab159",
+  "cache_signature": "b3fcf4224ed00c552ba8b4a008cd688be0c12328d6cd8e581e3c14cf5d00503e",
   "run_id": "all_samples",
   "sample_set_label": "All eligible samples",
   "selected_samples": [
@@ -43,20 +43,20 @@
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt"
   ],
   "input_hashes": {
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505_hits.txt": "3e1301b112a07aa05d9485e033680ffe4845ed98c7d6e06b896eb33c1b7e187c",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt": "0dc2e6b71a011f645fc2c2f186e4918b5126212a478aaaf9096b71ac176bf299",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt": "2f2f99df08c3533ced42378822285a2d922b68b30af95232cbe14b5739a2bd72"
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343505/SRR36343505_hits.txt": "441e5b3b52cd19d2cc8cd859bc54d7bf7341cb2fc93e57c1ce36d9167539806a",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt": "fe1c11f83240d051650e5a7980ec72004153bc26787750d4fca189ef85c2a27e",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt": "4c608ade8dd326b1adc86c85af54eb0e81f1868363ee381b4d22f40532b98843"
   },
   "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/library_diagnostics/runs/all_samples",
   "export_dir": "/old_Users/jayelazuno/workspace/ytab/output/exports/Yao_2026_phaffii/qc/diagnostics/all_samples",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/logs/library_diagnostics/all_samples.log",
   "manifest_path": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/manifests/library_diagnostics/runs/all_samples/manifest.json",
-  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/manifests/jobs/library_diagnostics_20261102T030252Z_5dded2.progress.json",
+  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/manifests/jobs/library_diagnostics_20261102T035615Z_3433b2.progress.json",
   "status": "success",
   "cached_from": null,
-  "start_time": "2026-11-02T03:02:52.234888+00:00",
-  "end_time": "2026-11-02T03:04:06.838132+00:00",
-  "elapsed_seconds": 74.644,
+  "start_time": "2026-11-02T03:56:15.280162+00:00",
+  "end_time": "2026-11-02T03:56:36.398619+00:00",
+  "elapsed_seconds": 21.121,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/qc/LibraryDiagnostics.py",

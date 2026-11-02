@@ -16,9 +16,9 @@
   ],
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/logs/summary/SRR36343507.log",
   "status": "success",
-  "start_time": "2026-11-02T03:01:22.374621+00:00",
-  "end_time": "2026-11-02T03:02:20.241791+00:00",
-  "elapsed_seconds": 57.867,
+  "start_time": "2026-11-02T03:55:30.925890+00:00",
+  "end_time": "2026-11-02T03:55:40.119101+00:00",
+  "elapsed_seconds": 9.193,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
