@@ -3,28 +3,25 @@
   "mode": "designated-junction-mate",
   "junction_index": 0,
   "junction_read_end": "start",
-  "retained_reads_or_pairs": 2062645,
+  "require_junction": true,
+  "retained_reads_or_pairs": 556807,
   "input_files": [
     "/nfsscratch/jayelazuno/workspace/public_data/yarrowia_2018_hermes/fastq/Patterson2018/SRR5084576/SRR5084576.fastq.gz"
   ],
   "mates": [
     {
       "input_reads": 2114623,
+      "no_junction": 1509923,
       "hermes_5p_reads": 604700,
       "hermes_overlap_bases": 28409254,
       "trimmed_5p_bases": 28409254,
       "signature:Hermes_right": 604700,
-      "adapter_3p_reads": 347543,
-      "trimmed_3p_bases": 14542639,
-      "signature:Illumina-R1:forward": 337025,
-      "too_short": 51978,
-      "signature:Illumina-P7:rc": 10115,
-      "signature:Hermes_left:rc": 390,
-      "signature:Spl-Bot:rc": 1,
-      "signature:Illumina-P5:forward": 1,
-      "signature:Hermes_right:rc": 1,
-      "signature:Illumina-R2:rc": 7,
-      "signature:Illumina-R1:rc": 3
+      "adapter_3p_reads": 74970,
+      "trimmed_3p_bases": 2540844,
+      "signature:Illumina-R1:forward": 74230,
+      "too_short": 47893,
+      "signature:Hermes_left:rc": 174,
+      "signature:Illumina-P7:rc": 566
     }
   ],
   "cutadapt_version": "5.2",
@@ -37,7 +34,7 @@
   "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
   "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
   "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
-  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "note": "Only reads carrying a transposon junction are retained. No genomic strand is imposed; Bowtie2 searches both strands.",
   "junction_mate": "R1",
   "require_mate_alignment": false
 }
