@@ -136,7 +136,7 @@ def validate_create_hit_file_inputs(config: dict, samples: list[str] | None = No
 
 
 def build_create_hit_file_command(
-    sample: dict, config: dict, threads: int | None = None
+    sample: dict, config: dict, threads: int | None = None, overwrite: bool = False
 ) -> list[str]:
     selected_threads = int(config.get("threads") if threads is None else threads)
     if selected_threads < 1:
@@ -161,6 +161,10 @@ def build_create_hit_file_command(
     if site:
         command.extend(["--target-motif", site["motif"],
                         "--target-duplication", str(site["duplication_bp"])])
+    # CreateHitFile leaves an existing hit file alone unless told otherwise, so a forced rerun must say so:
+    # otherwise the stage reruns, writes nothing, and records success over the hits it was asked to replace.
+    if overwrite:
+        command.append("--overwrite")
     return command
 
 
@@ -181,7 +185,7 @@ def run_create_hit_file_sample(
     paths = _paths(config, name)
     reference = _reference_files(config)
     selected_threads = int(config.get("threads") if threads is None else threads)
-    command = build_create_hit_file_command(sample, config, selected_threads)
+    command = build_create_hit_file_command(sample, config, selected_threads, overwrite=force)
     bam = find_sample_bam(sample, config)
     started = time.monotonic()
     manifest = {
@@ -217,6 +221,10 @@ def run_create_hit_file_sample(
 
     paths["output"].mkdir(parents=True, exist_ok=True)
     paths["log"].parent.mkdir(parents=True, exist_ok=True)
+    # An existing hit file is also the output path, so "the file is there" cannot show that the command wrote it.
+    # Its modification time can: untouched means skipped, and an unchanged rewrite still updates the time, so a
+    # rerun that legitimately reproduces identical hits is not mistaken for a skip.
+    previous_mtime = paths["hits"].stat().st_mtime_ns if paths["hits"].is_file() else None
     try:
         with paths["log"].open("w", encoding="utf-8") as log:
             log.write("Command: " + " ".join(command) + "\n\n")
@@ -225,6 +233,11 @@ def run_create_hit_file_sample(
             raise RuntimeError(f"CreateHitFile exited with status {completed.returncode}; see {paths['log']}")
         if not paths["hits"].is_file():
             raise RuntimeError("CreateHitFile completed without the expected hits file.")
+        if previous_mtime is not None and paths["hits"].stat().st_mtime_ns == previous_mtime:
+            raise RuntimeError(
+                f"CreateHitFile left the existing hits file unchanged: {paths['hits']}. "
+                f"The run produced nothing; see {paths['log']}."
+            )
         tracks = [path for path in paths["output"].iterdir() if path.is_file() and path.suffix.lower() in TRACK_SUFFIXES]
         if tracks:
             paths["tracks"].mkdir(parents=True, exist_ok=True)

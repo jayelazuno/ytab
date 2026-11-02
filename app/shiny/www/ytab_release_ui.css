@@ -695,3 +695,102 @@ details.ytab-release-details {
   .navbar-inverse .navbar-collapse > .navbar-nav > li.active { background: #0a6574; }   /* highlight the whole tab, caret included */
   .navbar-inverse .navbar-collapse { padding-left: 0; padding-right: 0; }
 }
+
+/* Project switcher: a chooser in the workspace header, so switching opens the next project in place instead of
+   returning to the home page. The menu sits on a light surface while the header around it stays dark. */
+.ytab-project-switch {
+  position: relative;
+}
+
+.ytab-project-menu {
+  min-width: 340px;
+  max-width: 420px;
+  padding: 0;
+  /* Above the tab bar that sits directly below the header. */
+  z-index: 1200;
+  border: 1px solid #c9d8e4;
+  border-radius: 6px;
+  box-shadow: 0 10px 24px rgba(16, 34, 53, 0.22);
+  background: #ffffff;
+  color: #102235;
+}
+
+.ytab-project-menu-header {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #4a6170;
+  background: #f2f7fb;
+  border-bottom: 1px solid #dbe7f3;
+  border-radius: 6px 6px 0 0;
+}
+
+/* Long project lists scroll inside the menu rather than past the bottom of the window. */
+.ytab-project-menu-list {
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.ytab-project-menu .ytab-project-item {
+  display: block;
+  padding: 9px 14px;
+  border-bottom: 1px solid #eef3f8;
+  color: #102235;
+  text-decoration: none;
+}
+
+.ytab-project-menu .ytab-project-item:hover,
+.ytab-project-menu .ytab-project-item:focus {
+  background: #eaf4ff;
+  color: #102235;
+  text-decoration: none;
+}
+
+.ytab-project-item-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ytab-project-item-meta {
+  display: block;
+  font-size: 12px;
+  color: #5d7382;
+}
+
+/* The project already open is listed but not selectable, so the menu still shows where you are. */
+.ytab-project-menu .ytab-project-item.is-current {
+  background: #f6f9fc;
+  cursor: default;
+}
+
+.ytab-project-item-flag {
+  display: inline-block;
+  margin-top: 3px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0b5f54;
+  background: #d4f3ee;
+  border-radius: 10px;
+}
+
+.ytab-project-menu-empty {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #5d7382;
+}
+
+.ytab-project-menu-foot {
+  border-top: 1px solid #dbe7f3;
+  background: #f8fbfd;
+  border-radius: 0 0 6px 6px;
+}
+
+.ytab-project-menu .ytab-project-item-home {
+  border-bottom: 0;
+  font-weight: 600;
+  color: #11557f;
+}

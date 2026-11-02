@@ -19,10 +19,19 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'src'))
-from ytab.pipeline.orchestrator import ORDER, PROFILES, _command
-from ytab.pipeline.mapfastq_runner import load_project_for_mapping
-from ytab.pipeline.project_config import create_project_config, validate_project_config, update_fastq_base
-from ytab.pipeline.sample_discovery import FASTQ_RE
+try:
+    from ytab.pipeline.orchestrator import ORDER, PROFILES, _command
+    from ytab.pipeline.mapfastq_runner import load_project_for_mapping
+    from ytab.pipeline.project_config import create_project_config, validate_project_config, update_fastq_base
+    from ytab.pipeline.sample_discovery import FASTQ_RE
+except ModuleNotFoundError as missing:
+    # Run through the launcher, which activates the analysis environment first; invoked with a bare `python`
+    # this fails on whichever dependency the login node's default interpreter happens to lack.
+    sys.exit("ERROR: {} is not available to {}.\n"
+             "       Submit through the launcher, which activates the environment:\n"
+             "         bash {}/pipeline/hpc/submit_pipeline.sh --project-config ... --stages ...\n"
+             "       Or set PYTHON_BIN/YTAB_CONDA_ENV and source pipeline/hpc/argon_environment.sh first."
+             .format(missing.name, sys.executable, ROOT))
 
 STAGES = [*ORDER, 'report', 'export']
 SAFE_ID = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]*\Z')

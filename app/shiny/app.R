@@ -24,7 +24,7 @@ demo_project_id <- as.character(launcher_config$demo_project_id %||% "")
 
 ui <- tagList(
   tags$head(tags$title("YTAB — Yeast Transposon Analysis Browser"), tags$link(rel="stylesheet", href="ytab.css"),
-    tags$link(rel="stylesheet", href="ytab-landing.css?v=20261023_1"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet", href="ytab_help.css?v=20261027_1"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20261023_6"),
+    tags$link(rel="stylesheet", href="ytab-landing.css?v=20261023_1"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet", href="ytab_help.css?v=20261027_1"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20261101_1"),
     tags$script(src="https://cdn.jsdelivr.net/npm/igv@3/dist/igv.min.js"),
     tags$script(src="ytab_igv_browser.js?v=20261022_1"),
     tags$script(src="ytab_page_styles.js?v=20261023_2"),
@@ -265,10 +265,48 @@ server <- function(input, output, session) {
       showModal(modalDialog(title="Pipeline job running","A pipeline job is running. Switching projects will not stop the job. You may continue monitoring it from its project later.",footer=tagList(modalButton("Stay here"),actionButton("confirm_switch_project","Switch project",class="btn-danger"))))
     } else switch_to_landing()
   }
-  # The YTAB brand in the header goes to the home page, like Switch project.
-  observeEvent(input$switch_project,leave_project(),ignoreInit=TRUE)
+  # The YTAB brand in the header goes to the home page, as does the switcher's own Home item.
   observeEvent(input$ytab_home,leave_project(),ignoreInit=TRUE)
+  observeEvent(input$ytab_home_menu,leave_project(),ignoreInit=TRUE)
   observeEvent(input$confirm_switch_project,{removeModal();switch_to_landing()},ignoreInit=TRUE)
+
+  # Switching to a named project: the list is re-read when the menu opens, so a project added since the workspace
+  # loaded is offered without a trip through the home page.
+  observeEvent(input$switch_project_opened,refresh_projects(),ignoreInit=TRUE)
+  pending_switch<-reactiveVal("")
+  open_other_project<-function(path){
+    if(!nzchar(path))return(invisible(FALSE))
+    if(jobs$job_is_running()){
+      pending_switch(path)
+      showModal(modalDialog(title="Pipeline job running","A pipeline job is running. Opening another project will not stop the job. You may continue monitoring it from its own project later.",footer=tagList(modalButton("Stay here"),actionButton("confirm_switch_to_project","Open the other project",class="btn-danger"))))
+      invisible(FALSE)
+    } else invisible(open_path(path))
+  }
+  observeEvent(input$switch_to_project,open_other_project(as.character(input$switch_to_project %||% "")),ignoreInit=TRUE)
+  observeEvent(input$confirm_switch_to_project,{removeModal();path<-pending_switch();pending_switch("");if(nzchar(path))open_path(path)},ignoreInit=TRUE)
+
+  output$switch_project_menu<-renderUI({
+    available<-projects()
+    current<-as.character(state$values$path %||% "")
+    same_project<-function(path)identical(normalizePath(path,mustWork=FALSE),normalizePath(current,mustWork=FALSE))
+    items<-Filter(Negate(is.null),lapply(seq_len(nrow(available)),function(i){
+      path<-available$project_config[[i]]
+      info<-tryCatch(read_project_summary(path,repo_root),error=function(e)NULL)
+      if(is.null(info))return(NULL)
+      current_item<-same_project(path)
+      tags$a(class=paste("ytab-project-item",if(current_item)"is-current"),href="#",
+        onclick=if(current_item)"return false;" else sprintf("Shiny.setInputValue('switch_to_project', %s, {priority: 'event'}); return false;",jsonlite::toJSON(path,auto_unbox=TRUE)),
+        tags$span(class="ytab-project-item-name",project_display_label(info)),
+        tags$span(class="ytab-project-item-meta",paste(c(info$species,sprintf("%d samples",info$included_count),if(!isTRUE(info$analysis_ready))"preprocessing incomplete"),collapse=" · ")),
+        if(current_item)tags$span(class="ytab-project-item-flag","open now"))
+    }))
+    tagList(
+      tags$div(class="ytab-project-menu-header",sprintf("%d project%s",length(items),if(length(items)==1)"" else "s")),
+      if(!length(items))tags$div(class="ytab-project-menu-empty","No projects were found under output/projects.")
+      else tags$div(class="ytab-project-menu-list",items),
+      tags$div(class="ytab-project-menu-foot",
+        actionLink("ytab_home_menu","Home: new, import or compare projects",class="ytab-project-item ytab-project-item-home")))
+  })
   observeEvent(input$return_from_new_project,new_project_open(FALSE),ignoreInit=TRUE)
   observeEvent(input$return_from_import_project,import_project_open(FALSE),ignoreInit=TRUE)
 

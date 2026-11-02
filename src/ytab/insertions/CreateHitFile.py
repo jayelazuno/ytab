@@ -559,6 +559,8 @@ if __name__ == '__main__':
                         help="Keep only hits at this insertion motif (e.g. TTAA for piggyBac). Default: keep every position, as the hAT elements require.")
     parser.add_argument("--target-duplication", type=int, default=0,
                         help="Target-site duplication in bp; a hit counts as on target at the motif start or duplication-1 bases before it. Defaults to the motif length.")
+    parser.add_argument("--overwrite", action="store_true",
+                        help="Replace an existing hit file. Required to rebuild hits after remapping or a change to the insertion rules; without it an existing file is left untouched.")
     parser.add_argument("-g", "--features", required=True)
 
     parser.add_argument("--feature-format", default="ncbi_feature_table",
@@ -664,6 +666,7 @@ if __name__ == '__main__':
                 continue
             bam_list.append(Name)
 
+    skipped_existing = []
     for bam_path in bam_list:
         if not os.path.isfile(bam_path):
             print(f"ERROR: BAM not found: {bam_path}")
@@ -677,8 +680,12 @@ if __name__ == '__main__':
             os.makedirs(rep_dir)
 
         OutHitFile = os.path.join(rep_dir, prefix + '_hits.txt')
-        if os.path.isfile(OutHitFile):
-            print('ERROR: Hit file for %s already exists.' % (prefix))
+        if os.path.isfile(OutHitFile) and not args.overwrite:
+            # Refusing to overwrite protects a hit file nobody asked to replace, but it must be a refusal the
+            # caller can lift: a rerun after the mapping or the insertion rules changed has to rewrite the file,
+            # and a silent skip there leaves stale hits behind under a fresh, successful-looking manifest.
+            print('ERROR: Hit file for %s already exists; pass --overwrite to replace it.' % (prefix))
+            skipped_existing.append(prefix)
             continue
 
         Sami = pysam.AlignmentFile(bam_path, "rb")
@@ -748,3 +755,9 @@ if __name__ == '__main__':
         logFile = open(log_path, 'a')
         logFile.write(Log)
         logFile.close()
+
+    # A run that produced nothing because every hit file was already there must not look like a successful run:
+    # the caller would record a fresh, successful manifest over stale hits. Exiting non-zero says what happened.
+    if skipped_existing and len(skipped_existing) == len(bam_list):
+        sys.exit("ERROR: No hit file was written; all {} already existed: {}. Pass --overwrite to replace them."
+                 .format(len(skipped_existing), ", ".join(skipped_existing)))
