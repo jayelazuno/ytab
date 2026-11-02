@@ -16,9 +16,9 @@
   ],
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/logs/summary/SRR24456507.log",
   "status": "success",
-  "start_time": "2026-11-01T23:41:40.741254+00:00",
-  "end_time": "2026-11-01T23:41:50.683021+00:00",
-  "elapsed_seconds": 9.942,
+  "start_time": "2026-11-02T04:04:29.880118+00:00",
+  "end_time": "2026-11-02T04:04:38.693105+00:00",
+  "elapsed_seconds": 8.813,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",

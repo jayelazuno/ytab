@@ -25,15 +25,15 @@
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456510/SRR24456510_hits.txt"
   ],
   "input_hit_file_hashes": {
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456502/SRR24456502_hits.txt": "759c1e3bb48379eb8cb77f5469f719e94a029e1000e9a6610546d463150a1da7",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456503/SRR24456503_hits.txt": "3bbf3ac6a7224564a6b6ca56b5fd51a31afee28362d7ca4c2942909c3734ea04",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456504/SRR24456504_hits.txt": "22ca32aecbfad6613c14b0502cd880c66c34314b07ac3775def9b15134b90951",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456505/SRR24456505_hits.txt": "b5c3b43931504076b292699d0589f2013a42d0570e2c3e79c1183979ff9bd9f2",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456506/SRR24456506_hits.txt": "5acaeaba40e8f7cd2975084ba052f8e91c1859d32f5507791d34645009718b36",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456507/SRR24456507_hits.txt": "dfb9a56c28ab319ae308f5efe01af9f2b4558ba85ce4eb704de2343b73572ac3",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456508/SRR24456508_hits.txt": "dee26dea9edc5c175a6fad9528e22646a3a71fb761ea4e404537ebdd83c105c6",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456509/SRR24456509_hits.txt": "1d1c964ea2342e04bbc69cce737d0f886d162e0c47556cdbdee22cce3e9138e3",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456510/SRR24456510_hits.txt": "cb5427d8f651decd737f810e45fbfe4596a0345d63913329b2f0122443197f85"
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456502/SRR24456502_hits.txt": "10d8076a23002e44678349afa67dd933058c1633fdce13f4b1b52bce47674043",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456503/SRR24456503_hits.txt": "c33ee64ea46fdb67b7477629f581b0afa198d2b723aae8c8228c0f4e303814ae",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456504/SRR24456504_hits.txt": "d183607dce41e7e12f01962a782086a8610827d92fd2148c3055ed678c13f1a9",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456505/SRR24456505_hits.txt": "ddc8e49685610fb905e7a1369ed6abc7dec38b7958c76385206d1fb128fa0989",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456506/SRR24456506_hits.txt": "a56499e016fe09f0e74a0cac61005a8c95289b8057d561ef840872e2a86ed4aa",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456507/SRR24456507_hits.txt": "96cca56ca2b6fc329865b046f8f69038cc8e1655f79e3f2f7b5ad4a68dd2ac43",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456508/SRR24456508_hits.txt": "419b59b47cd8751f46ce56659f7279959a3a6c8c7f5a72656c60c9ec6fd2be64",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456509/SRR24456509_hits.txt": "003df73e068198dfc530ba5a222627f601d5aae35f87ac633b4d22b1be84c140",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456510/SRR24456510_hits.txt": "bb358f11d6cedabd4eaaea2fbb439a475bfe8caec39309878d8908ebee806bc1"
   },
   "reference_hashes": {
     "centromere_bed": "9fe068734fa6b2720cb85c14d5688486dae6d335480c6870adcd41819c3963a5",
@@ -48,8 +48,8 @@
     "scientific_cli_options": {}
   },
   "run_mode": "library_diagnostics",
-  "input_files_sha256": "c6abf1b99d45061134983d09af2802f35461490a6c9590437b85cbd5a687761e",
-  "cache_signature": "f4643e6a6b628385e962d204a51774d3cc5ce12f28bc3dad8bc679270d0da470",
+  "input_files_sha256": "898146091567d42d9a637273f2e0d15830f91075538e15713a705ddbd942a245",
+  "cache_signature": "7eb5446bf97e8b8eabac9dc7cd7139cd37fd6426c33923b7700a3d1770890326",
   "run_id": "all_samples",
   "sample_set_label": "All eligible samples",
   "selected_samples": [
@@ -75,26 +75,26 @@
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456510/SRR24456510_hits.txt"
   ],
   "input_hashes": {
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456502/SRR24456502_hits.txt": "759c1e3bb48379eb8cb77f5469f719e94a029e1000e9a6610546d463150a1da7",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456503/SRR24456503_hits.txt": "3bbf3ac6a7224564a6b6ca56b5fd51a31afee28362d7ca4c2942909c3734ea04",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456504/SRR24456504_hits.txt": "22ca32aecbfad6613c14b0502cd880c66c34314b07ac3775def9b15134b90951",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456505/SRR24456505_hits.txt": "b5c3b43931504076b292699d0589f2013a42d0570e2c3e79c1183979ff9bd9f2",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456506/SRR24456506_hits.txt": "5acaeaba40e8f7cd2975084ba052f8e91c1859d32f5507791d34645009718b36",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456507/SRR24456507_hits.txt": "dfb9a56c28ab319ae308f5efe01af9f2b4558ba85ce4eb704de2343b73572ac3",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456508/SRR24456508_hits.txt": "dee26dea9edc5c175a6fad9528e22646a3a71fb761ea4e404537ebdd83c105c6",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456509/SRR24456509_hits.txt": "1d1c964ea2342e04bbc69cce737d0f886d162e0c47556cdbdee22cce3e9138e3",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456510/SRR24456510_hits.txt": "cb5427d8f651decd737f810e45fbfe4596a0345d63913329b2f0122443197f85"
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456502/SRR24456502_hits.txt": "10d8076a23002e44678349afa67dd933058c1633fdce13f4b1b52bce47674043",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456503/SRR24456503_hits.txt": "c33ee64ea46fdb67b7477629f581b0afa198d2b723aae8c8228c0f4e303814ae",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456504/SRR24456504_hits.txt": "d183607dce41e7e12f01962a782086a8610827d92fd2148c3055ed678c13f1a9",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456505/SRR24456505_hits.txt": "ddc8e49685610fb905e7a1369ed6abc7dec38b7958c76385206d1fb128fa0989",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456506/SRR24456506_hits.txt": "a56499e016fe09f0e74a0cac61005a8c95289b8057d561ef840872e2a86ed4aa",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456507/SRR24456507_hits.txt": "96cca56ca2b6fc329865b046f8f69038cc8e1655f79e3f2f7b5ad4a68dd2ac43",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456508/SRR24456508_hits.txt": "419b59b47cd8751f46ce56659f7279959a3a6c8c7f5a72656c60c9ec6fd2be64",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456509/SRR24456509_hits.txt": "003df73e068198dfc530ba5a222627f601d5aae35f87ac633b4d22b1be84c140",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456510/SRR24456510_hits.txt": "bb358f11d6cedabd4eaaea2fbb439a475bfe8caec39309878d8908ebee806bc1"
   },
   "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/library_diagnostics/runs/all_samples",
   "export_dir": "/old_Users/jayelazuno/workspace/ytab/output/exports/Chow_2024_glabrata/qc/diagnostics/all_samples",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/logs/library_diagnostics/all_samples.log",
   "manifest_path": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/manifests/library_diagnostics/runs/all_samples/manifest.json",
-  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/manifests/jobs/library_diagnostics_20261101T234307Z_c032e5.progress.json",
+  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/manifests/jobs/library_diagnostics_20261102T040600Z_64653b.progress.json",
   "status": "success",
   "cached_from": null,
-  "start_time": "2026-11-01T23:43:07.332054+00:00",
-  "end_time": "2026-11-01T23:47:06.403479+00:00",
-  "elapsed_seconds": 239.104,
+  "start_time": "2026-11-02T04:06:00.502582+00:00",
+  "end_time": "2026-11-02T04:08:15.845783+00:00",
+  "elapsed_seconds": 135.384,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/qc/LibraryDiagnostics.py",
