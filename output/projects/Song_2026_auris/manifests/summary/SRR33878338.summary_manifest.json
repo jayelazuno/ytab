@@ -16,9 +16,9 @@
   ],
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/logs/summary/SRR33878338.log",
   "status": "success",
-  "start_time": "2026-11-01T23:44:47.841101+00:00",
-  "end_time": "2026-11-01T23:44:56.447845+00:00",
-  "elapsed_seconds": 8.607,
+  "start_time": "2026-11-02T03:59:33.847017+00:00",
+  "end_time": "2026-11-02T03:59:42.926331+00:00",
+  "elapsed_seconds": 9.079,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",

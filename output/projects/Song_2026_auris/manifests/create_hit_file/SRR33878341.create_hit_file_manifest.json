@@ -16,9 +16,9 @@
   "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878341/SRR33878341_hits.txt",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/logs/create_hit_file/SRR33878341.log",
   "status": "success",
-  "start_time": "2026-11-01T23:41:47.873045+00:00",
-  "end_time": "2026-11-01T23:42:01.380072+00:00",
-  "elapsed_seconds": 13.514,
+  "start_time": "2026-11-02T03:50:49.176939+00:00",
+  "end_time": "2026-11-02T03:51:32.004997+00:00",
+  "elapsed_seconds": 42.829,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
@@ -41,7 +41,8 @@
     "--target-motif",
     "TTAA",
     "--target-duplication",
-    "4"
+    "4",
+    "--overwrite"
   ],
   "detected_outputs": [
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878341/SRR33878341.insertions.bedgraph",
