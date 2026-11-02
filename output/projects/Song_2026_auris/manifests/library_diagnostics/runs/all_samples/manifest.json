@@ -48,7 +48,7 @@
     "fasta": "447c07bd1007d027c4e928628572a089480eedc95033340a2bb5aebceebafda1",
     "gff": "73c89f399236a43142bc53527942bfc31f685293d61f45849dcb9f16fa18db7f"
   },
-  "library_diagnostics_script_hash": "6db1dfcb385167353da8bcb58d2e5ebecd89f53dee50118106590a8a4b55fe00",
+  "library_diagnostics_script_hash": "84c5d7f0bd33d07b403d16c124024c7a78e851cf8d6348f898131501f1a71f82",
   "scientific_parameters": {
     "threads": 8,
     "normalization_flags": [],
@@ -56,7 +56,7 @@
   },
   "run_mode": "library_diagnostics",
   "input_files_sha256": "4340c2d3a67d2b5351fdb54b7417b48472f0ce6ac4006d94362fd9982d5ef178",
-  "cache_signature": "ee5ad87676a2f49f65a5215b33a065dfcf103e14c69b8aee12398c09c750f52a",
+  "cache_signature": "bcb0493618e1bc6d8de22616b038cfeb27c4aace34b87a717b9e7e81a9757ef2",
   "run_id": "all_samples",
   "sample_set_label": "All eligible samples",
   "selected_samples": [
@@ -105,12 +105,12 @@
   "export_dir": "/old_Users/jayelazuno/workspace/ytab/output/exports/Song_2026_auris/qc/diagnostics/all_samples",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/logs/library_diagnostics/all_samples.log",
   "manifest_path": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/manifests/library_diagnostics/runs/all_samples/manifest.json",
-  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/manifests/jobs/library_diagnostics_20261028T214644Z_20c1df.progress.json",
+  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/manifests/jobs/library_diagnostics_20261101T234629Z_6f0f79.progress.json",
   "status": "success",
   "cached_from": null,
-  "start_time": "2026-10-28T21:46:44.310001+00:00",
-  "end_time": "2026-10-28T21:50:27.496984+00:00",
-  "elapsed_seconds": 223.187,
+  "start_time": "2026-11-01T23:46:29.908438+00:00",
+  "end_time": "2026-11-01T23:49:26.377477+00:00",
+  "elapsed_seconds": 176.497,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/qc/LibraryDiagnostics.py",
