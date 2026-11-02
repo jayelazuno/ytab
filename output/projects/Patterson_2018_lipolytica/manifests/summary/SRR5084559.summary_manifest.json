@@ -16,9 +16,9 @@
   ],
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/logs/summary/SRR5084559.log",
   "status": "success",
-  "start_time": "2026-11-01T23:39:48.692583+00:00",
-  "end_time": "2026-11-01T23:40:01.903061+00:00",
-  "elapsed_seconds": 13.211,
+  "start_time": "2026-11-02T04:21:37.583217+00:00",
+  "end_time": "2026-11-02T04:21:49.435656+00:00",
+  "elapsed_seconds": 11.852,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",

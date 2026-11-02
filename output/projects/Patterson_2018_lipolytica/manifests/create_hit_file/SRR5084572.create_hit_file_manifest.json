@@ -13,9 +13,9 @@
   "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084572/SRR5084572_hits.txt",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/logs/create_hit_file/SRR5084572.log",
   "status": "success",
-  "start_time": "2026-11-01T22:50:05.950784+00:00",
-  "end_time": "2026-11-01T22:50:28.782767+00:00",
-  "elapsed_seconds": 22.833,
+  "start_time": "2026-11-02T04:08:58.699317+00:00",
+  "end_time": "2026-11-02T04:10:32.416149+00:00",
+  "elapsed_seconds": 93.717,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
@@ -34,7 +34,8 @@
     "gff",
     "--threads",
     "8",
-    "--write-browser-tracks"
+    "--write-browser-tracks",
+    "--overwrite"
   ],
   "detected_outputs": [
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084572/SRR5084572.insertions.bedgraph",
