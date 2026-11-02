@@ -16,9 +16,9 @@
   "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343507/SRR36343507_hits.txt",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/logs/create_hit_file/SRR36343507.log",
   "status": "success",
-  "start_time": "2026-11-01T23:42:13.417971+00:00",
-  "end_time": "2026-11-01T23:42:23.699872+00:00",
-  "elapsed_seconds": 10.282,
+  "start_time": "2026-11-02T03:00:17.362710+00:00",
+  "end_time": "2026-11-02T03:00:31.916396+00:00",
+  "elapsed_seconds": 14.555,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
