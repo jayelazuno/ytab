@@ -7,3 +7,12 @@
     /old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157.insertions.bedgraph
     /old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157.insertions.wig
     (bigwig not written: Error - overlapping regions in bedGraph line 609 of /old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157.insertions.bedgraph)
+
+=== Finding hits ===
+3902257 reads found of map quality >= 20; in these:
+  26243 hits were found; of these:
+    26243 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157.insertions.bedgraph
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157.insertions.wig
+    (bigwig not written: Error - overlapping regions in bedGraph line 406 of /old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157.insertions.bedgraph)
