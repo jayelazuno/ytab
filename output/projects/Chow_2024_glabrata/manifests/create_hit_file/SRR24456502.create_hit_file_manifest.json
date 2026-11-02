@@ -8,13 +8,17 @@
     "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/glabrata/strains/CBS138/reference_genome/C_glabrata_CBS138_version_s05-m03-r48_features.gff",
     "feature_format": "gff"
   },
+  "target_site": {
+    "motif": "TTAA",
+    "duplication_bp": 4
+  },
   "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456502",
   "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456502/SRR24456502_hits.txt",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/logs/create_hit_file/SRR24456502.log",
   "status": "success",
-  "start_time": "2026-10-30T21:06:37.497256+00:00",
-  "end_time": "2026-10-30T21:18:51.076358+00:00",
-  "elapsed_seconds": 733.579,
+  "start_time": "2026-11-01T23:41:04.201178+00:00",
+  "end_time": "2026-11-01T23:41:17.894373+00:00",
+  "elapsed_seconds": 13.694,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
@@ -33,7 +37,11 @@
     "gff",
     "--threads",
     "8",
-    "--write-browser-tracks"
+    "--write-browser-tracks",
+    "--target-motif",
+    "TTAA",
+    "--target-duplication",
+    "4"
   ],
   "detected_outputs": [
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/create_hit_file/SRR24456502/SRR24456502.insertions.bedgraph",

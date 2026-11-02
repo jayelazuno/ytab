@@ -41,7 +41,7 @@
     "gff": "2ea9405aa4fd0497cb06b3ac20b78eea263c04a8a64c8c757c90fc2283f00207",
     "trna_bed": "a5b4be2751284f622fc38aa51ce9dfe3e967833a4166ed43b170422c163bf9a4"
   },
-  "library_diagnostics_script_hash": "6db1dfcb385167353da8bcb58d2e5ebecd89f53dee50118106590a8a4b55fe00",
+  "library_diagnostics_script_hash": "84c5d7f0bd33d07b403d16c124024c7a78e851cf8d6348f898131501f1a71f82",
   "scientific_parameters": {
     "threads": 8,
     "normalization_flags": [],
@@ -49,7 +49,7 @@
   },
   "run_mode": "library_diagnostics",
   "input_files_sha256": "c6abf1b99d45061134983d09af2802f35461490a6c9590437b85cbd5a687761e",
-  "cache_signature": "4b8b3f98fdfe1db4ad128f40cc25015aaf503525c98593a1c0db4e2ab73a68e8",
+  "cache_signature": "f4643e6a6b628385e962d204a51774d3cc5ce12f28bc3dad8bc679270d0da470",
   "run_id": "all_samples",
   "sample_set_label": "All eligible samples",
   "selected_samples": [
@@ -89,12 +89,12 @@
   "export_dir": "/old_Users/jayelazuno/workspace/ytab/output/exports/Chow_2024_glabrata/qc/diagnostics/all_samples",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/logs/library_diagnostics/all_samples.log",
   "manifest_path": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/manifests/library_diagnostics/runs/all_samples/manifest.json",
-  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/manifests/jobs/library_diagnostics_20261030T212419Z_ac4acb.progress.json",
+  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Chow_2024_glabrata/manifests/jobs/library_diagnostics_20261101T234307Z_c032e5.progress.json",
   "status": "success",
   "cached_from": null,
-  "start_time": "2026-10-30T21:24:19.019342+00:00",
-  "end_time": "2026-10-30T21:28:16.886673+00:00",
-  "elapsed_seconds": 237.868,
+  "start_time": "2026-11-01T23:43:07.332054+00:00",
+  "end_time": "2026-11-01T23:47:06.403479+00:00",
+  "elapsed_seconds": 239.104,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/qc/LibraryDiagnostics.py",
