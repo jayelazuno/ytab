@@ -8,13 +8,17 @@
     "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/phaffii/reference_genome/GCF_000027005.1_ASM2700v1_genomic.gff",
     "feature_format": "gff"
   },
+  "target_site": {
+    "motif": "TTAA",
+    "duplication_bp": 4
+  },
   "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506",
   "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506_hits.txt",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/logs/create_hit_file/SRR36343506.log",
   "status": "success",
-  "start_time": "2026-10-28T21:59:52.286086+00:00",
-  "end_time": "2026-10-28T22:00:39.910077+00:00",
-  "elapsed_seconds": 47.624,
+  "start_time": "2026-11-01T23:42:23.715431+00:00",
+  "end_time": "2026-11-01T23:42:33.914268+00:00",
+  "elapsed_seconds": 10.199,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
@@ -33,7 +37,11 @@
     "gff",
     "--threads",
     "8",
-    "--write-browser-tracks"
+    "--write-browser-tracks",
+    "--target-motif",
+    "TTAA",
+    "--target-duplication",
+    "4"
   ],
   "detected_outputs": [
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Yao_2026_phaffii/create_hit_file/SRR36343506/SRR36343506.insertions.bedgraph",
