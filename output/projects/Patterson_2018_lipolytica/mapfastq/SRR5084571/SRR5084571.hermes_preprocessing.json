@@ -3,7 +3,8 @@
   "mode": "designated-junction-mate",
   "junction_index": 0,
   "junction_read_end": "start",
-  "retained_reads_or_pairs": 18228929,
+  "require_junction": true,
+  "retained_reads_or_pairs": 4688967,
   "input_files": [
     "/nfsscratch/jayelazuno/workspace/public_data/yarrowia_2018_hermes/fastq/Patterson2018/SRR5084571/SRR5084571.fastq.gz"
   ],
@@ -14,18 +15,17 @@
       "hermes_overlap_bases": 238983722,
       "trimmed_5p_bases": 238983722,
       "signature:Hermes_right": 5086816,
-      "adapter_3p_reads": 3151668,
-      "trimmed_3p_bases": 131280220,
-      "signature:Illumina-R1:forward": 2960728,
-      "signature:Illumina-P7:rc": 187961,
-      "too_short": 444060,
-      "signature:Hermes_left:rc": 2901,
-      "signature:Illumina-R2:forward": 4,
-      "signature:Illumina-R1:rc": 42,
-      "signature:Spl-Bot:rc": 13,
-      "signature:Illumina-R2:rc": 11,
-      "signature:Illumina-P5:forward": 5,
-      "signature:Hermes_right:rc": 3
+      "adapter_3p_reads": 635103,
+      "trimmed_3p_bases": 21286159,
+      "signature:Illumina-R1:forward": 618376,
+      "no_junction": 13586173,
+      "too_short": 397849,
+      "signature:Illumina-P7:rc": 15079,
+      "signature:Hermes_left:rc": 1629,
+      "signature:Illumina-R2:forward": 2,
+      "signature:Spl-Bot:rc": 6,
+      "signature:Illumina-R1:rc": 9,
+      "signature:Illumina-P5:forward": 2
     }
   ],
   "cutadapt_version": "5.2",
@@ -38,7 +38,7 @@
   "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
   "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
   "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
-  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "note": "Only reads carrying a transposon junction are retained. No genomic strand is imposed; Bowtie2 searches both strands.",
   "junction_mate": "R1",
   "require_mate_alignment": false
 }
