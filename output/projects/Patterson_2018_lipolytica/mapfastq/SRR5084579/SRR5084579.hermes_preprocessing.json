@@ -3,30 +3,28 @@
   "mode": "designated-junction-mate",
   "junction_index": 0,
   "junction_read_end": "start",
-  "retained_reads_or_pairs": 16561425,
+  "require_junction": true,
+  "retained_reads_or_pairs": 4355528,
   "input_files": [
     "/nfsscratch/jayelazuno/workspace/public_data/yarrowia_2018_hermes/fastq/Patterson2018/SRR5084579/SRR5084579.fastq.gz"
   ],
   "mates": [
     {
       "input_reads": 17028022,
-      "adapter_3p_reads": 3141547,
-      "trimmed_3p_bases": 130971082,
-      "signature:Illumina-R1:forward": 3057262,
+      "no_junction": 12237526,
       "hermes_5p_reads": 4790496,
       "hermes_overlap_bases": 225060700,
       "trimmed_5p_bases": 225060700,
       "signature:Hermes_right": 4790496,
-      "too_short": 466597,
-      "signature:Illumina-P7:rc": 79187,
-      "signature:Hermes_left:rc": 4950,
-      "signature:Illumina-R1:rc": 33,
-      "signature:Illumina-R2:rc": 70,
-      "signature:Hermes_right:forward": 18,
-      "signature:Illumina-P5:forward": 19,
-      "signature:Spl-Bot:rc": 4,
-      "signature:Hermes-sequencing:rc": 3,
-      "signature:Illumina-R2:forward": 1
+      "adapter_3p_reads": 682312,
+      "trimmed_3p_bases": 23096539,
+      "signature:Illumina-R1:forward": 674669,
+      "too_short": 434968,
+      "signature:Illumina-P7:rc": 5028,
+      "signature:Hermes_left:rc": 2594,
+      "signature:Illumina-R1:rc": 4,
+      "signature:Hermes_right:forward": 13,
+      "signature:Illumina-P5:forward": 4
     }
   ],
   "cutadapt_version": "5.2",
@@ -39,7 +37,7 @@
   "reference": "/old_Users/jayelazuno/workspace/ytab/resources/transposons/hermes/L34807.1.fasta",
   "catalogue_sha256": "4d664b52db407e2d1e3d9bb44768477ee43faa575e5466b717be859281d1026d",
   "reference_sha256": "3ea00548a600ac382dc3f454a5778cd1c9e45bf4fe5327b6c68bf024224230ab",
-  "note": "Absent Hermes sequence is allowed: the sequencing primer may end at the junction. No genomic strand is imposed; Bowtie2 searches both strands.",
+  "note": "Only reads carrying a transposon junction are retained. No genomic strand is imposed; Bowtie2 searches both strands.",
   "junction_mate": "R1",
   "require_mate_alignment": false
 }
