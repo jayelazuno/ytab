@@ -7,3 +7,12 @@
     /old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878338/SRR33878338.insertions.bedgraph
     /old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878338/SRR33878338.insertions.wig
     (bigwig not written: Error - overlapping regions in bedGraph line 356 of /old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878338/SRR33878338.insertions.bedgraph)
+
+=== Finding hits ===
+7187601 reads found of map quality >= 20; in these:
+  34931 hits were found; of these:
+    34931 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878338/SRR33878338.insertions.bedgraph
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878338/SRR33878338.insertions.wig
+    (bigwig not written: Error - overlapping regions in bedGraph line 212 of /old_Users/jayelazuno/workspace/ytab/output/projects/Song_2026_auris/create_hit_file/SRR33878338/SRR33878338.insertions.bedgraph)
