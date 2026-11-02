@@ -7,3 +7,12 @@
     /old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084587/SRR5084587.insertions.bedgraph
     /old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084587/SRR5084587.insertions.wig
     (bigwig not written: Error - overlapping regions in bedGraph line 94 of /old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084587/SRR5084587.insertions.bedgraph)
+
+=== Finding hits ===
+3349784 reads found of map quality >= 20; in these:
+  53210 hits were found; of these:
+    53210 (100.0%) hit positions were found to be unique (Minimal distance = 0)
+  Browser tracks written:
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084587/SRR5084587.insertions.bedgraph
+    /old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084587/SRR5084587.insertions.wig
+    (bigwig not written: Error - overlapping regions in bedGraph line 93 of /old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084587/SRR5084587.insertions.bedgraph)
