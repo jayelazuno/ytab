@@ -19,12 +19,12 @@
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106162/SRR13106162_hits.txt"
   ],
   "input_hit_file_hashes": {
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157_hits.txt": "8600fddff5c65340a6ae8689c5ad9041742442d6029fd367f3e74fae1a8d0d52",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106158/SRR13106158_hits.txt": "fc3f4c6b4d86a95664833470523bdf6cf4fa2d0f7746e2c3e243cd6d71cef9db",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106159/SRR13106159_hits.txt": "f55986aaa163b13a5c385a260be0877e967670895bebb87aa69f1b37f4777cfc",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106160/SRR13106160_hits.txt": "4e9f7d2f5f90f16eb17cd9f6e1e4f93da26a68557d0a97bd7a6bdd6846c1e936",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106161/SRR13106161_hits.txt": "5d0b1e4a46ffaaa88bccd3c5c2cc78bbb8f69f1fcc49298cc81a02f4b619b72c",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106162/SRR13106162_hits.txt": "27de7e000a8ab6e411f9f46b6dfbd841ae255b512312ae9e32fca61ecf441e0e"
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157_hits.txt": "53845bb42c499ae364e873a904dfe0674d0639875a333ddcb9c54203b1cb1b47",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106158/SRR13106158_hits.txt": "cf6691dbdca93b205836549e4750707a31139da87e2ac5b08d11142e0f79993b",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106159/SRR13106159_hits.txt": "ad0d35bf6b559a943666623ba1c6421d1ced7597daca3c970017399aab3aed6e",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106160/SRR13106160_hits.txt": "6c4477514f771bdbcd9b282ca9ac1543347b78d876a1d9bb9b06fcb8ce9be99d",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106161/SRR13106161_hits.txt": "89f0c3dd6d54e6c7a913233a37d87320920f5bc78c44c806b852ee802aa107e4",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106162/SRR13106162_hits.txt": "765252a5165043fd3589253b2ebf3ed5383ee420b3c740f58678c5a6ecd94f21"
   },
   "reference_hashes": {
     "fasta": "447c07bd1007d027c4e928628572a089480eedc95033340a2bb5aebceebafda1",
@@ -37,8 +37,8 @@
     "scientific_cli_options": {}
   },
   "run_mode": "library_diagnostics",
-  "input_files_sha256": "2dbc2d6f5b4bf6c1780b2f7b417e7f0336c2bbad6a8bd9e85faada6f8cf07acc",
-  "cache_signature": "f6a90f863b0e19106290e3f1a3983e57ed29fabdc2747fbb708845a5858e23f7",
+  "input_files_sha256": "2a0ac8700e6d57e42a6ef44e2befa72b19c9961fdc83b97dbbe0e82c43021aa1",
+  "cache_signature": "b6cbac49d0697d94eafcce88e68bd51558b5a5d946954456b4dbe65332c80694",
   "run_id": "all_samples",
   "sample_set_label": "All eligible samples",
   "selected_samples": [
@@ -58,23 +58,23 @@
     "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106162/SRR13106162_hits.txt"
   ],
   "input_hashes": {
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157_hits.txt": "8600fddff5c65340a6ae8689c5ad9041742442d6029fd367f3e74fae1a8d0d52",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106158/SRR13106158_hits.txt": "fc3f4c6b4d86a95664833470523bdf6cf4fa2d0f7746e2c3e243cd6d71cef9db",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106159/SRR13106159_hits.txt": "f55986aaa163b13a5c385a260be0877e967670895bebb87aa69f1b37f4777cfc",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106160/SRR13106160_hits.txt": "4e9f7d2f5f90f16eb17cd9f6e1e4f93da26a68557d0a97bd7a6bdd6846c1e936",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106161/SRR13106161_hits.txt": "5d0b1e4a46ffaaa88bccd3c5c2cc78bbb8f69f1fcc49298cc81a02f4b619b72c",
-    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106162/SRR13106162_hits.txt": "27de7e000a8ab6e411f9f46b6dfbd841ae255b512312ae9e32fca61ecf441e0e"
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106157/SRR13106157_hits.txt": "53845bb42c499ae364e873a904dfe0674d0639875a333ddcb9c54203b1cb1b47",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106158/SRR13106158_hits.txt": "cf6691dbdca93b205836549e4750707a31139da87e2ac5b08d11142e0f79993b",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106159/SRR13106159_hits.txt": "ad0d35bf6b559a943666623ba1c6421d1ced7597daca3c970017399aab3aed6e",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106160/SRR13106160_hits.txt": "6c4477514f771bdbcd9b282ca9ac1543347b78d876a1d9bb9b06fcb8ce9be99d",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106161/SRR13106161_hits.txt": "89f0c3dd6d54e6c7a913233a37d87320920f5bc78c44c806b852ee802aa107e4",
+    "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/create_hit_file/SRR13106162/SRR13106162_hits.txt": "765252a5165043fd3589253b2ebf3ed5383ee420b3c740f58678c5a6ecd94f21"
   },
   "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/library_diagnostics/runs/all_samples",
   "export_dir": "/old_Users/jayelazuno/workspace/ytab/output/exports/Gao_2021_auris/qc/diagnostics/all_samples",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/logs/library_diagnostics/all_samples.log",
   "manifest_path": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/manifests/library_diagnostics/runs/all_samples/manifest.json",
-  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/manifests/jobs/library_diagnostics_20261101T234306Z_6b3f2f.progress.json",
+  "progress_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/manifests/jobs/library_diagnostics_20261102T035558Z_4c9bff.progress.json",
   "status": "success",
   "cached_from": null,
-  "start_time": "2026-11-01T23:43:06.937030+00:00",
-  "end_time": "2026-11-01T23:44:43.030218+00:00",
-  "elapsed_seconds": 96.112,
+  "start_time": "2026-11-02T03:55:58.636521+00:00",
+  "end_time": "2026-11-02T03:57:08.981014+00:00",
+  "elapsed_seconds": 70.356,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/qc/LibraryDiagnostics.py",

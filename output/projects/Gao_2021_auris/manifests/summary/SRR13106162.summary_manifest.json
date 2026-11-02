@@ -16,9 +16,9 @@
   ],
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Gao_2021_auris/logs/summary/SRR13106162.log",
   "status": "success",
-  "start_time": "2026-11-01T23:41:58.152580+00:00",
-  "end_time": "2026-11-01T23:42:08.005464+00:00",
-  "elapsed_seconds": 9.853,
+  "start_time": "2026-11-02T03:54:43.742034+00:00",
+  "end_time": "2026-11-02T03:55:09.546000+00:00",
+  "elapsed_seconds": 25.804,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/summary/SummaryTable.py",
