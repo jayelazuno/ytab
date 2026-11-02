@@ -2,21 +2,21 @@
 
 
 === Sequence alignment ===
-15254866 reads; of these:
-  15254866 (100.00%) were unpaired; of these:
-    8782499 (57.57%) aligned 0 times
-    6403915 (41.98%) aligned exactly 1 time
-    68452 (0.45%) aligned >1 times
-42.43% overall alignment rate
+4172288 reads; of these:
+  4172288 (100.00%) were unpaired; of these:
+    240799 (5.77%) aligned 0 times
+    3874401 (92.86%) aligned exactly 1 time
+    57088 (1.37%) aligned >1 times
+94.23% overall alignment rate
 
 
 === Mapping QC summary ===
-total_records: 15254866
-primary_records: 15254866
-primary_mapped: 6472367
-primary_unmapped: 8782499
-percent_mapped: 42.428
-mapq_ge_threshold: 3751470
-percent_mapq_ge_threshold: 57.961
-avg_mapq_mapped_primary: 24.15
+total_records: 4172288
+primary_records: 4172288
+primary_mapped: 3931489
+primary_unmapped: 240799
+percent_mapped: 94.229
+mapq_ge_threshold: 3747799
+percent_mapq_ge_threshold: 95.328
+avg_mapq_mapped_primary: 39.6
 mapping_stats_csv: /old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084560/SRR5084560.mapping_stats.csv
