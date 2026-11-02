@@ -1,2 +1,2 @@
 sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
-SRR5084573,16990441,16990441,10229161,6761280,60.205,0,0.0,3737571,36.538,15.33,/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084573/SRR5084573.sam
+SRR5084573,4140007,4140007,3899514,240493,94.191,0,0.0,3729662,95.644,39.84,/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084573/SRR5084573.sam
