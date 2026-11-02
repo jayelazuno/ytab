@@ -1,2 +1,2 @@
 sample,input_path,total_reads,unique_sites,jackpot_top_frac,jackpot_frac_reads,n_jackpot_sites,midlc_est,depth_ratio_R_over_midlc,per_gene_top_site_removed,per_gene_sites_removed,normalize_target,reads_target,thinning_p,reads_after_norm,normalized_written,normalized_output,midlc_points,midlc_max_sampled,seqbias_done,centromere_done
-SRR5084567,/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084567/SRR5084567_hits.txt,3333267,97350,0.001,0.282877,98,196480,16.9649,0,0,NA,NA,NA,NA,0,NA,9,3333267,1,0
+SRR5084567,/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084567/SRR5084567_hits.txt,3329907,96234,0.001,0.28252,97,192689,17.2813,0,0,NA,NA,NA,NA,0,NA,9,3329907,1,0
