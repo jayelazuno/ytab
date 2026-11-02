@@ -8,13 +8,14 @@
     "features": "/old_Users/jayelazuno/workspace/ytab/resources/species/lipolytica/reference_genome/GCF_001761485.1_ASM176148v1_genomic.gff",
     "feature_format": "gff"
   },
+  "target_site": null,
   "output_dir": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084557",
   "hits_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/create_hit_file/SRR5084557/SRR5084557_hits.txt",
   "log_file": "/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/logs/create_hit_file/SRR5084557.log",
   "status": "success",
-  "start_time": "2026-11-01T02:04:47.929493+00:00",
-  "end_time": "2026-11-01T02:06:05.493842+00:00",
-  "elapsed_seconds": 77.564,
+  "start_time": "2026-11-01T22:48:16.558204+00:00",
+  "end_time": "2026-11-01T22:48:43.051207+00:00",
+  "elapsed_seconds": 26.494,
   "command_run": [
     "/old_Users/jayelazuno/miniforge3/envs/tnseq/bin/python",
     "/old_Users/jayelazuno/workspace/ytab/src/ytab/insertions/CreateHitFile.py",
