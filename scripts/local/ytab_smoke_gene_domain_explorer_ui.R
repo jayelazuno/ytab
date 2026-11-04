@@ -27,7 +27,7 @@ all_text <- paste(vapply(c(app_file, ui_file, server_file, state_file, qc_plot_f
 }, ""), collapse = "\n")
 
 required <- c(
-  "Gene & Domain Insertion Explorer",
+  "Single species view",
   "gene_domain_query",
   "gene_domain_search",
   "gene_domain_candidates",
@@ -40,7 +40,8 @@ required <- c(
   "gene_domain_show_direction",
   "gene_domain_label_mode",
   "gene_domain_show_site_counts",
-  "gene_domain_generate",
+  "gene_domain_track_style",
+  "gene_domain_style_note",
   "gene_domain_download_png",
   "gene_domain_download_table"
 )
@@ -105,7 +106,7 @@ if (nrow(matched) != 4L || !identical(as.character(matched$role), c("parent", "t
 if (nrow(custom) != nrow(ordered)) fail("Custom preset did not keep all tracks available for manual selection")
 if (gene_domain_infer_track_role("parent-pool1-treated", sample_sheet) != "treated")
   fail("treated role did not override parent token in a treated sample name")
-for (pattern in c("custom_track_selection", "clear_generated_figure", "No tracks match this preset for the current project."))
+for (pattern in c("custom_track_selection", "figure_request", "No tracks match this preset for the current project."))
   if (!grepl(pattern, all_text, fixed = TRUE)) fail(paste("missing preset synchronization behavior:", pattern))
 
 forbidden_imports <- paste0(

@@ -138,7 +138,8 @@ tvc_ggplot <- function(genes, method) {
     ggplot2::theme_minimal(base_size = 12)
 }
 
-tvc_server <- function(input, output, session, repo_root, active, active_project_path, norm_runs, start) {
+tvc_server <- function(input, output, session, repo_root, active, active_project_path, norm_runs, start,
+                       design_support = reactive(data.frame())) {
   tvc_runs <- reactivePoll(3000, session,
     checkFunc = function() { x <- ytab_analysis_runs(tryCatch(file.path(active()$project_root, "treated_vs_control"), error = function(e) "")); paste(x$path, x$modified, collapse = "|") },
     valueFunc = function() ytab_analysis_runs(tryCatch(file.path(active()$project_root, "treated_vs_control"), error = function(e) "")))
@@ -225,7 +226,10 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
   })
   group_genes <- reactive({ g <- data()$genes; req(nrow(g) > 0); group <- input$tvc_group %||% g$group[[1L]]; g[g$group == group, , drop = FALSE] })
   output$tvc_summary <- renderUI({
-    if (!nrow(method_runs())) return(ytab_empty_state("No result yet", "Choose a normalization run and comparisons in Treated vs Control: Run."))
+    gate <- ytab_design_gate(design_support(), "Treated vs control", "Treated versus control is not available for this project")
+    if (!is.null(gate)) return(gate)
+    if (!nrow(method_runs())) return(tagList(ytab_design_merge_warning(design_support()),
+      ytab_empty_state("No result yet", "Choose a normalization run and comparisons in Treated vs Control: Run.")))
     m <- data()$manifest; req(m)
     cards <- unlist(lapply(names(m$groups), function(k) { g <- m$groups[[k]]
       if (!identical(g$status, "success")) return(list(ytab_metric_card(paste(g$background, g$condition, sep = ", "), "failed", g$message %||% "")))

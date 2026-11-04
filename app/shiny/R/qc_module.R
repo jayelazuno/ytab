@@ -39,7 +39,7 @@ qc_plot_menus <- list(
                             "Two libraries, gene by gene" = "pair_scatter")))
 
 # Rescaled companions shown in a metric plot's hover.
-qc_metric_companions <- list(unique_sites = c("insertions_per_kb", "density"), total_cts = c("mean_ct"), max_share = c("max_ct"),
+qc_metric_companions <- list(unique_sites = c("insertions_per_kb", "sites_per_coding_kb", "density"), total_cts = c("mean_ct"), max_share = c("max_ct"),
                              jackpot_frac_reads = c("total_cts"), percent_mapped = c("mapped_reads"))
 
 qc_menu_label <- function(id, value) { all <- unlist(unname(qc_plot_menus[[id]])); names(all)[match(value, all)] }

@@ -69,6 +69,7 @@ libcor_heatmap_ggplot <- function(values, pairs) {
 
 qc_library_correlation_server <- function(input, output, session, repo_root, active, active_project_path, projects, jobs, python_bin) {
   runs_dir <- reactive(file.path(active()$project_root, "library_correlation"))
+  design_support <- reactive(ytab_design_support(python_bin, repo_root, tryCatch(active_project_path(), error = function(e) "")))
   runs <- reactivePoll(3000, session,
     checkFunc = function() { dir <- tryCatch(runs_dir(), error = function(e) ""); x <- ytab_analysis_runs(dir); paste(x$path, x$modified, collapse = "|") },
     valueFunc = function() ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")))
@@ -116,6 +117,8 @@ qc_library_correlation_server <- function(input, output, session, repo_root, act
   manifest <- reactive(ytab_read_manifest(selected_run()))
 
   output$libcor_summary <- renderUI({
+    gate <- ytab_design_gate(design_support(), "Library correlation", "Library correlation is not available for this project")
+    if (!is.null(gate)) return(gate)
     if (!nrow(runs())) return(ytab_empty_state("No library correlation yet", "Run library correlation to compare this project's libraries with each other, or with libraries from other projects."))
     m <- manifest(); req(m); flags <- m$flagged_pairs %||% list()
     if (length(flags)) ytab_warning_banner(sprintf("%d library pairs disagree with their pool labels", length(flags)),

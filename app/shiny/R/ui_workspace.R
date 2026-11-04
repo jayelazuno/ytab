@@ -6,8 +6,7 @@ project_module_ui <- function() navset_tab(id="project_tabs",
 gene_explorer_module_ui <- function() navset_tab(id="gene_explorer_tabs",
   nav_panel("Genome Browser",value="browser",genome_browser_ui()),
   nav_panel("Gene & Domain Insertions",value="gene_domain",gene_domain_explorer_ui()),
-  nav_panel("GO Enrichment",value="go",go_analysis_ui()),
-  nav_panel("Across Species",value="comparative",comparative_ui()))
+  nav_panel("GO Enrichment",value="go",go_analysis_ui()))
 
 workspace_ui <- function(detected_cpu) {
   tags$div(class="ytab-workspace",

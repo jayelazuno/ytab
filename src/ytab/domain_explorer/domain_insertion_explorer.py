@@ -15,10 +15,11 @@ import os
 import json
 import math
 import re
+from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
-from collections.abc import Sequence
 from typing import Any
 
 import yaml
@@ -501,16 +502,36 @@ def resolve_gene(project_config: str | Path, query: str) -> dict[str, Any]:
 
 
 def _sample_rows(cfg: dict[str, Any]) -> list[dict[str, Any]]:
-    rows = cfg.get("samples")
-    if isinstance(rows, list) and rows:
-        return [dict(row) for row in rows]
+    """Each included sample with every piece of metadata either source has.
+
+    The `samples` block of project.yaml is written when the project is discovered and is not rewritten when the
+    sample sheet is curated, so on a project whose roles, pools and display names were filled in afterwards it
+    still holds only the guessed columns. Taking it alone loses exactly the metadata the track presets and the
+    track labels need, so the sheet is merged over it; the block is still read because it carries keys the sheet
+    does not, `hit_file` among them.
+    """
+    rows = [dict(row) for row in (cfg.get("samples") or []) if isinstance(row, dict)]
     sheet = _repo_path(cfg.get("sample_sheet"))
     if not sheet or not sheet.is_file():
         sheet = Path(cfg["_project_root"]) / "config" / "sample_sheet.csv"
     if not sheet.is_file():
-        return []
+        return rows
     with sheet.open(newline="", encoding="utf-8") as handle:
-        return list(csv.DictReader(handle))
+        sheet_rows = list(csv.DictReader(handle))
+    if not rows:
+        return sheet_rows
+    by_sample = {_safe_text(row.get("sample")): row for row in rows}
+    for row in sheet_rows:
+        name = _safe_text(row.get("sample"))
+        target = by_sample.get(name)
+        if target is None:
+            rows.append(row)
+            continue
+        target.update({key: value for key, value in row.items() if _safe_text(value)})
+    # A library the user excluded is not a track to offer: it was taken out of the project on purpose, and the
+    # sheet lists it so that the exclusion is recorded, not so that it reappears in the figure.
+    return [row for row in rows
+            if _safe_text(row.get("include", "True")).lower() not in {"false", "0", "no"}]
 
 
 def _infer_track_role(row: dict[str, Any], sample: str) -> str:
@@ -656,11 +677,18 @@ def list_insertion_tracks(project_config: str | Path, track_source: str = "raw")
         for sample_order, row in enumerate(_sample_rows(cfg)):
             sample = _safe_text(row.get("sample"))
             hit_file = _repo_path(row.get("hit_file"))
+            # A sample sheet names the hit file only when it was imported from elsewhere; for a project the
+            # pipeline built, the path is the standard one. Without this the row is skipped, the loop ends with
+            # no tracks, and the fallback below rebuilds them from the filenames alone - losing the roles, pools
+            # and display names that the presets and the track labels are made of.
+            if sample and not (hit_file and hit_file.is_file()):
+                standard = project_root / "create_hit_file" / sample / f"{sample}_hits.txt"
+                hit_file = standard if standard.is_file() else hit_file
             if sample and hit_file and hit_file.is_file():
                 tracks.append(
                     {
                         "sample": sample,
-                        "track_name": sample,
+                        "track_name": _safe_text(row.get("display_name")) or sample,
                         "track_source": "raw",
                         "source_file": str(hit_file),
                         "role": _infer_track_role(row, sample),
@@ -698,6 +726,13 @@ def list_insertion_tracks(project_config: str | Path, track_source: str = "raw")
                     "sample_order": 9999,
                 }
             )
+    # Nothing stops two libraries being given the same display name, and a figure with two identically labelled
+    # lanes cannot be read. Say which is which here, once, so that the track menu and the figure agree: a caller
+    # that relabels separately is how a menu entry and its lane come to disagree.
+    counts = Counter(track["track_name"] for track in tracks)
+    for track in tracks:
+        if counts[track["track_name"]] > 1:
+            track["track_name"] = f"{track['track_name']} [{track['sample']}]"
     return tracks
 
 
@@ -1003,8 +1038,18 @@ def draw_gene_domain_insertion_figure(
     dpi: int = 150,
     label_mode: str = "full",
     show_site_counts: bool = True,
+    track_style: str = "sites",
 ) -> str:
-    """Draw a stacked insertion/gene/domain PNG with matplotlib Agg."""
+    """Draw a stacked insertion/gene/domain PNG with matplotlib Agg.
+
+    `track_style` chooses what a track's marks mean:
+      sites  every insertion site as a tick of equal height, its width scaled by the reads at it. Reads the gene as
+             a map of what was hit, which is what a saturation or coverage question needs.
+      reads  every insertion site as a stem whose height is the reads at it, on a log scale within the track. Reads
+             the gene as the published gene-level figures do, where a drop to no reads over part of the coding
+             sequence is the signal. Heights are scaled within each track, so what is comparable between tracks of
+             different depth is where the reads fall, not how many there are.
+    """
     import matplotlib
 
     matplotlib.use("Agg")
@@ -1021,6 +1066,7 @@ def draw_gene_domain_insertion_figure(
     width_px = max(900, int(width_px))
     dpi = max(96, int(dpi))
     label_mode = label_mode if label_mode in {"full", "compact"} else "full"
+    track_style = track_style if track_style in {"sites", "reads"} else "sites"
     n_tracks = max(1, len(tracks))
     fig_width = width_px / float(dpi)
     fig_height = max(5.5, 1.0 + 0.45 * n_tracks + 1.8)
@@ -1093,21 +1139,45 @@ def draw_gene_domain_insertion_figure(
             in_colour, out_colour = colours, colours
         else:
             in_colour, out_colour = "#303030", "#9a9a9a"
-        for row in rows:
-            read_count = max(0, int(row.get("read_count") or 0))
-            linewidth = min(3.0, max(1.0, math.log10(read_count + 1))) if read_count else 1.2
-            in_gene = bool(row.get("in_gene"))
-            ax_tracks.vlines(
-                int(row["position"]),
-                y - 0.25,
-                y + 0.25,
-                color=in_colour if in_gene else out_colour,
-                linewidth=linewidth,
-                alpha=0.95 if in_gene else 0.45,
-            )
+        if track_style == "reads":
+            # Stems from the track's own baseline, scaled by log reads against this track's maximum. A track with
+            # one read everywhere would otherwise look identical to one carrying thousands.
+            ceiling = max((max(0, int(r.get("read_count") or 0)) for r in rows), default=0)
+            span = math.log10(ceiling + 1) or 1.0
+            ax_tracks.hlines(y - 0.3, region_start, region_end, color="#bcbcbc", linewidth=0.8)
+            for row in rows:
+                read_count = max(0, int(row.get("read_count") or 0))
+                if not read_count:
+                    continue
+                in_gene = bool(row.get("in_gene"))
+                ax_tracks.vlines(
+                    int(row["position"]),
+                    y - 0.3,
+                    y - 0.3 + 0.78 * math.log10(read_count + 1) / span,
+                    color=in_colour if in_gene else out_colour,
+                    linewidth=0.9,
+                    alpha=0.95 if in_gene else 0.45,
+                )
+        else:
+            for row in rows:
+                read_count = max(0, int(row.get("read_count") or 0))
+                linewidth = min(3.0, max(1.0, math.log10(read_count + 1))) if read_count else 1.2
+                in_gene = bool(row.get("in_gene"))
+                ax_tracks.vlines(
+                    int(row["position"]),
+                    y - 0.25,
+                    y + 0.25,
+                    color=in_colour if in_gene else out_colour,
+                    linewidth=linewidth,
+                    alpha=0.95 if in_gene else 0.45,
+                )
     ax_tracks.set_yticks(y_positions)
     ax_tracks.set_yticklabels(track_labels)
-    ax_tracks.set_ylabel("Insertion tracks", fontsize=11, fontweight="bold")
+    ax_tracks.set_ylabel(
+        "Reads per insertion site (log, scaled within each track)" if track_style == "reads" else "Insertion tracks",
+        fontsize=11,
+        fontweight="bold",
+    )
 
     gene_y = 0.40
     gene_h = 0.25
@@ -1280,6 +1350,7 @@ def run_gene_domain_explorer(
     dpi: int = 150,
     label_mode: str = "full",
     show_site_counts: bool = True,
+    track_style: str = "sites",
     output: str | Path | None = None,
     force: bool = False,
     reference_configs: Sequence[str | Path] = (),
@@ -1305,6 +1376,10 @@ def run_gene_domain_explorer(
     payload["show_direction"] = bool(show_direction)
     requested_samples = samples or ["all"]
     selected_samples = [track["sample"] for track in payload["tracks"]]
+    # The labels are drawn into the PNG, so they belong in the key: the same gene, tracks and options can still
+    # produce a different figure when a library's display name is set or changed, and without this the cached
+    # image from before that edit is served instead.
+    selected_labels = [_safe_text(track.get("track_name")) for track in payload["tracks"]]
     cache_params = {
         "project_config": str(_repo_path(project_config)),
         "query": query,
@@ -1319,6 +1394,8 @@ def run_gene_domain_explorer(
         "dpi": int(dpi),
         "label_mode": label_mode,
         "show_site_counts": bool(show_site_counts),
+        "track_style": track_style,
+        "track_labels": selected_labels,
         "chromosome_display_version": 1,
         "reference_configs": [str(_repo_path(c)) for c in reference_configs],
     }
@@ -1342,6 +1419,7 @@ def run_gene_domain_explorer(
             dpi=dpi,
             label_mode=label_mode,
             show_site_counts=show_site_counts,
+            track_style=track_style,
         )
         _write_insertions_table(payload["insertions"], table_path)
     manifest = {
@@ -1382,6 +1460,7 @@ def run_gene_domain_explorer(
         "dpi": int(dpi),
         "label_mode": label_mode,
         "show_site_counts": bool(show_site_counts),
+        "track_style": track_style,
     }
     if not cached:
         manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")

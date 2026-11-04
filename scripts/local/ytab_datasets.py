@@ -69,6 +69,15 @@ def number(value):
     except (TypeError, ValueError):return None
 
 
+def coding_density(qc_row):
+    """A library's insertion sites per coding kb, the density the essentiality recommendation is stated in.
+
+    Falls back to the per-genome figure for a QC run made before that metric existed, so an old run still shows a
+    density rather than a blank; the two differ by the denominator, the per-genome one reading several times higher.
+    """
+    return qc_row.get("sites_per_coding_kb") or qc_row.get("insertions_per_kb", "")
+
+
 def counts(values):
     return "; ".join(f"{k} {n}" for k, n in Counter(v for v in values if v).most_common())
 
@@ -202,9 +211,9 @@ def main():
                                       role=r["library_role"], condition=r["condition"], background=r["background"], pool=r["pool"], transposon=r["transposon"],
                                       library_design=r["library_design"], included=r in included, input_reads=q.get("input_reads", ""),
                                       percent_mapped=q.get("percent_mapped", ""), insertion_sites=q.get("unique_sites", ""),
-                                      sites_per_kb=q.get("insertions_per_kb", ""), top_site_share=q.get("max_share", ""), top_site=q.get("max_site", ""),
+                                      sites_per_kb=coding_density(q), top_site_share=q.get("max_share", ""), top_site=q.get("max_site", ""),
                                       library=library, used_in="; ".join(dict.fromkeys(used)), notes=r.get("notes", "")))
-            density = [x for x in (number(qc.get(r["sample"], {}).get("insertions_per_kb")) for r in included) if x is not None]
+            density = [x for x in (number(coding_density(qc.get(r["sample"], {}))) for r in included) if x is not None]
             share = [(number(qc[r["sample"]].get("max_share")), qc[r["sample"]].get("max_site", "")) for r in included if number(qc.get(r["sample"], {}).get("max_share")) is not None]
             top = max(share, default=(None, ""))
             results = {label:finished_runs(root/folder_name, marker) for folder_name, label, marker in RESULTS}

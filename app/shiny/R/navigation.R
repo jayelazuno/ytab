@@ -16,7 +16,8 @@ navigation_modules <- list(
 # subtab that holds it.
 navigation_inner_navsets <- list(
   go_analysis_tabs = list(field = "active_go_analysis_subtab", default = "gene_set", top = "gene_explorer", parent = "go"),
-  comparative_tabs = list(field = "active_comparative_subtab", default = "single_species", top = "gene_explorer", parent = "comparative")
+  # Across Species was folded into Gene & Domain Insertions: same navset id, new parent subtab.
+  comparative_tabs = list(field = "active_comparative_subtab", default = "single_species", top = "gene_explorer", parent = "gene_domain")
 )
 
 # Tabs retired by the module reorganization, kept so old links and bookmarks still open the right place.
@@ -31,7 +32,7 @@ navigation_legacy_targets <- list(
   genome_browser = c(top = "gene_explorer", nested = "browser"),
   gene_domain_explorer = c(top = "gene_explorer", nested = "gene_domain"),
   go_analysis = c(top = "gene_explorer", nested = "go"),
-  comparative_species = c(top = "gene_explorer", nested = "comparative")
+  comparative_species = c(top = "gene_explorer", nested = "gene_domain")
 )
 # Old top tabs whose own subtabs became inner tabs.
 navigation_legacy_inner <- c(go_analysis = "go_analysis_tabs", comparative_species = "comparative_tabs")
@@ -55,6 +56,9 @@ navigation_translate_legacy <- function(top, nested_value = "") {
   # Quality Control was regrouped around the QC table (Overview) into themed subtabs.
   if (!is.na(top) && identical(top, "quality_control") && nested_value %in% names(navigation_qc_legacy))
     return(list(top = "quality_control", nested_value = navigation_qc_legacy[[nested_value]]))
+  # Gene Explorer > Across Species became the inner tabs of Gene Explorer > Gene & Domain Insertions.
+  if (!is.na(top) && identical(top, "gene_explorer") && identical(nested_value, "comparative"))
+    return(list(top = "gene_explorer", nested_value = "gene_domain"))
   # Run > Hit Files, Summary Tables and Status merged into Run > Mapping.
   if (!is.na(top) && identical(top, "run") && nested_value %in% navigation_merged_run_subtabs)
     return(list(top = "run", nested_value = "mapping"))

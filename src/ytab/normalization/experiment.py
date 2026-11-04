@@ -22,6 +22,15 @@ def included(row):
     return str(row.get("include", "true")).strip().lower() in {"1", "true", "yes"}
 
 
+def pool_of(row):
+    """The sample's pool, from the confirmed column or the one sample discovery wrote.
+
+    A project that has not had its sample sheet edited yet carries the design as `guessed_pool`, so reading only
+    `pool` rejects every freshly discovered project as missing metadata it does in fact have.
+    """
+    return str(row.get("pool") or row.get("guessed_pool") or "").strip()
+
+
 def shared_log2_change(raw, normalized, a, b):
     """log2(right/left) of normalized values at sites positive in both raw samples.
 
@@ -81,9 +90,10 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
     for sample in selected:
         if sample not in samples or not included(samples[sample]):
             raise ValueError(f"Comparison references missing/excluded sample: {sample}")
-        if not samples[sample].get("pool", "").strip():
+        if not pool_of(samples[sample]):
             raise ValueError(f"Explicit pool metadata required: {sample}")
-    group = lambda sample: (samples[sample].get("background", ""), samples[sample]["pool"])
+    group = lambda sample: (samples[sample].get("background") or samples[sample].get("guessed_background", ""),
+                            pool_of(samples[sample]))
     for row in design:
         if group(row["parent_sample"]) != group(row["treated_sample"]):
             raise ValueError("Matched comparisons must share background and pool metadata")
@@ -104,7 +114,7 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
         counts.append(values)
         metadata.append(dict(observation_id=cfg["project_id"] + "::" + sample, sample=sample,
             display_name=row.get("display_name") or sample, project=cfg["project_id"], dataset=cfg["project_id"],
-            library_id="::".join((cfg["project_id"], *group(sample))), pool=row["pool"],
+            library_id="::".join((cfg["project_id"], *group(sample))), pool=pool_of(row),
             role="control" if sample in controls else "treated", input=str(hit.resolve()), input_sha256=sha256(hit)))
     parent_set = set(sites)
     additions = sorted(set().union(*(set(values) for values in counts)) - parent_set)

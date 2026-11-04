@@ -223,6 +223,14 @@ a.ytab-workspace-brand:hover b {
   margin: 0 auto;
 }
 
+/* Fit a tall figure (one lane per insertion track) into the window instead of making the reader scroll it.
+   max-width already caps the width; capping the height against the viewport lets the browser scale the whole
+   figure down with its aspect ratio kept, and the full-size image is still a download away. */
+.ytab-static-image img.ytab-image-fit {
+  max-height: 72vh;
+  width: auto;
+}
+
 .ytab-control-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));

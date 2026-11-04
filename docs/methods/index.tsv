@@ -1,4 +1,5 @@
 order	section	title	file
+0	Getting started	Recommendations: library density, normalization and tests	docs/methods/00_recommendations.md
 0	Getting started	Choosing the analysis for your experimental design	docs/design_guide.md
 1	Building a pool	Making a Hermes Tn-seq pool	docs/methods/01_making_a_hermes_pool.md
 2	Sequencing and mapping	Read alignment: Hermes and Ac/Ds	docs/hermes_alignment.md

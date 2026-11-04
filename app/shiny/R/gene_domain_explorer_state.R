@@ -28,9 +28,16 @@ gene_domain_tracks <- function(python_bin, repo_root, project_config, track_sour
   if (!length(tracks)) return(data.frame())
   data.frame(
     sample = vapply(tracks, function(x) as.character(x$sample %||% ""), ""),
-    track_name = ytab_sample_labels(vapply(tracks, function(x) as.character(x$track_name %||% x$sample %||% ""), ""), dirname(dirname(project_config))),
+    # Shown exactly as the CLI resolved it, including how it disambiguates a shared display name. Relabelling
+    # here would give the track menu a different name from the lane the figure draws for the same library.
+    track_name = vapply(tracks, function(x) as.character(x$track_name %||% x$sample %||% ""), ""),
     track_source = vapply(tracks, function(x) as.character(x$track_source %||% ""), ""),
     source_file = vapply(tracks, function(x) as.character(x$source_file %||% ""), ""),
+    # The role and pool the CLI resolved, carried through rather than inferred again here: the preset menu must
+    # offer exactly the presets the CLI can satisfy, and two independent inferences can disagree - which is how
+    # the menu came to offer "Parents only" for a project whose figure command then refused it.
+    role = vapply(tracks, function(x) as.character(x$role %||% ""), ""),
+    pool = vapply(tracks, function(x) as.character(x$pool %||% ""), ""),
     stringsAsFactors = FALSE
   )
 }
@@ -108,8 +115,16 @@ gene_domain_infer_track_pool <- function(sample, sample_sheet = data.frame()) {
 
 gene_domain_order_tracks <- function(data, sample_sheet = data.frame()) {
   if (!is.data.frame(data) || !nrow(data)) return(data.frame())
-  data$role <- vapply(data$sample, gene_domain_infer_track_role, character(1), sample_sheet = sample_sheet)
-  data$pool <- vapply(data$sample, gene_domain_infer_track_pool, character(1), sample_sheet = sample_sheet)
+  # Keep whatever the CLI resolved; infer only what it left blank (a track table assembled without it, as the
+  # unit tests do, and the combined-parent tracks that carry no pool).
+  if (!"role" %in% names(data)) data$role <- ""
+  if (!"pool" %in% names(data)) data$pool <- ""
+  blank <- !nzchar(data$role)
+  if (any(blank))
+    data$role[blank] <- vapply(data$sample[blank], gene_domain_infer_track_role, character(1), sample_sheet = sample_sheet)
+  blank <- !nzchar(data$pool)
+  if (any(blank))
+    data$pool[blank] <- vapply(data$sample[blank], gene_domain_infer_track_pool, character(1), sample_sheet = sample_sheet)
   data$order_index <- seq_len(nrow(data))
   if (any(nzchar(data$role))) {
     role_rank <- ifelse(data$role == "parent", 0L, ifelse(data$role == "treated", 1L, 2L))

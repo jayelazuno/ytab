@@ -64,6 +64,7 @@ MODULES = {m.name: m for m in (
     Module("treated-vs-control", "ytab_treated_vs_control.py", "Treated vs control for a project by resampling or the control-conditioned Gumbel (normalization run + comparison design)", project_option=None, force_option=None),
     Module("go", "ytab_run_go_analysis.py", "GO enrichment and optional semantic reduction"),
     Module("gene-insertions", "ytab_draw_gene_domain_insertions.py", "Gene/domain insertion plots and queries"),
+    Module("gene-profiles", "ytab_gene_profiles.py", "One gene across species: each species' insertion profile and call, from its densest qualifying library set", project_option=None, force_option=None),
     Module("coverage", "ytab_poisson_coverage.py", "Analytical Poisson / equal-gene screen benchmark", project_option=None),
     Module("mutants", "ytab_identify_mutants.py", "Universal paired Sanger/ABI mutant identification", project_option="--reference-config", threads=True, force_option=None),
     Module("status", "ytab_project_status.py", "Inspect resumable project stage status", force_option=None),

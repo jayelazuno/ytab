@@ -216,6 +216,29 @@ essentiality_module_server <- function(input, output, session, repo_root, active
     checkFunc = function() { x <- ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")); paste(x$path, x$modified, collapse = "|") },
     valueFunc = function() { x <- ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")); x[file.exists(file.path(x$path, "models", "genes.tsv")), , drop = FALSE] })
   inventory <- reactive(essentiality_parent_inventory(active()))
+  design_support <- reactive(ytab_design_support(python_bin, repo_root, tryCatch(active_project_path(), error = function(e) "")))
+  # Whether this project's libraries are dense enough for an essentiality call to be worth making, read from the
+  # newest QC run (`ytab qc` writes it; the app does not recompute density). Without this the tab invites the user
+  # to fit an HMM on a library that cannot support one, and the calls come back looking as ordinary as any other.
+  readiness <- reactive({
+    qc <- ytab_analysis_runs(tryCatch(file.path(active()$project_root, "qc"), error = function(e) ""))
+    if (!nrow(qc)) return(data.frame())
+    ytab_read_analysis_tsv(file.path(qc$path[[1L]], "essentiality_readiness.tsv"))
+  })
+  readiness_banner <- reactive({
+    r <- readiness()
+    if (!nrow(r) || !"sites_per_coding_kb" %in% names(r)) return(NULL)
+    r <- r[!is.na(r$sites_per_coding_kb) & r$n_libraries > 0, , drop = FALSE]
+    short <- r[!as.logical(r$supports_hybrid), , drop = FALSE]
+    if (!nrow(short)) return(NULL)
+    ytab_warning_banner("These libraries are sparser than an essentiality call needs",
+      paste0(paste(sprintf("Strain %s: %.1f insertion sites per coding kb pooled over %d %s librar%s.",
+                           short$background, short$sites_per_coding_kb, short$n_libraries, short$role,
+                           ifelse(short$n_libraries == 1, "y", "ies")), collapse = " "),
+             sprintf(" The label-free HMM asks for about %g and the hybrid for about %g, reached by pooling independent inductions. ",
+                     r$hmm_target[[1L]], r$hybrid_target[[1L]]),
+             "A run on libraries this sparse will still produce calls, but they mostly reflect where the transposon happened to land. See the QC tab for the per-library figures."))
+  })
   # Normalizations the hybrid's gene features can use: the methods of the project's normalization runs (MidLC
   # common saturation among them). BGC first when available (the app's suggested normalization).
   hybrid_normalizations <- reactive({
@@ -277,11 +300,15 @@ essentiality_module_server <- function(input, output, session, repo_root, active
 
   output$ess_run_status <- renderUI({
     x <- runs()
-    if (!nrow(x)) return(ytab_empty_state("No essentiality result yet", "The HMM needs only the hit files of untreated parent libraries. Choose the libraries and run."))
+    gate <- ytab_design_gate(design_support(), "Essentiality", "Essentiality is not available for this project")
+    if (!nrow(x) && !is.null(gate)) return(gate)
+    if (!nrow(x)) return(tagList(readiness_banner(), ytab_design_merge_warning(design_support()),
+      ytab_empty_state("No essentiality result yet", "The HMM needs only the hit files of untreated parent libraries. Choose the libraries and run.")))
     m <- ytab_read_manifest(x$path[[1L]])
     models <- if (isTRUE(m$hybrid)) "HMM and hybrid" else "HMM"
-    ytab_result_card("Latest result", tags$p(sprintf("%s: %s on %s.", names(ytab_run_choices(x[1L, , drop = FALSE])), models, paste(ytab_sample_labels(unlist(m$libraries), active()), collapse = ", "))),
-                     tags$p("See the Results tab."))
+    tagList(readiness_banner(),
+      ytab_result_card("Latest result", tags$p(sprintf("%s: %s on %s.", names(ytab_run_choices(x[1L, , drop = FALSE])), models, paste(ytab_sample_labels(unlist(m$libraries), active()), collapse = ", "))),
+                       tags$p("See the Results tab.")))
   })
 
   selected_run <- reactive({ req(nrow(runs()) > 0); path <- input$ess_result %||% runs()$path[[1L]]; req(path %in% runs()$path); path })

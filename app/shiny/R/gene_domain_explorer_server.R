@@ -36,10 +36,6 @@ gene_domain_explorer_server <- function(input, output, session, active,
                          choices = choices, selected = selected, server = TRUE)
   }
 
-  clear_generated_figure <- function() {
-    if (!is.null(plot_state())) plot_state(NULL)
-  }
-
   output$gene_domain_project_indicator <- renderUI({
     req(active())
     p <- active()
@@ -64,13 +60,11 @@ gene_domain_explorer_server <- function(input, output, session, active,
   observeEvent(input$gene_domain_track_source, refresh_tracks(), ignoreInit = TRUE)
   observeEvent(input$gene_domain_track_preset, {
     sync_sample_selector(input$gene_domain_track_preset %||% "all")
-    clear_generated_figure()
   }, ignoreInit = TRUE)
   observeEvent(input$gene_domain_samples, {
     if (identical(input$gene_domain_track_preset %||% "all", "custom")) {
       custom_track_selection(input$gene_domain_samples %||% character())
     }
-    clear_generated_figure()
   }, ignoreInit = TRUE)
 
   output$gene_domain_preset_message <- renderUI({
@@ -117,16 +111,16 @@ gene_domain_explorer_server <- function(input, output, session, active,
     state <- search_state()
     status <- as.character(state$status %||% "idle")
     if (identical(status, "idle"))
-      return(tags$p(class = "text-muted", "Enter a gene name or ID, then click Search gene."))
+      return(tags$p(class = "text-muted", "Enter a gene name or ID, then click Search gene. The gene and its figure appear together."))
     if (identical(status, "no_query"))
       return(tags$p(class = "ytab-warning", "Enter a gene query first."))
     if (identical(status, "no_match"))
       return(tags$p(class = "ytab-warning", "No matching gene found."))
     if (identical(status, "ambiguous"))
-      return(tags$p(class = "text-muted", "Multiple genes matched. Select one row before generating a figure."))
+      return(tags$p(class = "text-muted", "Multiple genes matched. Choose one under Matching genes."))
     if (identical(status, "failure"))
       return(tags$div(class = "alert alert-danger", state$error %||% "Gene search failed."))
-    tags$p(class = "text-muted", "Gene resolved. Configure tracks and generate a figure.")
+    tags$p(class = "text-muted", "Gene resolved; the figure is below.")
   })
 
   output$gene_domain_candidates <- DT::renderDT({
@@ -177,32 +171,48 @@ gene_domain_explorer_server <- function(input, output, session, active,
     )
   })
 
-  observeEvent(input$gene_domain_generate, {
+  # The figure is the answer to the search, not a second step: it is drawn as soon as a gene resolves, and redrawn
+  # when the tracks, the style or a display option changes. Debounced because several of those inputs move together
+  # (a preset change rewrites the sample list), and each draw is a Python process.
+  figure_request <- debounce(reactive(list(
+    gene = selected_gene(),
+    samples = input$gene_domain_samples %||% character(),
+    style = input$gene_domain_track_style %||% "sites",
+    source = input$gene_domain_track_source %||% "raw",
+    preset = input$gene_domain_track_preset %||% "all",
+    flank = input$gene_domain_flank_bp %||% 1000L,
+    width = input$gene_domain_width_px %||% 1800L,
+    label_mode = input$gene_domain_label_mode %||% "full",
+    site_counts = isTRUE(input$gene_domain_show_site_counts),
+    domains = isTRUE(input$gene_domain_show_domains),
+    direction = isTRUE(input$gene_domain_show_direction),
+    references = reference_state() %||% character()
+  )), 800)
+
+  observeEvent(figure_request(), {
+    request <- figure_request()
+    if (!nzchar(request$gene %||% "")) { plot_state(NULL); return() }
     req(active_project_path())
-    gene_id <- selected_gene()
-    if (!nzchar(gene_id)) {
-      showNotification("Search and resolve a gene before generating a figure.", type = "warning")
-      return()
-    }
-    samples <- input$gene_domain_samples %||% character()
-    if (!length(samples)) {
-      showNotification("No tracks match this preset for the current project.", type = "warning")
+    if (!length(request$samples)) {
       plot_state(list(status = "failure", error = "No tracks match this preset for the current project."))
       return()
     }
     args <- c(
-      "--gene", gene_id,
-      "--track-source", input$gene_domain_track_source %||% "raw",
-      "--track-preset", input$gene_domain_track_preset %||% "all",
-      "--samples", if (length(samples)) paste(samples, collapse = ",") else "all",
-      "--flank-bp", as.character(as.integer(input$gene_domain_flank_bp %||% 1000L)),
-      "--width-px", as.character(as.integer(input$gene_domain_width_px %||% 1800L)),
-      "--label-mode", input$gene_domain_label_mode %||% "full",
-      if (!isTRUE(input$gene_domain_show_site_counts)) "--hide-site-counts",
-      if (!isTRUE(input$gene_domain_show_domains)) "--hide-domains",
-      if (!isTRUE(input$gene_domain_show_direction)) "--hide-direction",
-      # Each chosen project draws its own copy of the gene below this one's tracks.
-      as.character(rbind("--reference-config", reference_state() %||% character()))
+      "--gene", request$gene,
+      "--track-source", request$source,
+      "--track-preset", request$preset,
+      "--samples", paste(request$samples, collapse = ","),
+      "--track-style", request$style,
+      "--flank-bp", as.character(as.integer(request$flank)),
+      "--width-px", as.character(as.integer(request$width)),
+      "--label-mode", request$label_mode,
+      if (!request$site_counts) "--hide-site-counts",
+      if (!request$domains) "--hide-domains",
+      if (!request$direction) "--hide-direction",
+      # Each chosen project draws its own copy of the gene below this one's tracks. Build the flag/value pairs only
+      # when there is at least one: rbind() of a flag and an empty vector still yields the bare flag, which the
+      # parser rejects as a missing argument.
+      if (length(request$references)) as.character(rbind("--reference-config", request$references))
     )
     result <- tryCatch(
       gene_domain_json(python_bin, repo_root, active_project_path(), args),
@@ -212,12 +222,19 @@ gene_domain_explorer_server <- function(input, output, session, active,
     log_text(paste(c(result$command %||% "", result$stdout %||% "",
                      result$stderr %||% "", paste("Exit status:", result$exit_status %||% "")),
                    collapse = "\n"))
-    if (identical(result$status, "failure")) {
+    if (identical(result$status, "failure"))
       showNotification(result$error %||% "Figure generation failed.", type = "error", duration = NULL)
-    } else {
-      showNotification("Gene insertion figure is ready.", type = "message")
-    }
-  }, ignoreInit = TRUE)
+  }, ignoreInit = FALSE)
+
+  output$gene_domain_style_note <- renderUI({
+    if (identical(input$gene_domain_track_style %||% "sites", "reads"))
+      tags$p(class = "text-muted", "Each insertion site is a stem whose height is the reads at it, log-scaled ",
+             "within its own track, so what compares between tracks of different depth is where the reads fall, ",
+             "not how many. An essential gene reads as a gap over the coding sequence.")
+    else
+      tags$p(class = "text-muted", "Each insertion site is a tick of equal height, its width scaled by the reads ",
+             "at it: the map of what was hit, with the site count per track in the label.")
+  })
 
   output$gene_domain_domain_status <- renderUI({
     manifest <- plot_state()$manifest %||% NULL
@@ -228,12 +245,17 @@ gene_domain_explorer_server <- function(input, output, session, active,
       tags$p(class = "text-muted", "No domain annotation available for this gene.")
   })
 
-  output$gene_domain_figure_ui <- renderUI({
+  has_figure <- reactive(gene_domain_valid_output(plot_state()))
+  output$gene_domain_has_figure <- reactive(has_figure())
+  # The flag drives a conditionalPanel, which Shiny would otherwise never evaluate while the panel is hidden.
+  outputOptions(output, "gene_domain_has_figure", suspendWhenHidden = FALSE)
+
+  output$gene_domain_figure_message <- renderUI({
     state <- plot_state()
     if (is.null(state)) {
       return(ytab_empty_state(
-        "Search for a gene, choose tracks, then click Generate figure.",
-        "The figure preview and downloads appear here after a successful run."
+        "Search for a gene to see its insertions.",
+        "The figure is drawn as soon as the gene resolves, and redrawn when you change the figure style, the tracks or another dataset to compare with."
       ))
     }
     if (identical(state$status, "failure")) {
@@ -248,20 +270,20 @@ gene_domain_explorer_server <- function(input, output, session, active,
                                              collapse = "\n"))))
       ))
     }
-    if (!gene_domain_valid_output(state)) {
+    if (!has_figure())
       return(ytab_empty_state(
         "No valid Gene Explorer output is available yet.",
-        "Search for a gene, choose tracks, then click Generate figure."
+        "Search for a gene; if this persists, see the technical details below."
       ))
-    }
-    ytab_static_image_output_card(
-      "Generated: Gene/domain insertion figure",
-      "gene_domain_figure",
-      description = "Python-generated PNG from existing insertion tracks; displayed as a static image with preserved aspect ratio.",
-      height = input$gene_domain_display_height %||% "large",
-      downloads = tagList(downloadButton("gene_domain_download_png", "Download PNG"),
-                          downloadButton("gene_domain_download_table", "Download table"))
-    )
+    NULL
+  })
+
+  output$gene_domain_figure_caption <- renderUI({
+    req(has_figure())
+    tags$p(class = "text-muted",
+           if (identical(input$gene_domain_display_height %||% "fit", "fit"))
+             "Scaled to fit the window; choose a preview height under Display, or download the PNG, to see it at full size."
+           else "Shown at the chosen preview height; scroll the panel to see the whole figure.")
   })
 
   output$gene_domain_figure <- renderImage({
@@ -269,7 +291,12 @@ gene_domain_explorer_server <- function(input, output, session, active,
     if (is.null(manifest)) return(NULL)
     src <- as.character(manifest$figure_path %||% "")
     if (!nzchar(src) || !file.exists(src)) return(NULL)
-    list(src = src, contentType = "image/png", alt = "Gene/domain insertion figure")
+    # A tall figure (one lane per track, plus any comparison datasets) overflows a fixed-height panel, so the
+    # default caps it against the viewport and the browser scales it down whole rather than making the user scroll.
+    choice <- input$gene_domain_display_height %||% "fit"
+    list(src = src, contentType = "image/png", alt = "Gene/domain insertion figure",
+         class = if (identical(choice, "fit")) "ytab-image-fit" else NULL,
+         style = if (identical(choice, "fit")) NULL else paste0("max-height:", ytab_plot_height_px(choice), ";"))
   }, deleteFile = FALSE)
 
   output$gene_domain_insertions <- DT::renderDT({

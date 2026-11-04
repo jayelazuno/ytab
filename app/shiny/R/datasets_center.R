@@ -37,7 +37,7 @@ datasets_search <- function(data, words) {
 
 datasets_modal <- function() modalDialog(title = "Public datasets", size = "xl", easyClose = TRUE, footer = modalButton("Close"),
   tags$div(class = "ytab-datasets",
-    tags$p(class = "text-muted", "Published Hermes and Ac/Ds libraries reprocessed with YTAB from raw reads. Search any field, including drug, strain or run ID; select a row for its conditions, QC, results and libraries. Sites per kb: median insertion density of the analysed libraries; top site: the largest share of a library's reads at one site."),
+    tags$p(class = "text-muted", "Published Hermes, Ac/Ds and piggyBac libraries reprocessed with YTAB from raw reads. Search any field, including drug, strain or run ID; select a row for its conditions, QC, results and libraries. Sites per coding kb: median insertion sites per kb of coding sequence (median gene) across the analysed libraries, the density the essentiality recommendation is stated in; top site: the largest share of a library's reads at one site."),
     DT::DTOutput("datasets_table"), uiOutput("datasets_detail")))
 
 # Catalog rows of one study, in the order they appear.
@@ -69,7 +69,7 @@ datasets_table_data <- function(x, libraries) {
   data.frame(Study = study, Species = sprintf("<i>%s</i>", htmltools::htmlEscape(x$species)), Strain = htmltools::htmlEscape(x$strain),
              Transposon = htmltools::htmlEscape(x$transposon), Libraries = suppressWarnings(as.integer(x$runs_included)),
              Conditions = n_conditions, Accession = htmltools::htmlEscape(x$accession),
-             `Sites per kb` = suppressWarnings(as.numeric(datasets_number(x$median_sites_per_kb))),
+             `Sites per coding kb` = suppressWarnings(as.numeric(datasets_number(x$median_sites_per_kb))),
              `Top site (%)` = suppressWarnings(round(100 * as.numeric(x$max_top_site_share), 1)),
              `In the app` = vapply(x$in_app, short, ""), search = hidden, check.names = FALSE, stringsAsFactors = FALSE)
 }
@@ -90,7 +90,7 @@ datasets_detail_ui <- function(row, libraries) {
       field("Accession", row$accession), field("Design", row$design),
       field("Libraries", sprintf("%s runs (%s analysed): %s", row$runs, row$runs_included, row$roles)),
       field("Strains in the project", row$backgrounds), field("Conditions", row$conditions),
-      field("Density", if (nzchar(row$median_sites_per_kb)) sprintf("median %s insertion sites per kb across the analysed libraries", datasets_number(row$median_sites_per_kb))),
+      field("Density", if (nzchar(row$median_sites_per_kb)) sprintf("median %s insertion sites per coding kb (median gene) across the analysed libraries", datasets_number(row$median_sites_per_kb))),
       field("Top site", if (!is.na(share)) sprintf("up to %.1f%% of a library's reads at one site (%s)", 100 * share, row$max_top_site)),
       field("Results in the app", row$in_app),
       field(if (length(projects) > 1) "Projects" else "Project",
@@ -132,7 +132,7 @@ datasets_server <- function(input, output, session, repo_root, data, open_projec
                     Library = if ("library" %in% names(l)) ifelse(nzchar(l$library), l$library, "not analysed") else "",
                     `Used in` = if ("used_in" %in% names(l)) gsub("; ", "<br>", htmltools::htmlEscape(l$used_in)) else "", Reads = suppressWarnings(as.numeric(l$input_reads)),
                     `Mapped (%)` = suppressWarnings(as.numeric(datasets_number(l$percent_mapped))), `Insertion sites` = suppressWarnings(as.numeric(l$insertion_sites)),
-                    `Sites per kb` = suppressWarnings(as.numeric(datasets_number(l$sites_per_kb))),
+                    `Sites per coding kb` = suppressWarnings(as.numeric(datasets_number(l$sites_per_kb))),
                     `Top site share (%)` = suppressWarnings(round(100 * as.numeric(l$top_site_share), 1)), check.names = FALSE)
     t <- DT::datatable(t, rownames = FALSE, filter = "top", selection = "none", class = "compact stripe hover", escape = setdiff(seq_along(t), which(names(t) == "Used in")),
                   options = list(pageLength = 10, scrollX = TRUE, dom = "ftip"))

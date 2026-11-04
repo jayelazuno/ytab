@@ -50,18 +50,48 @@ def species_label(key):
     return f"{words[0][0]}. {' '.join(words[1:])}" if len(words) >= 2 else key
 
 
-def read_orthologs(path):
-    """{species gene: S. cerevisiae gene}, one-to-one pairs only."""
+def read_ortholog_pairs(path):
+    """Every (species gene, S. cerevisiae gene) pair in the table, including the many-to-one ones.
+
+    Kept separate from `read_orthologs` so that an analysis which can show a whole gene family reads the same
+    table through the same format sniffing as one that needs unambiguous pairs, rather than parsing it again.
+    """
     pairs = set()
     with open(path) as handle:
         lines = [line.rstrip("\n").split("\t") for line in handle if line.strip() and not line.startswith("#")]
     if lines and "scer_id" in lines[0]:
         col = lines[0].index("scer_id"); lines = lines[1:]
-        pairs = {(f[0].strip(), f[col].strip()) for f in lines if len(f) > col and SCER.match(f[col].strip())}
+        for f in lines:
+            if len(f) > col and f[0].strip():
+                pairs.update((f[0].strip(), hub) for hub in hub_genes(f[col]))
     else:
         for f in lines:
-            hub = next((x.strip() for x in f[1:] if SCER.match(x.strip())), None)
-            if hub and f[0].strip():pairs.add((f[0].strip(), hub))
+            if not f[0].strip():
+                continue
+            pairs.update((f[0].strip(), hub) for field in f[1:] for hub in hub_genes(field))
+    return pairs
+
+
+def hub_genes(field):
+    """Every S. cerevisiae gene named in one cell of an ortholog table.
+
+    A curated table does not always put one bare identifier in the cell. PomBase writes `YEL066W|YPR193C` where a
+    pombe gene corresponds to several S. cerevisiae genes, and `YBR265W(N)+YDR302W(C)` where it corresponds to two
+    that are a split or fusion of it, the suffix naming which end. Matching the cell as a whole therefore threw
+    away the row, and with it the mapping: reading only bare cells dropped 810 real pombe mappings, CDC19 among
+    them, and reported those genes as having no ortholog at all.
+    """
+    out = []
+    for part in re.split(r"[|+,;]", str(field).strip()):
+        part = re.sub(r"\([NC]\)$", "", part.strip())
+        if SCER.match(part):
+            out.append(part)
+    return out
+
+
+def read_orthologs(path):
+    """{species gene: S. cerevisiae gene}, one-to-one pairs only."""
+    pairs = read_ortholog_pairs(path)
     na, nb = Counter(a for a, _ in pairs), Counter(b for _, b in pairs)
     return {a:b for a, b in pairs if na[a] == 1 and nb[b] == 1}
 

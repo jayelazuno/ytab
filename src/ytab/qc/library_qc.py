@@ -62,6 +62,7 @@ METRICS = [
     ("kurtosis", "insertions", "Kurtosis", None, None, "Excess kurtosis of the read counts at occupied sites; not very meaningful on its own."),
     ("pickands_tail_index", "insertions", "Tail index (Pickands)", "high", "relative", "Heaviness of the upper tail of the read counts; higher means a few sites carry more of the reads."),
     ("fr_corr", "insertions", "Strand correlation (W vs C)", None, None, "Correlation of read counts on the two strands at a position. For Hermes the two orientations are separate insertions, so it is shown, not flagged."),
+    ("sites_per_coding_kb", "genes", "Insertion sites per coding kb (median gene)", "low", "relative", "Distinct insertion positions inside a gene's coding blocks per kb of coding sequence, median over genes. This is the density the essentiality recommendation is stated in (docs/methods/00_recommendations.md): about 36 for the label-free HMM, about 18 when curated labels are available, reached by pooling independent inductions. Insertions per kb of genome is not the same measure, because it counts the whole reference rather than coding sequence."),
     ("percent_features_hit", "genes", "Genes hit (%)", "low", "relative", "SummaryTable: features with at least one insertion."),
     ("mean_hits_per_feature", "genes", "Insertions per gene", "low", "relative", "SummaryTable: mean insertion sites per feature."),
     ("percent_hits_in_features", "genes", "Insertions in genes (%)", "both", "relative", "SummaryTable: share of insertion sites inside features."),
@@ -98,6 +99,66 @@ def genome_length(fasta: Path) -> int:
         for line in handle:
             if not line.startswith(">"):total += len(line.strip())
     return total
+
+
+def coding_genes(fasta: Path, gff: Path) -> list[dict]:
+    """Annotated genes with CDS blocks, on the chromosomes the reads were mapped to."""
+    from ytab.essentiality.control_conditioned_gumbel import annotations
+    chroms = {line[1:].split()[0] for line in open(fasta) if line.startswith(">")} if fasta and fasta.is_file() else set()
+    return [g for g in annotations(gff) if g["blocks"] and (not chroms or g["chrom"] in chroms)]
+
+
+def coding_density(sites, genes: list[dict]) -> float | None:
+    """Median over genes of distinct insertion positions per kb of coding sequence.
+
+    `sites` is any collection of (chromosome, position) keys, so it takes both one library's site counts and the
+    union of several libraries' sites.
+
+    The measure the essentiality recommendation is written in, so that the QC table can be read against it
+    directly. It is the median gene rather than the mean because a handful of very densely hit genes would
+    otherwise make a library look usable when most of its genes carry nothing.
+    """
+    if not genes:return None
+    positions = {}
+    for chrom, position in sites:positions.setdefault(chrom, []).append(position)
+    arrays = {c:np.array(sorted(p)) for c, p in positions.items()}
+    per_kb = []
+    for gene in genes:
+        found = arrays.get(gene["chrom"]); length = sum(end-start+1 for start, end in gene["blocks"])
+        if not length:continue
+        n = sum(int(np.searchsorted(found, end, "right")-np.searchsorted(found, start, "left"))
+                for start, end in gene["blocks"]) if found is not None else 0
+        per_kb.append(n/length*1000)
+    return float(np.median(per_kb)) if per_kb else None
+
+
+# How dense a library set has to be before an essentiality call is worth making (docs/methods/00_recommendations.md).
+HMM_SITES_PER_CODING_KB = 36.
+HYBRID_SITES_PER_CODING_KB = 18.
+
+
+def essentiality_readiness(rows: list[dict], hits: dict, genes: list[dict]) -> list[dict]:
+    """Per strain, the density an essentiality run would actually have, and whether that clears the recommendation.
+
+    An HMM is fitted on the unselected (parent, else control) libraries of one strain together, so the number that
+    decides whether the call is worth making is their pooled density, not any single library's: pooling independent
+    inductions is how a sparse set reaches a usable density, and summing the per-library figures would overstate it
+    because the sets of occupied sites overlap. The app reads this rather than recomputing it.
+    """
+    out = []
+    for background in dict.fromkeys(r["background"] for r in rows):
+        same = [r for r in rows if r["background"] == background]
+        parents = [r["sample"] for r in same if r["role"] == "parent"]
+        unselected = parents or [r["sample"] for r in same if r["role"] == "control"]
+        usable = [s for s in unselected if s in hits]
+        pooled = set().union(*(set(hits[s][0]) for s in usable)) if usable else set()
+        density = coding_density(pooled, genes) if usable else None
+        out.append(dict(background=background, role="parent" if parents else "control", libraries=" ".join(usable),
+                        n_libraries=len(usable), sites_per_coding_kb=density,
+                        supports_hmm=density is not None and density >= HMM_SITES_PER_CODING_KB,
+                        supports_hybrid=density is not None and density >= HYBRID_SITES_PER_CODING_KB,
+                        hmm_target=HMM_SITES_PER_CODING_KB, hybrid_target=HYBRID_SITES_PER_CODING_KB))
+    return out
 
 
 def read_hits(path: Path) -> tuple[dict, dict]:
@@ -244,6 +305,8 @@ def build(project_config: Path, output: Path) -> dict:
     if not samples:raise ValueError("No included samples")
     fasta = _resolve((config.get("reference") or {}).get("fasta"), root)
     genome_bp = genome_length(fasta) if fasta and fasta.is_file() else 0
+    gff = _resolve((config.get("reference") or {}).get("gff"), root)
+    genes = coding_genes(fasta, gff) if gff and gff.is_file() else []
     combined = {}
     combined_path = project/"summary/summary_stats.all_samples.csv"
     if combined_path.is_file():combined = {r["sample"]:r for r in csv.DictReader(open(combined_path))}
@@ -263,6 +326,7 @@ def build(project_config: Path, output: Path) -> dict:
             | _mapping(project/"mapfastq"/name/f"{name}.mapping_stats.csv")
         if name in hits:
             row |= insertion_metrics(*hits[name], universe, genome_bp)
+            row["sites_per_coding_kb"] = coding_density(hits[name][0], genes)
             data = plot_data(name, np.fromiter(hits[name][0].values(), dtype=float))
             for k in plots:plots[k] += data[k]
         row |= _summary(project, name, combined) | diagnostics.get(name, {})
@@ -275,9 +339,11 @@ def build(project_config: Path, output: Path) -> dict:
             flags.append(dict(sample=s, metric=key, label=label, theme=THEMES[theme], value=values[s], flag=colour, reason=reason,
                               source=RULE_OF_THUMB if rule == "rule_of_thumb" else LEYS if rule == "relative" else "descriptive",
                               comment=comment, normalization_hint=HINTS.get(key, "") if colour in {"yellow", "red"} else ""))
+    readiness = essentiality_readiness(rows, hits, genes)
     output.mkdir(parents=True)
     keys = ["sample", "display_name", "role", "pool", "background"]+[m[0] for m in METRICS]+["max_site", "pti_valid_terms", "catalogue_sites", "occupied_sites", "stats_notes"]
     _write(output/"qc_table.tsv", keys, rows)
+    _write(output/"essentiality_readiness.tsv", list(readiness[0]) if readiness else ["background"], readiness)
     _write(output/"qc_flags.tsv", list(flags[0]), flags)
     _write(output/"metrics.tsv", ["metric", "theme", "label", "bad_direction", "rule", "comment"],
            [dict(metric=k, theme=THEMES[t], label=l, bad_direction=d or "", rule=r or "descriptive", comment=c) for k, t, l, d, r, c in METRICS])
@@ -293,7 +359,7 @@ def build(project_config: Path, output: Path) -> dict:
                     created=datetime.now(timezone.utc).isoformat(),
                     files=dict(table="qc_table.tsv", flags="qc_flags.tsv", metrics="metrics.tsv", excel="qc_table.xlsx",
                                histogram="plots/histogram.tsv.gz", qq="plots/qq.tsv.gz", ranked="plots/ranked.tsv.gz",
-                               lorenz="plots/lorenz.tsv.gz"))
+                               lorenz="plots/lorenz.tsv.gz", essentiality_readiness="essentiality_readiness.tsv"))
     (output/"manifest.json").write_text(json.dumps(manifest, indent=2)+"\n")
     return manifest
 

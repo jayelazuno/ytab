@@ -5,7 +5,7 @@
 cross_species_ui <- function() ytab_two_column_layout(
   controls = ytab_control_panel("Essentiality across species",
     uiOutput("xs_project_selector"),
-    helpText("One project per species, each with an essentiality run (its newest run is used). Genes are matched as one-to-one orthologs through S. cerevisiae."),
+    helpText("One dataset per species, each with an essentiality run (its newest run is used). Genes are matched as one-to-one orthologs through S. cerevisiae."),
     actionButton("xs_run", "Compare species", class = "btn-primary"),
     tags$hr(),
     uiOutput("xs_result_selector"),
@@ -14,7 +14,10 @@ cross_species_ui <- function() ytab_two_column_layout(
   main = tagList(
     uiOutput("xs_status"),
     ytab_plot_card("Essentiality across species", uiOutput("xs_plot_frame"), description = uiOutput("xs_plot_caption")),
-    ytab_table_card("One-to-one orthologs", DT::DTOutput("xs_table"), description = "Search a gene (any species' ID or name, or the S. cerevisiae ID) to see its essentiality score and call in every species."),
+    # The plot is the answer; the per-gene table folds away, as on the other tabs of this module.
+    tags$details(class = "ytab-more-options", tags$summary("One-to-one orthologs, gene by gene"),
+                 tags$p(class = "text-muted", "Search a gene (any species' ID or name, or the S. cerevisiae ID) to see its essentiality score and call in every species."),
+                 DT::DTOutput("xs_table")),
     ytab_methods_drawer(
       tags$p(tags$b("Orthologs. "), "Each project's genes are mapped to S. cerevisiae systematic names with the ortholog table named in its project configuration (reference: orthology_file); an S. cerevisiae project is the hub itself. Only one-to-one orthologs are kept, and only genes scored by the HMM in every chosen species, so all species are compared on the same genes."),
       tags$p(tags$b("Calls. "), "Each species' label-free HMM score (P_ES_run, the posterior probability of a run of essential windows in the coding sequence) and call (essential when P_ES_run ≥ 0.5) from the project's newest essentiality run."),
@@ -86,17 +89,23 @@ cross_species_server <- function(input, output, session, repo_root, active, acti
   })
   output$xs_project_selector <- renderUI({
     x <- candidates()
-    if (nrow(x) < 2L) return(tags$p(class = "text-muted", "Needs at least two projects of different species with an essentiality run (Essentiality → Run)."))
-    # the active project, then for every other species the project with the newest essentiality run
+    if (nrow(x) < 2L) return(tags$p(class = "text-muted", "Needs at least two datasets of different species with an essentiality run (Essentiality → Run)."))
+    # the active project, then for every other species the dataset with the newest essentiality run
     x <- x[order(x$project_id != active()$project_id, -x$essentiality), , drop = FALSE]
     chosen <- x$project_config[!duplicated(x$species)]
-    checkboxGroupInput("xs_projects", "Projects", stats::setNames(x$project_config, sprintf("%s (%s)", x$display_name, x$species)), selected = chosen)
+    # A chooser rather than a checkbox each: the list is as long as the catalogue of datasets, which grows as
+    # testers add their own, and a column of checkboxes runs out of the control panel well before that stops.
+    selectizeInput("xs_projects", "Datasets", multiple = TRUE,
+                   choices = stats::setNames(x$project_config, sprintf("%s (%s)", x$display_name, x$species)),
+                   selected = chosen,
+                   options = list(plugins = list("remove_button"),
+                                  placeholder = "Choose one dataset per species"))
   })
   observeEvent(input$xs_run, {
     if (jobs$job_is_running()) { showNotification("Wait for the current job to finish.", type = "warning"); return() }
     chosen <- input$xs_projects %||% character(); species <- candidates()$species[match(chosen, candidates()$project_config)]
-    if (length(chosen) < 2L) { showNotification("Choose at least two projects.", type = "error"); return() }
-    if (anyDuplicated(species)) { showNotification("Choose one project per species.", type = "error"); return() }
+    if (length(chosen) < 2L) { showNotification("Choose at least two datasets.", type = "error"); return() }
+    if (anyDuplicated(species)) { showNotification("Choose one dataset per species.", type = "error"); return() }
     args <- c(file.path(repo_root, "scripts", "local", "ytab_cross_species.py"), as.vector(rbind("--project-config", chosen)),
               "--output", ytab_new_run_dir(runs_dir, "cross_species"))
     tryCatch({
@@ -126,7 +135,11 @@ cross_species_server <- function(input, output, session, repo_root, active, acti
   }
   output$xs_plot_caption <- renderUI(if (identical(input$xs_plot, "agreement"))
     "Agreement of the essential calls between each pair of species (Cohen's κ, fill) and the correlation of their HMM scores (Spearman ρ), on the same one-to-one orthologs."
-    else "Number of one-to-one orthologs essential in each set of species (dots below each bar; the 15 largest sets): bars in a species' colour are essential only in that species, teal in all species.")
+    else tagList(
+      tags$p(class = "text-muted",
+        "How many genes are essential in exactly the species marked by the dots under each bar. The teal bar on the left is the conserved core: genes essential in every species chosen. A bar in one species' colour is the opposite: essential there and dispensable in the others, which is where a species-specific vulnerability would show."),
+      tags$p(class = "text-muted",
+        "Read it as a shape, not a list: a tall core and small single-species bars mean the species agree, while a large single-species bar is either real biology or a thin library, so check that species' density before believing it. The 15 largest combinations are shown; the full set is in the gene table and the download.")))
   output$xs_plot_frame <- renderUI({ req(nrow(runs()) > 0); plotly::plotlyOutput("xs_plotly", height = "560px") })
   output$xs_plotly <- plotly::renderPlotly(ytab_ggplotly(plot_for(TRUE)))
   output$xs_table <- DT::renderDT({

@@ -213,6 +213,12 @@ Rerun every condition analysis: `ytab run --workflow output/projects/Nickels_202
 - **Essentiality (HMM)**, `essentiality_CBS138_Nickels2024_CBS138`
   - libraries: SRR29743992; SRR29743993
   - `ytab essentiality --project-config output/projects/Nickels_2024_glabrata/config/project.yaml --libraries SRR29743992 SRR29743993 --output output/projects/Nickels_2024_glabrata/essentiality/essentiality_CBS138_Nickels2024_CBS138`
+- **Essentiality (HMM)**, `remodeler_cbs138`
+  - libraries: SRR29743993; SRR29743992; SRR29743985; SRR29743984
+  - `ytab essentiality --project-config output/projects/Nickels_2024_glabrata/config/project.yaml --libraries SRR29743993 SRR29743992 SRR29743985 SRR29743984 --output output/projects/Nickels_2024_glabrata/essentiality/remodeler_cbs138`
+- **Essentiality (HMM)**, `remodeler_cbs138_hybrid`
+  - libraries: SRR29743993; SRR29743992; SRR29743985; SRR29743984
+  - `ytab essentiality --project-config output/projects/Nickels_2024_glabrata/config/project.yaml --libraries SRR29743993 SRR29743992 SRR29743985 SRR29743984 --output output/projects/Nickels_2024_glabrata/essentiality/remodeler_cbs138_hybrid`
 - **Treated vs control (Resampling, betageom)**, `treated_vs_control_BGC`
   - CBS138, micafungin_16ng: SRR29743993 (control); SRR29743986 (treated)
   - CBS138, micafungin_2ng: SRR29743993 (control); SRR29743989 (treated)
@@ -486,3 +492,202 @@ Rerun every condition analysis: `ytab run --workflow output/projects/Kingma_2025
 - **Multi-condition (betageom)**, `nrp1_deletion_vs_wild_type_BGC`
   - nrp1_deletion, wild_type: ERR13705629 (wild_type (reference)); ERR13705630 (wild_type (reference)); ERR13705631 (wild_type (reference)); ERR13705632 (wild_type (reference)); ERR13705633 (wild_type (reference)); ERR13705634 (wild_type (reference)); ERR13705635 (wild_type (reference)); ERR13705636 (wild_type (reference)); ERR13705637 (wild_type (reference)); ERR13705638 (wild_type (reference)); ERR13705639 (wild_type (reference)); nrp1D_1_nrp1_deletion_libERR13705597 (nrp1_deletion); nrp1D_2_nrp1_deletion_libERR13705613 (nrp1_deletion)
   - `ytab multicondition-project --project-config output/projects/Kingma_2025_SATAY/config/project.yaml --normalized output/projects/Kingma_2025_SATAY/normalization/conditions_v1/experiment/methods --normalization betageom --sample Kingma_2025_SATAY::ERR13705629=wild_type --sample Kingma_2025_SATAY::ERR13705630=wild_type --sample Kingma_2025_SATAY::ERR13705631=wild_type --sample Kingma_2025_SATAY::ERR13705632=wild_type --sample Kingma_2025_SATAY::ERR13705633=wild_type --sample Kingma_2025_SATAY::ERR13705634=wild_type --sample Kingma_2025_SATAY::ERR13705635=wild_type --sample Kingma_2025_SATAY::ERR13705636=wild_type --sample Kingma_2025_SATAY::ERR13705637=wild_type --sample Kingma_2025_SATAY::ERR13705638=wild_type --sample Kingma_2025_SATAY::ERR13705639=wild_type --sample Kingma_2025_SATAY::nrp1D_1_nrp1_deletion_libERR13705597=nrp1_deletion --sample Kingma_2025_SATAY::nrp1D_2_nrp1_deletion_libERR13705613=nrp1_deletion --reference-condition wild_type --output output/projects/Kingma_2025_SATAY/multicondition/nrp1_deletion_vs_wild_type_BGC`
+
+## Chow et al. 2024: Candida glabrata (Chow_2024_glabrata)
+
+YWCg03 (PB[HIS3] in ATCC2001 dHTL; ATCC2001 is CBS138); piggyBac (HIS3), piggyBac terminal repeat (150 bp paired end, R1 carries the junction). SRA PRJNA967833. 3 replicate pools (R1, R2, R3), each grown without drug and at 60 and 120 ug/mL fluconazole; doses from the SRA experiment titles. 3 controls, so z-score, resampling and the dose series are all available.
+
+| library | runs | role | condition | strain | pool |
+|---|---|---|---|---|---|
+| SRR24456510 |  | control | fluconazole_0ug | YWCg03 | R1 |
+| SRR24456507 |  | treated | fluconazole_60ug | YWCg03 | R1 |
+| SRR24456504 |  | treated | fluconazole_120ug | YWCg03 | R1 |
+| SRR24456509 |  | control | fluconazole_0ug | YWCg03 | R2 |
+| SRR24456506 |  | treated | fluconazole_60ug | YWCg03 | R2 |
+| SRR24456503 |  | treated | fluconazole_120ug | YWCg03 | R2 |
+| SRR24456508 |  | control | fluconazole_0ug | YWCg03 | R3 |
+| SRR24456505 |  | treated | fluconazole_60ug | YWCg03 | R3 |
+| SRR24456502 |  | treated | fluconazole_120ug | YWCg03 | R3 |
+
+**Analyses**
+
+- **Treated vs control (Resampling, betageom)**, `tvc_20261102_172042`
+  - YWCg03, fluconazole_60ug: SRR24456510 (control); SRR24456509 (control); SRR24456508 (control); SRR24456507 (treated); SRR24456506 (treated); SRR24456505 (treated)
+  - YWCg03, fluconazole_120ug: SRR24456510 (control); SRR24456509 (control); SRR24456508 (control); SRR24456504 (treated); SRR24456503 (treated); SRR24456502 (treated)
+  - `ytab treated-vs-control --project-config output/projects/Chow_2024_glabrata/config/project.yaml --method resampling --normalization-run output/projects/Chow_2024_glabrata/normalization/norm_20261102_171320 --normalization betageom --output output/projects/Chow_2024_glabrata/treated_vs_control/tvc_20261102_172042`
+
+## Gao et al. 2021: Candida auris (Gao_2021_auris)
+
+CauW08 (leucine auxotroph of CBS10913, clade II); piggyBac, piggyBac terminal repeat (150 bp paired end, R1 carries the junction). SRA PRJNA679970. 3 independent piggyBac libraries (lib1, lib2, lib5), each sequenced twice; the two runs of a library are merged with ytab merge-runs. All unselected, so QC, density and essentiality only.
+
+| library | runs | role | condition | strain | pool |
+|---|---|---|---|---|---|
+| SRR13106162 |  | parent | parent | CauW08 | lib1 |
+| SRR13106161 |  | parent | parent | CauW08 | lib1 |
+| SRR13106160 |  | parent | parent | CauW08 | lib2 |
+| SRR13106159 |  | parent | parent | CauW08 | lib2 |
+| SRR13106158 |  | parent | parent | CauW08 | lib5 |
+| SRR13106157 |  | parent | parent | CauW08 | lib5 |
+
+**Analyses:** parent libraries only (no condition analyses)
+
+
+## Song et al. 2026: Candida auris (Song_2026_auris)
+
+CauW08 and its pet309 derivative CauW156 (CBS10913, clade II); piggyBac, piggyBac terminal repeat (paired end, R1 carries the junction). SRA PRJNA1273510. 3 replicates (n1, n2, n3), each without drug and at 30, 60 and 120 ug/mL fluconazole; doses from the SRA experiment titles. Each replicate treated as its own pool, so a treated library is compared only with its own control.
+
+| library | runs | role | condition | strain | pool |
+|---|---|---|---|---|---|
+| SRR33878342 |  | control | fluconazole_0ug | C_auris_B8441_like | n1 |
+| SRR33878341 |  | control | fluconazole_0ug | C_auris_B8441_like | n2 |
+| SRR33878338 |  | control | fluconazole_0ug | C_auris_B8441_like | n3 |
+| SRR33878337 |  | treated | fluconazole_30ug | C_auris_B8441_like | n1 |
+| SRR33878336 |  | treated | fluconazole_30ug | C_auris_B8441_like | n2 |
+| SRR33878335 |  | treated | fluconazole_30ug | C_auris_B8441_like | n3 |
+| SRR33878334 |  | treated | fluconazole_60ug | C_auris_B8441_like | n1 |
+| SRR33878333 |  | treated | fluconazole_60ug | C_auris_B8441_like | n2 |
+| SRR33878332 |  | treated | fluconazole_60ug | C_auris_B8441_like | n3 |
+| SRR33878331 |  | treated | fluconazole_120ug | C_auris_B8441_like | n1 |
+| SRR33878340 |  | treated | fluconazole_120ug | C_auris_B8441_like | n2 |
+| SRR33878339 |  | treated | fluconazole_120ug | C_auris_B8441_like | n3 |
+
+**Analyses**
+
+- **Treated vs control (Resampling, betageom)**, `tvc_20261102_171738`
+  - C_auris_B8441_like, fluconazole_30ug: SRR33878342 (control); SRR33878341 (control); SRR33878338 (control); SRR33878337 (treated); SRR33878336 (treated); SRR33878335 (treated)
+  - C_auris_B8441_like, fluconazole_60ug: SRR33878342 (control); SRR33878341 (control); SRR33878338 (control); SRR33878334 (treated); SRR33878333 (treated); SRR33878332 (treated)
+  - C_auris_B8441_like, fluconazole_120ug: SRR33878342 (control); SRR33878341 (control); SRR33878338 (control); SRR33878331 (treated); SRR33878340 (treated); SRR33878339 (treated)
+  - `ytab treated-vs-control --project-config output/projects/Song_2026_auris/config/project.yaml --method resampling --normalization-run output/projects/Song_2026_auris/normalization/norm_20261102_171738 --normalization betageom --output output/projects/Song_2026_auris/treated_vs_control/tvc_20261102_171738`
+
+## Yao et al. 2026: Komagataella phaffii (Yao_2026_phaffii)
+
+P.pg0015 (GS115 with a PBL-eGFP-BleoR-PBR cassette); piggyBac (BleoR), piggyBac terminal repeat (250 bp paired end, R1 carries the junction). SRA PRJNA1376236. the unsorted piggyBac library (G15P, role parent) and two populations sorted by eGFP: low (G15P-P4) and high (G15P-P67). A reporter-expression sort, not a growth selection.
+
+| library | runs | role | condition | strain | pool |
+|---|---|---|---|---|---|
+| SRR36343507 |  | parent | parent | P_pg0015P | G15P |
+| SRR36343506 |  | treated | egfp_low | P_pg0015P | G15P |
+| SRR36343505 |  | treated | egfp_high | P_pg0015P | G15P |
+
+**Analyses**
+
+- **Treated vs control (Resampling, betageom)**, `tvc_20261102_172042`
+  - P_pg0015P, egfp_low: SRR36343507 (control); SRR36343506 (treated)
+  - P_pg0015P, egfp_high: SRR36343507 (control); SRR36343505 (treated)
+  - `ytab treated-vs-control --project-config output/projects/Yao_2026_phaffii/config/project.yaml --method resampling --normalization-run output/projects/Yao_2026_phaffii/normalization/norm_20261102_172042 --normalization betageom --output output/projects/Yao_2026_phaffii/treated_vs_control/tvc_20261102_172042`
+
+## Patterson et al. 2018: Yarrowia lipolytica (Patterson_2018_lipolytica)
+
+CLIB89 (W29); Hermes, splinkerette PCR (100 bp single end; Hermes end at a fixed offset). SRA PRJNA356612 (GEO GSE90993). 2 independent trials (trial1, trial2), each from the library before outgrowth (gen0, role parent) to 20 and 80 generations in YP with glucose or glycerol; plus a FACS pool sorted on BODIPY lipid signal, top 5% (treated) against bottom 95% (control).
+
+| library | runs | role | condition | strain | pool |
+|---|---|---|---|---|---|
+| SRR5084557 |  | parent | gen0 | CLIB89 | trial1 |
+| SRR5084558 |  | parent | gen0 | CLIB89 | trial1 |
+| SRR5084559 |  | parent | gen0 | CLIB89 | trial1 |
+| SRR5084560 |  | treated | glucose_gen20 | CLIB89 | trial1 |
+| SRR5084561 |  | treated | glucose_gen20 | CLIB89 | trial1 |
+| SRR5084562 |  | treated | glycerol_gen20 | CLIB89 | trial1 |
+| SRR5084563 |  | treated | glycerol_gen20 | CLIB89 | trial1 |
+| SRR5084564 |  | treated | glucose_gen80 | CLIB89 | trial1 |
+| SRR5084565 |  | treated | glucose_gen80 | CLIB89 | trial1 |
+| SRR5084566 |  | treated | glucose_gen80 | CLIB89 | trial1 |
+| SRR5084567 |  | treated | glycerol_gen80 | CLIB89 | trial1 |
+| SRR5084568 |  | treated | glycerol_gen80 | CLIB89 | trial1 |
+| SRR5084569 |  | parent | gen0 | CLIB89 | trial2 |
+| SRR5084570 |  | parent | gen0 | CLIB89 | trial2 |
+| SRR5084571 |  | parent | gen0 | CLIB89 | trial2 |
+| SRR5084572 |  | treated | glucose_gen20 | CLIB89 | trial2 |
+| SRR5084573 |  | treated | glucose_gen20 | CLIB89 | trial2 |
+| SRR5084574 |  | treated | glucose_gen20 | CLIB89 | trial2 |
+| SRR5084575 |  | treated | glycerol_gen20 | CLIB89 | trial2 |
+| SRR5084576 |  | treated | glycerol_gen20 | CLIB89 | trial2 |
+| SRR5084577 |  | treated | glycerol_gen20 | CLIB89 | trial2 |
+| SRR5084578 |  | treated | glucose_gen80 | CLIB89 | trial2 |
+| SRR5084579 |  | treated | glucose_gen80 | CLIB89 | trial2 |
+| SRR5084580 |  | treated | glucose_gen80 | CLIB89 | trial2 |
+| SRR5084581 |  | treated | glycerol_gen80 | CLIB89 | trial2 |
+| SRR5084582 |  | treated | glycerol_gen80 | CLIB89 | trial2 |
+| SRR5084583 |  | treated | glycerol_gen80 | CLIB89 | trial2 |
+| SRR5084584 |  | treated | lipid_high | CLIB89 | facs |
+| SRR5084585 |  | treated | lipid_high | CLIB89 | facs |
+| SRR5084586 |  | treated | lipid_high | CLIB89 | facs |
+| SRR5084587 |  | control | lipid_low | CLIB89 | facs |
+| SRR5084588 |  | control | lipid_low | CLIB89 | facs |
+| SRR5084589 |  | control | lipid_low | CLIB89 | facs |
+
+**Analyses**
+
+- **Treated vs control (Resampling, betageom)**, `tvc_20261102_172042`
+  - CLIB89, glucose_gen20: SRR5084557 (control); SRR5084558 (control); SRR5084559 (control); SRR5084569 (control); SRR5084570 (control); SRR5084571 (control); SRR5084560 (treated); SRR5084561 (treated); SRR5084572 (treated); SRR5084573 (treated); SRR5084574 (treated)
+  - CLIB89, glycerol_gen20: SRR5084557 (control); SRR5084558 (control); SRR5084559 (control); SRR5084569 (control); SRR5084570 (control); SRR5084571 (control); SRR5084562 (treated); SRR5084563 (treated); SRR5084575 (treated); SRR5084576 (treated); SRR5084577 (treated)
+  - CLIB89, glucose_gen80: SRR5084557 (control); SRR5084558 (control); SRR5084559 (control); SRR5084569 (control); SRR5084570 (control); SRR5084571 (control); SRR5084564 (treated); SRR5084565 (treated); SRR5084566 (treated); SRR5084578 (treated); SRR5084579 (treated); SRR5084580 (treated)
+  - CLIB89, glycerol_gen80: SRR5084557 (control); SRR5084558 (control); SRR5084559 (control); SRR5084569 (control); SRR5084570 (control); SRR5084571 (control); SRR5084567 (treated); SRR5084568 (treated); SRR5084581 (treated); SRR5084582 (treated); SRR5084583 (treated)
+  - CLIB89, lipid_high: SRR5084587 (control); SRR5084588 (control); SRR5084589 (control); SRR5084584 (treated); SRR5084585 (treated); SRR5084586 (treated)
+  - `ytab treated-vs-control --project-config output/projects/Patterson_2018_lipolytica/config/project.yaml --method resampling --normalization-run output/projects/Patterson_2018_lipolytica/normalization/norm_20261102_172042 --normalization betageom --output output/projects/Patterson_2018_lipolytica/treated_vs_control/tvc_20261102_172042`
+
+## Billmyre et al. 2025: Cryptococcus neoformans (Billmyre_2025_neoformans)
+
+H99 derivative yBB119; Ac/Ds (Ds mobilised by maize Ac transposase), Ds terminal repeat after restriction digestion (151 bp paired end, R1 carries the junction). SRA PRJNA1134100. one pool (yBB119): the library at time zero (T0, role parent), then two days in DMSO (control) or at the fluconazole IC50 (treated). Each culture was split into a CviAII and an MseI digest, merged with ytab merge-runs. The first basidiomycete in YTAB.
+
+| library | runs | role | condition | strain | pool |
+|---|---|---|---|---|---|
+| SRR29762408 |  | parent | T0 | yBB119 | yBB119 |
+| SRR29762409 |  | parent | T0 | yBB119 | yBB119 |
+| SRR29762404 |  | control | DMSO | yBB119 | yBB119 |
+| SRR29762405 |  | control | DMSO | yBB119 | yBB119 |
+| SRR29762406 |  | treated | fluconazole | yBB119 | yBB119 |
+| SRR29762407 |  | treated | fluconazole | yBB119 | yBB119 |
+
+**Analyses:** parent libraries only (no condition analyses)
+
+
+## Johns Hopkins deposit (no publication): Candida glabrata (Nickels_2026_glabrata_FKS2)
+
+BG2 FKS2-F659del; Hermes (NAT), splinkerette PCR (sonication, end repair, indexed splinkerette ligation). SRA PRJNA1454099. one pool, a no-drug control and eight caspofungin doses (250 to 32,000 ng/mL) from the SRA experiment titles. Resampling and the dose series are available; the z-score is not (one control). Pairs with the BG2 wild-type caspofungin series of Nickels & Cunningham 2025 as a strain x treatment comparison.
+
+| library | runs | role | condition | strain | pool |
+|---|---|---|---|---|---|
+| SRR38121017 |  | control | no_drug | BG2_FKS2_F659del | BG2_FKS2_F659del_Ind1 |
+| SRR38121016 |  | treated | caspofungin_250ng | BG2_FKS2_F659del | BG2_FKS2_F659del_Ind1 |
+| SRR38121015 |  | treated | caspofungin_500ng | BG2_FKS2_F659del | BG2_FKS2_F659del_Ind1 |
+| SRR38121014 |  | treated | caspofungin_1000ng | BG2_FKS2_F659del | BG2_FKS2_F659del_Ind1 |
+| SRR38121013 |  | treated | caspofungin_2000ng | BG2_FKS2_F659del | BG2_FKS2_F659del_Ind1 |
+| SRR38121012 |  | treated | caspofungin_4000ng | BG2_FKS2_F659del | BG2_FKS2_F659del_Ind1 |
+| SRR38121011 |  | treated | caspofungin_8000ng | BG2_FKS2_F659del | BG2_FKS2_F659del_Ind1 |
+| SRR38121010 |  | treated | caspofungin_16000ng | BG2_FKS2_F659del | BG2_FKS2_F659del_Ind1 |
+| SRR38121009 |  | treated | caspofungin_32000ng | BG2_FKS2_F659del | BG2_FKS2_F659del_Ind1 |
+
+**Analyses**
+
+- **Treated vs control (Resampling, betageom)**, `tvc_20261102_172042`
+  - BG2_FKS2_F659del, caspofungin_250ng: SRR38121017 (control); SRR38121016 (treated)
+  - BG2_FKS2_F659del, caspofungin_500ng: SRR38121017 (control); SRR38121015 (treated)
+  - BG2_FKS2_F659del, caspofungin_1000ng: SRR38121017 (control); SRR38121014 (treated)
+  - BG2_FKS2_F659del, caspofungin_2000ng: SRR38121017 (control); SRR38121013 (treated)
+  - BG2_FKS2_F659del, caspofungin_4000ng: SRR38121017 (control); SRR38121012 (treated)
+  - BG2_FKS2_F659del, caspofungin_8000ng: SRR38121017 (control); SRR38121011 (treated)
+  - BG2_FKS2_F659del, caspofungin_16000ng: SRR38121017 (control); SRR38121010 (treated)
+  - BG2_FKS2_F659del, caspofungin_32000ng: SRR38121017 (control); SRR38121009 (treated)
+  - `ytab treated-vs-control --project-config output/projects/Nickels_2026_glabrata_FKS2/config/project.yaml --method resampling --normalization-run output/projects/Nickels_2026_glabrata_FKS2/normalization/norm_20261102_172042 --normalization betageom --output output/projects/Nickels_2026_glabrata_FKS2/treated_vs_control/tvc_20261102_172042`
+
+## Johns Hopkins deposit (no publication): Candida glabrata (Nickels_2026_glabrata_tolerance)
+
+BG2 (induction 3); Hermes (NAT), splinkerette PCR. SRA PRJNA1304976. one pool (BG2_Ind3) at three micafungin concentrations (15, 32 and 64 ng/mL), each sampled at 0 h (control) and 6 h (treated). Three 0 h cultures of one pool, so the z-score, resampling and the multi-condition series are all available. Unpublished, so used for QC, density and method behaviour, never as a published comparison.
+
+| library | runs | role | condition | strain | pool |
+|---|---|---|---|---|---|
+| SRR34963234 |  | control | micafungin_15ng_0hr | BG2 | BG2_Ind3 |
+| SRR34963233 |  | treated | micafungin_15ng_6hr | BG2 | BG2_Ind3 |
+| SRR34963232 |  | control | micafungin_32ng_0hr | BG2 | BG2_Ind3 |
+| SRR34963231 |  | treated | micafungin_32ng_6hr | BG2 | BG2_Ind3 |
+| SRR34963230 |  | control | micafungin_64ng_0hr | BG2 | BG2_Ind3 |
+| SRR34963229 |  | treated | micafungin_64ng_6hr | BG2 | BG2_Ind3 |
+
+**Analyses**
+
+- **Treated vs control (Resampling, betageom)**, `tvc_20261102_172042`
+  - BG2, micafungin_15ng_6hr: SRR34963234 (control); SRR34963232 (control); SRR34963230 (control); SRR34963233 (treated)
+  - BG2, micafungin_32ng_6hr: SRR34963234 (control); SRR34963232 (control); SRR34963230 (control); SRR34963231 (treated)
+  - BG2, micafungin_64ng_6hr: SRR34963234 (control); SRR34963232 (control); SRR34963230 (control); SRR34963229 (treated)
+  - `ytab treated-vs-control --project-config output/projects/Nickels_2026_glabrata_tolerance/config/project.yaml --method resampling --normalization-run output/projects/Nickels_2026_glabrata_tolerance/normalization/norm_20261102_172042 --normalization betageom --output output/projects/Nickels_2026_glabrata_tolerance/treated_vs_control/tvc_20261102_172042`

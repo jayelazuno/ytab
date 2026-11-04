@@ -20,7 +20,7 @@ STAGES = [
     ("Essentiality", ["essentiality", "hermes-hmm", "hybrid-inputs", "classifier", "cross-species"]),
     ("Condition comparisons", ["comparison-design", "fitness", "fitness-zscore", "treated-vs-control", "resampling", "control-gumbel",
                                "multicondition-project", "multicondition", "multicondition-plots", "genetic-interactions"]),
-    ("Gene Explorer", ["browser-tracks", "gene-insertions", "go"]),
+    ("Gene Explorer", ["browser-tracks", "gene-insertions", "gene-profiles", "go"]),
     ("Screen planning and mutants", ["coverage", "mutants"]),
     ("Datasets, results and sharing", ["datasets", "report", "export", "resource-bundle", "app"]),
     ("Pre-registered benchmarks", ["tvc-benchmark", "tvc-phase2"]),

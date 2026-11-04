@@ -41,8 +41,27 @@ def role(r):
     return value if value in ("parent", "control", "treated") else ("parent" if str(r.get("condition", "")).lower() in ("parent", "") else "treated")
 
 
+# A sample sheet written by discovery carries the design as `guessed_condition`, `guessed_background` and
+# `guessed_pool`, and only gains the confirmed columns once the user edits them. Resolve both spellings into the
+# confirmed names once, here, so that the checks below can read a row as a design: without this a fresh project
+# either fails on a missing `pool` or, worse, reads every library as a parent, because an absent condition is
+# indistinguishable from the "parent" condition.
+DESIGN_FIELDS = ("condition", "background", "pool", "culture_replicate", "library_role")
+
+
+def design_rows(rows):
+    out = []
+    for r in rows:
+        row = dict(r)
+        for field in DESIGN_FIELDS:
+            row[field] = str(r.get(field) or r.get(f"guessed_{field}") or "").strip()
+        row["sample"] = str(r.get("sample") or "").strip()
+        out.append(row)
+    return out
+
+
 def check(rows, project, config):
-    included = [r for r in rows if str(r.get("include", "True")).strip().lower() not in ("false", "0", "no")]
+    included = [r for r in design_rows(rows) if str(r.get("include", "True")).strip().lower() not in ("false", "0", "no")]
     cfg = f"--project-config {config}"
     out = []
     add = lambda analysis, status, samples, why, command="":out.append(dict(analysis=analysis, status=status, samples=samples, why=why, command=command))

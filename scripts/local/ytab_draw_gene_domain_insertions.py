@@ -52,6 +52,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--width-px", type=int, default=1800)
     parser.add_argument("--dpi", type=int, default=150)
     parser.add_argument("--label-mode", choices=("full", "compact"), default="full")
+    parser.add_argument("--track-style", choices=("sites", "reads"), default="sites",
+                        help="sites: every insertion site as an equal-height tick. reads: every site as a stem whose "
+                             "height is its reads, log-scaled within each track")
     parser.add_argument("--hide-site-counts", action="store_true")
     parser.add_argument("--hide-domains", action="store_true")
     parser.add_argument("--hide-direction", action="store_true")
@@ -122,6 +125,7 @@ def main() -> int:
             dpi=args.dpi,
             label_mode=args.label_mode,
             show_site_counts=not args.hide_site_counts,
+            track_style=args.track_style,
             output=args.output,
             force=args.force,
             reference_configs=args.reference_config,

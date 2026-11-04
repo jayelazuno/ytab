@@ -163,12 +163,15 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     checkFunc = function() { x <- ytab_analysis_runs(tryCatch(file.path(active()$project_root, folder), error = function(e) ""), marker); paste(x$path, x$modified, collapse = "|") },
     valueFunc = function() ytab_analysis_runs(tryCatch(file.path(active()$project_root, folder), error = function(e) ""), marker))
   mc_runs <- analysis_runs("multicondition", "manifest.json"); gi_runs <- analysis_runs("genetic_interactions", "run_manifest.json")
+  # What this project's design can support, so an empty tab can say whether anything has been run yet or whether
+  # the libraries could never answer it. Recomputed per project, since the sample sheet is edited in the app.
+  design_support <- reactive(ytab_design_support(python_bin, repo_root, tryCatch(active_project_path(), error = function(e) "")))
   start <- function(script, args, stage, message) {
     if (jobs$job_is_running()) { showNotification("Wait for the current job to finish.", type = "warning"); return(invisible(FALSE)) }
     tryCatch({ jobs$start_job(python_bin(), c(file.path(repo_root, "scripts", "local", script), args), active_project_path(), stage, wd = repo_root)
                showNotification(message, type = "message") }, error = function(e) showNotification(conditionMessage(e), type = "error"))
   }
-  tvc_server(input, output, session, repo_root, active, active_project_path, norm_runs, start)
+  tvc_server(input, output, session, repo_root, active, active_project_path, norm_runs, start, design_support)
   reference_files <- reactive({ cfg <- yaml::read_yaml(active_project_path()); resolve <- function(x) if (grepl("^/", x)) x else file.path(repo_root, x)
                                 list(fasta = resolve(cfg$reference$fasta), gff = resolve(cfg$reference$gff)) })
 
@@ -228,7 +231,10 @@ comparisons_server <- function(input, output, session, repo_root, active, active
   output$mc_result_selector <- renderUI({ x <- mc_runs(); if (!nrow(x)) return(tags$p(class = "text-muted", "No multi-condition result yet.")); selectInput("mc_result", "Result", ytab_run_choices(x)) })
   output$mc_pair_selector <- renderUI({ req(identical(input$mc_plot, "volcano")); p <- mc_data()$pairs; req(nrow(p) > 0); selectInput("mc_pair", "Pair", unique(p$pair)) })
   output$mc_summary <- renderUI({
-    if (!nrow(mc_runs())) return(ytab_empty_state("No multi-condition result yet", "Choose a normalization run, assign conditions and run the tests."))
+    gate <- ytab_design_gate(design_support(), "Multi-condition", "Multi-condition tests are not available for this project")
+    if (!is.null(gate)) return(gate)
+    if (!nrow(mc_runs())) return(tagList(ytab_design_merge_warning(design_support()),
+      ytab_empty_state("No multi-condition result yet", "Choose a normalization run, assign conditions and run the tests.")))
     m <- mc_data()$manifest; req(m)
     cards <- c(if (!is.null(m$anova_calls)) list(ytab_metric_card("ANOVA: genes that vary", format(m$anova_calls$varies %||% 0, big.mark = ","), sprintf("of %s tested", format(sum(unlist(m$anova_calls)) - (m$anova_calls[["not tested"]] %||% 0), big.mark = ",")))),
                lapply(names(m$all_pairs_calls), function(pair) { x <- m$all_pairs_calls[[pair]]; ytab_metric_card(pair, sprintf("%s ↓ / %s ↑", x$depleted %||% 0, x$enriched %||% 0), "depleted / enriched (all-pairs)") }))
@@ -286,6 +292,9 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     a <- gi_assignment(); ref <- reference_files()
     if (identical(input$gi_reference, input$gi_query)) { showNotification("Choose two different strains.", type = "error"); return() }
     a <- a[a$strain %in% c(input$gi_reference, input$gi_query), , drop = FALSE]
+    # Without this the --sample pairs below collapse to a bare flag, which the parser rejects with a usage error
+    # instead of saying that the two strains have no assigned libraries.
+    if (!nrow(a)) { showNotification("No libraries are assigned to those two strains.", type = "error"); return() }
     out <- ytab_new_run_dir(file.path(active()$project_root, "genetic_interactions"), "gi")
     args <- c("--normalized", file.path(input$gi_norm_run, "experiment", "methods"), "--normalization", input$gi_method %||% "betageom",
               "--gff", ref$gff, "--reference", ref$fasta, "--output", out, "--reference-strain", input$gi_reference, "--query-strain", input$gi_query,
@@ -298,7 +307,10 @@ comparisons_server <- function(input, output, session, repo_root, active, active
   gi_data <- reactive(list(manifest = read_json_safely(file.path(gi_selected(), "run_manifest.json")), genes = named(ytab_read_analysis_tsv(file.path(gi_selected(), "genes.tsv")))))
   output$gi_result_selector <- renderUI({ x <- gi_runs(); if (!nrow(x)) return(tags$p(class = "text-muted", "No genetic-interaction result yet.")); selectInput("gi_result", "Result", ytab_run_choices(x)) })
   output$gi_summary <- renderUI({
-    if (!nrow(gi_runs())) return(ytab_empty_state("No genetic-interaction result yet", "Choose a normalization run, two strains and run. Each strain needs at least two control/treated pairs."))
+    gate <- ytab_design_gate(design_support(), "Genetic interactions", "Genetic interactions are not available for this project")
+    if (!is.null(gate)) return(gate)
+    if (!nrow(gi_runs())) return(tagList(ytab_design_merge_warning(design_support()),
+      ytab_empty_state("No genetic-interaction result yet", "Choose a normalization run, two strains and run. Each strain needs at least two control/treated pairs.")))
     m <- gi_data()$manifest; req(m); d <- m$diagnostics; calls <- d$calls
     cards <- c(list(ytab_metric_card("Genes tested", format(d$tested, big.mark = ","), sprintf("%s vs %s", d$query_strain, d$reference_strain))),
                lapply(c("Aggravating", "Alleviating", "Suppressive"), function(k) ytab_metric_card(k, format(calls[[k]] %||% 0, big.mark = ","), "genes")))

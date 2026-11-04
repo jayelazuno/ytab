@@ -39,22 +39,32 @@ source(file.path(root, "app/shiny/R/ui_essentiality.R"))
 source(file.path(root, "app/shiny/R/ui_gene_domain_explorer.R"))
 # The workspace now also uses these modules (GO, genome browser, screen coverage, analysis panels).
 for (name in c("go_analysis.R", "genome_browser_state.R", "ui_genome_browser.R", "screen_planning.R", "mutant_screen.R",
-               "analysis_runs.R","reference_projects.R", "qc_library_correlation.R", "normalization_module.R", "essentiality_module.R", "treated_vs_control.R", "comparisons_module.R"))
+               "analysis_runs.R", "design_support.R", "reference_projects.R", "qc_library_correlation.R", "normalization_module.R", "essentiality_module.R", "treated_vs_control.R", "comparisons_module.R"))
   source(file.path(root, "app/shiny/R", name))
 source(file.path(root, "app/shiny/R/ui_workspace.R"))
 
 project <- read_project_summary(args[[1L]], root)
 stopifnot(nzchar(project$project_id))
-comparative_html <- htmltools::renderTags(comparative_ui())$html
+comparative_html <- htmltools::renderTags(gene_domain_explorer_ui())$html
 checkbox_html <- htmltools::renderTags(comparative_species_checkbox_ui())$html
 workspace_html <- htmltools::renderTags(workspace_ui(2L))$html
 for (label in c("Single Species View", "Comparative View",
-                "Gene Group Analysis"))
+                "Gene Group Analysis", "Essentiality across species"))
   stopifnot(grepl(label, comparative_html, fixed = TRUE))
-stopifnot(grepl("Across Species", workspace_html, fixed = TRUE), grepl("Gene Explorer", workspace_html, fixed = TRUE),
+# Comparative View offers the same two readings as the single species view, and the species and its call name the
+# panel rather than the y axis, which carries the quantity instead.
+# The search is a union over the species, and a panel reached only by name says so rather than reading as an
+# asserted ortholog.
+stopifnot(grepl("matched against every represented species", comparative_html, fixed = TRUE),
+          grepl("shared OrthoFinder gene family", comparative_html, fixed = TRUE),
+          grepl("unioned", comparative_html, fixed = TRUE),
+          grepl("comparative_track_style", comparative_html, fixed = TRUE),
+          grepl("Reads per insertion site", comparative_html, fixed = TRUE),
+          grepl("Insertion sites", comparative_html, fixed = TRUE))
+stopifnot(!grepl(">Across Species<", workspace_html, fixed = TRUE), grepl("Gene Explorer", workspace_html, fixed = TRUE),
           grepl("Condition Comparisons", workspace_html, fixed = TRUE),
           grepl("Genome Browser", workspace_html, fixed = TRUE),
-          grepl("Search for one gene to view available Tn-seq results for one species.",
+          grepl("Search a gene to see where insertions fall across it in this project",
                 comparative_html, fixed = TRUE),
           !grepl("placeholder", checkbox_html, ignore.case = TRUE),
           !grepl(paste0("codex/", paste0("RNA", "cross")), comparative_html, fixed = TRUE),

@@ -14,11 +14,16 @@ available <- comparative_resources_available(root)
 stopifnot(nrow(species) == 5L,
           all(c("glabrata", "albicans", "cerevisiae", "lactis", "pombe") %in%
                 species$species),
-          identical(species$enabled[species$species == "pombe"], FALSE),
+          # S. pombe was enabled in the manifest when its projects were added; this assertion was left behind
+          # asserting the opposite, so the check has been failing since. It is a working species here now.
+          identical(species$enabled[species$species == "pombe"], TRUE),
           is.data.frame(lookup),
           is.data.frame(orthology),
           is.data.frame(available))
-paths <- paste(c(available$path, capture.output(str(species))), collapse = "\n")
+# The check is that no path outside this checkout is baked in, not that none is absolute: these are resolved at
+# run time against the repo root, so on any machine with the repo under /Users every one of them contains it.
+stopifnot(all(startsWith(available$path[nzchar(available$path)], root)))
+paths <- paste(c(sub(root, "", available$path, fixed = TRUE), capture.output(str(species))), collapse = "\n")
 stopifnot(!grepl("/Users/", paths, fixed = TRUE),
           !grepl(paste0("codex/", paste0("RNA", "cross")), paths, fixed = TRUE))
 if (nrow(lookup) && nrow(orthology)) {
