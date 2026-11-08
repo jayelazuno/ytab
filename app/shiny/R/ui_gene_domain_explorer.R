@@ -60,7 +60,7 @@ gene_domain_single_species_ui <- function() {
     main = panel_card(
         "Single species view",
         tags$p(class = "ytab-stage-purpose",
-               "Search a gene to see where insertions fall across it in this project, and optionally in other datasets."),
+               "Search a gene to see where insertions fall across it in this dataset, and optionally in other datasets."),
         uiOutput("gene_domain_status"),
         uiOutput("gene_domain_gene_summary"),
         uiOutput("gene_domain_domain_status"),

@@ -4,7 +4,7 @@ Which runs make which library, and which libraries each analysis uses, for every
 `ytab datasets` from the sample sheets, `config/comparison_design.csv` and the analyses' manifests; search a run ID,
 strain, drug or condition to find where it is used. From the command line: `ytab datasets --find TEXT`.
 
-## Gale et al. 2020: Candida glabrata (Gale_2020)
+## Gale et al. 2020: Candida glabrata (Gale_et_al_2020_Hermes)
 
 BG14 (BG2 background); Hermes (NAT), splinkerette PCR. SRA SRX8130913–SRX8130919. 3 independent inductions (1 tube, 40 tubes, Cg1); 2 no-drug controls and 2 fluconazole cultures grown from Cg1.
 
@@ -23,6 +23,12 @@ BG14 (BG2 background); Hermes (NAT), splinkerette PCR. SRA SRX8130913–SRX81309
 - **Essentiality (HMM)**, `essentiality_20261025_131741`
   - libraries: SRR11561508; SRR11561507; SRR11561506
   - `ytab essentiality --project-config output/projects/Gale_2020/config/project.yaml --libraries SRR11561508 SRR11561507 SRR11561506 --output output/projects/Gale_2020/essentiality/essentiality_20261025_131741`
+- **Treated vs control (Control-conditioned Gumbel (depletion only), ttr)**, `gumbel_20261104_165910`
+  - BG14, treated: SRR11561505 (control); SRR11561504 (control); SRR11561503 (treated); SRR11561502 (treated)
+  - `ytab treated-vs-control --project-config output/projects/Gale_2020/config/project.yaml --method gumbel --normalization-run output/projects/Gale_2020/normalization/norm_20261022_all_methods --normalization ttr --output output/projects/Gale_2020/treated_vs_control/gumbel_20261104_165910`
+- **Treated vs control (Resampling, betageom)**, `resampling_20261104_110949`
+  - BG14, treated: SRR11561505 (control); SRR11561504 (control); SRR11561503 (treated); SRR11561502 (treated)
+  - `ytab treated-vs-control --project-config output/projects/Gale_2020/config/project.yaml --method resampling --normalization-run output/projects/Gale_2020/normalization/norm_20261022_all_methods --normalization betageom --output output/projects/Gale_2020/treated_vs_control/resampling_20261104_110949`
 - **Treated vs control (Resampling, betageom)**, `resampling_BGC`
   - BG14, treated: SRR11561505 (control); SRR11561504 (control); SRR11561503 (treated); SRR11561502 (treated)
   - `ytab treated-vs-control --project-config output/projects/Gale_2020/config/project.yaml --method resampling --normalization-run output/projects/Gale_2020/normalization/norm_20261022_all_methods --normalization betageom --output output/projects/Gale_2020/treated_vs_control/resampling_BGC`
@@ -42,7 +48,7 @@ BG14 (BG2 background); Hermes (NAT), splinkerette PCR. SRA SRX8130913–SRX81309
   - parent, control, FLU: SRR11561508 (parent); SRR11561505 (control (reference)); SRR11561504 (control (reference)); SRR11561503 (FLU); SRR11561502 (FLU)
   - `ytab multicondition-project --project-config output/projects/Gale_2020/config/project.yaml --normalized None --normalization betageom --sample Gale_2020::SRR11561508=parent --sample Gale_2020::SRR11561505=control --sample Gale_2020::SRR11561504=control --sample Gale_2020::SRR11561503=FLU --sample Gale_2020::SRR11561502=FLU --reference-condition control --output output/projects/Gale_2020/multicondition/Cg1_parent_control_FLU_BGC`
 
-## Segal et al. 2018: Candida albicans (Segal_2018_albicans)
+## Segal et al. 2018: Candida albicans (Segal_et_al_2018_AcDs)
 
 YJB-T1081 (stable haploid of SC5314); Ac/Ds (Ds-NAT1), Ds primer tail. BioProject PRJNA490565 (SRR7824838–SRR7824848). 11 independent Ds libraries.
 
@@ -66,7 +72,7 @@ YJB-T1081 (stable haploid of SC5314); Ac/Ds (Ds-NAT1), Ds primer tail. BioProjec
   - libraries: SRR7824843; SRR7824841; SRR7824838
   - `ytab essentiality --project-config output/projects/Segal_2018_albicans/config/project.yaml --libraries SRR7824843 SRR7824841 SRR7824838 --output output/projects/Segal_2018_albicans/essentiality/essentiality_20261025_131741`
 
-## Guo et al. 2013: Schizosaccharomyces pombe (Pombe_Hermes)
+## Guo et al. 2013: Schizosaccharomyces pombe (Guo_et_al_2013_Hermes)
 
 HL Hermes strain; Hermes, terminal 10 bp of the Hermes end. SRA SRR327340. 1 in vivo library (the library used by Segal et al. 2018).
 
@@ -77,7 +83,7 @@ HL Hermes strain; Hermes, terminal 10 bp of the Hermes end. SRA SRR327340. 1 in 
 **Analyses:** parent libraries only (no condition analyses)
 
 
-## Grech et al. 2019: Schizosaccharomyces pombe (Pombe_Hermes)
+## Grech et al. 2019: Schizosaccharomyces pombe (Guo_et_al_2013_Hermes)
 
 wild type; Hermes, end-ligated adapter (paired end). ENA PRJEB27324 (ERR2641199–ERR2641214). 8 high-density libraries, each sequenced twice.
 
@@ -106,7 +112,7 @@ wild type; Hermes, end-ligated adapter (paired end). ENA PRJEB27324 (ERR2641199�
   - libraries: ERR2641199; ERR2641200; ERR2641201; ERR2641202; ERR2641203; ERR2641204; ERR2641205; ERR2641206; ERR2641207; ERR2641208; ERR2641209; ERR2641210; ERR2641211; ERR2641212
   - `ytab essentiality --project-config output/projects/Pombe_Hermes/config/project.yaml --libraries ERR2641199 ERR2641200 ERR2641201 ERR2641202 ERR2641203 ERR2641204 ERR2641205 ERR2641206 ERR2641207 ERR2641208 ERR2641209 ERR2641210 ERR2641211 ERR2641212 --output output/projects/Pombe_Hermes/essentiality/essentiality_20261025_131741`
 
-## Lee et al. 2020: Schizosaccharomyces pombe (Pombe_Hermes)
+## Lee et al. 2020: Schizosaccharomyces pombe (Guo_et_al_2013_Hermes)
 
 WT (YHL9451) and otr1R::ura4 (YHL10161); Hermes, end-ligated adapter. BioProject PRJNA517661 (SRR8502433–SRR8502440). 2 strains × 2 pools × generation 0 and 80 (FOA).
 
@@ -146,7 +152,7 @@ WT (YHL9451) and otr1R::ura4 (YHL10161); Hermes, end-ligated adapter. BioProject
   - otr1R vs WT, strain x treatment: SRR8502440 (WT control); SRR8502439 (WT control); SRR8502438 (otr1R control); SRR8502437 (otr1R control); SRR8502436 (WT treated); SRR8502435 (WT treated); SRR8502434 (otr1R treated); SRR8502433 (otr1R treated)
   - `ytab genetic-interactions --normalized output/projects/Pombe_Hermes/normalization/conditions_v1/experiment/methods --normalization totreads --gff resources/species/pombe/reference_genome/schizosaccharomyces_pombe.chr.gff3 --reference resources/species/pombe/reference_genome/Schizosaccharomyces_pombe.ASM294v2.30.dna.genome.fa --reference-strain WT --query-strain otr1R --sample Pombe_Hermes::SRR8502440=WT:control --sample Pombe_Hermes::SRR8502439=WT:control --sample Pombe_Hermes::SRR8502438=otr1R:control --sample Pombe_Hermes::SRR8502437=otr1R:control --sample Pombe_Hermes::SRR8502436=WT:treated --sample Pombe_Hermes::SRR8502435=WT:treated --sample Pombe_Hermes::SRR8502434=otr1R:treated --sample Pombe_Hermes::SRR8502433=otr1R:treated --output output/projects/Pombe_Hermes/genetic_interactions/T80_vs_T0_otr1R_vs_WT_total_reads`
 
-## Michel et al. 2017: Saccharomyces cerevisiae (Michel_2017_SATAY)
+## Michel et al. 2017: Saccharomyces cerevisiae (Michel_et_al_2017_AcDs)
 
 BY4741 ade2Δ background; Ac/Ds (MiniDs), restriction digestion and circularization. ArrayExpress E-MTAB-4885; ENA PRJEB14804 (ERR1533143–ERR1533149). 2 wild-type libraries; rapamycin (grown from wild type 2); dpl1Δ, dpl1Δ psd2Δ, VPS13(D716H), mmm1Δ VPS13(D716H).
 
@@ -184,7 +190,7 @@ BY4741 ade2Δ background; Ac/Ds (MiniDs), restriction digestion and circularizat
   - WT, dpl1del, dpl1del_psd2del, VPS13_D716H, mmm1del_VPS13_D716H: ERR1533147 (WT (reference)); ERR1533148 (WT (reference)); ERR1533143 (dpl1del); ERR1533144 (dpl1del_psd2del); ERR1533146 (VPS13_D716H); ERR1533145 (mmm1del_VPS13_D716H)
   - `ytab multicondition-project --project-config output/projects/Michel_2017_SATAY/config/project.yaml --normalized output/projects/Michel_2017_SATAY/normalization/conditions_v1/experiment/methods --normalization totreads --sample Michel_2017_SATAY::ERR1533147=WT --sample Michel_2017_SATAY::ERR1533148=WT --sample Michel_2017_SATAY::ERR1533143=dpl1del --sample Michel_2017_SATAY::ERR1533144=dpl1del_psd2del --sample Michel_2017_SATAY::ERR1533146=VPS13_D716H --sample Michel_2017_SATAY::ERR1533145=mmm1del_VPS13_D716H --reference-condition WT --output output/projects/Michel_2017_SATAY/multicondition/mutants_vs_WT_total_reads`
 
-## Nickels et al. 2024: Candida glabrata (Nickels_2024_glabrata)
+## Nickels et al. 2024: Candida glabrata (Nickels_et_al_2024_Hermes)
 
 CBS138 ura3 derivatives (CBS138u, 2001u); Hermes (NAT), splinkerette PCR. BioProject PRJNA1133102. 4 parent pools; 8 micafungin cultures (2–32 ng/µL).
 
@@ -236,7 +242,7 @@ Rerun every condition analysis: `ytab run --workflow output/projects/Nickels_202
   - parent, micafungin_2ng, micafungin_4ng, micafungin_8ng, micafungin_16ng: SRR29743993 (parent (reference)); SRR29743989 (micafungin_2ng); SRR29743988 (micafungin_4ng); SRR29743987 (micafungin_8ng); SRR29743986 (micafungin_16ng)
   - `ytab multicondition-project --project-config output/projects/Nickels_2024_glabrata/config/project.yaml --normalized output/projects/Nickels_2024_glabrata/normalization/conditions_v1/experiment/methods --normalization betageom --sample Nickels_2024_glabrata::SRR29743993=parent --sample Nickels_2024_glabrata::SRR29743989=micafungin_2ng --sample Nickels_2024_glabrata::SRR29743988=micafungin_4ng --sample Nickels_2024_glabrata::SRR29743987=micafungin_8ng --sample Nickels_2024_glabrata::SRR29743986=micafungin_16ng --reference-condition parent --output output/projects/Nickels_2024_glabrata/multicondition/CBS138_micafungin_series_BGC`
 
-## Nickels & Cunningham 2025: Candida glabrata (Nickels_2025_glabrata)
+## Nickels & Cunningham 2025: Candida glabrata (Nickels_et_al_2025_Hermes_BG2)
 
 BG2, BG2 PDR1 gain of function, BG2 pdr1Δ; CBS138 2001u; Hermes (NAT), splinkerette PCR. BioProject PRJNA1247003. 10 no-drug controls; 39 cultures in five echinocandins or ibrexafungerp (1–64 ng/µL).
 
@@ -359,7 +365,7 @@ Rerun every condition analysis: `ytab run --workflow output/projects/Nickels_202
   - micafungin_no_drug, micafungin_16ng, micafungin_2ng, micafungin_4ng, micafungin_8ng: SRR33002015 (micafungin_no_drug (reference)); SRR33002011 (micafungin_16ng); SRR33002014 (micafungin_2ng); SRR33002013 (micafungin_4ng); SRR33002012 (micafungin_8ng)
   - `ytab multicondition-project --project-config output/projects/Nickels_2025_glabrata/config/project.yaml --normalized output/projects/Nickels_2025_glabrata/normalization/conditions_v1/experiment/methods --normalization betageom --sample Nickels_2025_glabrata::SRR33002015=micafungin_no_drug --sample Nickels_2025_glabrata::SRR33002011=micafungin_16ng --sample Nickels_2025_glabrata::SRR33002014=micafungin_2ng --sample Nickels_2025_glabrata::SRR33002013=micafungin_4ng --sample Nickels_2025_glabrata::SRR33002012=micafungin_8ng --reference-condition micafungin_no_drug --output output/projects/Nickels_2025_glabrata/multicondition/pdr1_KO_micafungin_series_BGC`
 
-## Nickels & Cunningham 2025: Candida glabrata (Nickels_2025_glabrata_CBS138)
+## Nickels & Cunningham 2025: Candida glabrata (Nickels_et_al_2025_Hermes_CBS138)
 
 BG2, BG2 PDR1 gain of function, BG2 pdr1Δ; CBS138 2001u; Hermes (NAT), splinkerette PCR. BioProject PRJNA1247003. 10 no-drug controls; 39 cultures in five echinocandins or ibrexafungerp (1–64 ng/µL).
 
@@ -388,7 +394,7 @@ Rerun every condition analysis: `ytab run --workflow output/projects/Nickels_202
   - caspofungin_no_drug, caspofungin_16ng, caspofungin_2ng, caspofungin_4ng, caspofungin_8ng: SRR33001998 (caspofungin_no_drug (reference)); SRR33001994 (caspofungin_16ng); SRR33001997 (caspofungin_2ng); SRR33001996 (caspofungin_4ng); SRR33001995 (caspofungin_8ng)
   - `ytab multicondition-project --project-config output/projects/Nickels_2025_glabrata_CBS138/config/project.yaml --normalized output/projects/Nickels_2025_glabrata_CBS138/normalization/conditions_v1/experiment/methods --normalization betageom --sample Nickels_2025_glabrata_CBS138::SRR33001998=caspofungin_no_drug --sample Nickels_2025_glabrata_CBS138::SRR33001994=caspofungin_16ng --sample Nickels_2025_glabrata_CBS138::SRR33001997=caspofungin_2ng --sample Nickels_2025_glabrata_CBS138::SRR33001996=caspofungin_4ng --sample Nickels_2025_glabrata_CBS138::SRR33001995=caspofungin_8ng --reference-condition caspofungin_no_drug --output output/projects/Nickels_2025_glabrata_CBS138/multicondition/CBS138_2001_caspofungin_series_BGC`
 
-## Zaeske et al. 2026: Candida glabrata (Zaeske_2026_glabrata)
+## Zaeske et al. 2026: Candida glabrata (Zaeske_et_al_2026_Hermes_BG2)
 
 BG14, BG2r, DPL1021r, CBS138r; Hermes (NAT), splinkerette PCR. BioProject PRJNA1460454. 5 parent pools (one deposit duplicates a Nickels & Cunningham run and is counted once).
 
@@ -408,7 +414,7 @@ BG14, BG2r, DPL1021r, CBS138r; Hermes (NAT), splinkerette PCR. BioProject PRJNA1
   - libraries: SRR38338545
   - `ytab essentiality --project-config output/projects/Zaeske_2026_glabrata/config/project.yaml --libraries SRR38338545 --output output/projects/Zaeske_2026_glabrata/essentiality/essentiality_glabrata_DPL1021r`
 
-## Zaeske et al. 2026: Candida glabrata (Zaeske_2026_glabrata_CBS138)
+## Zaeske et al. 2026: Candida glabrata (Zaeske_et_al_2026_Hermes_CBS138)
 
 BG14, BG2r, DPL1021r, CBS138r; Hermes (NAT), splinkerette PCR. BioProject PRJNA1460454. 5 parent pools (one deposit duplicates a Nickels & Cunningham run and is counted once).
 
@@ -422,7 +428,7 @@ BG14, BG2r, DPL1021r, CBS138r; Hermes (NAT), splinkerette PCR. BioProject PRJNA1
   - libraries: SRR38338546
   - `ytab essentiality --project-config output/projects/Zaeske_2026_glabrata_CBS138/config/project.yaml --libraries SRR38338546 --output output/projects/Zaeske_2026_glabrata_CBS138/essentiality/essentiality_CBS138r_Zaeske`
 
-## Billmyre et al. 2022: Schizosaccharomyces pombe (Billmyre_2022_pombe)
+## Billmyre et al. 2022: Schizosaccharomyces pombe (Billmyre_et_al_2022_Hermes)
 
 wild type; Hermes, left-end adapter with UMI. BioProject PRJNA758956. glycerol, mitotic, short and long meiotic outgrowth; 2 libraries each, each sequenced twice.
 
@@ -458,7 +464,7 @@ Rerun every condition analysis: `ytab run --workflow output/projects/Billmyre_20
   - mitotic, meiotic_longOutgrowth, meiotic_shortOutgrowth: 3786_mitotic_libSRR15669611 (mitotic (reference)); 3786_mitotic_libSRR15669619 (mitotic (reference)); 3786_meiotic_longOutgrowth_libSRR15669613 (meiotic_longOutgrowth); 3786_meiotic_longOutgrowth_libSRR15669615 (meiotic_longOutgrowth); 3786_meiotic_shortOutgrowth_libSRR15669605 (meiotic_shortOutgrowth); 3786_meiotic_shortOutgrowth_libSRR15669617 (meiotic_shortOutgrowth)
   - `ytab multicondition-project --project-config output/projects/Billmyre_2022_pombe/config/project.yaml --normalized output/projects/Billmyre_2022_pombe/normalization/conditions_v1/experiment/methods --normalization betageom --sample Billmyre_2022_pombe::3786_mitotic_libSRR15669611=mitotic --sample Billmyre_2022_pombe::3786_mitotic_libSRR15669619=mitotic --sample Billmyre_2022_pombe::3786_meiotic_longOutgrowth_libSRR15669613=meiotic_longOutgrowth --sample Billmyre_2022_pombe::3786_meiotic_longOutgrowth_libSRR15669615=meiotic_longOutgrowth --sample Billmyre_2022_pombe::3786_meiotic_shortOutgrowth_libSRR15669605=meiotic_shortOutgrowth --sample Billmyre_2022_pombe::3786_meiotic_shortOutgrowth_libSRR15669617=meiotic_shortOutgrowth --reference-condition mitotic --output output/projects/Billmyre_2022_pombe/multicondition/3786_conditions_BGC`
 
-## Kingma et al. 2025: Saccharomyces cerevisiae (Kingma_2025_SATAY)
+## Kingma et al. 2025: Saccharomyces cerevisiae (Kingma_et_al_2025_AcDs)
 
 W303 background: wild type (yWT01) and nrp1Δ (yLIC136); Ac/Ds (MiniDs), restriction digestion and circularization; Ds-end adapter. ENA PRJEB80469 (ERR13705597–ERR13705640). 11 wild-type libraries; 2 nrp1Δ libraries, each 2 digests × 2 technical replicates × 4 lanes (32 runs); 1 run of an undescribed strain left out.
 
@@ -493,7 +499,7 @@ Rerun every condition analysis: `ytab run --workflow output/projects/Kingma_2025
   - nrp1_deletion, wild_type: ERR13705629 (wild_type (reference)); ERR13705630 (wild_type (reference)); ERR13705631 (wild_type (reference)); ERR13705632 (wild_type (reference)); ERR13705633 (wild_type (reference)); ERR13705634 (wild_type (reference)); ERR13705635 (wild_type (reference)); ERR13705636 (wild_type (reference)); ERR13705637 (wild_type (reference)); ERR13705638 (wild_type (reference)); ERR13705639 (wild_type (reference)); nrp1D_1_nrp1_deletion_libERR13705597 (nrp1_deletion); nrp1D_2_nrp1_deletion_libERR13705613 (nrp1_deletion)
   - `ytab multicondition-project --project-config output/projects/Kingma_2025_SATAY/config/project.yaml --normalized output/projects/Kingma_2025_SATAY/normalization/conditions_v1/experiment/methods --normalization betageom --sample Kingma_2025_SATAY::ERR13705629=wild_type --sample Kingma_2025_SATAY::ERR13705630=wild_type --sample Kingma_2025_SATAY::ERR13705631=wild_type --sample Kingma_2025_SATAY::ERR13705632=wild_type --sample Kingma_2025_SATAY::ERR13705633=wild_type --sample Kingma_2025_SATAY::ERR13705634=wild_type --sample Kingma_2025_SATAY::ERR13705635=wild_type --sample Kingma_2025_SATAY::ERR13705636=wild_type --sample Kingma_2025_SATAY::ERR13705637=wild_type --sample Kingma_2025_SATAY::ERR13705638=wild_type --sample Kingma_2025_SATAY::ERR13705639=wild_type --sample Kingma_2025_SATAY::nrp1D_1_nrp1_deletion_libERR13705597=nrp1_deletion --sample Kingma_2025_SATAY::nrp1D_2_nrp1_deletion_libERR13705613=nrp1_deletion --reference-condition wild_type --output output/projects/Kingma_2025_SATAY/multicondition/nrp1_deletion_vs_wild_type_BGC`
 
-## Chow et al. 2024: Candida glabrata (Chow_2024_glabrata)
+## Chow et al. 2024: Candida glabrata (Chow_et_al_2024_piggyBac)
 
 YWCg03 (PB[HIS3] in ATCC2001 dHTL; ATCC2001 is CBS138); piggyBac (HIS3), piggyBac terminal repeat (150 bp paired end, R1 carries the junction). SRA PRJNA967833. 3 replicate pools (R1, R2, R3), each grown without drug and at 60 and 120 ug/mL fluconazole; doses from the SRA experiment titles. 3 controls, so z-score, resampling and the dose series are all available.
 
@@ -516,7 +522,7 @@ YWCg03 (PB[HIS3] in ATCC2001 dHTL; ATCC2001 is CBS138); piggyBac (HIS3), piggyBa
   - YWCg03, fluconazole_120ug: SRR24456510 (control); SRR24456509 (control); SRR24456508 (control); SRR24456504 (treated); SRR24456503 (treated); SRR24456502 (treated)
   - `ytab treated-vs-control --project-config output/projects/Chow_2024_glabrata/config/project.yaml --method resampling --normalization-run output/projects/Chow_2024_glabrata/normalization/norm_20261102_171320 --normalization betageom --output output/projects/Chow_2024_glabrata/treated_vs_control/tvc_20261102_172042`
 
-## Gao et al. 2021: Candida auris (Gao_2021_auris)
+## Gao et al. 2021: Candida auris (Gao_et_al_2021_piggyBac)
 
 CauW08 (leucine auxotroph of CBS10913, clade II); piggyBac, piggyBac terminal repeat (150 bp paired end, R1 carries the junction). SRA PRJNA679970. 3 independent piggyBac libraries (lib1, lib2, lib5), each sequenced twice; the two runs of a library are merged with ytab merge-runs. All unselected, so QC, density and essentiality only.
 
@@ -532,7 +538,7 @@ CauW08 (leucine auxotroph of CBS10913, clade II); piggyBac, piggyBac terminal re
 **Analyses:** parent libraries only (no condition analyses)
 
 
-## Song et al. 2026: Candida auris (Song_2026_auris)
+## Song et al. 2026: Candida auris (Song_et_al_2026_piggyBac)
 
 CauW08 and its pet309 derivative CauW156 (CBS10913, clade II); piggyBac, piggyBac terminal repeat (paired end, R1 carries the junction). SRA PRJNA1273510. 3 replicates (n1, n2, n3), each without drug and at 30, 60 and 120 ug/mL fluconazole; doses from the SRA experiment titles. Each replicate treated as its own pool, so a treated library is compared only with its own control.
 
@@ -559,7 +565,7 @@ CauW08 and its pet309 derivative CauW156 (CBS10913, clade II); piggyBac, piggyBa
   - C_auris_B8441_like, fluconazole_120ug: SRR33878342 (control); SRR33878341 (control); SRR33878338 (control); SRR33878331 (treated); SRR33878340 (treated); SRR33878339 (treated)
   - `ytab treated-vs-control --project-config output/projects/Song_2026_auris/config/project.yaml --method resampling --normalization-run output/projects/Song_2026_auris/normalization/norm_20261102_171738 --normalization betageom --output output/projects/Song_2026_auris/treated_vs_control/tvc_20261102_171738`
 
-## Yao et al. 2026: Komagataella phaffii (Yao_2026_phaffii)
+## Yao et al. 2026: Komagataella phaffii (Yao_et_al_2026_piggyBac)
 
 P.pg0015 (GS115 with a PBL-eGFP-BleoR-PBR cassette); piggyBac (BleoR), piggyBac terminal repeat (250 bp paired end, R1 carries the junction). SRA PRJNA1376236. the unsorted piggyBac library (G15P, role parent) and two populations sorted by eGFP: low (G15P-P4) and high (G15P-P67). A reporter-expression sort, not a growth selection.
 
@@ -576,7 +582,7 @@ P.pg0015 (GS115 with a PBL-eGFP-BleoR-PBR cassette); piggyBac (BleoR), piggyBac 
   - P_pg0015P, egfp_high: SRR36343507 (control); SRR36343505 (treated)
   - `ytab treated-vs-control --project-config output/projects/Yao_2026_phaffii/config/project.yaml --method resampling --normalization-run output/projects/Yao_2026_phaffii/normalization/norm_20261102_172042 --normalization betageom --output output/projects/Yao_2026_phaffii/treated_vs_control/tvc_20261102_172042`
 
-## Patterson et al. 2018: Yarrowia lipolytica (Patterson_2018_lipolytica)
+## Patterson et al. 2018: Yarrowia lipolytica (Patterson_et_al_2018_Hermes)
 
 CLIB89 (W29); Hermes, splinkerette PCR (100 bp single end; Hermes end at a fixed offset). SRA PRJNA356612 (GEO GSE90993). 2 independent trials (trial1, trial2), each from the library before outgrowth (gen0, role parent) to 20 and 80 generations in YP with glucose or glycerol; plus a FACS pool sorted on BODIPY lipid signal, top 5% (treated) against bottom 95% (control).
 
@@ -626,7 +632,7 @@ CLIB89 (W29); Hermes, splinkerette PCR (100 bp single end; Hermes end at a fixed
   - CLIB89, lipid_high: SRR5084587 (control); SRR5084588 (control); SRR5084589 (control); SRR5084584 (treated); SRR5084585 (treated); SRR5084586 (treated)
   - `ytab treated-vs-control --project-config output/projects/Patterson_2018_lipolytica/config/project.yaml --method resampling --normalization-run output/projects/Patterson_2018_lipolytica/normalization/norm_20261102_172042 --normalization betageom --output output/projects/Patterson_2018_lipolytica/treated_vs_control/tvc_20261102_172042`
 
-## Billmyre et al. 2025: Cryptococcus neoformans (Billmyre_2025_neoformans)
+## Billmyre et al. 2025: Cryptococcus neoformans (Billmyre_et_al_2025_AcDs)
 
 H99 derivative yBB119; Ac/Ds (Ds mobilised by maize Ac transposase), Ds terminal repeat after restriction digestion (151 bp paired end, R1 carries the junction). SRA PRJNA1134100. one pool (yBB119): the library at time zero (T0, role parent), then two days in DMSO (control) or at the fluconazole IC50 (treated). Each culture was split into a CviAII and an MseI digest, merged with ytab merge-runs. The first basidiomycete in YTAB.
 
@@ -642,7 +648,7 @@ H99 derivative yBB119; Ac/Ds (Ds mobilised by maize Ac transposase), Ds terminal
 **Analyses:** parent libraries only (no condition analyses)
 
 
-## Johns Hopkins deposit (no publication): Candida glabrata (Nickels_2026_glabrata_FKS2)
+## Johns Hopkins deposit (no publication): Candida glabrata (Nickels_et_al_2026_Hermes_FKS2)
 
 BG2 FKS2-F659del; Hermes (NAT), splinkerette PCR (sonication, end repair, indexed splinkerette ligation). SRA PRJNA1454099. one pool, a no-drug control and eight caspofungin doses (250 to 32,000 ng/mL) from the SRA experiment titles. Resampling and the dose series are available; the z-score is not (one control). Pairs with the BG2 wild-type caspofungin series of Nickels & Cunningham 2025 as a strain x treatment comparison.
 
@@ -671,7 +677,7 @@ BG2 FKS2-F659del; Hermes (NAT), splinkerette PCR (sonication, end repair, indexe
   - BG2_FKS2_F659del, caspofungin_32000ng: SRR38121017 (control); SRR38121009 (treated)
   - `ytab treated-vs-control --project-config output/projects/Nickels_2026_glabrata_FKS2/config/project.yaml --method resampling --normalization-run output/projects/Nickels_2026_glabrata_FKS2/normalization/norm_20261102_172042 --normalization betageom --output output/projects/Nickels_2026_glabrata_FKS2/treated_vs_control/tvc_20261102_172042`
 
-## Johns Hopkins deposit (no publication): Candida glabrata (Nickels_2026_glabrata_tolerance)
+## Johns Hopkins deposit (no publication): Candida glabrata (Nickels_et_al_2026_Hermes_tolerance)
 
 BG2 (induction 3); Hermes (NAT), splinkerette PCR. SRA PRJNA1304976. one pool (BG2_Ind3) at three micafungin concentrations (15, 32 and 64 ng/mL), each sampled at 0 h (control) and 6 h (treated). Three 0 h cultures of one pool, so the z-score, resampling and the multi-condition series are all available. Unpublished, so used for QC, density and method behaviour, never as a published comparison.
 

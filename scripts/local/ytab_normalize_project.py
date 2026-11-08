@@ -41,11 +41,12 @@ from ytab.normalization.methods import METHODS
 from ytab.normalization.midlc import expected_occupied
 from ytab.normalization.ttr import run as build_catalogue, write_table
 from ytab.pipeline.project_config import load_project_config
+from ytab.qc import pca
 from ytab.screen_coverage.library import is_parent_sample
 
-# Evidence for the suggested method, not an automatic choice: in the pre-registered Hermes benchmarks BGC (then TTR)
-# with recentering kept false discoveries lowest (resampling v3: FDR 7.0% vs 12.4% with TTR) and is the normalization
-# the multi-condition and genetic-interaction tests were validated with.
+# Evidence for the suggested method, not an automatic choice: in the pre-registered Hermes benchmarks BGC with recentering
+# kept false discoveries lowest (R13) and ranked independently annotated mutants best on real data (R17); aBGC, its
+# adaptive form, is within 0.01 AUC of it in every simulation and real-data comparison (R27, R28, ADDENDUM_abgc).
 SUGGESTED = "betageom"
 PERCENTILES = np.arange(1, 100)
 QQ_PROBS = np.unique(np.concatenate([np.linspace(.01, .99, 99), 1-np.logspace(-2, -4, 21)]))
@@ -151,13 +152,7 @@ def gene_agreement(experiment, methods):
     and the Spearman correlation of the gene sums (agreement that no scaling can change). Returns (pair rows, gene rows)."""
     path = experiment/"comparison_diagnostics.tsv"
     if not path.exists():return [], []
-    pairs = list({r["comparison_id"]:r for r in _rows(path)}.values())
-    config = Path(json.loads((experiment/"matrix/run_manifest.json").read_text())["project_config"])
-    if not config.exists():config = ROOT/"output/projects"/config.parents[1].name/"config/project.yaml"
-    gff = ROOT/yaml.safe_load(config.read_text())["reference"]["gff"]
-    sites = [(r["chromosome"], int(r["position_1based"])) for r in _rows_gz(experiment/"matrix/sites.tsv.gz")]
-    genes = annotations(gff); indices = gene_sites(genes, sites, Settings())
-    keep = [(g["id"], idx) for g, idx in zip(genes, indices) if len(idx) >= 3]
+    pairs = list({r["comparison_id"]:r for r in _rows(path)}.values()); keep = _gene_index(experiment)
     column = {m["sample"]:j for j, m in enumerate(_rows(experiment/"matrix/observations.tsv"))}
     summary, gene_rows = [], []
     for method in methods:
@@ -173,6 +168,30 @@ def gene_agreement(experiment, methods):
             gene_rows.extend(dict(method=method, comparison_id=r["comparison_id"], kind=r["kind"], gene=g, log2_ratio=round(float(v), 4))
                              for (g, _), v in zip((k for k, o in zip(keep, ok) if o), m))
     return summary, gene_rows
+
+
+def _gene_index(experiment):
+    """(gene id, catalogue site indices) of the genes with >= 3 catalogue sites in their coding sequence."""
+    config = Path(json.loads((experiment/"matrix/run_manifest.json").read_text())["project_config"])
+    if not config.exists():config = ROOT/"output/projects"/config.parents[1].name/"config/project.yaml"
+    gff = ROOT/yaml.safe_load(config.read_text())["reference"]["gff"]
+    sites = [(r["chromosome"], int(r["position_1based"])) for r in _rows_gz(experiment/"matrix/sites.tsv.gz")]
+    genes = annotations(gff); indices = gene_sites(genes, sites, Settings())
+    return [(g["id"], idx) for g, idx in zip(genes, indices) if len(idx) >= 3]
+
+
+def write_pca(output, methods):
+    """plots/pca.tsv and plots/pca_variance.tsv: the libraries on principal components of their gene totals (normalized
+    reads summed over each gene's coding sites) under each method, unnormalized included."""
+    experiment = output/"experiment"; keep = _gene_index(experiment); meta = _rows(experiment/"matrix/observations.tsv")
+    libraries = [dict(observation_id=m["observation_id"], sample=m["sample"], display_name=m["display_name"], role=m["role"], pool=m["pool"]) for m in meta]
+    scores, variance = [], []
+    for method in methods:
+        matrix = sparse.load_npz(experiment/"methods"/method/"normalized_counts.npz").tocsr()
+        values = np.vstack([np.asarray(matrix[idx].sum(axis=0)).ravel() for _, idx in keep])
+        a, b = pca.rows(values, libraries, dict(method=method)); scores += a; variance += b
+    if scores:
+        write_table(output/"plots/pca.tsv", list(scores[0]), scores); write_table(output/"plots/pca_variance.tsv", list(variance[0]), variance)
 
 
 def _rows_gz(path):
@@ -207,6 +226,9 @@ def main():
     available = [k for k, m in METHODS.items() if m.status == "available" and k != "nonorm"]
     parser.add_argument("--method", action="append", choices=available, help="Repeat; default every available method. Unnormalized counts are always added")
     parser.add_argument("--output", help="New output directory")
+    parser.add_argument("--site-filter", choices=["none", "winsorize", "drop-top"], default="none",
+                        help="Treat each gene's largest insertion site in every library before normalizing: none (default), winsorize "
+                             "(lowered to the gene's second-largest count) or drop-top (removed)")
     parser.add_argument("--trim", type=float, default=.05); parser.add_argument("--target", type=float, default=100)
     parser.add_argument("--refresh-summaries", metavar="RUN", help="Rewrite the plot summaries of an earlier run and exit")
     parser.add_argument("--normalize-together", action="store_true",
@@ -220,7 +242,7 @@ def main():
         write_table(run/"plots/effective_scale.tsv", list(scale[0]), scale)
         write_table(run/"plots/distributions.tsv", list(distribution[0]), distribution)
         write_native(run, manifest["methods"], float(manifest.get("trim", .05)))
-        write_gene_agreement(run, manifest["methods"])
+        write_gene_agreement(run, manifest["methods"]); write_pca(run, manifest["methods"])
         print(json.dumps(dict(status="success", refreshed=str(run))))
         return
     if not (args.project_config and args.output):parser.error("--project-config and --output are required")
@@ -234,23 +256,25 @@ def main():
         cfg, parents = catalogue_manifest(Path(args.project_config), output/"catalogue_sources.yaml")
         build_catalogue(output/"catalogue_sources.yaml", output/"catalogue", args.trim, args.target, plots=False)
         print("2/3 Normalizing the experiment samples: "+", ".join(methods), flush=True)
-        evaluate(args.project_config, output/"catalogue", output/"experiment", methods, args.trim, args.target, plots=False, sample_list=args.sample, together=args.normalize_together)
+        evaluate(args.project_config, output/"catalogue", output/"experiment", methods, args.trim, args.target, plots=False, sample_list=args.sample, together=args.normalize_together,
+                 site_filter=args.site_filter)
         print("3/3 Writing plot summaries", flush=True)
         scale, distribution = summaries(output/"experiment", methods)
         (output/"plots").mkdir()
         write_table(output/"plots/effective_scale.tsv", list(scale[0]), scale)
         write_table(output/"plots/distributions.tsv", list(distribution[0]), distribution)
         write_native(output, methods, args.trim)
-        write_gene_agreement(output, methods)
+        write_gene_agreement(output, methods); write_pca(output, methods)
     except (ValueError, KeyError, OSError) as error:
         parser.exit(1, f"ERROR: {error}\n")
-    manifest = dict(status="success", project=cfg["project_id"], methods=methods, suggested=SUGGESTED, parents_in_catalogue=parents,
+    manifest = dict(status="success", project=cfg["project_id"], methods=methods, site_filter=args.site_filter, suggested=SUGGESTED, parents_in_catalogue=parents,
                     samples=len({r["observation_id"] for r in scale}), trim=args.trim, target=args.target,
                     normalized=str(output/"experiment/methods"), catalogue=str(output/"catalogue"),
                     method_summary=method_summary(output/"experiment", methods),
                     files=dict(effective_scale="plots/effective_scale.tsv", distributions="plots/distributions.tsv",
                                comparisons="experiment/comparison_diagnostics.tsv", factors="experiment/methods/method_comparison.tsv",
-                               gene_agreement="plots/pair_gene_agreement.tsv", pair_genes="plots/pair_genes.tsv.gz"),
+                               gene_agreement="plots/pair_gene_agreement.tsv", pair_genes="plots/pair_genes.tsv.gz",
+                               pca="plots/pca.tsv", pca_variance="plots/pca_variance.tsv"),
                     reading="Matched controls from the same pool should differ little after normalization: a small median shift and a narrow spread of "
                             "log2 ratios at shared sites. Units differ between methods; compare relative results, not absolute values.")
     (output/"manifest.json").write_text(json.dumps(manifest, indent=2)+"\n")

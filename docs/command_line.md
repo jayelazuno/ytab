@@ -19,7 +19,7 @@ Earlier automatic targets (e.g. `T409600`) were read counts passed where a multi
 of MidLC is expected, so those runs did not thin; such targets are now rejected.
 
 `tnseq-stats` exports [per-library Tn-seq count statistics plus saved Hermes QC](tnseq_stats.md).
-`control-gumbel` runs the [experimental control-conditioned Gumbel](control_conditioned_gumbel.md)
+`control-gumbel` runs the [control-conditioned Gumbel](control_conditioned_gumbel.md)
 on a `normalize` output (ttr default, totreads or nzmean), comparing combined treatment replicates
 against combined matched controls. It runs no normalization of its own and does not replace the ML
 classifier or the z-score fitness analysis.

@@ -19,11 +19,11 @@ cross_species_ui <- function() ytab_two_column_layout(
                  tags$p(class = "text-muted", "Search a gene (any species' ID or name, or the S. cerevisiae ID) to see its essentiality score and call in every species."),
                  DT::DTOutput("xs_table")),
     ytab_methods_drawer(
-      tags$p(tags$b("Orthologs. "), "Each project's genes are mapped to S. cerevisiae systematic names with the ortholog table named in its project configuration (reference: orthology_file); an S. cerevisiae project is the hub itself. Only one-to-one orthologs are kept, and only genes scored by the HMM in every chosen species, so all species are compared on the same genes."),
-      tags$p(tags$b("Calls. "), "Each species' label-free HMM score (P_ES_run, the posterior probability of a run of essential windows in the coding sequence) and call (essential when P_ES_run ≥ 0.5) from the project's newest essentiality run."),
+      tags$p(tags$b("Orthologs. "), "Each dataset's genes are mapped to S. cerevisiae systematic names with the ortholog table named in its dataset configuration (reference: orthology_file); an S. cerevisiae dataset is the hub itself. Only one-to-one orthologs are kept, and only genes scored by the HMM in every chosen species, so all species are compared on the same genes."),
+      tags$p(tags$b("Calls. "), "Each species' label-free HMM score (P_ES_run, the posterior probability of a run of essential windows in the coding sequence) and call (essential when P_ES_run ≥ 0.5) from the dataset's newest essentiality run."),
       tags$p(tags$b("Agreement. "), "For each pair of species: Cohen's κ of the essential calls (agreement beyond chance; 1 = identical calls, 0 = chance) and the Spearman correlation of the scores. Differences combine biology (species-specific essentiality) with differences in library density and transposon; compare with the libraries' QC before reading a species-specific set as biology."),
       ytab_reference("Cohen J (1960). A coefficient of agreement for nominal scales. Educ Psychol Meas 20:37–46."),
-      tags$p("Command: ", tags$code("ytab cross-species"), ". Results are written to ", tags$code("output/cross_species"), " and shown in every project they include."))))
+      tags$p("Command: ", tags$code("ytab cross-species"), ". Results are written to ", tags$code("output/cross_species"), " and shown in every dataset they include."))))
 
 # Species names in italics: HTML for the interactive plot, plotmath for downloads.
 xs_species_labels <- function(species, html = TRUE) if (html) paste0("<i>", species, "</i>") else parse(text = sprintf('bolditalic("%s")', species))
@@ -124,7 +124,7 @@ cross_species_server <- function(input, output, session, repo_root, active, acti
          intersections = ytab_read_analysis_tsv(file.path(run, "intersections.tsv")), pairwise = ytab_read_analysis_tsv(file.path(run, "pairwise.tsv")))
   })
   output$xs_status <- renderUI({
-    if (!nrow(runs())) return(ytab_empty_state("No comparison yet", "Choose one project per species and compare. Each project needs an essentiality run."))
+    if (!nrow(runs())) return(ytab_empty_state("No comparison yet", "Choose one dataset per species and compare. Each dataset needs an essentiality run."))
     m <- data()$manifest
     tags$p(class = "text-muted", sprintf("%s one-to-one orthologs scored in %s; essential in all: %s; in none: %s.", format(m$orthologs, big.mark = ","),
                                          paste(unlist(m$species), collapse = ", "), format(m$essential_in_all, big.mark = ","), format(m$essential_in_none, big.mark = ",")))
@@ -149,7 +149,7 @@ cross_species_server <- function(input, output, session, repo_root, active, acti
     names(o)[names(o) == "scer_id"] <- "S. cerevisiae ID"
     ytab_datatable(o, page_length = 10L)
   })
-  name <- function(suffix) paste0(active()$project_id, "_cross_species_", basename(selected_run()), suffix)
+  name <- function(suffix) paste0(project_display_label(active()), "_cross_species_", basename(selected_run()), suffix)
   for (format in c("png", "pdf")) local({
     ext <- format
     output[[paste0("xs_download_", ext)]] <- downloadHandler(filename = function() name(paste0("_", input$xs_plot %||% "sets", ".", ext)),

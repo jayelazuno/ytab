@@ -167,7 +167,7 @@ summarize_species_project_availability <- function(repo_root) {
       summary_projects = if (nrow(subset)) sum(subset$has_summary_stats) else 0L,
       status = if (isTRUE(species$placeholder[[index]])) "Placeholder" else
         if (nrow(subset)) "YTAB outputs available" else
-          "No YTAB project outputs are available for this species yet.",
+          "No YTAB dataset outputs are available for this species yet.",
       stringsAsFactors = FALSE
     )
   })

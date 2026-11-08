@@ -16,7 +16,9 @@ qc_plot_menus <- list(
     "Reads" = c("Reads sequenced" = "metric:input_reads", "Reads retained after cleanup" = "metric:retained_fraction",
                 "Reads with 3' adaptor" = "metric:adapter_fraction"),
     "Mapping" = c("Total and mapped reads" = "read_counts", "Mapped (%)" = "metric:percent_mapped",
-                  "Mapped with MAPQ above threshold (%)" = "metric:percent_mapq", "Mean MAPQ" = "metric:mean_mapq")),
+                  "Mapped with MAPQ above threshold (%)" = "metric:percent_mapq", "Mean MAPQ" = "metric:mean_mapq"),
+    "Transposon donor" = c("Reads from the transposon donor (%)" = "metric:percent_donor",
+                           "Donor reads placed on the genome (%)" = "metric:percent_donor_shared")),
   insertions = list(
     "Depth and complexity" = c("Reads at insertion sites" = "metric:total_cts", "Insertion sites" = "metric:unique_sites"),
     "Count distribution" = c("Count histogram" = "dist_histogram", "Counts against a geometric fit (QQ)" = "dist_qq", "Ranked counts" = "dist_ranked",
@@ -31,11 +33,11 @@ qc_plot_menus <- list(
   saturation_bias = list(
     "Saturation" = c("Saturation curves" = "midlc", "MidLC estimate" = "metric:midlc_est", "Depth / MidLC" = "metric:depth_ratio"),
     "Jackpots" = c("Share of reads in the top sites (Lorenz curve)" = "dist_lorenz", "Reads in jackpot sites" = "metric:jackpot_frac_reads",
-                   "Jackpot sites" = "metric:n_jackpot_sites"),
+                   "Jackpot sites" = "metric:n_jackpot_sites", "Genes led by one site (%)" = "metric:one_site_genes", "Genes with the most reads" = "top_genes"),
     "Positional bias" = c("Centromere bias" = "centromere", "Metaplot around TSS" = "metaplot_TSS", "Metaplot around TTS" = "metaplot_TTS",
                           "Metaplot around tRNA genes" = "metaplot_tRNA", "Sequence bias (+2/+7)" = "sequence_bias")),
   agreement = list(
-    "Library agreement" = c("Correlation between libraries" = "cor_heatmap", "Gene insertion heatmap" = "gene_heatmap",
+    "Library agreement" = c("Correlation between libraries" = "cor_heatmap", "Libraries on principal components (PCA)" = "pca", "Gene insertion heatmap" = "gene_heatmap",
                             "Two libraries, gene by gene" = "pair_scatter")))
 
 # Rescaled companions shown in a metric plot's hover.
@@ -50,6 +52,8 @@ qc_plot_descriptions <- c(
   dist_histogram = "Histogram of read counts at occupied positions (log bins). Well-behaved libraries have many low counts and few high ones.",
   dist_qq = "Observed count quantiles against a geometric distribution fitted to each library's mean. Strong curvature away from the diagonal means a skewed library; BGC suits those.",
   dist_lorenz = "Cumulative share of a library's reads held by its occupied sites, largest first. A curve that rises steeply at the left means a few sites (jackpots) hold much of the library; even libraries rise slowly. Skewed or jackpot-dominated libraries suit BGC.",
+  top_genes = "The genes holding the largest share of each library's reads (reads at insertion sites in the coding sequence). Dark bars: one insertion site supplies at least half of the gene's reads, the mark of a jackpot, a selection marker or the donor locus rather than of many independent mutants; dropping or capping that site (top-site removal, winsorizing) changes such a gene most. Hover a bar for the site.",
+  pca = "Each library on two principal components of its gene insertion values (log2(1 + the correlation run's metric), the 500 most variable genes, centred). Libraries close together have similar insertion landscapes; a library far from its replicates is an outlier, and a split along a component that follows pool or batch rather than condition is a batch effect. The axis titles give each component's share of the variance.",
   dist_ranked = "Read counts at positions in decreasing order. A few isolated outliers are expected (TTR is robust to them); a steep head means a few sites dominate.",
   gene_hit_bins = "Number of genes with 0, 1–3, 4–7, 8–9, 10–19 and 20 or more insertion sites, per library.",
   combined_features = "Genes with at least one insertion when all libraries of a role are combined.",
@@ -80,7 +84,7 @@ qc_theme_ui <- function(id, extra = NULL, lead = NULL) ytab_two_column_layout(
 qc_overview_ui <- function() ytab_two_column_layout(
   controls = ytab_control_panel("Library QC table",
     actionButton("qc_table_run", "Build QC table", class = "btn-primary"),
-    helpText("Collects every per-library QC metric (reads, mapping, insertion statistics, genes, saturation) from the project's outputs. Takes seconds."),
+    helpText("Collects every per-library QC metric (reads, mapping, insertion statistics, genes, saturation) from the dataset's outputs. Takes seconds."),
     tags$hr(),
     uiOutput("qc_table_result_selector"),
     tags$div(class = "ytab-actions",
@@ -93,11 +97,11 @@ qc_overview_ui <- function() ytab_two_column_layout(
       description = qc_flag_legend("Hover a cell for its reason, the metric's meaning and, where one applies, a normalization hint. Every metric is plotted across libraries in the subtabs.")),
     ytab_methods_drawer(
       tags$p(tags$b("Rule of thumb. "), "Skewness of the read counts at occupied positions: above 30 often signals a problem (yellow) and below 50 is desired (above 50 red). It can be higher under strong selection."),
-      tags$p(tags$b("Compared with the project. "), "Every other flagged metric compares a library with the project's libraries of the same role (parents with parents, treated with treated): robust z = (value − median) / (1.4826 × MAD), in the metric's bad direction only; yellow beyond 2.5 and red beyond 3 (Leys et al. 2013). Needs at least 4 libraries of the role, otherwise the cell is grey. The spread is at least 10% of the median, so near-identical libraries are not flagged for trivial differences."),
-      tags$p(tags$b("Hermes. "), "Hermes has no fixed set of possible insertion sites: density is computed over the project's catalogue (positions with an insertion in any library) and insertions per kb measure coverage, so there are no absolute density or depth targets. The strand correlation is shown but not flagged: the two orientations at a position are separate insertions."),
+      tags$p(tags$b("Compared with the dataset. "), "Every other flagged metric compares a library with the dataset's libraries of the same role (parents with parents, treated with treated): robust z = (value − median) / (1.4826 × MAD), in the metric's bad direction only; yellow beyond 2.5 and red beyond 3 (Leys et al. 2013). Needs at least 4 libraries of the role, otherwise the cell is grey. The spread is at least 10% of the median, so near-identical libraries are not flagged for trivial differences."),
+      tags$p(tags$b("Hermes. "), "Hermes has no fixed set of possible insertion sites: density is computed over the dataset's catalogue (positions with an insertion in any library) and insertions per kb measure coverage, so there are no absolute density or depth targets. The strand correlation is shown but not flagged: the two orientations at a position are separate insertions."),
       tags$p(tags$b("Normalization hints. "), "Skewed or jackpot-dominated libraries suit BGC (betageom); TTR is robust to isolated outlier sites."),
       ytab_reference("The count statistics, the count-distribution plots and the skewness rule of thumb are adapted from TRANSIT (DeJesus et al. 2015, PLoS Comput Biol 11:e1004401), whose guidance was written for Himar1."),
-      tags$p("Command: ", tags$code("ytab qc"), ". Results are written to the project's ", tags$code("qc"), " folder."))))
+      tags$p("Command: ", tags$code("ytab qc"), ". Results are written to the dataset's ", tags$code("qc"), " folder."))))
 
 qc_library_diagnostics_run_ui <- function() tags$details(class = "ytab-more-options", tags$summary("Run library diagnostics (saturation, jackpots, positional bias)"),
   uiOutput("library_diagnostics_readiness"), uiOutput("qc_current_selection"),
@@ -109,7 +113,7 @@ qc_library_diagnostics_run_ui <- function() tags$details(class = "ytab-more-opti
   tags$details(class = "ytab-technical-details", tags$summary("Technical details"), verbatimTextOutput("library_diagnostics_technical")))
 
 qc_agreement_run_ui <- function() ytab_control_panel("Compare libraries",
-  radioButtons("libcor_scope", NULL, c("Within this project" = "within", "With other projects" = "across"), "within"),
+  radioButtons("libcor_scope", NULL, c("Within this dataset" = "within", "With other datasets" = "across"), "within"),
   conditionalPanel("input.libcor_scope === 'across'", uiOutput("libcor_project_selector"), uiOutput("libcor_ortholog_selector")),
   radioButtons("libcor_metric", "Gene summary", c("Insertion density (sites per kb)" = "density", "Reads per kb" = "reads_per_kb"), "density"),
   helpText("Density compares libraries from different pools. Reads per kb also reflects clone abundance, so use it only within a pool."),
@@ -135,7 +139,7 @@ quality_control_ui <- function() navset_tab(id = "qc_tabs",
         tags$li(tags$b("Different species: "), "conservation of the insertion landscape over 1:1 orthologs.")),
       tags$p("Clone evidence uses the read correlation at shared insertion sites: above 0.7 indicates shared clones and below 0.5 independent libraries (calibrated on Gale et al. 2020: same pool 0.89–0.99, independent pools 0.42–0.43). A pair is flagged when this evidence disagrees with the pool labels in the sample sheet."),
       ytab_reference("Generalized from the correlation plot of TRANSIT (DeJesus et al. 2015, PLoS Comput Biol 11:e1004401)."),
-      tags$p("Command: ", tags$code("ytab library-correlation"), ". Results are written to the project's ", tags$code("library_correlation"), " folder."))))
+      tags$p("Command: ", tags$code("ytab library-correlation"), ". Results are written to the dataset's ", tags$code("library_correlation"), " folder."))))
 
 # The flag colours in words, each word on its own colour.
 qc_flag_legend <- function(...) {
@@ -187,7 +191,7 @@ qc_label_libraries <- function(x, s) if (identical(s$label_mode, "compact")) qc_
 
 # Reference projects join the plot as bars of their own, coloured by project instead of by QC flag; `mode` decides
 # whether they sit on the same axis, get a panel each, or shrink to their median and spread.
-qc_metric_plot <- function(f, s, companions = NULL, reference = NULL, mode = "auto", project_label = "This project") {
+qc_metric_plot <- function(f, s, companions = NULL, reference = NULL, mode = "auto", project_label = "This dataset") {
   f$value <- suppressWarnings(as.numeric(f$value)); f <- f[!is.na(f$value), , drop = FALSE]; validate(need(nrow(f) > 0, "No values for this metric."))
   metric_label <- f$label[[1L]]
   extra <- if (is.data.frame(companions) && nrow(companions)) vapply(f$sample, function(x) {
@@ -229,7 +233,7 @@ qc_metric_plot <- function(f, s, companions = NULL, reference = NULL, mode = "au
     ggplot2::ggplot(d, ggplot2::aes(x = .key, y = value, fill = .fill, text = tip)) + ggplot2::geom_col(width = .7) +
       ggplot2::scale_x_discrete(labels = labels) + ggplot2::labs(x = NULL, y = metric_label)
   p <- p + ggplot2::scale_fill_manual(values = ytab_reference_fill_values(projects), drop = FALSE) +
-    ggplot2::labs(fill = if (length(projects)) "Flag / project" else "Flag")
+    ggplot2::labs(fill = if (length(projects)) "Flag / dataset" else "Flag")
   if (isTRUE(s$show_value_labels)) p <- p + ggplot2::geom_text(ggplot2::aes(label = qc_format_value(value)), size = s$text_size / 4.2,
                                                                hjust = if (horizontal) -.1 else .5, vjust = if (horizontal) .5 else -.4)
   # Panel heights now follow their contents, so the plot needs room for every library plus each panel's own axis.
@@ -257,6 +261,26 @@ qc_bar_plot <- function(d, x, y, fill, s, ylab) {
     ggplot2::labs(x = NULL, y = ylab, fill = NULL)
   if (isTRUE(s$show_value_labels)) p <- p + ggplot2::geom_text(ggplot2::aes(label = qc_format_value(.data[[y]])), position = ggplot2::position_dodge(.75), size = s$text_size / 4.2, vjust = -.4)
   if (horizontal) qc_apply_display(p + ggplot2::coord_flip(), s, "y") else qc_apply_display(p, s, "x")
+}
+
+# Top genes by reads, one panel per library: bars of each gene's share of the library's reads, dark when one site
+# supplies at least half of the gene's reads.
+qc_top_genes_plot <- function(d, s) {
+  d$library_share <- as.numeric(d$library_share); d$top_site_share <- as.numeric(d$top_site_share)
+  d$.library <- factor(d$.library, levels = unique(d$.library))
+  d$.gene <- paste0(d$name, "\r", d$.library)   # one axis entry per library panel; the suffix is not shown
+  d$.gene <- factor(d$.gene, levels = rev(d$.gene[order(d$.library, as.numeric(d$rank))]))
+  d$.source <- factor(ifelse(d$top_site_share >= .5, "One site holds at least half the reads", "Reads spread over the gene's sites"),
+                      levels = c("One site holds at least half the reads", "Reads spread over the gene's sites"))
+  d$.tip <- sprintf("%s (%s)\n%s\nReads: %s (%.2f%% of the library)\nInsertion sites: %s\nLargest site %s: %s reads (%.0f%% of the gene)",
+                    d$name, d$feature_id, d$.library, format(round(as.numeric(d$reads)), big.mark = ","), 100 * d$library_share, d$sites,
+                    d$top_site, format(round(as.numeric(d$top_site_reads)), big.mark = ","), 100 * d$top_site_share)
+  p <- ggplot2::ggplot(d, ggplot2::aes(x = 100 * library_share, y = .gene, fill = .source, text = .tip)) +
+    ggplot2::geom_col(width = .75) +
+    ggplot2::scale_fill_manual(values = c("One site holds at least half the reads" = "#B3261E", "Reads spread over the gene's sites" = "#9AA0A6"), drop = FALSE) +
+    ggplot2::scale_y_discrete(labels = function(x) sub("\r.*$", "", x)) + ggplot2::scale_x_continuous(expand = ggplot2::expansion(c(0, .05))) +
+    ggplot2::facet_wrap(~.library, scales = "free_y") + ggplot2::labs(x = "Share of the library's reads (%)", y = NULL, fill = NULL)
+  qc_apply_display(p, s, "y") + ggplot2::theme(strip.text = ggplot2::element_text(face = "bold"))
 }
 
 qc_line_plot <- function(d, x, y, colour, s, xlab, ylab, logx = FALSE, logy = FALSE, diagonal = FALSE) {
@@ -309,7 +333,7 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
     valueFunc = function() ytab_analysis_runs(tryCatch(runs_dir(), error = function(e) "")))
   output$qc_table_result_selector <- renderUI({
     x <- runs()
-    if (!nrow(x)) return(tags$p(class = "text-muted", "No QC table for this project yet."))
+    if (!nrow(x)) return(tags$p(class = "text-muted", "No QC table for this dataset yet."))
     selectInput("qc_table_result", "QC table", ytab_run_choices(x))
   })
   observeEvent(input$qc_table_run, {
@@ -334,7 +358,7 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
   distribution <- function(kind) {
     validate(need(has_table(), "Build the QC table in Overview first."))
     d <- ytab_read_analysis_tsv(file.path(selected_run(), "plots", paste0(kind, ".tsv.gz")))
-    validate(need(nrow(d) > 0, if (identical(kind, "lorenz")) "This QC table was built before the Lorenz curve was added; build the QC table again in Overview."
+    validate(need(nrow(d) > 0, if (kind %in% c("lorenz", "top_genes")) "This QC table was built before this plot was added; build the QC table again in Overview."
                                 else "No count distributions in this QC table."))
     qc_annotate(d, info())
   }
@@ -349,7 +373,7 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
     DT::datatable(qc_display_table(t, f, m), escape = FALSE, rownames = FALSE, selection = "none",
                   class = "compact cell-border ytab-qc-grid", options = list(scrollX = FALSE, autoWidth = FALSE, pageLength = 25, dom = "tip", ordering = FALSE))
   })
-  download_name <- function(suffix) paste0(active()$project_id, "_", basename(selected_run()), suffix)
+  download_name <- function(suffix) paste0(project_display_label(active()), "_", basename(selected_run()), suffix)
   output$qc_table_download_xlsx <- downloadHandler(filename = function() download_name(".xlsx"), content = function(file) file.copy(file.path(selected_run(), "qc_table.xlsx"), file))
   output$qc_table_download_tsv <- downloadHandler(filename = function() download_name("_table.tsv"), content = function(file) file.copy(file.path(selected_run(), "qc_table.tsv"), file))
   output$qc_table_download_flags <- downloadHandler(filename = function() download_name("_flags.tsv"), content = function(file) file.copy(file.path(selected_run(), "qc_flags.tsv"), file))
@@ -363,7 +387,8 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
     x <- libcor_runs(); validate(need(nrow(x) > 0, "No library correlation yet. Choose what to compare and run it."))
     path <- input$libcor_result %||% x$path[[1L]]; req(path %in% x$path)
     list(path = path, matrix = libcor_matrix(path), pairs = ytab_read_analysis_tsv(file.path(path, "pairs.tsv")),
-         samples = ytab_read_analysis_tsv(file.path(path, "samples.tsv")), genes = ytab_read_analysis_tsv(file.path(path, "gene_values.tsv.gz")))
+         samples = ytab_read_analysis_tsv(file.path(path, "samples.tsv")), genes = ytab_read_analysis_tsv(file.path(path, "gene_values.tsv.gz")),
+         pca = ytab_read_analysis_tsv(file.path(path, "pca.tsv")), pca_variance = ytab_read_analysis_tsv(file.path(path, "pca_variance.tsv")))
   })
   libcor_samples <- reactive(tryCatch(libcor_results()$samples, error = function(e) data.frame()))
 
@@ -393,7 +418,7 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
 
   sources <- list(
     flags = function() { validate(need(has_table(), "Build the QC table in Overview first.")); flags() },
-    distribution = distribution, project = active, info = info, libcor = libcor_results,
+    distribution = distribution, project = active, info = info, libcor = libcor_results, repo_root = repo_root,
     reference = reference_for,
     reference_curves = function(reader) {
       metas <- reference_metas(); if (!length(metas)) return(data.frame())
@@ -406,7 +431,8 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
       tagList(selectInput(paste0(prefix, "_plot"), "Show", plot_choices(id), selected = isolate(input[[paste0(prefix, "_plot")]]) %||% default_choice(id)),
               if (!identical(id, "agreement") && !has_table()) helpText("Plots of QC-table metrics need the QC table (build it in Overview)."))
     })
-    output[[paste0(prefix, "_options")]] <- renderUI(qc_plot_options(id, input[[paste0(prefix, "_plot")]] %||% "", info(), libcor_samples(), dirname(active()$project_root)))
+    output[[paste0(prefix, "_options")]] <- renderUI(qc_plot_options(id, input[[paste0(prefix, "_plot")]] %||% "", info(), libcor_samples(), dirname(active()$project_root),
+                                                                     isolate(input[[paste0(prefix, "_top_libraries")]])))
     plot_reactive <- reactive({
       choice <- input[[paste0(prefix, "_plot")]]; req(choice)
       qc_build_plot(choice, input, prefix, ytab_plot_customization_values(input, prefix), sources)
@@ -429,19 +455,19 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
                      description = if (nzchar(reference)) tagList(about, tags$p(class = "text-muted", reference)) else about)
     })
     output[[paste0(prefix, "_plotly")]] <- plotly::renderPlotly({
-      b <- plot_reactive(); ytab_ggplotly(b$plot) |> plotly::layout(legend = list(orientation = "h", y = -0.32, yanchor = "top"), margin = list(b = 90))
+      b <- plot_reactive(); tvc_plotly(b$plot) |> plotly::layout(legend = list(orientation = "h", y = -0.32, yanchor = "top"), margin = list(b = 90))
     })
     for (format in c("png", "pdf")) local({
       ext <- format
       output[[paste0(prefix, "_download_", ext)]] <- downloadHandler(
-        filename = function() paste0(active()$project_id, "_qc_", gsub("[^A-Za-z0-9]+", "_", input[[paste0(prefix, "_plot")]] %||% id), ".", ext),
+        filename = function() paste0(project_display_label(active()), "_qc_", gsub("[^A-Za-z0-9]+", "_", input[[paste0(prefix, "_plot")]] %||% id), ".", ext),
         content = function(file) { s <- ytab_plot_customization_values(input, prefix, plot_reactive())
-          ytab_save_ggplot(file, plot_reactive()$plot, width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) })
+          ytab_save_ggplot(file, ytab_static_labels(plot_reactive()$plot, s), width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) })
     })
     output[[paste0(prefix, "_download_data")]] <- downloadHandler(
-      filename = function() paste0(active()$project_id, "_qc_", gsub("[^A-Za-z0-9]+", "_", input[[paste0(prefix, "_plot")]] %||% id), ".tsv"),
+      filename = function() paste0(project_display_label(active()), "_qc_", gsub("[^A-Za-z0-9]+", "_", input[[paste0(prefix, "_plot")]] %||% id), ".tsv"),
       content = function(file) { b <- plot_reactive(); d <- b$data[, !startsWith(names(b$data), "."), drop = FALSE]
-        if (!is.null(b$reference)) d <- ytab_reference_download(d, b$reference, active()$project_id)
+        if (!is.null(b$reference)) d <- ytab_reference_download(d, b$reference, project_display_label(active()))
         utils::write.table(d, file, sep = "\t", quote = FALSE, row.names = FALSE, na = "") })
   })
 
@@ -450,7 +476,7 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
 }
 
 # Plot-specific options next to the plot menu.
-qc_plot_options <- function(id, choice, info, libcor_samples, projects_root = "") {
+qc_plot_options <- function(id, choice, info, libcor_samples, projects_root = "", top_libraries = NULL) {
   roles <- sort(unique(info$role)); prefix <- paste0("qcp_", id)
   colour <- selectInput(paste0(prefix, "_colour"), "Colour by", c("Library" = "library", "Role" = "role", "Pool" = "pool"), "library")
   roles_filter <- if (length(roles) > 1L) checkboxGroupInput(paste0(prefix, "_roles"), "Libraries shown", roles, roles, inline = TRUE)
@@ -458,10 +484,23 @@ qc_plot_options <- function(id, choice, info, libcor_samples, projects_root = ""
   if (identical(choice, "sequence_bias"))
     return(tagList(roles_filter, selectInput(paste0(prefix, "_colour"), "Bars", c("Mean of each role" = "role", "Each library" = "library", "Mean of each pool" = "pool"), "role")))
   if (choice %in% c("gene_hit_bins", "read_counts")) return(roles_filter)
+  if (identical(choice, "top_genes")) {
+    libraries <- stats::setNames(info$sample, info$display); chosen <- intersect(top_libraries, libraries)
+    return(tagList(selectizeInput(paste0(prefix, "_top_libraries"), "Libraries", libraries, if (length(chosen)) chosen else utils::head(libraries, 4L), multiple = TRUE,
+                                  options = list(placeholder = "Search libraries…", plugins = list("remove_button"))),
+                   numericInput(paste0(prefix, "_top_n"), "Genes per library", 15, min = 5, max = 30, step = 5)))
+  }
   libcor_role_filter <- function() {
     if (!nrow(libcor_samples)) return(NULL)
     present <- sort(unique(libcor_roles(libcor_samples$name, projects_root, libcor_samples)))
     if (length(present) > 1L) checkboxGroupInput(paste0(prefix, "_roles"), "Libraries shown", present, present, inline = TRUE)
+  }
+  if (identical(choice, "pca") && nrow(libcor_samples)) {
+    fields <- c("Condition" = "condition", "Strain" = "strain", "Pool" = "pool", "Role" = "role", "Dataset" = "source")
+    return(tagList(libcor_role_filter(), selectInput(paste0(prefix, "_pca_colour"), "Colour by", fields, "condition"),
+                   selectInput(paste0(prefix, "_pca_shape"), "Shape by", c("None" = "", fields), "pool"),
+                   selectInput(paste0(prefix, "_pca_axes"), "Components", c("PC1 vs PC2" = "PC1,PC2", "PC1 vs PC3" = "PC1,PC3", "PC2 vs PC3" = "PC2,PC3", "PC3 vs PC4" = "PC3,PC4"), "PC1,PC2"),
+                   checkboxInput(paste0(prefix, "_pca_labels"), "Name the libraries", TRUE)))
   }
   if (identical(choice, "cor_heatmap")) return(libcor_role_filter())
   if (identical(choice, "gene_heatmap")) return(tagList(libcor_role_filter(),
@@ -498,12 +537,12 @@ qc_distribution_plot <- function(d, kind, s, colour) switch(kind,
 # Build one QC plot: list(plot = ggplot, data = plotted data).
 qc_build_plot <- function(choice, input, prefix, s, src) {
   colour <- qc_colour_column(input[[paste0(prefix, "_colour")]]); project <- src$project(); info <- src$info()
-  need_rows <- function(d, what) { validate(need(is.data.frame(d) && nrow(d) > 0, paste0("No ", what, " for this project yet."))); d }
+  need_rows <- function(d, what) { validate(need(is.data.frame(d) && nrow(d) > 0, paste0("No ", what, " for this dataset yet."))); d }
   if (startsWith(choice, "metric:")) {
     key <- sub("^metric:", "", choice); all <- src$flags(); f <- all[all$metric == key, , drop = FALSE]
     companions <- all[all$metric %in% qc_metric_companions[[key]], , drop = FALSE]
     ref <- if (qc_reference_enabled(prefix)) src$reference("metric", key) else NULL
-    p <- qc_metric_plot(f, s, companions, ref, input[[paste0(prefix, "_reference_mode")]], project$project_id)
+    p <- qc_metric_plot(f, s, companions, ref, input[[paste0(prefix, "_reference_mode")]], project_display_label(project))
     # The bars drawn, not the rows of the QC table: with reference projects the plot holds their libraries too, and
     # the automatic height has to grow for them.
     return(list(plot = p, data = rbind(f, companions), reference = ref, items = attr(p, "ytab_items")))
@@ -511,7 +550,7 @@ qc_build_plot <- function(choice, input, prefix, s, src) {
   # Curves and per-library bars take the reference projects' libraries as further series, read with the same reader.
   with_reference <- function(d, reader) {
     if (!qc_reference_enabled(prefix)) return(d)
-    ytab_reference_bind(d, qc_role_filter(src$reference_curves(reader), input, prefix), project$project_id)
+    ytab_reference_bind(d, qc_role_filter(src$reference_curves(reader), input, prefix), project_display_label(project))
   }
   if (startsWith(choice, "dist_")) {
     kind <- sub("^dist_", "", choice)
@@ -553,7 +592,7 @@ qc_build_plot <- function(choice, input, prefix, s, src) {
       p <- ggplot2::ggplot(d, ggplot2::aes(x = chrom, y = mean_bin_signal, fill = .project)) +
         ggplot2::geom_boxplot(outlier.shape = NA) +
         ggplot2::geom_point(ggplot2::aes(text = .tip), position = ggplot2::position_jitterdodge(jitter.width = .15, seed = 1), size = s$point_size, alpha = s$point_opacity) +
-        ggplot2::scale_fill_manual(values = ytab_reference_project_fills(unique(d$.project), project$project_id), guide = if (several) "legend" else "none") +
+        ggplot2::scale_fill_manual(values = ytab_reference_project_fills(unique(d$.project), project_display_label(project)), guide = if (several) "legend" else "none") +
         ggplot2::labs(x = NULL, y = "Mean signal per genome bin", fill = NULL)
       list(plot = qc_apply_display(p, s, "x"), data = d)
     },
@@ -634,6 +673,28 @@ qc_build_plot <- function(choice, input, prefix, s, src) {
         qc_heatmap_fill(s$heatmap_palette, 0) + ggplot2::labs(x = NULL, y = sprintf("%d most variable genes (%s)", n, species), fill = "Density (centred log10)") +
         ggplot2::scale_x_discrete(expand = c(0, 0)) + ggplot2::scale_y_discrete(expand = c(0, 0))
       list(plot = qc_heatmap_theme(p, utils::modifyList(s, list(show_row_labels = isTRUE(s$show_row_labels) && n <= 80))), data = long)
+    },
+    top_genes = {
+      d <- src$distribution("top_genes"); chosen <- input[[paste0(prefix, "_top_libraries")]]
+      validate(need(length(chosen) > 0, "Choose at least one library."))
+      d <- d[d$sample %in% chosen & as.numeric(d$rank) <= (input[[paste0(prefix, "_top_n")]] %||% 15), , drop = FALSE]
+      validate(need(nrow(d) > 0, "No genes with reads in these libraries."))
+      d$name <- ytab_display_gene_names(d$feature_id, d$name, src$repo_root)
+      list(plot = qc_top_genes_plot(d, s), data = d, items = length(unique(d$sample)))
+    },
+    pca = {
+      r <- src$libcor(); x <- r$pca
+      validate(need(nrow(x) > 0, "This correlation result has no PCA; run library correlation again (or ytab library-correlation --refresh-pca RUN)."))
+      x <- x[x$library %in% qc_libcor_shown(x$library, r, input, prefix, dirname(project$project_root)), , drop = FALSE]
+      validate(need(nrow(x) >= 3L, "Show at least three libraries."))
+      species <- names(sort(table(x$species), decreasing = TRUE))[[1L]]; x <- x[x$species == species, , drop = FALSE]
+      x$role <- libcor_roles(x$library, dirname(project$project_root), r$samples); x$source <- unname(ytab_dataset_label(x$source, src$repo_root))
+      x$label <- make.unique(qc_label_libraries(libcor_display_names(x$library, dirname(project$project_root)), s), sep = " ")
+      v <- r$pca_variance; v <- v[v$species == species, , drop = FALSE]
+      axes <- strsplit(input[[paste0(prefix, "_pca_axes")]] %||% "PC1,PC2", ",")[[1L]]
+      validate(need(all(axes %in% names(x)), "This PCA has fewer components."))
+      list(plot = ytab_pca_plot(x, axes, v, s, input[[paste0(prefix, "_pca_colour")]] %||% "condition", input[[paste0(prefix, "_pca_shape")]] %||% "",
+                                isTRUE(input[[paste0(prefix, "_pca_labels")]] %||% TRUE)), data = x)
     },
     pair_scatter = {
       r <- src$libcor(); g <- r$genes; validate(need(nrow(g) > 0, "This correlation result has no gene-level values; run library correlation again."))

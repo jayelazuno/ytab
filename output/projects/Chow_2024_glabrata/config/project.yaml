@@ -1,4 +1,5 @@
 project_id: Chow_2024_glabrata
+display_name: Chow_et_al_2024_piggyBac
 repo_root: ../../../..
 fastq_dir: output/projects/Chow_2024_glabrata/config/argon_fastq_inputs
 fastq_paths_relative_to: fastq_dir

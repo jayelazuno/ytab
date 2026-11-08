@@ -1,10 +1,8 @@
 # Zero-inflated negative-binomial scaling: mathematics and assumptions
 
-`zinfnb` is an experimental, user-selectable scalar normalization. It fits each
+`zinfnb` is a user-selectable scalar normalization, measured in the pre-registered benchmark (R27: with the z-score it ranks planted effects within 0.01 AUC of BGC). It fits each
 sample's raw insertion-site counts independently, then divides by the fitted
-negative-binomial (NB) component mean. Its availability is not a recommendation
-over other methods. Existing fitness CPM, classifier MidLC and UI defaults are
-unchanged; no normalization tab is introduced.
+negative-binomial (NB) component mean. It is not a default.
 
 ## Principle and assumptions
 

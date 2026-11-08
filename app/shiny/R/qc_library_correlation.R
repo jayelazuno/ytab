@@ -77,8 +77,8 @@ qc_library_correlation_server <- function(input, output, session, repo_root, act
   output$libcor_project_selector <- renderUI({
     found <- projects(); current <- libcor_project_dir(active()$project_config)
     dirs <- vapply(found$project_config, libcor_project_dir, ""); keep <- dirs != current
-    choices <- if (any(keep)) stats::setNames(dirs[keep], sprintf("%s (%s)", found$project_id[keep], found$species[keep])) else character()
-    selectizeInput("libcor_projects", "Compare with these projects", choices, multiple = TRUE, options = list(placeholder = "Choose projects…"))
+    choices <- if (any(keep)) stats::setNames(dirs[keep], sprintf("%s (%s)", ytab_dataset_label(found$project_id[keep], repo_root), found$species[keep])) else character()
+    selectizeInput("libcor_projects", "Compare with these datasets", choices, multiple = TRUE, options = list(placeholder = "Choose datasets…"))
   })
   output$libcor_ortholog_selector <- renderUI({
     files <- list.files(file.path(repo_root, "resources", "species", "orthologs"), pattern = "\\.tsv$", full.names = TRUE)
@@ -86,7 +86,7 @@ qc_library_correlation_server <- function(input, output, session, repo_root, act
   })
   output$libcor_result_selector <- renderUI({
     x <- runs()
-    if (!nrow(x)) return(tags$p(class = "text-muted", "No library correlation has been run for this project yet."))
+    if (!nrow(x)) return(tags$p(class = "text-muted", "No library correlation has been run for this dataset yet."))
     selectInput("libcor_result", "Result", ytab_run_choices(x))
   })
 
@@ -94,12 +94,12 @@ qc_library_correlation_server <- function(input, output, session, repo_root, act
     if (jobs$job_is_running()) { showNotification("Wait for the current job to finish.", type = "warning"); return() }
     current <- libcor_project_dir(active()$project_config)
     selected <- unique(c(current, if (identical(input$libcor_scope, "across")) input$libcor_projects %||% character()))
-    if (identical(input$libcor_scope, "across") && length(selected) < 2L) { showNotification("Choose at least one other project to compare with.", type = "error"); return() }
+    if (identical(input$libcor_scope, "across") && length(selected) < 2L) { showNotification("Choose at least one other dataset to compare with.", type = "error"); return() }
     found <- projects(); species <- unique(found$species[vapply(found$project_config, libcor_project_dir, "") %in% selected])
     samples <- sum(found$included_count[vapply(found$project_config, libcor_project_dir, "") %in% selected])
-    if (!length(selected) || samples < 2L) { showNotification("Choose projects with at least two included libraries.", type = "error"); return() }
+    if (!length(selected) || samples < 2L) { showNotification("Choose datasets with at least two included libraries.", type = "error"); return() }
     if (length(species) > 1L && !nzchar(input$libcor_orthologs %||% "")) {
-      showNotification("These projects are from several species. Choose a 1:1 ortholog table.", type = "error"); return()
+      showNotification("These datasets are from several species. Choose a 1:1 ortholog table.", type = "error"); return()
     }
     output_dir <- ytab_new_run_dir(runs_dir(), "libcor")
     args <- c(file.path(repo_root, "scripts", "local", "ytab_library_correlation.py"), as.vector(rbind("--project", selected)),
@@ -117,9 +117,9 @@ qc_library_correlation_server <- function(input, output, session, repo_root, act
   manifest <- reactive(ytab_read_manifest(selected_run()))
 
   output$libcor_summary <- renderUI({
-    gate <- ytab_design_gate(design_support(), "Library correlation", "Library correlation is not available for this project")
+    gate <- ytab_design_gate(design_support(), "Library correlation", "Library correlation is not available for this dataset")
     if (!is.null(gate)) return(gate)
-    if (!nrow(runs())) return(ytab_empty_state("No library correlation yet", "Run library correlation to compare this project's libraries with each other, or with libraries from other projects."))
+    if (!nrow(runs())) return(ytab_empty_state("No library correlation yet", "Run library correlation to compare this dataset's libraries with each other, or with libraries from other datasets."))
     m <- manifest(); req(m); flags <- m$flagged_pairs %||% list()
     if (length(flags)) ytab_warning_banner(sprintf("%d library pairs disagree with their pool labels", length(flags)),
       "Their read correlation at shared sites does not match the pools given in the sample sheet. See the flag column in the pair table.")
@@ -137,7 +137,7 @@ qc_library_correlation_server <- function(input, output, session, repo_root, act
     ytab_datatable(p, page_length = 10L)
   })
 
-  download_name <- function(ext) paste0(active()$project_id, "_library_correlation_", basename(selected_run()), ext)
+  download_name <- function(ext) paste0(project_display_label(active()), "_library_correlation_", basename(selected_run()), ext)
   output$libcor_download_matrix <- downloadHandler(filename = function() download_name("_matrix.tsv"),
     content = function(file) file.copy(file.path(selected_run(), "correlation_matrix.tsv"), file))
   output$libcor_download_pairs <- downloadHandler(filename = function() download_name("_pairs.tsv"),

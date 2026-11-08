@@ -106,7 +106,7 @@ if (nrow(matched) != 4L || !identical(as.character(matched$role), c("parent", "t
 if (nrow(custom) != nrow(ordered)) fail("Custom preset did not keep all tracks available for manual selection")
 if (gene_domain_infer_track_role("parent-pool1-treated", sample_sheet) != "treated")
   fail("treated role did not override parent token in a treated sample name")
-for (pattern in c("custom_track_selection", "figure_request", "No tracks match this preset for the current project."))
+for (pattern in c("custom_track_selection", "figure_request", "No tracks match this preset for the current dataset."))
   if (!grepl(pattern, all_text, fixed = TRUE)) fail(paste("missing preset synchronization behavior:", pattern))
 
 forbidden_imports <- paste0(

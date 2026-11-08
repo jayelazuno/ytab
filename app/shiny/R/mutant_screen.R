@@ -44,7 +44,7 @@ mutant_screen_ui <- function(){
       p(tags$a(href="https://doi.org/10.3389/fbioe.2014.00046","Martínez-García et al. (2014). New transposon tools.")),
       p(tags$a(href="https://doi.org/10.1186/s44330-025-00054-3","Alejaldre et al. (2026). Automated workflow for genotyping individual transposon library variants.")),
       p(tags$a(href="https://www.ncbi.nlm.nih.gov/nuccore/L34807.1","Hermes reference: GenBank L34807.1")))),
-    panel_card("Mutant identifications",p("Select input and click Identify mutants. Genomic flanks are aligned to the selected reference genome; multiple-CDS overlaps are resolved using the junction-facing read orientation. Identification is universal unless a project is explicitly selected for screen links."),
+    panel_card("Mutant identifications",p("Select input and click Identify mutants. Genomic flanks are aligned to the selected reference genome; multiple-CDS overlaps are resolved using the junction-facing read orientation. Identification is universal unless a dataset is explicitly selected for screen links."),
       p(class="help-block","One row per mutant. Matching .seq/.ab1 exports are combined using ABI quality scores. Multiple candidate genes are listed together; inspect the mutant below for their context. Aligned bases are query bases aligned after quality trimming and adapter clipping, not the raw read length."),
       DT::DTOutput("ms_results"),
       tags$details(id="ms_inspect_mutant",class="ytab-technical-details",
@@ -188,7 +188,7 @@ mutant_screen_server <- function(input,output,session,repo_root,active,active_pr
     read_project_summary(path,repo_root)})
   output$ms_link_project_control<-renderUI({p<-projects()
     choices<-if(nrow(p))setNames(p$project_config,p$display_name)else character()
-    selectInput("ms_link_project","Link screen results to project (optional)",c("None — universal identification"="",choices),selected="")})
+    selectInput("ms_link_project","Link screen results to dataset (optional)",c("None — universal identification"="",choices),selected="")})
   output$ms_fitness_control<-renderUI({path<-input$ms_link_project%||%"";if(!nzchar(path))return(NULL)
     p<-read_project_summary(path,repo_root);runs<-discover_fitness_results(p)
     choices<-c("All available gene-level Fitness analyses"="",setNames(vapply(runs,function(r)r$table,""),vapply(runs,function(r)paste(r$analysis_id,if(r$legacy)"(legacy result)"else"(completed result)"),"")))
@@ -288,7 +288,7 @@ mutant_screen_server <- function(input,output,session,repo_root,active,active_pr
   output$ms_genes<-DT::renderDT({r<-selected();if(is.null(r))return(ytab_datatable(data.frame()))
     ytab_gene_details_datatable(ms_candidate_table(r,repo_root,display_reference()))})
   output$ms_link_context<-renderUI({d<-results();p(class="help-block",if(is.null(d$linked_project_id))
-    "Universal identification: no project screen results linked. Select a project explicitly to add screen associations."
+    "Universal identification: no dataset screen results linked. Select a dataset explicitly to add screen associations."
     else paste("Screen associations explicitly linked to:",d$linked_project_id))})
   output$ms_screen_results<-DT::renderDT({r<-selected();if(is.null(r))return(ytab_datatable(data.frame()))
     ytab_gene_details_datatable(ms_linked_table(r,repo_root))})
@@ -301,7 +301,7 @@ mutant_screen_server <- function(input,output,session,repo_root,active,active_pr
         setNames(ids,paste(d[["Gene ID"]],d[["Gene name"]],sep=" — "))
       }),if(!is.null(results()$linked_project_id)&&identical(results()$linked_project_id,active()$project_id))
         actionButton("ms_open_explorer","View gene & domain insertions")
-      else p(class="help-block","Insertion tracks require an explicitly linked project; open that project to inspect its tracks."))})
+      else p(class="help-block","Insertion tracks require an explicitly linked dataset; open that dataset to inspect its tracks."))})
   observeEvent(input$ms_open_explorer,{req(input$ms_explorer_gene,results()$linked_project_id)
     req(identical(results()$linked_project_id,active()$project_id))
     go_to("gene_explorer","gene_explorer_tabs","gene_domain");updateTextInput(session,"gene_domain_query",value=input$ms_explorer_gene)},ignoreInit=TRUE)

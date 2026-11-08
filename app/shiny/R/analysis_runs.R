@@ -56,7 +56,7 @@ YTAB_SPECIES_COLOURS <- c("C. glabrata" = "#009E73", "C. albicans" = "#E69F00", 
 YTAB_FOCAL <- "#087f85"; YTAB_COMPARATOR <- "#9aa5ad"; YTAB_ACCENT <- "#c8553d"
 YTAB_DIRECTION_COLOURS <- c(depleted = "#3b4f7a", enriched = "#c8553d", `not significant` = "grey80")
 YTAB_FLAG_COLOURS <- c(green = "#7fbf7b", yellow = "#f2d16b", red = "#d6604d", grey = "grey88")
-# Normalization methods by id: unnormalized white, scalings in greys and orange, BGC (the default) teal.
+# Normalization methods by id: unnormalized white, scalings in greys and orange, BGC (the default) teal, aBGC sky blue.
 YTAB_NORM_COLOURS <- c(nonorm = "#ffffff", totreads = "#cfd6db", nzmean = "#9aa5ad", ttr = "#E69F00", betageom = "#087f85",
                        aBGC = "#56B4E9", quantile = "#CC79A7", zinfnb = "#D55E00", midlc = "#F0E442")
 

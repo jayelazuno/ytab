@@ -6,13 +6,19 @@ from pathlib import Path
 from .project_status import DEPENDENCIES, build_project_status, load_project_status_context, write_project_status
 
 ORDER=["reference","mapfastq","create_hit_file","summary","library_diagnostics","sample_normalization",
-       "summary_normalized","combined_hits","summary_combined","classifier","comparison_design","treated_vs_parent"]
-PROFILES={"core":ORDER[:5],"classifier":ORDER[:10],"fitness":ORDER[:5]+ORDER[10:],"all":ORDER}
+       "summary_normalized","combined_hits","summary_combined","classifier","comparison_design","treated_vs_parent",
+       "donor_reads"]
+# Written out rather than sliced from ORDER, so a new stage cannot silently join a profile. donor_reads is optional
+# (reads from the transposon donor, for QC): it belongs to no default profile and is asked for with --stages.
+_CORE=["reference","mapfastq","create_hit_file","summary","library_diagnostics"]
+PROFILES={"core":_CORE,"classifier":_CORE+["sample_normalization","summary_normalized","combined_hits","summary_combined","classifier"],
+          "fitness":_CORE+["comparison_design","treated_vs_parent"],"all":[s for s in ORDER if s!="donor_reads"]}
 CLI={"reference":"ytab_prepare_reference.py","mapfastq":"ytab_run_mapfastq.py","create_hit_file":"ytab_run_create_hit_file.py",
  "summary":"ytab_run_summary_table.py","library_diagnostics":"ytab_run_library_diagnostics.py",
  "sample_normalization":"ytab_run_sample_normalization.py","summary_normalized":"ytab_run_summary_normalized.py",
  "combined_hits":"ytab_run_combine_hits.py","summary_combined":"ytab_run_summary_combined.py","classifier":"ytab_run_classifier.py",
- "comparison_design":"ytab_init_comparison_design.py","treated_vs_parent":"ytab_run_treated_vs_parent.py"}
+ "comparison_design":"ytab_init_comparison_design.py","treated_vs_parent":"ytab_run_treated_vs_parent.py",
+ "donor_reads":"ytab_donor_reads.py"}
 def _now(): return datetime.now(timezone.utc).isoformat()
 def _stamp(): return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
@@ -20,13 +26,13 @@ def _command(stage,context,target,analysis_id,threads,force,dry_run,keep_going):
     root=context["root"]; cfg=str(context["project_config"]); script=root/"scripts"/"local"/CLI[stage]
     if stage=="reference": cmd=[sys.executable,str(script),"--species",str(context["config"]["species"]),"--threads",str(threads),"--repo-root",str(root)]
     else: cmd=[sys.executable,str(script),"--project-config",cfg]
-    if stage in {"mapfastq","create_hit_file","summary","library_diagnostics","sample_normalization","summary_normalized","summary_combined"}: cmd += ["--threads",str(threads)]
+    if stage in {"mapfastq","create_hit_file","summary","library_diagnostics","sample_normalization","summary_normalized","summary_combined","donor_reads"}: cmd += ["--threads",str(threads)]
     if stage=="sample_normalization": cmd += ["--targets","auto","--sample-mode","parents"]
     if stage=="summary_normalized": cmd += ["--targets",target,"--sample-mode","parents"]
     if stage in {"combined_hits","summary_combined","classifier"}: cmd += ["--target",target]
     if stage=="treated_vs_parent": cmd += ["--analysis-id",analysis_id,"--input-mode","raw-summary"]
-    if force: cmd.append("--overwrite" if stage=="comparison_design" else "--force")
-    if dry_run and stage not in {"reference","comparison_design"}: cmd.append("--dry-run")
+    if force and stage!="donor_reads": cmd.append("--overwrite" if stage=="comparison_design" else "--force")
+    if dry_run and stage not in {"reference","comparison_design","donor_reads"}: cmd.append("--dry-run")
     if keep_going and stage in {"mapfastq","create_hit_file","summary","sample_normalization","summary_normalized","treated_vs_parent"}: cmd.append("--keep-going")
     return cmd
 

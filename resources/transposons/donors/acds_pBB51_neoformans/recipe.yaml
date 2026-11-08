@@ -1,0 +1,7 @@
+donor: pBB51 (synthesised Ds minitransposon with a NEO marker) and pBB65, the targeting construct integrated at a URA5 intron (Billmyre et al. 2025). Not deposited; rebuilt from its published parts.
+transposon_ends: ["CAGGGATGAAAGTAGGATGGGAAAATCCCGTACCGACCGT GAGGTATTTTACCGACCGTTACCGACCGTTTTCATCCCTA", ""]
+parts:
+  - {name: Ac/Ds element (TIRs and transposase source), genbank: X05424, role: transposon}
+  - {name: kanMX6 cassette (G418/NEO resistance), genbank: AJ002682, role: marker inside the transposon}
+  - {name: pUC19 backbone (TOPO blunt cloning vector), genbank: M77789, role: vector}
+  - {name: C. neoformans URA5 with flanks (the integration site), species: neoformans, gene: CNAG_03196, flank: 700, role: donor locus / host fragment}

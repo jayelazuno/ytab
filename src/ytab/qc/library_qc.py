@@ -48,6 +48,8 @@ METRICS = [
     ("percent_mapped", "reads", "Mapped (%)", "low", "relative", "Primary alignments that map to the reference."),
     ("percent_mapq", "reads", "Mapped with MAPQ above threshold (%)", "low", "relative", "Uniquely placed alignments; low values mean repeats or the wrong reference."),
     ("mean_mapq", "reads", "Mean MAPQ", "low", "relative", "Mean mapping quality of mapped primary alignments."),
+    ("percent_donor", "reads", "Reads from the transposon donor (%)", "high", "relative", "Reads that start at the transposon end and run into the donor plasmid or donor locus rather than the genome: the donor was not lost after induction. Counted against the donor sequence when the project names one (mapping.donor_fasta), otherwise estimated from recurring unmapped flanks (a donor junction is one fixed sequence). These reads carry no insertion; high values waste depth and mean the donor persists in the pool."),
+    ("percent_donor_shared", "reads", "Donor reads placed on the genome (%)", "high", "relative", "Donor reads whose flank the donor shares with the host genome (a promoter, marker or CEN/ARS fragment on the plasmid): they map to that locus and look like insertions there. Only counted when the donor sequence is known."),
     ("total_cts", "insertions", "Reads at insertion sites", "low", "relative", "Reads supporting called insertions."),
     ("unique_sites", "insertions", "Insertion sites", "low", "relative", "Distinct insertion positions (strands combined)."),
     ("insertions_per_kb", "insertions", "Insertions per kb of genome", "low", "relative", "Insertion sites per kilobase of reference: how densely the genome is covered (Hermes has no fixed set of possible sites)."),
@@ -67,13 +69,16 @@ METRICS = [
     ("mean_hits_per_feature", "genes", "Insertions per gene", "low", "relative", "SummaryTable: mean insertion sites per feature."),
     ("percent_hits_in_features", "genes", "Insertions in genes (%)", "both", "relative", "SummaryTable: share of insertion sites inside features."),
     ("neighborhood_spearman", "genes", "Insertion-neighbourhood correlation", "low", "relative", "SummaryTable: Spearman correlation between a gene's insertions and its neighbourhood's."),
+    ("one_site_genes", "genes", "Genes led by one site (%)", "high", "relative", "Of the genes with at least 3 insertion sites, the share in which the largest site holds at least half of the gene's reads: a jackpot, an insertion that does not disrupt the gene or a selected site, rather than many independent mutants. High values make gene totals depend on single sites."),
     ("midlc_est", "saturation", "MidLC estimate", None, None, "Library diagnostics: reads at which half the discoverable sites are found."),
     ("depth_ratio", "saturation", "Depth / MidLC", None, None, "Reads at insertion sites divided by the MidLC estimate (above 1: sequenced past half-saturation)."),
     ("jackpot_frac_reads", "saturation", "Reads in jackpot sites", "high", "relative", "Library diagnostics: fraction of reads in the top jackpot sites."),
     ("n_jackpot_sites", "saturation", "Jackpot sites", "high", "relative", "Library diagnostics: number of sites flagged as jackpots."),
 ]
+TOP_SITE_HINT = "Consider a top-site treatment before normalizing (Normalization → Top sites: winsorize or drop the top site); see Genes with the most reads."
 HINTS = {"skewness":BGC_HINT, "max_share":TTR_HINT, "top1pct_share":BGC_HINT, "jackpot_frac_reads":TTR_HINT,
-         "pickands_tail_index":BGC_HINT}
+         "pickands_tail_index":BGC_HINT, "one_site_genes":TOP_SITE_HINT}
+ONE_SITE_MIN_SITES, ONE_SITE_SHARE = 3, .5
 THEMES = {"reads":"Reads & Mapping", "insertions":"Insertions", "genes":"Genes", "saturation":"Saturation"}
 
 
@@ -106,6 +111,82 @@ def coding_genes(fasta: Path, gff: Path) -> list[dict]:
     from ytab.essentiality.control_conditioned_gumbel import annotations
     chroms = {line[1:].split()[0] for line in open(fasta) if line.startswith(">")} if fasta and fasta.is_file() else set()
     return [g for g in annotations(gff) if g["blocks"] and (not chroms or g["chrom"] in chroms)]
+
+
+TOP_GENES = 30
+
+
+def gene_reads(sample: str, sites: dict, genes: list[dict]) -> list[dict]:
+    """Every gene with reads in one library (reads at sites in the gene's coding sequence), with its share of the
+    library's reads, its insertion sites, its largest site's reads and that site's share of the gene's reads."""
+    from ytab.essentiality.control_conditioned_gumbel import gene_sites
+    from ytab.essentiality.library_correlation import SITE_RULES, gene_key
+    if not genes or not sites:return []
+    keys = list(sites); reads = np.fromiter((sites[k] for k in keys), dtype=float, count=len(keys)); total = float(reads.sum())
+    rows = []
+    for g, idx in zip(genes, gene_sites(genes, keys, SITE_RULES)):
+        if not len(idx):continue
+        r = reads[idx]; gene_reads = float(r.sum()); top = int(np.argmax(r))
+        rows.append(dict(sample=sample, feature_id=gene_key(g["id"]), name=g.get("name") or "", chrom=g["chrom"], reads=gene_reads,
+                         library_share=gene_reads/total if total else None, sites=int(len(idx)), top_site=f"{keys[idx[top]][0]}:{keys[idx[top]][1]}",
+                         top_site_reads=float(r[top]), top_site_share=float(r[top])/gene_reads if gene_reads else None,
+                         reads_without_top_site=gene_reads-float(r[top])))
+    return rows
+
+
+def top_genes(sample: str, sites: dict, genes: list[dict], n: int = TOP_GENES, rows: list[dict] | None = None) -> list[dict]:
+    """The n genes holding the most reads of one library (gene_reads rows, largest first, ranked). A gene whose reads
+    come mostly from one site is a jackpot, a selection marker or the donor locus rather than a gene many independent
+    mutants support."""
+    rows = sorted(gene_reads(sample, sites, genes) if rows is None else rows, key=lambda x:-x["reads"])
+    return [dict(x, rank=i+1) for i, x in enumerate(rows[:n])]
+
+
+def one_site_genes(rows: list[dict]) -> float | None:
+    """Percent of the genes with >= 3 insertion sites whose largest site holds >= half of the gene's reads."""
+    judged = [r for r in rows if r["sites"] >= ONE_SITE_MIN_SITES and r["reads"] > 0]
+    return 100*sum(r["top_site_share"] >= ONE_SITE_SHARE for r in judged)/len(judged) if judged else None
+
+
+TOP_GENE_COLUMNS = ["sample", "rank", "feature_id", "name", "chrom", "reads", "library_share", "sites", "top_site", "top_site_reads", "top_site_share",
+                    "reads_without_top_site"]
+
+
+def refresh_top_genes(run: Path) -> Path:
+    """Add plots/top_genes.tsv.gz and the "Genes led by one site" metric (table column, flags, metrics list, Excel) to
+    an earlier QC run, from the hit files and GFF of its project config."""
+    from ytab.pipeline.mapfastq_runner import load_project_for_mapping
+    run = Path(run).resolve(); manifest = json.loads((run/"manifest.json").read_text())
+    config = load_project_for_mapping(Path(manifest["project_config"])); root = Path(config["_repo_root"])
+    if not (root/"output").is_dir():root = Path(__file__).resolve().parents[3]
+    project = _resolve(config.get("output_project_dir"), root)
+    fasta = _resolve((config.get("reference") or {}).get("fasta"), root); gff = _resolve((config.get("reference") or {}).get("gff"), root)
+    genes = coding_genes(fasta, gff) if gff and gff.is_file() else []
+    rows, share = [], {}
+    for s in config.get("samples", []):
+        if str(s.get("include", True)).lower() not in {"true", "1", "yes"}:continue
+        name = str(s["sample"]); path = _resolve(s.get("hit_file"), root) if s.get("hit_file") else project/"create_hit_file"/name/f"{name}_hits.txt"
+        if path and path.is_file():
+            per_gene = gene_reads(name, read_hits(path)[0], genes); rows += top_genes(name, None, genes, rows=per_gene); share[name] = one_site_genes(per_gene)
+    out = run/"plots/top_genes.tsv.gz"; _write(out, TOP_GENE_COLUMNS, rows)
+    table = list(csv.DictReader(open(run/"qc_table.tsv"), delimiter="\t"))
+    if table:
+        key, theme, label, direction, rule, comment = next(m for m in METRICS if m[0] == "one_site_genes")
+        for r in table:r[key] = share.get(r["sample"])
+        columns = list(table[0]) if key in table[0] else list(table[0])+[key]
+        _write(run/"qc_table.tsv", columns, table)
+        flags = [f for f in csv.DictReader(open(run/"qc_flags.tsv"), delimiter="\t") if f["metric"] != key]
+        values = {r["sample"]:_float(r.get(key)) for r in table}; roles = {r["sample"]:r["role"] for r in table}
+        for s, (colour, reason) in flag(values, roles, key, direction, rule).items():
+            flags.append(dict(sample=s, metric=key, label=label, theme=THEMES[theme], value=values[s], flag=colour, reason=reason, source=LEYS,
+                              comment=comment, normalization_hint=HINTS.get(key, "") if colour in {"yellow", "red"} else ""))
+        _write(run/"qc_flags.tsv", list(flags[0]), flags)
+        _write(run/"metrics.tsv", ["metric", "theme", "label", "bad_direction", "rule", "comment"],
+               [dict(metric=k, theme=THEMES[t], label=l, bad_direction=d or "", rule=r or "descriptive", comment=c) for k, t, l, d, r, c in METRICS])
+        write_xlsx(run/"qc_table.xlsx", table, flags)
+        manifest["flag_counts"] = {c:sum(f["flag"] == c for f in flags) for c in ("red", "yellow", "green", "grey")}
+    manifest.setdefault("files", {})["top_genes"] = "plots/top_genes.tsv.gz"; (run/"manifest.json").write_text(json.dumps(manifest, indent=2)+"\n")
+    return out
 
 
 def coding_density(sites, genes: list[dict]) -> float | None:
@@ -238,6 +319,17 @@ def _mapping(path: Path) -> dict:
                 mean_mapq=_float(row.get("avg_mapq_mapped_primary")))
 
 
+def _donor(path: Path) -> dict:
+    """Donor reads (ytab.mapping.donor_reads): counted against the donor sequence when one was given, otherwise the
+    recurring-unmapped-flank estimate; `donor_source` says which."""
+    if not path.is_file():return {}
+    row = next(csv.DictReader(open(path)), {})
+    counted = _float(row.get("percent_donor"))
+    return dict(percent_donor=counted if counted is not None else _float(row.get("percent_recurrent_unmapped_flank")),
+                percent_donor_shared=_float(row.get("percent_donor_shared")),
+                donor_source=row.get("donor") or ("estimate (recurring unmapped flanks)" if row.get("percent_recurrent_unmapped_flank") else ""))
+
+
 def _summary(project: Path, sample: str, combined: dict) -> dict:
     row = combined.get(sample)
     if row is None:
@@ -317,18 +409,20 @@ def build(project_config: Path, output: Path) -> dict:
         if path and path.is_file():hits[name] = read_hits(path)
         else:missing.append(name)
     universe = len(set().union(*(set(h[0]) for h in hits.values()))) if hits else 0
-    rows, plots = [], {"histogram":[], "qq":[], "ranked":[], "lorenz":[]}
+    rows, plots, top = [], {"histogram":[], "qq":[], "ranked":[], "lorenz":[]}, []
     for s in samples:
         name = str(s["sample"]); role = str(s.get("library_role") or s.get("condition") or s.get("guessed_condition") or "library").strip().lower()
         row = dict(sample=name, display_name=s.get("display_name") or name, role=role, pool=s.get("pool") or s.get("guessed_pool") or "",
                    background=s.get("background") or s.get("guessed_background") or "")
         row |= (_hermes(project/"mapfastq"/name/f"{name}.hermes_preprocessing.json") or _mapping_log(project/"mapfastq"/name/f"{name}_log.txt")) \
-            | _mapping(project/"mapfastq"/name/f"{name}.mapping_stats.csv")
+            | _mapping(project/"mapfastq"/name/f"{name}.mapping_stats.csv") | _donor(project/"mapfastq"/name/f"{name}.donor_reads.csv")
         if name in hits:
             row |= insertion_metrics(*hits[name], universe, genome_bp)
             row["sites_per_coding_kb"] = coding_density(hits[name][0], genes)
             data = plot_data(name, np.fromiter(hits[name][0].values(), dtype=float))
             for k in plots:plots[k] += data[k]
+            per_gene = gene_reads(name, hits[name][0], genes)
+            top += top_genes(name, hits[name][0], genes, rows=per_gene); row["one_site_genes"] = one_site_genes(per_gene)
         row |= _summary(project, name, combined) | diagnostics.get(name, {})
         rows.append(row)
     flags = []
@@ -350,6 +444,7 @@ def build(project_config: Path, output: Path) -> dict:
     (output/"plots").mkdir()
     for name, data in plots.items():
         _write(output/"plots"/f"{name}.tsv.gz", list(data[0]) if data else ["sample"], data)
+    _write(output/"plots/top_genes.tsv.gz", TOP_GENE_COLUMNS, top)
     write_xlsx(output/"qc_table.xlsx", rows, flags)
     manifest = dict(status="success", project=config.get("project_id"), project_config=str(config_path), libraries=len(rows),
                     libraries_without_hits=missing, catalogue_sites=universe, genome_bp=genome_bp,
@@ -359,7 +454,7 @@ def build(project_config: Path, output: Path) -> dict:
                     created=datetime.now(timezone.utc).isoformat(),
                     files=dict(table="qc_table.tsv", flags="qc_flags.tsv", metrics="metrics.tsv", excel="qc_table.xlsx",
                                histogram="plots/histogram.tsv.gz", qq="plots/qq.tsv.gz", ranked="plots/ranked.tsv.gz",
-                               lorenz="plots/lorenz.tsv.gz", essentiality_readiness="essentiality_readiness.tsv"))
+                               lorenz="plots/lorenz.tsv.gz", top_genes="plots/top_genes.tsv.gz", essentiality_readiness="essentiality_readiness.tsv"))
     (output/"manifest.json").write_text(json.dumps(manifest, indent=2)+"\n")
     return manifest
 

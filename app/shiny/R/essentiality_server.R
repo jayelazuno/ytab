@@ -1027,11 +1027,11 @@ essentiality_server <- function(input, output, session, active, active_project_p
   output$essentiality_smoke_warning <- renderUI({
     if (essentiality_smoke_project(active()))
       tags$div(class = "alert alert-warning",
-               "This project uses a shallow FASTQ subset for software validation. Essentiality predictions are not final biological conclusions.")
+               "This dataset uses a shallow FASTQ subset for software validation. Essentiality predictions are not final biological conclusions.")
   })
   output$classifier_results_empty <- renderUI({
     if (!length(classifier_results())) tags$p(class = "text-muted",
-      "No essentiality classifier result is available for this project.")
+      "No essentiality classifier result is available for this dataset.")
   })
   output$classifier_result_selector <- renderUI({
     results <- classifier_results()
@@ -1333,7 +1333,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
     selected_result_tag(result$tag)
     showModal(modalDialog(
       title = paste("Set", result$tag, "as the final classifier target?"),
-      tags$p("This records the reviewed target for project exports and downstream annotation. It does not rerun the classifier."),
+      tags$p("This records the reviewed target for dataset exports and downstream annotation. It does not rerun the classifier."),
       footer = tagList(modalButton("Cancel"),
                        actionButton("confirm_final_classifier_target",
                                     "Set final target", class = "btn-primary"))
@@ -1511,7 +1511,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
       list("Classifier manifest", "download_essentiality_manifest",
            "classifier_manifest", "Cache and resource provenance"),
       list("Final-target record", "download_essentiality_final_target",
-           "final_target", "Explicitly saved project target")
+           "final_target", "Explicitly saved dataset target")
     )
     tags$div(
       class = "ytab-download-grid",

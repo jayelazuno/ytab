@@ -238,6 +238,32 @@ def write_tsv(path, fields, rows):
         w = csv.DictWriter(handle, fieldnames=fields, delimiter="\t", extrasaction="ignore"); w.writeheader(); w.writerows(rows)
 
 
+def write_pca(output, samples, genes, metric):
+    """pca.tsv (each library on PC1-PC4) and pca_variance.tsv, per species, from log2(1 + the run's gene metric)."""
+    from ytab.qc import pca
+    scores, variance = [], []
+    for species in dict.fromkeys(s.species for s in samples):
+        libs = [s for s in samples if s.species == species]; names = sorted(set.intersection(*(set(genes[s.name]) for s in libs)))
+        values = np.array([[genes[s.name][g][metric] for s in libs] for g in names]).reshape(len(names), len(libs))
+        meta = [dict(library=s.name, strain=s.strain, pool=s.pool, condition=s.condition, source=s.source) for s in libs]
+        a, b = pca.rows(values, meta, dict(species=species)); scores += a; variance += b
+    if scores:
+        write_tsv(output/"pca.tsv", list(scores[0]), scores); write_tsv(output/"pca_variance.tsv", list(variance[0]), variance)
+
+
+def refresh_pca(run_dir):
+    """Add pca.tsv / pca_variance.tsv to an earlier run from its samples.tsv and gene_values.tsv.gz."""
+    run_dir = Path(run_dir); manifest = json.loads((run_dir/"manifest.json").read_text()); metric = manifest.get("metric", "density")
+    with (run_dir/"samples.tsv").open() as handle:
+        samples = [Sample(**{k:r.get(k, "") for k in ("name", "hits", "species", "gff", "strain", "pool", "condition", "source")}) for r in csv.DictReader(handle, delimiter="\t")]
+    genes = {}
+    with gzip.open(run_dir/"gene_values.tsv.gz", "rt") as handle:
+        for r in csv.DictReader(handle, delimiter="\t"):genes.setdefault(r["library"], {})[r["gene"]] = {metric:float(r[metric])}
+    write_pca(run_dir, samples, genes, metric)
+    manifest.setdefault("files", {}).update(pca="pca.tsv", pca_variance="pca_variance.tsv")
+    (run_dir/"manifest.json").write_text(json.dumps(manifest, indent=2)+"\n")
+
+
 def run(samples, output, metric="density", orthologs=None, boot=500, seed=2026, min_reads=1):
     output = Path(output)
     if output.exists() and any(output.iterdir()):raise ValueError("Choose a new output directory")
@@ -253,6 +279,7 @@ def run(samples, output, metric="density", orthologs=None, boot=500, seed=2026, 
         for name, per_gene in genes.items():
             for gene, m in per_gene.items():
                 w.writerow([name, species[name], gene, m["chrom"], m["length"], m["sites"], round(m["reads"], 3), round(m["density"], 5), round(m["reads_per_kb"], 5)])
+    write_pca(output, samples, genes, metric)
     o = order(R); names = [samples[k].name for k in o]
     labels = [f"{samples[k].name} | {'/'.join(x for x in (samples[k].strain, samples[k].pool, samples[k].condition) if x)}" for k in o]
     write_tsv(output/"samples.tsv", list(info[0]), info)
@@ -274,6 +301,7 @@ def run(samples, output, metric="density", orthologs=None, boot=500, seed=2026, 
                                     "same strain, different pool":"independent libraries: reproducibility of the insertion landscape",
                                     "different strain":"strain differences in essentiality/accessibility, plus library noise",
                                     "different species":"conservation of the insertion landscape over 1:1 orthologs"},
-                    files=dict(samples="samples.tsv", pairs="pairs.tsv", matrix="correlation_matrix.tsv", genes="gene_values.tsv.gz", plot="correlation.png"))
+                    files=dict(samples="samples.tsv", pairs="pairs.tsv", matrix="correlation_matrix.tsv", genes="gene_values.tsv.gz", plot="correlation.png",
+                               pca="pca.tsv", pca_variance="pca_variance.tsv"))
     (output/"manifest.json").write_text(json.dumps(manifest, indent=2)+"\n")
     return manifest

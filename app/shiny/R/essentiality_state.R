@@ -30,7 +30,7 @@ essentiality_parent_inventory <- function(project) {
     metadata_parent <- any(grepl("parent", metadata))
     fallback_parent <- !length(metadata) && grepl("parent", sample[[index]], ignore.case = TRUE)
     detected <- included[[index]] && !explicit_treated && (flag_parent || metadata_parent || fallback_parent)
-    reason <- if (!included[[index]]) "Excluded by project sample sheet" else if (explicit_treated) "Treated library excluded" else if (flag_parent) "Parent flag" else if (metadata_parent) "Parent metadata" else if (fallback_parent) "Parent name fallback" else "Parent role not identified"
+    reason <- if (!included[[index]]) "Excluded by dataset sample sheet" else if (explicit_treated) "Treated library excluded" else if (flag_parent) "Parent flag" else if (metadata_parent) "Parent metadata" else if (fallback_parent) "Parent name fallback" else "Parent role not identified"
     raw <- file.path("create_hit_file", sample[[index]], paste0(sample[[index]], "_hits.txt"))
     data.frame(
       Sample = sample[[index]], Background = background[[index]], Pool = pool[[index]],

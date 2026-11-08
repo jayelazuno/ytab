@@ -27,10 +27,10 @@ shiny::testServer(server, {
       if (Sys.time()>deadline) stop("Timed out loading project inventory: ",expected)
     }
     html <- paste(unlist(rendered),collapse=" ")
-    stopifnot(grepl(paste("Project:",expected),html,fixed=TRUE),length(output$sc_plot_primary)>0,
+    stopifnot(grepl(paste("Dataset:",expected),html,fixed=TRUE),length(output$sc_plot_primary)>0,
       length(output$sc_poisson_target)>0)
     other <- setdiff(paths,path)
-    for (other_path in other) stopifnot(!grepl(paste("Project:",yaml::read_yaml(other_path)$project_id),html,fixed=TRUE))
+    for (other_path in other) stopifnot(!grepl(paste("Dataset:",yaml::read_yaml(other_path)$project_id),html,fixed=TRUE))
     cat("PASS: project-scoped summary and analytical plot:",expected,"\n")
   }
 })

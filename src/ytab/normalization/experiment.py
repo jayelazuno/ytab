@@ -14,6 +14,7 @@ from scipy import sparse
 from scipy.stats import spearmanr
 
 from ytab.pipeline.project_config import load_project_config
+from . import site_filter as site_filters
 from .methods import normalize, run_choices
 from .ttr import read_counts, sha256, write_table
 
@@ -47,12 +48,15 @@ def samples_by_id(records):
     return {row["sample"]: row for row in records}
 
 
-def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, plots=True, sample_list=None, together=False):
+def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, plots=True, sample_list=None, together=False, site_filter="none"):
     """Select assay samples from comparison_design.csv, never from names; or, with `sample_list`, exactly the samples listed
     (for comparisons between strains or conditions that are not pool-matched pairs: multi-condition tests). With a
     sample list, the sample sheet's role says control (parent/control) or treated, and no pairing is required. together=True (sample list only) normalizes all listed samples as one group
     (the project) instead of within each library, so independently made libraries are on one scale (TRANSIT's
-    convention, DeJesus et al. 2015); library_id still records each sample's library."""
+    convention, DeJesus et al. 2015); library_id still records each sample's library. site_filter (none, winsorize,
+    drop-top; see site_filter.py) treats each library's largest site per gene before normalization; the untreated
+    counts are kept as matrix/raw_counts.unfiltered.npz."""
+    if site_filter not in site_filters.FILTERS:raise ValueError(f"Unknown site filter {site_filter!r}")
     if together and not sample_list:raise ValueError("Normalizing together needs an explicit sample list")
     catalogue, output = Path(catalogue).resolve(), Path(output).resolve()
     if output == catalogue or output in catalogue.parents:
@@ -106,18 +110,25 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
         sites = [(row["chromosome"], int(row["position_1based"])) for row in csv.DictReader(handle, delimiter="\t")]
     if len(sites) != source["universe_sites"] or len(set(sites)) != len(sites):
         raise ValueError("Parent catalogue sites disagree with its manifest")
-    counts, metadata = [], []
+    counts, unfiltered, metadata, filtered = [], [], [], []
+    genes = None
+    if site_filter != "none":
+        from ytab.essentiality.control_conditioned_gumbel import annotations
+        genes = annotations(resolve(cfg["reference"]["gff"]))
     for sample in selected:
         row = samples[sample]
         hit = resolve(row["hit_file"]) if row.get("hit_file") else project / "create_hit_file" / sample / (sample + "_hits.txt")
         values, _ = read_counts(hit)
+        unfiltered.append(values)
+        if site_filter != "none":
+            values, summary = site_filters.apply(values, genes, site_filter); filtered.append(dict(sample=sample, **summary))
         counts.append(values)
         metadata.append(dict(observation_id=cfg["project_id"] + "::" + sample, sample=sample,
             display_name=row.get("display_name") or sample, project=cfg["project_id"], dataset=cfg["project_id"],
             library_id="::".join((cfg["project_id"], *group(sample))), pool=pool_of(row),
             role="control" if sample in controls else "treated", input=str(hit.resolve()), input_sha256=sha256(hit)))
     parent_set = set(sites)
-    additions = sorted(set().union(*(set(values) for values in counts)) - parent_set)
+    additions = sorted(set().union(*(set(values) for values in unfiltered)) - parent_set)   # one site universe whatever the filter
     sites.extend(additions)
     index = {key: i for i, key in enumerate(sites)}
     rows, cols, data = [], [], []
@@ -125,6 +136,11 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
         for key, value in values.items():
             rows.append(index[key]); cols.append(col); data.append(value)
     raw = sparse.csr_matrix((np.asarray(data, dtype=np.int64), (rows, cols)), shape=(len(sites), len(selected)))
+    rows, cols, data = [], [], []
+    for col, values in enumerate(unfiltered):
+        for key, value in values.items():
+            rows.append(index[key]); cols.append(col); data.append(value)
+    untreated = sparse.csr_matrix((np.asarray(data, dtype=np.int64), (rows, cols)), shape=(len(sites), len(selected)))
     # Fail on invalid method/parameters before producing any files.
     if not methods or len(set(methods)) != len(methods):
         raise ValueError("Choose distinct methods explicitly")
@@ -134,6 +150,9 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
     matrix_dir = output / "matrix"
     matrix_dir.mkdir()
     sparse.save_npz(matrix_dir / "raw_counts.npz", raw)
+    if site_filter != "none":
+        sparse.save_npz(matrix_dir / "raw_counts.unfiltered.npz", untreated)
+        write_table(matrix_dir / "site_filter.tsv", list(filtered[0]), filtered)
     write_table(matrix_dir / "observations.tsv", list(metadata[0]), metadata)
     write_table(matrix_dir / "sites.tsv.gz", ["site_index", "chromosome", "position_1based", "in_parent_catalogue"],
         (dict(site_index=i, chromosome=key[0], position_1based=key[1], in_parent_catalogue=i < len(parent_set)) for i, key in enumerate(sites)))
@@ -142,7 +161,7 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
         project_config=str(Path(project_config).resolve()), project_config_sha256=sha256(project_config),
         sample_sheet_sha256=sha256(sheet), design_sha256=sha256(design_path) if design else None, sample_list=sorted(sample_list) if sample_list else None, normalization_group="project" if together else "library_id",
         parent_catalogue=str(catalogue), parent_manifest_sha256=sha256(catalogue / "run_manifest.json"),
-        parent_sites_sha256=sha256(catalogue / "sites.tsv.gz"), implementation_sha256=sha256(__file__),
+        parent_sites_sha256=sha256(catalogue / "sites.tsv.gz"), implementation_sha256=sha256(__file__), site_filter=site_filter,
         site_policy="Parent empirical catalogue plus experiment-observed additions; zeros mean undetected, not impossible sites",
         scope="Exploratory site-level validation; no fitness calls, no downstream CPM, no independent-induction claim")
     (matrix_dir / "run_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

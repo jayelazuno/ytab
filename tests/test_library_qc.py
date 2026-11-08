@@ -89,3 +89,25 @@ def test_read_counts_from_mapping_log(tmp_path):
                    "=== Sequence alignment ===\n880 reads; of these:\n  880 (100.00%) were unpaired; of these:\n")
     assert qc._mapping_log(log) == dict(input_reads=1000., retained_fraction=.88, adapter_fraction=.88)
     assert qc._mapping_log(tmp_path/"missing.txt") == {}
+
+
+def test_top_genes_flags_one_site_genes():
+    genes = [dict(id="gene:A", name="AAA1", chrom="c1", strand="+", blocks=[(1, 100)]),
+             dict(id="gene:B", name="", chrom="c1", strand="+", blocks=[(201, 300)])]
+    sites = {("c1", 10):900, ("c1", 20):100, ("c1", 210):50, ("c1", 220):50, ("c1", 230):50, ("c1", 500):850}
+    rows = qc.top_genes("s1", sites, genes, n=5)
+    assert [r["feature_id"] for r in rows] == ["A", "B"] and [r["rank"] for r in rows] == [1, 2]
+    a, b = rows
+    assert a["reads"] == 1000 and a["sites"] == 2 and a["top_site"] == "c1:10" and a["top_site_share"] == .9 and a["reads_without_top_site"] == 100
+    assert a["library_share"] == 1000/2000 and b["top_site_share"] == pytest.approx(1/3)
+
+
+def test_pca_separates_two_groups():
+    from ytab.qc import pca
+    rng = np.random.default_rng(1); base = rng.gamma(2, 50, 300)
+    values = np.column_stack([base*(1+rng.normal(0, .05, 300)) for _ in range(3)]+[base[::-1]*(1+rng.normal(0, .05, 300)) for _ in range(3)])
+    scores, variance = pca.rows(values, [dict(library=f"L{i}") for i in range(6)], dict(method="x"))
+    pc1 = [r["PC1"] for r in scores]
+    assert len(scores) == 6 and variance[0]["pc"] == "PC1" and variance[0]["variance_explained"] > .8
+    assert np.sign(pc1[0]) == np.sign(pc1[1]) == np.sign(pc1[2]) != np.sign(pc1[3]) == np.sign(pc1[4]) == np.sign(pc1[5])
+    assert pca.pca(values[:, :2]) is None

@@ -1,0 +1,9 @@
+donor: "pBK549 / pBK257, the SATAY donor: ADE2 interrupted by MiniDs, with Ac transposase under GAL1 (Michel et al. 2017; Kingma et al. 2025). Not deposited; rebuilt from its published parts."
+transposon_ends: ["CAGGGATGAAAGTAGGATGGGAAAATCCCGTACCGACCGT GAGGTATTTTACCGACCGTTACCGACCGTTTTCATCCCTA", ""]
+parts:
+  - {name: pRS416 backbone (URA3, CEN6/ARS4, AmpR, ori, MCS), genbank: U03450, role: vector}
+  - {name: Ac transposable element (transposase and TIRs; MiniDs is its deletion derivative), genbank: X05424, role: transposon and transposase}
+  - {name: S. cerevisiae ADE2 with flanks (the donor locus the MiniDs sits in), species: cerevisiae, gene: YOR128C, flank: 700, role: donor locus / host fragment}
+  - {name: S. cerevisiae GAL1-GAL10 promoter region, species: cerevisiae, gene: YBR020W, flank: 800, role: transposase promoter}
+  - {name: S. cerevisiae URA3 with flanks, species: cerevisiae, gene: YEL021W, flank: 400, role: marker / host fragment}
+  - {name: kanMX4 cassette, genbank: AJ002680, role: marker}

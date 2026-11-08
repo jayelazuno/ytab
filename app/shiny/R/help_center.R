@@ -5,7 +5,7 @@
 help_pages <- function(repo_root) {
   index <- file.path(repo_root, "docs", "methods", "index.tsv")
   pages <- if (file.exists(index)) utils::read.delim(index, stringsAsFactors = FALSE) else data.frame(order = integer(), section = character(), title = character(), file = character())
-  extra <- data.frame(order = c(0L, 999L), section = c("Getting started", "About"), title = c("Tutorial: Gale 2020 from project to results", "Release notes"),
+  extra <- data.frame(order = c(0L, 999L), section = c("Getting started", "About"), title = c("Tutorial: Gale 2020 from dataset to results", "Release notes"),
                       file = c("docs/methods/tutorial.md", "docs/RELEASE_NOTES.md"), stringsAsFactors = FALSE)
   pages <- rbind(extra[1, ], pages, extra[2, ])
   pages <- pages[file.exists(file.path(repo_root, pages$file)), , drop = FALSE]
@@ -37,8 +37,8 @@ help_plain_text <- function(repo_root, file) {
 # Tabs of the workspace and words that lead to them (for search).
 help_tab_index <- data.frame(
   value = c("project", "run", "quality_control", "normalization", "fitness", "essentiality", "gene_explorer", "screen_coverage"),
-  title = c("Project", "Run", "Quality Control", "Normalization", "Condition Comparisons", "Essentiality", "Gene Explorer", "Screen Planning"),
-  keywords = c("samples sample sheet provenance project setup",
+  title = c("Dataset", "Run", "Quality Control", "Normalization", "Condition Comparisons", "Essentiality", "Gene Explorer", "Screen Planning"),
+  keywords = c("samples sample sheet provenance dataset setup",
                "mapping fastq hit files summarytable alignment preprocessing",
                "qc library quality saturation midlc sequence bias insertions density mapping statistics",
                "normalization bgc beta-geometric ttr total reads quantile zinb midlc scaling",

@@ -1,0 +1,53 @@
+{
+ "donor": "pCU-MET3-Hermes, rebuilt from parts (validation of the parts approach against the Cunningham lab file)",
+ "parts": [
+  {
+   "name": "pRS426 backbone (URA3",
+   "source": "GenBank U03451",
+   "length": 5726,
+   "role": "vector"
+  },
+  {
+   "name": "pRS416 backbone (URA3",
+   "source": "GenBank U03450",
+   "length": 4898,
+   "role": "vector"
+  },
+  {
+   "name": "C. glabrata MET3 promoter",
+   "source": "glabrata_CBS138 ChrB_C_glabrata_CBS138:381200-382811",
+   "length": 1612,
+   "role": "transposase promoter (host fragment)"
+  },
+  {
+   "name": "Hermes (transposase and ends)",
+   "source": "resources/transposons/hermes/L34807.1.fasta",
+   "length": 2749,
+   "role": "transposon"
+  },
+  {
+   "name": "S. cerevisiae CYC1 with terminator",
+   "source": "cerevisiae YJR048W chrX:525627-527386",
+   "length": 1760,
+   "role": "terminator"
+  },
+  {
+   "name": "natMX6 cassette vector (TEF promoter",
+   "source": "GenBank ON872185",
+   "length": 6055,
+   "role": "marker inside the mini-Hermes"
+  },
+  {
+   "name": "kanMX4 (TEF promoter and terminator)",
+   "source": "GenBank AJ002680",
+   "length": 3941,
+   "role": "marker"
+  },
+  {
+   "name": "C. glabrata HIS3 region",
+   "source": "glabrata_CBS138 CAGL0L02937g ChrL_C_glabrata_CBS138:352294-353910",
+   "length": 1617,
+   "role": "host fragment"
+  }
+ ]
+}

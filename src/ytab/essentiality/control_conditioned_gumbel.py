@@ -1,4 +1,4 @@
-"""Experimental control-conditioned Hermes Gumbel (count-aware longest-run extension), adapted from TRANSIT's Gumbel method (DeJesus et al. 2013).
+"""Control-conditioned Hermes Gumbel (count-aware longest-run extension), adapted from TRANSIT's Gumbel method (DeJesus et al. 2013).
 
 Input is a YTAB scalar site normalization (ttr, totreads or nzmean); no normalization
 is computed here. The model uses the catalogue's raw integer counts with each
@@ -8,8 +8,8 @@ when its treatment count is improbably low under a shared-dispersion negative
 binomial model conditioned on the matched controls. The longest run of depleted
 sites in each gene is scored against a discrete Gumbel fitted to simulated
 no-effect runs and checked on independent simulations and the exact conditional
-run distribution. Experimental run-based depletion evidence, not a validated
-essentiality or differential-fitness classifier.
+run distribution. Run-based depletion evidence for treated-vs-control comparisons, validated in
+pre-registered benchmarks (R6, R13, R27); not an essentiality classifier.
 """
 from dataclasses import asdict, dataclass
 import csv
@@ -28,7 +28,7 @@ from scipy.stats import nbinom, norm
 
 from ytab.normalization.ttr import sha256, write_table
 
-MODEL = "experimental control-conditioned Hermes Gumbel"
+MODEL = "control-conditioned Hermes Gumbel"
 REVISION = "ccg_v5_normalized_input"
 NORMALIZATIONS = ("ttr", "totreads", "nzmean")   # scalar methods whose factors are valid count-model exposures
 DEFAULT_NORMALIZATION = "ttr"
@@ -879,7 +879,7 @@ def run(normalized, gff, reference, output, controls, treatments, settings=None,
         source_hashes={str(p):sha256(p) for p in [catalogue/"raw_counts.npz", catalogue/"observations.tsv",
                        catalogue/"sites.tsv.gz", catalogue/"run_manifest.json", gff, reference]},
         implementation_sha256=sha256(__file__),
-        limitations=["Experimental run-based depletion evidence; not validated essentiality, fitness or a published Hermes method",
+        limitations=["Run-based depletion evidence for treated vs control (validated in R6, R13, R27); not an essentiality classifier",
             "Dispersion is shared across sites within each condition as a two-term mean-variance curve; site-specific dispersion is not modelled",
             "Treatment dispersion from two replicates can absorb replicate-specific (non-shared) effects; it cannot separate them from noise",
             "Summed replicate tracks use a moment-matched NB approximation",

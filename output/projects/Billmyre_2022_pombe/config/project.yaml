@@ -1,4 +1,5 @@
 project_id: Billmyre_2022_pombe
+display_name: Billmyre_et_al_2022_Hermes
 repo_root: ../../../..
 fastq_dir: output/projects/Billmyre_2022_pombe/config/argon_fastq_inputs
 fastq_paths_relative_to: fastq_dir
@@ -171,3 +172,5 @@ samples:
 sample_sheet: output/projects/Billmyre_2022_pombe/config/sample_sheet.csv
 created_at: '2026-10-26T04:46:20.104916+00:00'
 ytab_version_or_git_commit_if_available: eaa18c9
+mapping:
+  donor_fasta: resources/transposons/donors/hermes_pHL2577_pombe/donor.fasta

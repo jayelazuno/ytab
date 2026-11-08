@@ -115,8 +115,9 @@ P/config/project.yaml --profile core|classifier|fitness|all` runs the standard p
 | `fitness` | Treated vs control, local-abundance z-score for a project (CPM by default, or any site normalization) |
 | `fitness-zscore` | Local-abundance z-score on explicit inputs (feature tables or a normalization run) |
 | `treated-vs-control` | Treated vs control for a project by resampling or the control-conditioned Gumbel (normalization run + comparison design) |
+| `tvc-agreement` | Agreement between treated-vs-control methods (z-score, resampling, Gumbel, published calls): Spearman of effects, Jaccard of calls |
 | `resampling` | Hermes site-restricted resampling on a ttr/totreads/nzmean normalization output |
-| `control-gumbel` | Experimental control-conditioned count-aware Hermes Gumbel on a ttr/totreads/nzmean normalization output |
+| `control-gumbel` | Control-conditioned count-aware Hermes Gumbel on a ttr/totreads/nzmean normalization output |
 | `multicondition-project` | Multi-condition tests and their plots in one step for a project (reference from the project config) |
 | `multicondition` | Hermes multi-condition tests (permutation ANOVA and all-pairs resampling) on a normalization output |
 | `multicondition-plots` | Response correlation (corrplot) and response heatmap for a multicondition run |
@@ -128,6 +129,7 @@ P/config/project.yaml --profile core|classifier|fitness|all` runs the standard p
 |---|---|
 | `browser-tracks` | Genome browser files for a project: reference with display chromosome names, gene BED, insertion tracks and an IGV session |
 | `gene-insertions` | Gene/domain insertion plots and queries |
+| `gene-profiles` | One gene across species: each species' insertion profile and call, from its densest qualifying library set |
 | `go` | GO enrichment and optional semantic reduction |
 
 ### Screen planning and mutants
@@ -158,6 +160,7 @@ P/config/project.yaml --profile core|classifier|fitness|all` runs the standard p
 
 | command | what it does |
 |---|---|
+| `donor-reads` | Reads from the transposon donor (plasmid or donor locus) per library, without remapping to the genome |
 | `design-check` | Which analyses a project's experimental design supports (essentiality, treated vs control, multi-condition, GI), with which libraries, and why others are not possible |
 
 ## Options of each command
@@ -443,7 +446,8 @@ options:
 Library QC table for a project: all QC metrics, flagged (rule of thumb / project-relative) and commented, plus plot data. Stage: Quality control. Takes `--project-config`.
 
 ```text
-usage: ytab_qc.py [-h] --project-config PROJECT_CONFIG --output OUTPUT
+usage: ytab_qc.py [-h] [--project-config PROJECT_CONFIG] [--output OUTPUT]
+                  [--refresh-top-genes RUN]
 
 Library QC table for a project: every per-library QC metric in one flagged, commented table plus plot data.
 
@@ -451,12 +455,15 @@ Library QC table for a project: every per-library QC metric in one flagged, comm
 
 Writes qc_table.tsv (one row per library), qc_flags.tsv (one row per library x metric: value, flag, reason, source,
 comment, normalization hint), qc_table.xlsx (coloured, with the reasons as cell notes), metrics.tsv and plots/
-(count histogram, QQ against a geometric fit and ranked counts). See ytab.qc.library_qc for the rules.
+(count histogram, QQ against a geometric fit, ranked counts and the genes holding the most reads). See ytab.qc.library_qc for the rules.
 
 options:
   -h, --help            show this help message and exit
   --project-config PROJECT_CONFIG
   --output OUTPUT
+  --refresh-top-genes RUN
+                        Add plots/top_genes.tsv.gz to an earlier QC run and
+                        exit
 ```
 
 ### library-qc
@@ -513,7 +520,7 @@ usage: ytab_library_correlation.py [-h] [--project PROJECT]
                                    [--metric {density,reads_per_kb}]
                                    [--min-reads MIN_READS]
                                    [--bootstrap BOOTSTRAP] [--seed SEED]
-                                   --output OUTPUT
+                                   [--output OUTPUT] [--refresh-pca RUN]
 
 Correlate Hermes libraries across pools, strains, conditions and species, generalized from TRANSIT's corrplot (DeJesus et al. 2015).
 
@@ -548,7 +555,8 @@ options:
                         Reads for a site to count as an insertion (default 1)
   --bootstrap BOOTSTRAP
   --seed SEED
-  --output OUTPUT
+  --output OUTPUT       New output directory
+  --refresh-pca RUN     Add the PCA tables to an earlier run and exit
 ```
 
 ### normalize-project
@@ -558,8 +566,10 @@ Normalize a project's sites with chosen methods in one step (catalogue, experime
 ```text
 usage: ytab_normalize_project.py [-h] [--project-config PROJECT_CONFIG]
                                  [--method {ttr,totreads,nzmean,midlc,quantile,betageom,aBGC,zinfnb}]
-                                 [--output OUTPUT] [--trim TRIM]
-                                 [--target TARGET] [--refresh-summaries RUN]
+                                 [--output OUTPUT]
+                                 [--site-filter {none,winsorize,drop-top}]
+                                 [--trim TRIM] [--target TARGET]
+                                 [--refresh-summaries RUN]
                                  [--normalize-together] [--sample SAMPLE]
 
 Normalize one project's insertion-site counts with chosen methods, in one step (used by the app's Normalization tab).
@@ -591,6 +601,11 @@ options:
                         Repeat; default every available method. Unnormalized
                         counts are always added
   --output OUTPUT       New output directory
+  --site-filter {none,winsorize,drop-top}
+                        Treat each gene's largest insertion site in every
+                        library before normalizing: none (default), winsorize
+                        (lowered to the gene's second-largest count) or drop-
+                        top (removed)
   --trim TRIM
   --target TARGET
   --refresh-summaries RUN
@@ -1238,6 +1253,8 @@ usage: ytab_fitness_zscore.py [-h] [--project-id PROJECT_ID]
                               [--z-quantile Z_QUANTILE]
                               [--combine {replicates,pairs}]
                               [--recenter {none,trimmed-sum}]
+                              [--noise {control,comparison}]
+                              [--noise-controls {first-two,all}]
 
 Treated-vs-control local-abundance z-score (ytab.fitness.zscore): depleted and enriched genes, replicates averaged.
 
@@ -1270,6 +1287,13 @@ options:
                         per gene (default); pairs: per-pair calls
   --recenter {none,trimmed-sum}
                         Scalar recentering of the treated values
+  --noise {control,comparison}
+                        Noise reference: the two-control model (default) or
+                        each comparison's own log ratios, called at |z| >= 3
+  --noise-controls {first-two,all}
+                        Controls the noise curve is fitted on: the first two
+                        of each background (default, Gale et al.) or every
+                        pair of them
 ```
 
 ### treated-vs-control
@@ -1309,6 +1333,33 @@ options:
   --comparisons COMPARISONS
                         Comma-separated comparison IDs (default: all included)
   --fdr FDR
+  --output OUTPUT
+```
+
+### tvc-agreement
+
+Agreement between treated-vs-control methods (z-score, resampling, Gumbel, published calls): Spearman of effects, Jaccard of calls. Stage: Condition comparisons.
+
+```text
+usage: ytab_tvc_agreement.py [-h] [--zscore ZSCORE] [--resampling RESAMPLING]
+                             [--gumbel GUMBEL] [--published PUBLISHED]
+                             --output OUTPUT
+
+Agreement between treated-vs-control methods (ytab.fitness.agreement): Spearman of effects and signed significance,
+and Jaccard / overlap coefficient of the calls per direction, per background x treated condition. Give two or more of
+--zscore (a treated_vs_parent result folder), --resampling and --gumbel (ytab treated-vs-control run folders), and
+optionally --published (TSV: ORF, call, [effect, score, background, condition]).
+
+  python scripts/local/ytab.py tvc-agreement --zscore output/projects/P/treated_vs_parent/RUN \
+      --resampling output/projects/P/treated_vs_control/RUN --gumbel output/projects/P/treated_vs_control/RUN \
+      --output output/projects/P/treated_vs_control/agreement/NAME
+
+options:
+  -h, --help            show this help message and exit
+  --zscore ZSCORE
+  --resampling RESAMPLING
+  --gumbel GUMBEL
+  --published PUBLISHED
   --output OUTPUT
 ```
 
@@ -1381,7 +1432,7 @@ options:
 
 ### control-gumbel
 
-Experimental control-conditioned count-aware Hermes Gumbel on a ttr/totreads/nzmean normalization output. Stage: Condition comparisons.
+Control-conditioned count-aware Hermes Gumbel on a ttr/totreads/nzmean normalization output. Stage: Condition comparisons.
 
 ```text
 usage: ytab_control_conditioned_gumbel.py [-h] --normalized NORMALIZED
@@ -1405,9 +1456,9 @@ usage: ytab_control_conditioned_gumbel.py [-h] --normalized NORMALIZED
                                           [--dispersion-model {linear-quadratic,quadratic}]
                                           [--include-stop]
 
-Experimental control-conditioned Hermes Gumbel on combined replicate tracks.
-Input is a YTAB `normalize` output (ttr default, totreads or nzmean); no
-normalization is run here.
+Control-conditioned Hermes Gumbel on combined replicate tracks. Input is a
+YTAB `normalize` output (ttr default, totreads or nzmean); no normalization is
+run here.
 
 options:
   -h, --help            show this help message and exit
@@ -1715,6 +1766,7 @@ usage: ytab_draw_gene_domain_insertions.py [-h]
                                            --project-config PROJECT_CONFIG
                                            [--gene GENE] [--query QUERY]
                                            [--list-tracks]
+                                           [--reference-config PROJECT_CONFIG]
                                            [--track-source {raw,combined,combined_parent,all}]
                                            [--track-preset {all,parents,treated,matched_pairs,pool1_pair,pool2_pair,pool3_pair,pool4_pair,custom}]
                                            [--samples SAMPLES]
@@ -1722,6 +1774,7 @@ usage: ytab_draw_gene_domain_insertions.py [-h]
                                            [--output OUTPUT]
                                            [--width-px WIDTH_PX] [--dpi DPI]
                                            [--label-mode {full,compact}]
+                                           [--track-style {sites,reads}]
                                            [--hide-site-counts]
                                            [--hide-domains] [--hide-direction]
                                            [--force] [--json]
@@ -1734,6 +1787,11 @@ options:
   --gene GENE           Gene identifier/name to resolve and plot
   --query QUERY         Query only; print candidate genes
   --list-tracks         List available insertion tracks
+  --reference-config PROJECT_CONFIG
+                        Another project whose tracks for the same gene are
+                        drawn below this one's, for a sense of what other
+                        libraries look like. Repeatable. Placed by position
+                        within the gene, not by coordinate.
   --track-source {raw,combined,combined_parent,all}
   --track-preset {all,parents,treated,matched_pairs,pool1_pair,pool2_pair,pool3_pair,pool4_pair,custom}
                         Preset track selection; use custom with --samples for
@@ -1744,11 +1802,66 @@ options:
   --width-px WIDTH_PX
   --dpi DPI
   --label-mode {full,compact}
+  --track-style {sites,reads}
+                        sites: every insertion site as an equal-height tick.
+                        reads: every site as a stem whose height is its reads,
+                        log-scaled within each track
   --hide-site-counts
   --hide-domains
   --hide-direction
   --force
   --json                Print machine-readable JSON
+```
+
+### gene-profiles
+
+One gene across species: each species' insertion profile and call, from its densest qualifying library set. Stage: Gene Explorer.
+
+```text
+usage: ytab_gene_profiles.py [-h] [--gene GENE] [--genes GENES]
+                             --output OUTPUT [--min-density MIN_DENSITY]
+                             [--no-profiles] [--force] [--json]
+
+One gene across species: each species' insertion profile over the gene, from a representative library set.
+
+This answers the species-level question ("is this gene essential in these yeasts?") rather than the data-level one
+("what do my libraries say about it?"), so each species contributes one library set, not all of them:
+
+  representative   among a species' essentiality runs, the one whose libraries reach the highest pooled insertion
+                   density (sites per coding kb, median gene), provided it reaches the density an essentiality call
+                   needs at all. Density is the property that decides whether a call means anything, and the
+                   deepest set is usually the unselected wild-type pool, so the rule needs no list of strain names.
+                   A species with nothing dense enough is reported as such instead of being given a call.
+  search           a union over every represented species' own identifiers, names and aliases, not a route
+                   through one of them: a gene present in a species and named exactly as asked for is found
+                   there even when no ortholog table connects it to S. cerevisiae.
+  orthologs        through the S. cerevisiae hub, whole families rather than one-to-one pairs: where a family has
+                   expanded in a species, every member is profiled, because the expansion is usually the point of
+                   the comparison. A species with no counterpart is reported as having none, not dropped. Each
+                   gene records whether it was reached as an ortholog of the query or only by carrying its name.
+  profile          reads at each insertion site inside the gene's coding blocks plus flanks, summed over the
+                   representative's libraries, with each site placed by its fraction along the coding sequence so
+                   that genes of different length and orientation can be drawn on one axis.
+
+  ytab gene-profiles --gene ATH1 --output output/gene_profiles/ATH1
+  ytab gene-profiles --gene CAGL0K05137g --output DIR --min-density 18
+
+options:
+  -h, --help            show this help message and exit
+  --gene GENE           Gene name or systematic id, in any species YTAB has
+                        reprocessed
+  --genes GENES         A file of gene names, one per line: report each one's
+                        call in every species without profiling it, which is
+                        what a gene group needs and is far cheaper
+  --output OUTPUT
+  --min-density MIN_DENSITY
+                        Pooled sites per coding kb a species must reach to be
+                        given a call (default 18; the label-free HMM asks for
+                        36)
+  --no-profiles         With --genes, report the calls only and skip reading
+                        the hit files
+  --force               Rebuild even when the cached answer still applies
+  --json
 ```
 
 ### go
@@ -1982,7 +2095,7 @@ Pre-registered treated-vs-control benchmark: Gale-calibrated simulation, method 
 usage: ytab_tvc_benchmark.py [-h] --output OUTPUT [--experiments EXPERIMENTS]
                              [--null-experiments NULL_EXPERIMENTS]
                              [--workers WORKERS] [--dev-seed DEV_SEED]
-                             {calibrate,dev,blind,amend,report}
+                             {calibrate,dev,blind,amend,extend,extension-report,report}
 
 Treated-vs-control benchmark (docs/manuscript/preregistration_treated_vs_control.md).
 
@@ -1990,12 +2103,14 @@ Treated-vs-control benchmark (docs/manuscript/preregistration_treated_vs_control
   ytab tvc-benchmark dev --output DIR [--experiments 2]     development run on seeds 7001-7100 (never the benchmark seed)
   ytab tvc-benchmark blind --output DIR                     the pre-registered run; refuses unless the pre-registration is frozen
   ytab tvc-benchmark amend --output DIR                     amendment 1: rerun the amended z-score arms on the same experiments
+  ytab tvc-benchmark extend --output DIR                    R27: the arms R13 never measured, on the same experiments
+  ytab tvc-benchmark extension-report --output DIR          R27's non-inferiority tests and gates -> extension_report.md
   ytab tvc-benchmark report --output DIR                    metrics, paired tests, calibration gates -> report.md
 
 The base project needs one Site Normalization run with two control and two treated libraries in its experiment matrix.
 
 positional arguments:
-  {calibrate,dev,blind,amend,report}
+  {calibrate,dev,blind,amend,extend,extension-report,report}
 
 options:
   -h, --help            show this help message and exit
@@ -2036,6 +2151,52 @@ options:
   --workers WORKERS
 ```
 
+### donor-reads
+
+Reads from the transposon donor (plasmid or donor locus) per library, without remapping to the genome. Stage: Other. Takes `--project-config`.
+
+```text
+usage: ytab_donor_reads.py [-h] [--project-config PROJECT_CONFIG]
+                           [--samples SAMPLES] [--fastq FASTQ]
+                           [--sample SAMPLE] [--output OUTPUT]
+                           [--donor-fasta DONOR_FASTA] [--no-genome]
+                           [--genome-index GENOME_INDEX]
+                           [--transposon-fasta TRANSPOSON_FASTA] [--mapq MAPQ]
+                           [--threads THREADS]
+
+Count the reads that come from the transposon donor, without remapping the library to the genome.
+
+The reads are put against the donor's own index (a few kilobases, so one quick pass); only the reads that hit it, or
+that carry a recurring junction flank, are then checked against the genome. A library already mapped is not mapped
+again: `ytab mapfastq` writes the same table while it runs.
+
+  ytab donor-reads --project-config output/projects/P/config/project.yaml           # every included library
+  ytab donor-reads --project-config ... --samples A,B --threads 8
+  ytab donor-reads --fastq reads.fastq.gz --sample NAME --donor-fasta D.fasta --output DIR
+
+Writes <sample>.donor_reads.csv into each library's mapfastq folder (or --output), which `ytab qc` reads for the
+"Reads from the transposon donor (%)" metric.
+
+options:
+  -h, --help            show this help message and exit
+  --project-config PROJECT_CONFIG
+  --samples SAMPLES     Comma-separated sample names
+  --fastq FASTQ
+  --sample SAMPLE
+  --output OUTPUT
+  --donor-fasta DONOR_FASTA
+  --no-genome           Skip the genome check of donor-hit reads (no split
+                        into donor-only and shared)
+  --genome-index GENOME_INDEX
+                        Bowtie2 index prefix, to split donor reads into donor-
+                        only and shared (with --fastq)
+  --transposon-fasta TRANSPOSON_FASTA
+                        Transposon reference, masked inside the donor so only
+                        the flanks align (default: the project's)
+  --mapq MAPQ
+  --threads THREADS
+```
+
 ### design-check
 
 Which analyses a project's experimental design supports (essentiality, treated vs control, multi-condition, GI), with which libraries, and why others are not possible. Stage: Other. Takes `--project-config`.
@@ -2068,4 +2229,3 @@ options:
   --project-config PROJECT_CONFIG
   --json
 ```
-

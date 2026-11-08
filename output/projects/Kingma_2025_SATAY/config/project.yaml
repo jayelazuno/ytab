@@ -1,4 +1,5 @@
 project_id: Kingma_2025_SATAY
+display_name: Kingma_et_al_2025_AcDs
 repo_root: ../../../..
 fastq_dir: output/projects/Kingma_2025_SATAY/config/argon_fastq_inputs
 fastq_paths_relative_to: fastq_dir
@@ -423,3 +424,5 @@ samples:
 sample_sheet: output/projects/Kingma_2025_SATAY/config/sample_sheet.csv
 created_at: '2026-10-26T13:20:31.632250+00:00'
 ytab_version_or_git_commit_if_available: 635ab67
+mapping:
+  donor_fasta: resources/transposons/donors/acds_pBK549_satay/donor.fasta

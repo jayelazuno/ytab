@@ -5,18 +5,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from .mapfastq_runner import load_project_for_mapping, get_included_samples
 
-STAGES=("project_config","reference","mapfastq","create_hit_file","summary","library_diagnostics",
+STAGES=("project_config","reference","mapfastq","create_hit_file","summary","library_diagnostics","donor_reads",
         "sample_normalization","summary_normalized","combined_hits","summary_combined","classifier",
         "comparison_design","treated_vs_parent")
 BRANCH={"project_config":"setup","reference":"setup","mapfastq":"core","create_hit_file":"core",
-        "summary":"core","library_diagnostics":"qc","sample_normalization":"classifier",
+        "summary":"core","library_diagnostics":"qc","donor_reads":"qc","sample_normalization":"classifier",
         "summary_normalized":"classifier","combined_hits":"classifier","summary_combined":"classifier",
         "classifier":"classifier","comparison_design":"fitness","treated_vs_parent":"fitness"}
 DEPENDENCIES={"reference":["project_config"],"mapfastq":["reference"],"create_hit_file":["mapfastq"],
  "summary":["create_hit_file"],"library_diagnostics":["create_hit_file"],"sample_normalization":["create_hit_file"],
  "summary_normalized":["sample_normalization"],"combined_hits":["summary_normalized"],
  "summary_combined":["combined_hits"],"classifier":["summary_combined"],
- "comparison_design":["summary"],"treated_vs_parent":["summary","comparison_design"]}
+ "comparison_design":["summary"],"treated_vs_parent":["summary","comparison_design"],
+ "donor_reads":["project_config"]}
 SAMPLE_STATUS={"mapfastq":"mapfastq/mapfastq_status.csv","create_hit_file":"create_hit_file/create_hit_file_status.csv",
                "summary":"summary/summary_status.csv","library_diagnostics":"library_diagnostics/library_diagnostics_status.csv"}
 TARGET_STATUS={"sample_normalization":"sample_normalization/sample_normalization_status.csv",
@@ -120,6 +121,14 @@ def inspect_project_stage_status(context,stage_name):
         path=context["project"]/"config"/"comparison_design.csv"; issues=context["project"]/"config"/"comparison_design_issues.csv"
         bad=len(_rows(issues)); state="success" if path.is_file() and not bad else ("failed" if bad else "not_started")
         return _item(stage_name,state,completed=int(state=="success"),expected=1,successful=int(state=="success"),failed=int(bool(bad)),primary_output=str(path),manifest=str(issues),message=f"{bad} unresolved issue(s)." if bad else "")
+    if stage_name=="donor_reads":
+        # one <sample>.donor_reads.csv per library, written by `ytab donor-reads` or by mapping itself
+        folder=context["project"]/"mapfastq"; files=sorted(folder.glob("*/*.donor_reads.csv")) if folder.is_dir() else []
+        expected=len(context.get("samples") or []) or len(files)
+        state="success" if files and len(files)>=expected else ("partial" if files else "not_started")
+        return _item(stage_name,state,completed=len(files),expected=expected or 0,successful=len(files),
+                     primary_output=str(folder),manifest=str(folder),
+                     message="" if state=="success" else f"{len(files)} of {expected} libraries counted.")
     raise ValueError(stage_name)
 
 def build_project_status(project_config: Path)->dict:

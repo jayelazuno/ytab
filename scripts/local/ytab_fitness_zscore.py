@@ -30,8 +30,12 @@ def main():
     p.add_argument("--combine", choices=["replicates", "pairs"], default="replicates",
                    help="replicates: average each condition's replicates, one z per gene (default); pairs: per-pair calls")
     p.add_argument("--recenter", choices=["none", "trimmed-sum"], default="none", help="Scalar recentering of the treated values")
+    p.add_argument("--noise", choices=["control", "comparison"], default="control",
+                   help="Noise reference: the two-control model (default) or each comparison's own log ratios, called at |z| >= 3")
+    p.add_argument("--noise-controls", choices=["first-two", "all"], default="first-two",
+                   help="Controls the noise curve is fitted on: the first two of each background (default, Gale et al.) or every pair of them")
     a = p.parse_args()
-    settings = zscore.Settings(pseudocount=a.pseudocount, z_quantile=a.z_quantile, combine=a.combine, recenter=a.recenter)
+    settings = zscore.Settings(pseudocount=a.pseudocount, z_quantile=a.z_quantile, combine=a.combine, recenter=a.recenter, noise=a.noise, noise_controls=a.noise_controls)
     comparisons = [x for x in (a.comparisons or "").split(",") if x] or None
     try:
         normalized = None

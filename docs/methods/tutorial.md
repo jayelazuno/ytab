@@ -44,7 +44,7 @@ What to look for in Gale:
 
 **Site Normalization** runs every method on the project's libraries. Each method gets its own view of the libraries
 before and after normalization. BGC (beta-geometric correction) is the default: it corrects the heavy-tailed
-"jackpot" sites typical of Hermes pools, and it was the best normalization in the pre-registered benchmark.
+"jackpot" sites typical of Hermes pools, and it was the best normalization in the pre-registered benchmarks.
 
 ![BGC normalization](img/03_normalization_bgc.png)
 

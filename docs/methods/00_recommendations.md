@@ -80,8 +80,8 @@ Every flag in the QC table carries the matching normalization hint.
 
 | question | method | evidence |
 |---|---|---|
-| Treated vs control | **Resampling with BGC**, or the **control-conditioned Gumbel test with TTR**: both kept false discoveries near the nominal rate on Hermes-calibrated simulations. The z-score is for ranking only (false discovery proportion 0.20). Never total reads under one-sided selection: it turned rapamycin's effect into 504 apparently depleted genes, against 188 with BGC. | R13, R17 |
-| Several conditions or mutant backgrounds | Multi-condition ANOVA with all pairwise comparisons, BGC. | R11 |
+| Treated vs control | **Resampling with BGC**, or the **control-conditioned Gumbel test with TTR**: both kept false discoveries near the nominal rate on Hermes-calibrated simulations (aBGC, the adaptive form, performs within 0.01 AUC). The z-score is for ranking only (false discovery proportion 0.20). Never total reads under one-sided selection: it turned rapamycin's effect into 504 apparently depleted genes, against 188 with BGC. | R13, R17, R27 |
+| Several conditions or mutant backgrounds | Multi-condition ANOVA with all pairwise comparisons, BGC (aBGC passes the same gates). | R11, R28 |
 | Strain × treatment interactions | Genetic-interaction test. | R12a |
 | Essentiality, no labels | The label-free HMM with default settings: windows of 50–100 bp give the same ranking, 200 bp is worse; the essential run is at least 3 windows or a fifth of the gene. | R14, R19–R21 |
 | Essentiality, labels available | A species-trained random forest, or the hybrid (the forest with the HMM's posteriors as features), which matched the forest at full density and was better in sparse libraries. Both are 0.04–0.06 AUC better than the label-free HMM, and even 50 labelled genes beat it. | R15, R16 |

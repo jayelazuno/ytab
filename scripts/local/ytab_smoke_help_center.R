@@ -4,7 +4,7 @@
 args <- commandArgs(trailingOnly = TRUE); root <- normalizePath(args[[1L]])
 suppressPackageStartupMessages(library(shiny))
 `%||%` <- function(x, y) if (is.null(x) || !length(x)) y else x
-source(file.path(root, "app/shiny/R/datasets_center.R")); source(file.path(root, "app/shiny/R/help_center.R"))
+source(file.path(root, "app/shiny/R/project_discovery.R")); source(file.path(root, "app/shiny/R/datasets_center.R")); source(file.path(root, "app/shiny/R/help_center.R"))
 index <- utils::read.delim(file.path(root, "docs/methods/index.tsv"), stringsAsFactors = FALSE)
 stopifnot(all(file.exists(file.path(root, index$file))))
 pages <- help_pages(root)

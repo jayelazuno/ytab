@@ -24,6 +24,7 @@ if __package__ in (None, ""):
 
 from ytab.core import Shared  # keep dependency + behavior (no organism-specific calls here)
 from ytab.qc.MappingStats import compute_alignment_stats, write_mapping_stats_csv
+from ytab.mapping import donor_reads
 
 usage = """MapFastq.py
    -o  --out-dir            [str]   Output directory. Defaults to current directory if left unspecified.
@@ -55,6 +56,8 @@ usage = """MapFastq.py
 
    --mapq                  [int]   MAPQ cutoff for BAM QC filtering (default 20)
    --drop-flags            [str]   samtools -F flags to drop (default 0xD04)
+   --donor-fasta           [str]   Transposon donor (plasmid or donor locus) FASTA: count reads from the donor
+                                   (<prefix>.donor_reads.csv; recurrent unmapped flanks are counted without it too)
 """
 
 # Example sequences (Mariner/Tn5):
@@ -242,6 +245,16 @@ def write_mapping_qc_from_sam(SamfName: str, prefix: str, out_dir: str, mapq_thr
         f"mapping_stats_csv: {stats_csv}\r\n"
     )
 
+def write_donor_reads(SamfName: str, clean_fastq: str, prefix: str, args, LogFile, mate: str = "R1"):
+    """Reads from the transposon donor (ytab.mapping.donor_reads); never fails the mapping."""
+    try:
+        row = donor_reads.count(SamfName, clean_fastq, prefix, args.out_dir, args.mapq, args.threads, args.donor_fasta, mate)
+        LogFile.write("\r\n\r\n=== Donor reads ===\r\n" + "".join(f"{k}: {row.get(k)}\r\n" for k in
+                      ("donor", "percent_donor", "percent_donor_only", "percent_donor_shared", "percent_recurrent_unmapped_flank")))
+    except Exception as error:   # the count is QC; mapping output stays valid without it
+        LogFile.write(f"\r\n\r\nWARNING: donor-read count failed: {error}\r\n")
+
+
 def main():
     parser = argparse.ArgumentParser(usage=usage)
     parser.add_argument("-o", "--out-dir", default=".")
@@ -281,6 +294,7 @@ def main():
 
     parser.add_argument("--mapq", type=int, default=20)
     parser.add_argument("--drop-flags", default="0xD04")
+    parser.add_argument("--donor-fasta", default=None)
 
     args = parser.parse_args()
     if args.require_mate_alignment and not (args.r1 and args.r2):
@@ -435,6 +449,8 @@ def main():
             threads=args.threads,
             LogFile=LogFile,
         )
+        mate = "R2" if args.junction_mate == "R2" else "R1"
+        write_donor_reads(SamfName, CleanR2 if mate == "R2" else CleanR1, prefix, args, LogFile, mate)
 
         bam = os.path.splitext(SamfName)[0] + ".bam"
         sorted_bam = os.path.splitext(SamfName)[0] + ".sorted.bam"
@@ -555,6 +571,7 @@ def main():
             threads=args.threads,
             LogFile=LogFile,
         )
+        write_donor_reads(SamfName, CleanfName, prefix, args, LogFile)
 
         bam = os.path.splitext(SamfName)[0] + ".bam"
         sorted_bam = os.path.splitext(SamfName)[0] + ".sorted.bam"

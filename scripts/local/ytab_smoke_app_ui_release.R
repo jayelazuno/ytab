@@ -150,7 +150,7 @@ must_contain("app/shiny/R/genome_browser_state.R", "showTrackLabels = FALSE", "G
 must_contain("app/shiny/R/genome_browser_state.R", "showTrackLabel = FALSE", "Genome Browser internal track labels disabled")
 
 workspace_text <- paste(readLines(must_exist("app/shiny/R/ui_workspace.R"), warn = FALSE), collapse = "\n")
-for (tab in c("Project", "Run", "Quality Control", "Normalization", "Essentiality", "Condition Comparisons",
+for (tab in c("Dataset", "Run", "Quality Control", "Normalization", "Essentiality", "Condition Comparisons",
               "Gene Explorer", "GO Enrichment",
               "Gene & Domain Insertions", "Across Species",
               "Genome Browser", "Switch project")) {

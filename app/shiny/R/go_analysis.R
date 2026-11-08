@@ -782,7 +782,7 @@ go_analysis_server <- function(input, output, session, repo_root, active,
   })
 
   output$download_go_topgo_results <- downloadHandler(
-    filename = function() paste0(active()$project_id, ".go.topgo_results.csv"),
+    filename = function() paste0(project_display_label(active()), ".go.topgo_results.csv"),
     content = function(file) {
       x <- topgo_table()
       if (!nrow(x)) x <- data.frame(message = "No topGO results available.")
@@ -790,7 +790,7 @@ go_analysis_server <- function(input, output, session, repo_root, active,
     }
   )
   output$download_go_significant_results <- downloadHandler(
-    filename = function() paste0(active()$project_id, ".go.significant_terms.csv"),
+    filename = function() paste0(project_display_label(active()), ".go.significant_terms.csv"),
     content = function(file) {
       x <- significant_table()
       if (!nrow(x)) x <- data.frame(message = "No significant GO terms available.")
@@ -798,7 +798,7 @@ go_analysis_server <- function(input, output, session, repo_root, active,
     }
   )
   output$download_go_semantic_results <- downloadHandler(
-    filename = function() paste0(active()$project_id, ".go.semantic_reduction.csv"),
+    filename = function() paste0(project_display_label(active()), ".go.semantic_reduction.csv"),
     content = function(file) {
       result <- latest_go_result()
       x <- if (is.null(result)) data.frame() else
@@ -808,7 +808,7 @@ go_analysis_server <- function(input, output, session, repo_root, active,
     }
   )
   output$download_go_targets_current <- downloadHandler(
-    filename = function() paste0(active()$project_id, ".go.selected_genes.csv"),
+    filename = function() paste0(project_display_label(active()), ".go.selected_genes.csv"),
     content = function(file) {
       x <- if (identical(input$go_gene_source %||% "fitness", "fitness")) {
         go_analysis_selected_hit_display_table(go_fitness_selected_hits())

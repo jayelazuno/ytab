@@ -39,7 +39,7 @@ genome_browser_ui <- function() {
     main = panel_card(
       "Genome Browser",
       tags$p(class = "ytab-stage-purpose",
-             "Embedded IGV view of the current project reference and insertion tracks."),
+             "Embedded IGV view of the current dataset reference and insertion tracks."),
       tags$div(id = "ytab_igv_warning", class = "ytab-warning-banner", style = "display:none;"),
       uiOutput("genome_browser_lane_key"),
       tags$div(id = "ytab_igv_browser", class = "ytab-igv-browser"),

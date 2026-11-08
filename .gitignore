@@ -66,6 +66,9 @@ __pycache__/
 
 # Obsolete material kept for reference, not part of the app (see archive/ARCHIVE_MANIFEST.md)
 /archive/
+# Method-comparison study (z-score vs resampling vs Gumbel vs published calls): local curiosity, never tracked.
+/output/comparison/
+/output/claims_check/
 
 # Research, benchmarking and presentation material: kept locally, not part of the app or its data.
 # The app, its documentation, the pipelines and the reprocessed project data all stay tracked.

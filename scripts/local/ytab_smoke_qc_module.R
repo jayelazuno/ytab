@@ -41,7 +41,7 @@ testServer(function(input,output,session)qc<-qc_table_server(input,output,sessio
   d<-qc_display_table(qc$table(),qc$flags(),qc$metrics());stopifnot(nrow(d)==8L,ncol(d)==2L+nrow(qc$metrics()),!any(grepl("TRANSIT",unlist(d))))
   # Every QC-table metric is either in a menu or in the hover of the plot of the metric it rescales; menus have no repeats.
   listed<-sub("^metric:","",grep("^metric:",unlist(qc_plot_menus),value=TRUE));companions<-unlist(qc_metric_companions)
-  stopifnot(setequal(union(listed,companions),qc$metrics()$metric),setequal(setdiff(companions,listed),c("insertions_per_kb","density","mean_ct","max_ct","mapped_reads")),!anyDuplicated(unlist(qc_plot_menus)),
+  stopifnot(setequal(union(listed,companions),qc$metrics()$metric),setequal(setdiff(companions,listed),c("insertions_per_kb","sites_per_coding_kb","density","mean_ct","max_ct","mapped_reads")),!anyDuplicated(unlist(qc_plot_menus)),
             !any(c("role_summary","jackpot")%in%unlist(qc_plot_menus)))
   shown<-0L;empty<-character()
   for(id in c("reads_mapping","insertions","saturation_bias","agreement")){

@@ -65,7 +65,7 @@ sc_poisson_ggplot <- function(n, q, k, theme, species = NULL) {
 screen_coverage_server <- function(input, output, session, repo_root, active, active_project_path, python_bin) {
   if (!requireNamespace("plotly",quietly=TRUE)) return(invisible(NULL))
   inventory <- reactiveVal(NULL)
-  error <- reactiveVal("Loading this project's parent-library summary…")
+  error <- reactiveVal("Loading this dataset's parent-library summary…")
   worker <- new.env(parent=emptyenv())
   worker$process <- NULL
   stop_worker <- function() {
@@ -76,7 +76,7 @@ screen_coverage_server <- function(input, output, session, repo_root, active, ac
   observeEvent(active_project_path(), {
     stop_worker()
     inventory(NULL)
-    error("Loading this project's parent-library summary…")
+    error("Loading this dataset's parent-library summary…")
     worker$project <- active_project_path()
     if (is.null(worker$project) || !length(worker$project) || !nzchar(worker$project)) return()
     work <- tempfile("ytab-project-coverage-")
@@ -93,7 +93,7 @@ screen_coverage_server <- function(input, output, session, repo_root, active, ac
   observe({
     invalidateLater(300,session)
     if (is.null(worker$process) || worker$process$is_alive()) return()
-    value <- if (file.exists(worker$output)) jsonlite::fromJSON(worker$output) else list(error="Could not read this project's library summary.")
+    value <- if (file.exists(worker$output)) jsonlite::fromJSON(worker$output) else list(error="Could not read this dataset's library summary.")
     worker$process <- NULL
     if (!identical(worker$project, isolate(active_project_path()))) return()
     if (!is.null(value$error)) error(value$error) else {
@@ -104,7 +104,7 @@ screen_coverage_server <- function(input, output, session, repo_root, active, ac
   current <- reactive({
     value <- inventory()
     validate(need(!is.null(value),error()))
-    validate(need(identical(value$project_config,active_project_path()),"Loading the active project…"))
+    validate(need(identical(value$project_config,active_project_path()),"Loading the active dataset…"))
     validate(need(value$represented > 0,"No protein-coding genes have observed coding insertions in the selected parent libraries."))
     value
   })
@@ -121,7 +121,7 @@ screen_coverage_server <- function(input, output, session, repo_root, active, ac
       "Observed representation ceiling"=sprintf("%.1f%%",100*d$represented/d$annotated),
       "Observed genomic sites"=fmt(d$unique_sites),"Coding insertion sites"=fmt(d$coding_sites))
     panel_card("Library representation — before colony sampling",
-      tags$p(tags$strong(paste("Project:",d$project_id))),
+      tags$p(tags$strong(paste("Dataset:",project_display_label(d)))),
       tags$div(class="ytab-stat-grid",lapply(names(vals),function(name) tags$div(tags$b(vals[[name]]),name))),
       tags$details(tags$summary("Parent libraries and gene-hit summary"),
         tags$p(paste(ytab_sample_labels(d$samples,active()),collapse="; ")),
@@ -142,7 +142,7 @@ screen_coverage_server <- function(input, output, session, repo_root, active, ac
     sc_poisson_ggplot(n, q, k, sc_theme(ytab_plot_customization_values(input,"sc")), species = active()$species)
   }
   output$sc_plot_primary <- plotly::renderPlotly(plotly::config(ytab_ggplotly(poisson_plot(), tooltip = "all"),displaylogo=FALSE))
-  download_name <- function(ext) sprintf("%s_screen_planning_poisson_%s%s", active()$project_id, sub("\\.", "p", format(100*target())), ext)
+  download_name <- function(ext) sprintf("%s_screen_planning_poisson_%s%s", project_display_label(active()), sub("\\.", "p", format(100*target())), ext)
   for (format in c("png", "pdf")) local({
     ext <- format
     output[[paste0("sc_download_", ext)]] <- downloadHandler(filename = function() download_name(paste0(".", ext)),

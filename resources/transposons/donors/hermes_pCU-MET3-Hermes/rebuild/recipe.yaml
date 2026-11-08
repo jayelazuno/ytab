@@ -1,0 +1,11 @@
+donor: pCU-MET3-Hermes, rebuilt from parts (validation of the parts approach against the Cunningham lab file)
+transposon_ends: ["CAGAGAACAACAACAAGTGGCTTATTTTGATACTTATGCG", "ATGTGGCTTACGTTTGCCTGTGGCTTGTTGAAGTTCTCTG"]
+parts:
+  - {name: pRS426 backbone (URA3, 2-micron, f1, AmpR, ori, MCS), genbank: U03451, role: vector}
+  - {name: pRS416 backbone (URA3, CEN6/ARS4), genbank: U03450, role: vector}
+  - {name: C. glabrata MET3 promoter, species: glabrata_CBS138, region: "ChrB_C_glabrata_CBS138:381200-382811", role: transposase promoter (host fragment)}
+  - {name: Hermes (transposase and ends), fasta: resources/transposons/hermes/L34807.1.fasta, role: transposon}
+  - {name: S. cerevisiae CYC1 with terminator, species: cerevisiae, gene: YJR048W, flank: 400, role: terminator}
+  - {name: natMX6 cassette vector (TEF promoter, NAT1, TEF terminator), genbank: ON872185, role: marker inside the mini-Hermes}
+  - {name: kanMX4 (TEF promoter and terminator), genbank: AJ002680, role: marker}
+  - {name: C. glabrata HIS3 region, species: glabrata_CBS138, gene: CAGL0L02937g, flank: 400, role: host fragment}

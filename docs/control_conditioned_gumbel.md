@@ -1,8 +1,8 @@
-# Control-conditioned Hermes Gumbel (experimental)
+# Control-conditioned Hermes Gumbel
 
-Status: **experimental run-based depletion evidence** (`ccg_v5_normalized_input`). It is meant as an
-orthogonal method alongside the z-score fitness analysis. It is not a validated essentiality,
-fitness or published Hermes method. It is the only Gumbel in YTAB: the earlier single-condition
+Status: **validated run-based depletion test for treated vs control** (`ccg_v5_normalized_input`). It
+passed every calibration gate in the pre-registered benchmarks (R6, R13, R27: no calls in null experiments, false
+discovery rate 1–2%) and is used alongside resampling and the z-score. It is not an essentiality classifier. It is the only Gumbel in YTAB: the earlier single-condition
 Gumbel and its outputs were removed after this method was tested.
 
 ## Workflow position

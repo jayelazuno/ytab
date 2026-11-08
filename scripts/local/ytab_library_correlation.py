@@ -26,7 +26,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality.library_correlation import Sample, run
+from ytab.essentiality.library_correlation import Sample, refresh_pca, run
 
 
 def project_samples(name):
@@ -63,8 +63,12 @@ def main():
                         help="density (insertion sites per kb; default, comparable across pools) or reads_per_kb (pool-specific clone abundance)")
     parser.add_argument("--min-reads", type=int, default=1, help="Reads for a site to count as an insertion (default 1)")
     parser.add_argument("--bootstrap", type=int, default=500); parser.add_argument("--seed", type=int, default=2026)
-    parser.add_argument("--output", required=True)
+    parser.add_argument("--output", help="New output directory")
+    parser.add_argument("--refresh-pca", metavar="RUN", help="Add the PCA tables to an earlier run and exit")
     args = parser.parse_args()
+    if args.refresh_pca:
+        refresh_pca(args.refresh_pca); print(json.dumps(dict(status="success", refreshed=str(Path(args.refresh_pca).resolve())))); return
+    if not args.output:parser.error("--output is required")
     try:
         samples = [s for p in args.project for s in project_samples(p)]+[s for t in args.samples for s in table_samples(t)]
         if len(samples) < 2:raise ValueError("Give at least two libraries (--project and/or --samples)")

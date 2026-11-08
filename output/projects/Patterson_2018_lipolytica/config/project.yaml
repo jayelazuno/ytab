@@ -1,4 +1,5 @@
 project_id: Patterson_2018_lipolytica
+display_name: Patterson_et_al_2018_Hermes
 repo_root: ../../../..
 fastq_dir: output/projects/Patterson_2018_lipolytica/config/argon_fastq_inputs
 fastq_paths_relative_to: fastq_dir

@@ -38,7 +38,7 @@ ytab_design_gate <- function(support, prefix, title) {
   reasons <- unique(sprintf("%s: %s", sub("^[^,]*,?\\s*", "", rows$analysis), rows$why))
   reasons <- ifelse(startsWith(reasons, ": "), sub("^: ", "", reasons), reasons)
   ytab_empty_state(title, paste0(
-    "This project's experimental design does not support it. ",
+    "This dataset's experimental design does not support it. ",
     paste(reasons, collapse = " "),
     " The Samples tab shows the roles, strains, pools and conditions this is read from; the design guide",
     " (docs/design_guide.md) gives each analysis's minimum."))

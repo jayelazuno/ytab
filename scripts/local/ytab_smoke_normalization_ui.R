@@ -8,7 +8,7 @@ self <- normalizePath(sub("^--file=", "", grep("^--file=", args, value = TRUE)[[
 root <- normalizePath(file.path(dirname(self), "../.."), winslash = "/")
 suppressPackageStartupMessages({library(shiny); library(bslib)})
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
-for (name in c("job_manager.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R",
+for (name in c("job_manager.R", "project_discovery.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R",
                "table_display_helpers.R", "analysis_runs.R","reference_projects.R", "navigation.R", "normalization_module.R"))
   source(file.path(root, "app/shiny/R", name))
 python <- unname(Sys.which("python"))

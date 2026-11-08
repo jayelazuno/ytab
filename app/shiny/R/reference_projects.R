@@ -14,7 +14,7 @@ YTAB_REFERENCE_COLOURS <- c("#1A73E8", "#8E24AA", "#00897B", "#E8710A", "#5D4037
 YTAB_REFERENCE_MAX_BARS <- 40L
 
 ytab_reference_display_choices <- c("Automatic" = "auto", "Bars beside mine" = "bars",
-                                    "One panel per project" = "panels", "Median and spread lines" = "lines")
+                                    "One panel per dataset" = "panels", "Median and spread lines" = "lines")
 
 # Automatic: bars while they still fit on one axis, panels once they do not.
 ytab_reference_mode <- function(mode, own_n, reference_n) {
@@ -38,8 +38,8 @@ ytab_reference_choices <- function(projects, active_project) {
   if (!nrow(projects)) return(character())
   species <- as.character(active_project$species %||% "")
   same <- projects$species == species & nzchar(species)
-  projects <- projects[order(!same, tolower(projects$project_id)), , drop = FALSE]
-  labels <- sprintf("%s (%s, %d libraries)", projects$project_id, projects$species, projects$included_count)
+  projects <- projects[order(!same, tolower(projects$display_name)), , drop = FALSE]
+  labels <- sprintf("%s (%s, %d libraries)", projects$display_name, projects$species, projects$included_count)
   group <- factor(ifelse(projects$species == species & nzchar(species), "Same species", "Other species"),
                   levels = c("Same species", "Other species"))
   Filter(length, split(stats::setNames(projects$project_config, labels), group))
@@ -150,7 +150,7 @@ ytab_reference_overlay <- function(p, summary, note = "", horizontal = FALSE) {
     rule(bounds, intercept("value"), linetype = "13", linewidth = .4, alpha = .75) +
     rule(summary, intercept("median"), linetype = "22", linewidth = .7) +
     ggplot2::scale_colour_manual(values = colours, drop = FALSE) +
-    ggplot2::labs(colour = if (nzchar(note)) paste0("Reference projects (", note, ")") else "Reference projects")
+    ggplot2::labs(colour = if (nzchar(note)) paste0("Reference datasets (", note, ")") else "Reference datasets")
 }
 
 # Rows of the same kind from each reference project, for the plots that draw a curve or a group of bars per library
@@ -186,7 +186,7 @@ ytab_reference_distribution <- function(meta, kind) {
 # The open project's rows with the reference projects' appended, over the columns they share. Plots that key their
 # series on `.library` need nothing else: the reference libraries simply become more series. `.project` is carried on
 # both sides, so a plot that groups by role or pool can keep the projects apart instead of averaging across them.
-ytab_reference_bind <- function(d, reference, project_label = "This project") {
+ytab_reference_bind <- function(d, reference, project_label = "This dataset") {
   if (!is.data.frame(d) || !nrow(d)) return(d)
   if (!".project" %in% names(d)) d$.project <- project_label
   if (!is.data.frame(reference) || !nrow(reference)) return(d)
@@ -285,7 +285,7 @@ ytab_reference_download <- function(data, reference, project_label) {
 # whether Hermes, Ac/Ds, piggyBac or another element; it is not a statistical comparison, and the numbers of two
 # projects are not on a common footing — transposon, density, depth, strain and protocol all differ.
 YTAB_REFERENCE_DISCLAIMER <- paste("Shown for a sense of what other libraries look like, not as a numerical",
-  "comparison: transposon, insertion density, sequencing depth, strain and protocol all differ between projects.")
+  "comparison: transposon, insertion density, sequencing depth, strain and protocol all differ between datasets.")
 
 ytab_reference_caption <- function(summary, active_species) {
   if (!is.data.frame(summary) || !nrow(summary)) return("")
@@ -293,7 +293,7 @@ ytab_reference_caption <- function(summary, active_species) {
                    qc_format_value(summary$median), summary$spread_label,
                    qc_format_value(summary$lower), qc_format_value(summary$upper),
                    ifelse(summary$fell_back, "; all its libraries, it has none of the roles shown here", ""))
-  paste0("Reference projects. ", paste(parts, collapse = "; "), ". ", YTAB_REFERENCE_DISCLAIMER)
+  paste0("Reference datasets. ", paste(parts, collapse = "; "), ". ", YTAB_REFERENCE_DISCLAIMER)
 }
 
 # The same note for the plots that draw reference libraries without a median and spread to report (curves, grouped
@@ -302,7 +302,7 @@ ytab_reference_note <- function(metas) {
   if (!length(metas)) return("")
   who <- vapply(metas, function(m) sprintf("%s (%s%s)", m$label, m$species,
     if (nzchar(m$transposon %||% "")) paste0(", ", m$transposon) else ""), "")
-  paste0("Reference projects: ", paste(who, collapse = "; "), ". ", YTAB_REFERENCE_DISCLAIMER)
+  paste0("Reference datasets: ", paste(who, collapse = "; "), ". ", YTAB_REFERENCE_DISCLAIMER)
 }
 
 # The selector itself. Opt-in but in plain sight: a control hidden behind a disclosure at the foot of a long options
@@ -310,16 +310,16 @@ ytab_reference_note <- function(metas) {
 # they are wanted; clicking a chosen one in the list removes it again.
 # `display_modes` offers the choice between bars, panels and lines. A view that has only one way of drawing a
 # reference (the gene track) leaves it out.
-ytab_reference_projects_ui <- function(id, title = "Compare with other projects", display_modes = TRUE) {
+ytab_reference_projects_ui <- function(id, title = "Compare with other datasets", display_modes = TRUE) {
   tags$div(class = "ytab-reference-projects",
     tags$hr(),
     tags$label(class = "control-label", title),
     uiOutput(paste0(id, "_reference_selector")),
     if (isTRUE(display_modes)) uiOutput(paste0(id, "_reference_display")),
-    helpText("Optional. Choose a project to draw its libraries beside this project's; click it again in the list,",
+    helpText("Optional. Choose a dataset to draw its libraries beside this dataset's; click it again in the list,",
              "or its ×, to remove them. The choice stays as you move between tabs.",
              "It is there to show what other libraries look like — Hermes, Ac/Ds, piggyBac or another element —",
-             "not to compare numbers between projects."))
+             "not to compare numbers between datasets."))
 }
 
 # Selectize hides what is already chosen and treats a second click as a no-op, so a chosen project can only be
@@ -340,9 +340,9 @@ ytab_reference_server <- function(id, input, output, session, repo_root, active,
   control <- paste0(id, "_reference_projects")
   output[[paste0(id, "_reference_selector")]] <- renderUI({
     choices <- ytab_reference_choices(tryCatch(projects(), error = function(e) data.frame()), active())
-    if (!length(unlist(choices))) return(tags$p(class = "text-muted", "No other project is available to compare with."))
+    if (!length(unlist(choices))) return(tags$p(class = "text-muted", "No other dataset is available to compare with."))
     selectizeInput(control, NULL, choices, selected = isolate(state()), multiple = TRUE,
-      options = list(placeholder = "Choose projects to compare with…", hideSelected = FALSE,
+      options = list(placeholder = "Choose datasets to compare with…", hideSelected = FALSE,
                      plugins = list("remove_button"), onInitialize = I(YTAB_REFERENCE_TOGGLE_JS)))
   })
   output[[paste0(id, "_reference_display")]] <- renderUI({

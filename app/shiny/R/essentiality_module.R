@@ -102,7 +102,7 @@ ess_track_plotly <- function(windows, chromosome, chrom_label = chromosome) {
 essentiality_model_colours <- c(`HMM (label-free)` = YTAB_FOCAL, Hybrid = YTAB_ACCENT, `Random forest` = YTAB_COMPARATOR)
 
 ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifest = list(), run_dir = NULL,
-                       reference = data.frame(), project_label = "This project") {
+                       reference = data.frame(), project_label = "This dataset") {
   base <- ggplot2::theme_minimal(base_size = 12)
   if (identical(choice, "target")) {
     tm <- ytab_read_analysis_tsv(file.path(run_dir %||% "", "plots", "target_model.tsv"))
@@ -195,7 +195,7 @@ ess_ggplot <- function(choice, genes, windows = NULL, chromosome = NULL, manifes
         text = sprintf("%s<br>%s: %.1f%% of its genes", .project, label, value))) +
       ggplot2::geom_col(position = ggplot2::position_dodge(width = .8), width = .75) +
       ggplot2::scale_fill_manual(values = ytab_reference_project_fills(unique(long$.project), project_label)) +
-      ggplot2::labs(x = NULL, y = "Genes of the project (%)", fill = NULL) + base +
+      ggplot2::labs(x = NULL, y = "Genes of the dataset (%)", fill = NULL) + base +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 25, hjust = 1)))
   }
   fills <- c(essentiality_state_colours, essentiality_agreement_colours, uncertain = "grey70")
@@ -257,7 +257,7 @@ essentiality_module_server <- function(input, output, session, repo_root, active
   })
   output$ess_hmm_reuse_selector <- renderUI({
     x <- runs()
-    if (!nrow(x)) return(tags$p(class = "text-muted", "No earlier HMM fit in this project."))
+    if (!nrow(x)) return(tags$p(class = "text-muted", "No earlier HMM fit in this dataset."))
     selectInput("ess_hmm_reuse", "Earlier fit", ytab_run_choices(x))
   })
   output$ess_hybrid_inputs <- renderUI({
@@ -267,7 +267,7 @@ essentiality_module_server <- function(input, output, session, repo_root, active
                   selected = labels[grepl(paste0("/species/", tolower(active()$species %||% ""), "/"), labels, fixed = TRUE)][1] %||% labels[1]),
       conditionalPanel("input.ess_labels === 'other'", textInput("ess_labels_path", "Label file (TSV: gene_id, label, tier)")),
       if (length(norms)) selectInput("ess_normalization", "Normalization for the gene features", norms)
-      else tags$p(class = "text-warning", "No normalization in this project yet. Run Normalization (or MidLC) first."))
+      else tags$p(class = "text-warning", "No normalization in this dataset yet. Run Normalization (or MidLC) first."))
   })
 
   observeEvent(input$ess_run, {
@@ -300,7 +300,7 @@ essentiality_module_server <- function(input, output, session, repo_root, active
 
   output$ess_run_status <- renderUI({
     x <- runs()
-    gate <- ytab_design_gate(design_support(), "Essentiality", "Essentiality is not available for this project")
+    gate <- ytab_design_gate(design_support(), "Essentiality", "Essentiality is not available for this dataset")
     if (!nrow(x) && !is.null(gate)) return(gate)
     if (!nrow(x)) return(tagList(readiness_banner(), ytab_design_merge_warning(design_support()),
       ytab_empty_state("No essentiality result yet", "The HMM needs only the hit files of untreated parent libraries. Choose the libraries and run.")))
@@ -373,19 +373,19 @@ essentiality_module_server <- function(input, output, session, repo_root, active
   plot_for_download <- function() {
     choice <- input$ess_plot %||% "track"
     if (!identical(choice, "track")) return(ess_ggplot(choice, genes(), manifest = manifest(), run_dir = selected_run(),
-                                                      reference = reference_essentiality(), project_label = active()$project_id))
+                                                      reference = reference_essentiality(), project_label = project_display_label(active())))
     p <- ess_ggplot("track", genes(), windows(), input$ess_chromosome %||% unique(windows()$chromosome)[[1L]])
     p$bottom + ggplot2::geom_col(ggplot2::aes(start, insertions / max(insertions, 1)), data = windows()[windows()$chromosome == (input$ess_chromosome %||% ""), ],
                                  inherit.aes = FALSE, fill = "grey20", alpha = .5) +
       ggplot2::labs(caption = "Dark bars: insertions per window, scaled to the largest window")
   }
-  download_name <- function(ext) paste0(active()$project_id, "_essentiality_", input$ess_plot %||% "track", "_", basename(selected_run()), ext)
+  download_name <- function(ext) paste0(project_display_label(active()), "_essentiality_", input$ess_plot %||% "track", "_", basename(selected_run()), ext)
   for (format in c("png", "pdf")) local({
     ext <- format
     output[[paste0("ess_download_", ext)]] <- downloadHandler(filename = function() download_name(paste0(".", ext)),
       content = function(file) ytab_save_ggplot(file, plot_for_download(), width = 12, height = 6))
   })
-  output$ess_download_genes <- downloadHandler(filename = function() paste0(active()$project_id, "_essentiality_genes_", basename(selected_run()), ".tsv"),
+  output$ess_download_genes <- downloadHandler(filename = function() paste0(project_display_label(active()), "_essentiality_genes_", basename(selected_run()), ".tsv"),
     content = function(file) file.copy(file.path(selected_run(), "models", "genes.tsv"), file))
   invisible(list(runs = runs, selected_run = selected_run, manifest = manifest, genes = genes, windows = windows, inventory = inventory))
 }

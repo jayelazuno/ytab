@@ -63,7 +63,12 @@ comparisons_mc_ui <- function() ytab_two_column_layout(
     uiOutput("mc_result_selector"),
     radioButtons("mc_plot", "Plot", c("Volcano" = "volcano", "Response correlation" = "correlation", "Response heatmap" = "heatmap")),
     uiOutput("mc_pair_selector"),
-    ytab_plot_downloads_ui("mc", c(anova = "Download ANOVA (TSV)", pairs = "Download all-pairs (TSV)"))),
+    conditionalPanel("input.mc_plot == 'volcano'",
+      selectInput("mc_direction", "Calls shown", c("Depleted and enriched" = "both", "Depleted" = "depleted", "Enriched" = "enriched")),
+      numericInput("mc_label_n", "Label top hits", 10, min = 0, max = 50, step = 1),
+      textAreaInput("mc_label_genes", "Also label", "", rows = 2, placeholder = "Gene names or IDs, separated by commas or new lines")),
+    ytab_plot_downloads_ui("mc", c(anova = "Download ANOVA (TSV)", pairs = "Download all-pairs (TSV)")),
+    ytab_plot_customization_controls("mc", include_points = TRUE, include_labels = FALSE, open = FALSE)),
   main = tagList(uiOutput("mc_summary"),
     ytab_plot_card("Multi-condition", uiOutput("mc_plot_frame"), description = uiOutput("mc_plot_caption")),
     ytab_table_card("Genes", DT::DTOutput("mc_table")), mc_methods_text()))
@@ -81,7 +86,12 @@ comparisons_gi_ui <- function() ytab_two_column_layout(
     tags$hr(),
     uiOutput("gi_result_selector"),
     radioButtons("gi_plot", "Plot", c("Strain responses" = "scatter", "Interaction effects" = "forest", "Volcano" = "volcano")),
-    ytab_plot_downloads_ui("gi", c(genes = "Download gene table (TSV)"))),
+    conditionalPanel("input.gi_plot != 'forest'",
+      selectInput("gi_direction", "Calls shown", c("All interactions" = "all", "Aggravating" = "Aggravating", "Alleviating" = "Alleviating", "Suppressive" = "Suppressive")),
+      numericInput("gi_label_n", "Label top hits", 10, min = 0, max = 50, step = 1),
+      textAreaInput("gi_label_genes", "Also label", "", rows = 2, placeholder = "Gene names or IDs, separated by commas or new lines")),
+    ytab_plot_downloads_ui("gi", c(genes = "Download gene table (TSV)")),
+    ytab_plot_customization_controls("gi", include_points = TRUE, include_labels = FALSE, open = FALSE)),
   main = tagList(uiOutput("gi_summary"),
     ytab_plot_card("Genetic interactions", uiOutput("gi_plot_frame"), description = uiOutput("gi_plot_caption")),
     ytab_table_card("Genes", DT::DTOutput("gi_table")), gi_methods_text()))
@@ -93,8 +103,15 @@ comparisons_module_ui <- function() navset_tab(id = "fitness_tabs",
   nav_panel("Multi-condition", value = "multicondition", comparisons_mc_ui()),
   nav_panel("Genetic Interactions", value = "gi", comparisons_gi_ui()))
 
-mc_ggplot <- function(choice, data, pair = NULL) {
-  base <- ggplot2::theme_minimal(base_size = 12)
+# Display values of a subtab's "Plot display options" (ytab_plot_customization_values), shared with Treated vs Control.
+# The heatmap and the forest plot draw a row per gene and stay 700 px tall unless a height is chosen.
+cmp_display <- function(input, id, tall = FALSE) { s <- ytab_plot_customization_values(input, id)
+  if (tall && (input[[paste0(id, "_plot_height")]] %||% "medium") == "medium") s$height <- "700px"; s }
+cmp_default_display <- function() ytab_plot_customization_values(list(), "cmp")
+
+# extra: direction, label_n, label_genes and interactive for the volcano, as in tvc_plot().
+mc_ggplot <- function(choice, data, pair = NULL, s = cmp_default_display(), extra = list()) {
+  base <- tvc_theme(s)
   if (identical(choice, "correlation")) {
     d <- data$correlation
     validate(need(nrow(d) > 0 && "gene_set" %in% names(d), "Response correlation needs at least three conditions (two responses to the reference); this test has two."))
@@ -120,19 +137,28 @@ mc_ggplot <- function(choice, data, pair = NULL) {
       ggplot2::labs(x = NULL, y = NULL, fill = "log2FC vs reference") + base + ggplot2::theme(axis.text.y = ggplot2::element_blank()))
   }
   d <- data$pairs[data$pairs$pair == pair & data$pairs$status == "tested", , drop = FALSE]
-  d$call_all_pairs <- factor(d$call_all_pairs, levels = c("depleted", "enriched", "not significant"))
-  ggplot2::ggplot(d, ggplot2::aes(log2FC, -log10(pmax(p_value, 1e-300)), colour = call_all_pairs,
+  direction <- extra$direction %||% "both"
+  if (direction %in% c("depleted", "enriched")) d$call_all_pairs[d$call_all_pairs %in% setdiff(c("depleted", "enriched"), direction)] <- "other direction"
+  d$call_all_pairs <- factor(d$call_all_pairs, levels = c("depleted", "enriched", "not significant", "other direction"))
+  d$y <- -log10(pmax(d$p_value, 1e-300))
+  p <- ggplot2::ggplot(d, ggplot2::aes(log2FC, y, colour = call_all_pairs,
       text = sprintf("%s %s<br>log2FC %.2f<br>p %.3g; q (all pairs) %.3g<br>%d sites", ORF, ifelse(is.na(Name), "", Name), log2FC, p_value, q_all_pairs, n_sites))) +
-    ggplot2::geom_point(alpha = .6, size = 1.3) + ggplot2::scale_colour_manual(values = YTAB_DIRECTION_COLOURS, drop = FALSE) +
+    ggplot2::geom_point(alpha = s$point_opacity, size = s$point_size) + ggplot2::scale_colour_manual(values = tvc_call_colours, drop = FALSE) +
     ggplot2::labs(x = sprintf("log2FC (%s)", pair), y = "-log10 p", colour = "Call (all pairs, one FDR family)") + base
+  cmp_label_plot(p, d, cmp_label_rows(d, d$call_all_pairs, d$y, extra$label_n %||% 10, extra$label_genes), "log2FC", "y", s, extra$interactive)
 }
 
-gi_ggplot <- function(choice, genes, reference, query) {
-  base <- ggplot2::theme_minimal(base_size = 12)
+# extra: direction ("all" or one call class), label_n, label_genes and interactive for the scatter and volcano.
+gi_ggplot <- function(choice, genes, reference, query, s = cmp_default_display(), extra = list()) {
+  base <- tvc_theme(s)
   d <- genes[genes$status == "tested", , drop = FALSE]
-  d$call <- factor(d$call, levels = c("Aggravating", "Alleviating", "Suppressive", "No interaction"))
+  classes <- c("Aggravating", "Alleviating", "Suppressive"); shown <- extra$direction %||% "all"
+  if (choice != "forest" && shown %in% classes) d$call[d$call %in% setdiff(classes, shown)] <- "other class"
+  d$call <- factor(d$call, levels = c(classes, "No interaction", "other class"))
   colours <- c(Aggravating = YTAB_DIRECTION_COLOURS[["depleted"]], Alleviating = YTAB_DIRECTION_COLOURS[["enriched"]], Suppressive = "#E69F00",
-               `No interaction` = YTAB_DIRECTION_COLOURS[["not significant"]])
+               `No interaction` = YTAB_DIRECTION_COLOURS[["not significant"]], `other class` = "#ececec")
+  d$sig <- -log10(pmax(d$p_value, 1e-300))
+  labelled <- function(p, x, y) cmp_label_plot(p, d, cmp_label_rows(d, d$call, d$sig, extra$label_n %||% 10, extra$label_genes), x, y, s, extra$interactive)
   hover <- function(x) sprintf("%s %s<br>log2FC %s %.2f; %s %.2f<br>Δ %.2f%s<br>q %.3g; %s", x$ORF, ifelse(is.na(x$Name), "", x$Name), reference, x$log2FC_reference,
                                query, x$log2FC_query, x$delta_log2FC,
                                if ("delta_lower" %in% names(x)) sprintf(" (%.2f to %.2f)", x$delta_lower, x$delta_upper) else "", x[["p_adjusted"]] %||% x$q_bh, x$call)
@@ -141,21 +167,23 @@ gi_ggplot <- function(choice, genes, reference, query) {
     top <- utils::head(d[order(q, d$p_value), , drop = FALSE], 30L)
     top$gene <- factor(ifelse(is.na(top$Name) | !nzchar(top$Name), top$ORF, top$Name), levels = rev(unique(ifelse(is.na(top$Name) | !nzchar(top$Name), top$ORF, top$Name))))
     plot <- ggplot2::ggplot(top, ggplot2::aes(delta_log2FC, gene, colour = call, text = hover(top))) + ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
-      ggplot2::geom_point(size = 2.5) + ggplot2::scale_colour_manual(values = colours, drop = FALSE) +
+      ggplot2::geom_point(size = s$point_size + 1) + ggplot2::scale_colour_manual(values = colours, drop = FALSE) +
       ggplot2::labs(x = sprintf("Delta log2FC (%s - %s)", query, reference), y = NULL, colour = "Call", title = "30 genes with the smallest adjusted p-values") + base
     if ("delta_lower" %in% names(top)) plot <- plot + ggplot2::geom_errorbar(ggplot2::aes(xmin = delta_lower, xmax = delta_upper), orientation = "y", width = .3)
     return(plot)
   }
   if (identical(choice, "volcano"))
-    return(ggplot2::ggplot(d, ggplot2::aes(delta_log2FC, -log10(pmax(p_value, 1e-300)), colour = call, text = hover(d))) + ggplot2::geom_point(alpha = .6, size = 1.3) +
-      ggplot2::scale_colour_manual(values = colours, drop = FALSE) + ggplot2::labs(x = sprintf("Delta log2FC (%s - %s)", query, reference), y = "-log10 p", colour = "Call") + base)
-  ggplot2::ggplot(d, ggplot2::aes(log2FC_reference, log2FC_query, colour = call, text = hover(d))) +
-    ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey40") + ggplot2::geom_point(alpha = .6, size = 1.3) +
+    return(labelled(ggplot2::ggplot(d, ggplot2::aes(delta_log2FC, sig, colour = call, text = hover(d))) + ggplot2::geom_point(alpha = s$point_opacity, size = s$point_size) +
+      ggplot2::scale_colour_manual(values = colours, drop = FALSE) + ggplot2::labs(x = sprintf("Delta log2FC (%s - %s)", query, reference), y = "-log10 p", colour = "Call") + base,
+      "delta_log2FC", "sig"))
+  labelled(ggplot2::ggplot(d, ggplot2::aes(log2FC_reference, log2FC_query, colour = call, text = hover(d))) +
+    ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey40") + ggplot2::geom_point(alpha = s$point_opacity, size = s$point_size) +
     ggplot2::scale_colour_manual(values = colours, drop = FALSE) +
-    ggplot2::labs(x = sprintf("Treatment response in %s (log2FC)", reference), y = sprintf("Treatment response in %s (log2FC)", query), colour = "Call") + base
+    ggplot2::labs(x = sprintf("Treatment response in %s (log2FC)", reference), y = sprintf("Treatment response in %s (log2FC)", query), colour = "Call") + base,
+    "log2FC_reference", "log2FC_query")
 }
 
-comparisons_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin) {
+comparisons_server <- function(input, output, session, repo_root, active, active_project_path, jobs, python_bin, zscore_request = reactive("")) {
   norm_runs <- reactivePoll(4000, session,
     checkFunc = function() { x <- tryCatch(cmp_normalization_runs(active()$project_root), error = function(e) data.frame()); paste(x$path, collapse = "|") },
     valueFunc = function() tryCatch(cmp_normalization_runs(active()$project_root), error = function(e) ytab_analysis_runs("")))
@@ -171,7 +199,7 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     tryCatch({ jobs$start_job(python_bin(), c(file.path(repo_root, "scripts", "local", script), args), active_project_path(), stage, wd = repo_root)
                showNotification(message, type = "message") }, error = function(e) showNotification(conditionMessage(e), type = "error"))
   }
-  tvc_server(input, output, session, repo_root, active, active_project_path, norm_runs, start, design_support)
+  tvc_server(input, output, session, repo_root, active, active_project_path, norm_runs, start, design_support, zscore_request)
   reference_files <- reactive({ cfg <- yaml::read_yaml(active_project_path()); resolve <- function(x) if (grepl("^/", x)) x else file.path(repo_root, x)
                                 list(fasta = resolve(cfg$reference$fasta), gff = resolve(cfg$reference$gff)) })
 
@@ -231,7 +259,7 @@ comparisons_server <- function(input, output, session, repo_root, active, active
   output$mc_result_selector <- renderUI({ x <- mc_runs(); if (!nrow(x)) return(tags$p(class = "text-muted", "No multi-condition result yet.")); selectInput("mc_result", "Result", ytab_run_choices(x)) })
   output$mc_pair_selector <- renderUI({ req(identical(input$mc_plot, "volcano")); p <- mc_data()$pairs; req(nrow(p) > 0); selectInput("mc_pair", "Pair", unique(p$pair)) })
   output$mc_summary <- renderUI({
-    gate <- ytab_design_gate(design_support(), "Multi-condition", "Multi-condition tests are not available for this project")
+    gate <- ytab_design_gate(design_support(), "Multi-condition", "Multi-condition tests are not available for this dataset")
     if (!is.null(gate)) return(gate)
     if (!nrow(mc_runs())) return(tagList(ytab_design_merge_warning(design_support()),
       ytab_empty_state("No multi-condition result yet", "Choose a normalization run, assign conditions and run the tests.")))
@@ -252,10 +280,12 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     req(nrow(mc_runs()) > 0); d <- mc_data(); choice <- input$mc_plot %||% "volcano"
     if (identical(choice, "correlation") && !nrow(d$correlation)) return(tags$p(class = "text-muted", "No response correlation: it needs at least two non-reference conditions."))
     if (identical(choice, "heatmap") && !nrow(d$heatmap)) return(tags$p(class = "text-muted", "No responsive genes to show."))
-    plotly::plotlyOutput("mc_plotly", height = if (identical(choice, "heatmap")) "700px" else "520px")
+    s <- cmp_display(input, "mc", identical(choice, "heatmap")); ytab_plot_frame(plotly::plotlyOutput("mc_plotly", height = s$height), s$width)
   })
-  mc_current_plot <- function() { choice <- input$mc_plot %||% "volcano"; mc_ggplot(choice, mc_data(), input$mc_pair %||% unique(mc_data()$pairs$pair)[[1L]]) }
-  output$mc_plotly <- plotly::renderPlotly(ytab_ggplotly(mc_current_plot()))
+  mc_current_plot <- function(interactive = TRUE) { choice <- input$mc_plot %||% "volcano"
+    mc_ggplot(choice, mc_data(), input$mc_pair %||% unique(mc_data()$pairs$pair)[[1L]], cmp_display(input, "mc", identical(choice, "heatmap")),
+              list(direction = input$mc_direction, label_n = input$mc_label_n %||% 10, label_genes = input$mc_label_genes, interactive = interactive)) }
+  output$mc_plotly <- plotly::renderPlotly(tvc_plotly(mc_current_plot()))
   output$mc_table <- DT::renderDT({
     d <- mc_data(); p <- d$pairs; req(nrow(p) > 0); pair <- input$mc_pair %||% unique(p$pair)[[1L]]
     p <- p[p$pair == pair & p$status == "tested", intersect(c("ORF", "Name", "n_sites", "log2FC", "p_value", "q_all_pairs", "call_all_pairs", "mean_control", "mean_treatment"), names(p)), drop = FALSE]
@@ -264,9 +294,10 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     names(p)[names(p) == "q_bh"] <- "q_anova"; names(p)[names(p) == "call"] <- "call_anova"
     ytab_datatable(p[order(p$q_all_pairs), , drop = FALSE], page_length = 15L)
   })
-  mc_name <- function(ext) paste0(active()$project_id, "_multicondition_", input$mc_plot %||% "volcano", "_", basename(mc_selected()), ext)
+  mc_name <- function(ext) paste0(project_display_label(active()), "_multicondition_", input$mc_plot %||% "volcano", "_", basename(mc_selected()), ext)
   for (format in c("png", "pdf")) local({ ext <- format
-    output[[paste0("mc_download_", ext)]] <- downloadHandler(filename = function() mc_name(paste0(".", ext)), content = function(file) ytab_save_ggplot(file, mc_current_plot(), width = 10, height = 8)) })
+    output[[paste0("mc_download_", ext)]] <- downloadHandler(filename = function() mc_name(paste0(".", ext)), content = function(file) { s <- cmp_display(input, "mc", identical(input$mc_plot, "heatmap"))
+      ytab_save_ggplot(file, mc_current_plot(FALSE), width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) }) })
   output$mc_download_anova <- downloadHandler(filename = function() mc_name("_anova.tsv"), content = function(file) file.copy(file.path(mc_selected(), "tests", "anova_genes.tsv"), file))
   output$mc_download_pairs <- downloadHandler(filename = function() mc_name("_pairs.tsv"), content = function(file) file.copy(file.path(mc_selected(), "tests", "pairs_genes.tsv"), file))
 
@@ -307,7 +338,7 @@ comparisons_server <- function(input, output, session, repo_root, active, active
   gi_data <- reactive(list(manifest = read_json_safely(file.path(gi_selected(), "run_manifest.json")), genes = named(ytab_read_analysis_tsv(file.path(gi_selected(), "genes.tsv")))))
   output$gi_result_selector <- renderUI({ x <- gi_runs(); if (!nrow(x)) return(tags$p(class = "text-muted", "No genetic-interaction result yet.")); selectInput("gi_result", "Result", ytab_run_choices(x)) })
   output$gi_summary <- renderUI({
-    gate <- ytab_design_gate(design_support(), "Genetic interactions", "Genetic interactions are not available for this project")
+    gate <- ytab_design_gate(design_support(), "Genetic interactions", "Genetic interactions are not available for this dataset")
     if (!is.null(gate)) return(gate)
     if (!nrow(gi_runs())) return(tagList(ytab_design_merge_warning(design_support()),
       ytab_empty_state("No genetic-interaction result yet", "Choose a normalization run, two strains and run. Each strain needs at least two control/treated pairs.")))
@@ -322,18 +353,22 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     scatter = "Each gene's treatment response in the two strains. Genes on the dashed diagonal respond equally; coloured genes are called interactions.",
     forest = "Δ with its interval for the 30 genes with the smallest adjusted p-values.",
     volcano = "Δ against the p-value; coloured genes are called interactions."))
-  output$gi_plot_frame <- renderUI({ req(nrow(gi_runs()) > 0); plotly::plotlyOutput("gi_plotly", height = if (identical(input$gi_plot, "forest")) "700px" else "520px") })
-  gi_current_plot <- function() { d <- gi_data(); gi_ggplot(input$gi_plot %||% "scatter", d$genes, d$manifest$diagnostics$reference_strain, d$manifest$diagnostics$query_strain) }
-  output$gi_plotly <- plotly::renderPlotly(ytab_ggplotly(gi_current_plot()))
+  output$gi_plot_frame <- renderUI({ req(nrow(gi_runs()) > 0); s <- cmp_display(input, "gi", identical(input$gi_plot, "forest"))
+    ytab_plot_frame(plotly::plotlyOutput("gi_plotly", height = s$height), s$width) })
+  gi_current_plot <- function(interactive = TRUE) { d <- gi_data(); gi_ggplot(input$gi_plot %||% "scatter", d$genes, d$manifest$diagnostics$reference_strain, d$manifest$diagnostics$query_strain,
+    cmp_display(input, "gi", identical(input$gi_plot, "forest")),
+    list(direction = input$gi_direction, label_n = input$gi_label_n %||% 10, label_genes = input$gi_label_genes, interactive = interactive)) }
+  output$gi_plotly <- plotly::renderPlotly(tvc_plotly(gi_current_plot()))
   output$gi_table <- DT::renderDT({
     g <- gi_data()$genes; req(nrow(g) > 0); g <- g[g$status == "tested", , drop = FALSE]
     keep <- intersect(c("ORF", "Name", "log2FC_reference", "log2FC_query", "delta_log2FC", "delta_lower", "delta_upper", "p_value", "p_adjusted", "q_bh", "call", "interaction", "sites_reference", "sites_query"), names(g))
     g <- g[, keep, drop = FALSE]; for (column in keep[vapply(g, is.numeric, logical(1))]) g[[column]] <- signif(g[[column]], 3)
     ytab_datatable(g[order(g$p_value), , drop = FALSE], page_length = 15L)
   })
-  gi_name <- function(ext) paste0(active()$project_id, "_gi_", input$gi_plot %||% "scatter", "_", basename(gi_selected()), ext)
+  gi_name <- function(ext) paste0(project_display_label(active()), "_gi_", input$gi_plot %||% "scatter", "_", basename(gi_selected()), ext)
   for (format in c("png", "pdf")) local({ ext <- format
-    output[[paste0("gi_download_", ext)]] <- downloadHandler(filename = function() gi_name(paste0(".", ext)), content = function(file) ytab_save_ggplot(file, gi_current_plot(), width = 10, height = 8)) })
+    output[[paste0("gi_download_", ext)]] <- downloadHandler(filename = function() gi_name(paste0(".", ext)), content = function(file) { s <- cmp_display(input, "gi", identical(input$gi_plot, "forest"))
+      ytab_save_ggplot(file, gi_current_plot(FALSE), width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) }) })
   output$gi_download_genes <- downloadHandler(filename = function() gi_name("_genes.tsv"), content = function(file) file.copy(file.path(gi_selected(), "genes.tsv"), file))
   invisible(list(norm_runs = norm_runs, mc_runs = mc_runs, gi_runs = gi_runs, mc_data = mc_data, gi_data = gi_data, mc_assignment = mc_assignment, gi_assignment = gi_assignment))
 }

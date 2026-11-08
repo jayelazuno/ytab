@@ -1,0 +1,124 @@
+LOCUS       CBLTNIFP2               2472 bp    DNA     linear   INV 15-OCT-2002
+DEFINITION  Trichoplusia ni transposon IFP2 unknown protein gene, complete cds.
+ACCESSION   J04364
+VERSION     J04364.2
+KEYWORDS    transposon.
+SOURCE      Trichoplusia ni (cabbage looper)
+  ORGANISM  Trichoplusia ni
+            Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Altocrustacea;
+            Allotriocarida; Hexapoda; Insecta; Pterygota; Neoptera; Eumetabola;
+            Endopterygota; Aparaglossata; Panorpida; Lepidoptera; Glossata;
+            Ditrysia; Noctuoidea; Noctuidae; Plusiinae; Trichoplusia.
+REFERENCE   1  (bases 1 to 2472)
+  AUTHORS   Cary,L.C., Goebel,M., Corsaro,B.G., Wang,H.G., Rosen,E. and
+            Fraser,M.J.
+  TITLE     Transposon mutagenesis of baculoviruses: analysis of Trichoplusia
+            ni transposon IFP2 insertions within the FP-locus of nuclear
+            polyhedrosis viruses
+  JOURNAL   Virology 172 (1), 156-169 (1989)
+   PUBMED   2549707
+REFERENCE   2  (bases 1 to 2472)
+  AUTHORS   Fraser,M.J.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (13-JUN-1989) Department of Biological Sciences,
+            University of Notre Dame, IN 46556, USA
+REFERENCE   3  (bases 1 to 2472)
+  AUTHORS   Fraser,M.J.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (15-OCT-2002) Department of Biological Sciences,
+            University of Notre Dame, IN 46556, USA
+  REMARK    Sequence update by submitter
+COMMENT     On Oct 15, 2002 this sequence version replaced J04364.1.
+            Original source text: Trichoplusia ni (clone:  pGmFP4(3E-1)) ovary
+            DNA.
+FEATURES             Location/Qualifiers
+     source          1..2472
+                     /organism="Trichoplusia ni"
+                     /mol_type="genomic DNA"
+                     /db_xref="taxon:7111"
+                     /clone="pGmFP4(3E-1)"
+                     /cell_line="TN-368"
+                     /tissue_type="ovary"
+     mobile_element  1..2472
+                     /mobile_element_type="transposon:IFP2"
+     repeat_region   1..13
+                     /note="terminal"
+                     /rpt_type=inverted
+     repeat_region   17..36
+                     /note="internal"
+                     /rpt_type=inverted
+     regulatory      33..42
+                     /regulatory_class="CAAT_signal"
+     regulatory      61..68
+                     /regulatory_class="TATA_box"
+     mRNA            104..>2298
+                     /product="unknown protein"
+     5'UTR           104..328
+     CDS             329..2113
+                     /note="ORF1; putative"
+                     /codon_start=1
+                     /product="unknown protein"
+                     /protein_id="AAA87375.2"
+                     /translation="MGSSLDDEHILSALLQSDDELVGEDSDSEISDHVSEDDVQSDTE
+                     EAFIDEVHEVQPTSSGSEILDEQNVIEQPGSSLASNRILTLPQRTIRGKNKHCWSTSK
+                     STRRSRVSALNIVRSQRGPTRMCRNIYDPLLCFKLFFTDEIISEIVKWTNAEISLKRR
+                     ESMTGATFRDTNEDEIYAFFGILVMTAVRKDNHMSTDDLFDRSLSMVYVSVMSRDRFD
+                     FLIRCLRMDDKSIRPTLRENDVFTPVRKIWDLFIHQCIQNYTPGAHLTIDEQLLGFRG
+                     RCPFRMYIPNKPSKYGIKILMMCDSGTKYMINGMPYLGRGTQTNGVPLGEYYVKELSK
+                     PVHGSCRNITCDNWFTSIPLAKNLLQEPYKLTIVGTVRSNKREIPEVLKNSRSRPVGT
+                     SMFCFDGPLTLVSYKPKPAKMVYLLSSCDEDASINESTGKPQMVMYYNQTKGGVDTLD
+                     QMCSVMTCSRKTNRWPMALLYGMINIACINSFIIYSHNVSSKGEKVQSRKKFMRNLYM
+                     SLTSSFMRKRLEAPTLKRYLRDNISNILPNEVPGTSDDSTEEPVMKKRTYCTYCPSKI
+                     RRKANASCKKCKKVICREHNIDMCQSCF"
+     3'UTR           2114..>2300
+     repeat_region   2410..2428
+                     /note="internal"
+                     /rpt_type=inverted
+     repeat_region   2460..2472
+                     /note="terminal"
+                     /rpt_type=inverted
+ORIGIN      
+        1 ccctagaaag atagtctgcg taaaattgac gcatgcattc ttgaaatatt gctctctctt
+       61 tctaaatagc gcgaatccgt cgctgtgcat ttaggacatc tcagtcgccg cttggagctc
+      121 ccgtgaggcg tgcttgtcaa tgcggtaagt gtcactgatt ttgaactata acgaccgcgt
+      181 gagtcaaaat gacgcatgat tatcttttac gtgactttta agatttaact catacgataa
+      241 ttatattgtt atttcatgtt ctacttacgt gataacttat tatatatata ttttcttgtt
+      301 atagatatcg tgactaatat ataataaaat gggtagttct ttagacgatg agcatatcct
+      361 ctctgctctt ctgcaaagcg atgacgagct tgttggtgag gattctgaca gtgaaatatc
+      421 agatcacgta agtgaagatg acgtccagag cgatacagaa gaagcgttta tagatgaggt
+      481 acatgaagtg cagccaacgt caagcggtag tgaaatatta gacgaacaaa atgttattga
+      541 acaaccaggt tcttcattgg cttctaacag aatcttgacc ttgccacaga ggactattag
+      601 aggtaagaat aaacattgtt ggtcaacttc aaagtccacg aggcgtagcc gagtctctgc
+      661 actgaacatt gtcagatctc aaagaggtcc gacgcgtatg tgccgcaata tatatgaccc
+      721 acttttatgc ttcaaactat tttttactga tgagataatt tcggaaattg taaaatggac
+      781 aaatgctgag atatcattga aacgtcggga atctatgaca ggtgctacat ttcgtgacac
+      841 gaatgaagat gaaatctatg ctttctttgg tattctggta atgacagcag tgagaaaaga
+      901 taaccacatg tccacagatg acctctttga tcgatctttg tcaatggtgt acgtctctgt
+      961 aatgagtcgt gatcgttttg attttttgat acgatgtctt agaatggatg acaaaagtat
+     1021 acggcccaca cttcgagaaa acgatgtatt tactcctgtt agaaaaatat gggatctctt
+     1081 tatccatcag tgcatacaaa attacactcc aggggctcat ttgaccatag atgaacagtt
+     1141 acttggtttt agaggacggt gtccgtttag gatgtatatc ccaaacaagc caagtaagta
+     1201 tggaataaaa atcctcatga tgtgtgacag tggtacgaag tatatgataa atggaatgcc
+     1261 ttatttggga agaggaacac agaccaacgg agtaccactc ggtgaatact acgtgaagga
+     1321 gttatcaaag cctgtgcacg gtagttgtcg taatattacg tgtgacaatt ggttcacctc
+     1381 aatccctttg gcaaaaaact tactacaaga accgtataag ttaaccattg tgggaaccgt
+     1441 gcgatcaaac aaacgcgaga taccggaagt actgaaaaac agtcgctcca ggccagtggg
+     1501 aacatcgatg ttttgttttg acggacccct tactctcgtc tcatataaac cgaagccagc
+     1561 taagatggta tacttattat catcttgtga tgaggatgct tctatcaacg aaagtaccgg
+     1621 taaaccgcaa atggttatgt attataatca aactaaaggc ggagtggaca cgctagacca
+     1681 aatgtgttct gtgatgacct gcagtaggaa gacgaatagg tggcctatgg cattattgta
+     1741 cggaatgata aacattgcct gcataaattc ttttattata tacagccata atgtcagtag
+     1801 caagggagaa aaggttcaaa gtcgcaaaaa atttatgaga aacctttaca tgagcctgac
+     1861 gtcatcgttt atgcgtaagc gtttagaagc tcctactttg aagagatatt tgcgcgataa
+     1921 tatctctaat attttgccaa atgaagtgcc tggtacatca gatgacagta ctgaagagcc
+     1981 agtaatgaaa aaacgtactt actgtactta ctgcccctct aaaataaggc gaaaggcaaa
+     2041 tgcatcgtgc aaaaaatgca aaaaagttat ttgtcgagag cataatattg atatgtgcca
+     2101 aagttgtttc tgactgacta ataagtataa tttgtttcta ttatgtataa gttaagctaa
+     2161 ttacttattt tataatacaa catgactgtt tttaaagtac aaaataagtt tatttttgta
+     2221 aaagagagaa tgtttaaaag ttttgttact ttatagaaga aattttgagt ttttgttttt
+     2281 ttttaataaa taaataaaca taaataaatt gtttgttgaa tttattatta gtatgtaagt
+     2341 gtaaatataa taaaacttaa tatctattca aattaataaa taaacctcga tatacagacc
+     2401 gataaaacac atgcgtcaat tttacgcatg attatcttta acgtacgtca caatatgatt
+     2461 atctttctag gg
+//
+

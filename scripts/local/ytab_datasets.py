@@ -143,6 +143,13 @@ def experiments(project):
     return out
 
 
+def dataset_name(project):
+    """The dataset's standard name, `display_name` in its project.yaml (e.g. Gale_et_al_2020_Hermes); the folder id if it has none."""
+    path = PROJECTS/project/"config/project.yaml"
+    name = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("display_name") if path.exists() else None
+    return str(name).strip() if name else project
+
+
 def design_page(catalog, libraries, exps):
     """docs/experimental_designs.md: per study, its libraries (runs merged into libraries) and every analysis with the
     role of each library, and the commands that reproduce them."""
@@ -153,7 +160,7 @@ def design_page(catalog, libraries, exps):
     for c in catalog:
         libs = [l for l in libraries if l["study"] == c["study"] and l["project"] == c["project"]]
         mine = {l["library"] for l in libs if l["library"]}
-        lines += [f"## {c['citation']}: {c['species']} ({c['project']})", "",
+        lines += [f"## {c['citation']}: {c['species']} ({c['dataset']})", "",
                   f"{c['strain']}; {c['transposon']}, {c['read_design']}. {c['accession']}. {c['design']}.", "",
                   "| library | runs | role | condition | strain | pool |", "|---|---|---|---|---|---|"]
         grouped = {}
@@ -223,7 +230,7 @@ def main():
             tabs += [f"{label} ({len(v)})" for label, v in results.items() if v]
             catalog.append(dict(study=study["study"], citation=study["citation"], title=study["title"], journal=study["journal"], year=study["year"],
                                 doi=study["doi"], pmid=study["pmid"], species=study["species"], strain=study["strain"], transposon=study["transposon"],
-                                read_design=study["read_design"], accession=study["accession"], design=study["design"], project=project,
+                                read_design=study["read_design"], accession=study["accession"], design=study["design"], project=project, dataset=dataset_name(project),
                                 runs=len(runs), runs_included=len(included), roles=counts(r["library_role"] for r in included),
                                 backgrounds=counts(r["background"] for r in included), conditions=counts(r["condition"] for r in included),
                                 median_sites_per_kb=round(median(density), 1) if density else "", max_top_site_share=round(top[0], 3) if top[0] is not None else "",

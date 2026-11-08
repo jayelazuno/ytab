@@ -2,7 +2,7 @@ project_id: H2O2_screen_v1
 display_name: H2O2_screen_v1
 project_type: release
 show_in_launcher: true
-repo_root: /Volumes/rdss_bhe2/User/Joshua-Ayelazuno/Repositories /ytab
+repo_root: ../../../..
 start_stage: create_hit_file
 entry_mode: import_existing_hit_files
 fastq_dir: ''
@@ -25,7 +25,7 @@ reference:
   bowtie2_index_type: bt2
   centromere_bed: resources/species/glabrata/reference_genome/centromeres.NCBI.bed
   trna_bed: resources/species/glabrata/reference_genome/tRNAs.bed
-  orthology_file: resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt
+  orthology_file: resources/species/glabrata/orthologs/C_glabrata_BG2_S_cerevisiae_orthologs.txt
   warnings:
   - Multiple feature table candidates found; selected C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab.
   - Multiple centromere BED candidates found; selected centromeres.NCBI.bed.
@@ -162,3 +162,5 @@ samples:
 sample_sheet: output/projects/H2O2_screen_v1/config/sample_sheet.csv
 created_at: '2026-08-05T17:30:05.530781+00:00'
 ytab_version_or_git_commit_if_available: 1fd46a1
+mapping:
+  donor_fasta: resources/transposons/donors/hermes_pCU-MET3-Hermes/donor.fasta

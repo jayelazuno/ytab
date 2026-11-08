@@ -1,0 +1,9 @@
+donor: pHL2577 (URA3, kanMX6) carrying Hermes, with the transposase plasmid pHL2574/pHL2578 (Guo et al. 2013; Lee et al. 2020; Billmyre et al. 2022). Not deposited; rebuilt from its published parts.
+transposon_ends: ["CAGAGAACAACAACAAGTGGCTTATTTTGATACTTATGCG ATGTGGCTTACGTTTGCCTGTGGCTTGTTGAAGTTCTCTG", ""]
+parts:
+  - {name: pRS426 backbone (URA3, 2-micron, AmpR, ori, MCS), genbank: U03451, role: vector}
+  - {name: Hermes (transposase and ends), fasta: resources/transposons/hermes/L34807.1.fasta, role: transposon}
+  - {name: kanMX6 cassette (TEF promoter, kanR, TEF terminator), genbank: AJ002682, role: marker inside the transposon}
+  - {name: kanMX4 cassette, genbank: AJ002680, role: marker (alternative cassette)}
+  - {name: S. pombe ura4 region, species: pombe, gene: SPCC330.05c, flank: 500, role: host fragment / marker}
+  - {name: S. pombe leu1 region, species: pombe, gene: SPBC1A4.02c, flank: 500, role: host fragment / marker}

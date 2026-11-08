@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 DEFAULT_TRANSPOSON = "hermes"
-MAPPING_KEYS = ("hermes_cleanup", "trim_5p_seq", "trim_5p_overlap", "trim_5p_times", "discard_untrimmed", "trim_3p_seq")
+MAPPING_KEYS = ("hermes_cleanup", "trim_5p_seq", "trim_5p_overlap", "trim_5p_times", "discard_untrimmed", "trim_3p_seq", "donor_fasta")
 
 
 def profile_path(transposon: str, root: Path) -> Path:

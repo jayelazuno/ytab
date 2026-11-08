@@ -64,7 +64,7 @@ stopifnot(grepl("matched against every represented species", comparative_html, f
 stopifnot(!grepl(">Across Species<", workspace_html, fixed = TRUE), grepl("Gene Explorer", workspace_html, fixed = TRUE),
           grepl("Condition Comparisons", workspace_html, fixed = TRUE),
           grepl("Genome Browser", workspace_html, fixed = TRUE),
-          grepl("Search a gene to see where insertions fall across it in this project",
+          grepl("Search a gene to see where insertions fall across it in this dataset",
                 comparative_html, fixed = TRUE),
           !grepl("placeholder", checkbox_html, ignore.case = TRUE),
           !grepl(paste0("codex/", paste0("RNA", "cross")), comparative_html, fixed = TRUE),
@@ -72,12 +72,12 @@ stopifnot(!grepl(">Across Species<", workspace_html, fixed = TRUE), grepl("Gene 
                  comparative_html, fixed = TRUE))
 availability <- summarize_species_project_availability(root)
 availability_display <- comparative_availability_display(availability)
-stopifnot("No YTAB project outputs are available for this species yet." %in%
+stopifnot("No YTAB dataset outputs are available for this species yet." %in%
             availability$status ||
             any(availability$project_count == 0L),
           !any(c("species", "label", "enabled", "placeholder") %in%
                  names(availability_display)),
-          all(c("Species", "YTAB project outputs", "Projects",
+          all(c("Species", "YTAB dataset outputs", "Datasets",
                 "Essentiality results", "Fitness results",
                 "Insertion summaries") %in% names(availability_display)))
 cat("PASS\n")

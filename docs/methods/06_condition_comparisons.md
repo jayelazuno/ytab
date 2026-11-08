@@ -22,7 +22,7 @@ A comparison design pairs each treated library with its control (background, poo
 - **What it is:** any Site Normalization method.
 - **How it enters the z-score:** the method's normalized site counts are summed per gene and expressed per million of
   the mean library total. The pseudocount (0.5) therefore means the same as with counts per million.
-- **Default:** BGC (beta-geometric correction), which the benchmark supports (below).
+- **Default:** BGC (beta-geometric correction), which the benchmarks support (below).
 - **Fallback:** total reads (CPM) needs no normalization run.
 
 ## Local-abundance z-score (Gale et al. 2020)
@@ -42,7 +42,7 @@ of the z-score's false calls in the benchmark.
 ## Resampling
 
 A permutation test on the gene's normalized site counts, controls vs treated. Labels are permuted within each pool when
-there are several. The test is two-sided, with Benjamini–Hochberg FDR. With BGC, the treated libraries are recentred
+there are several. The test is two-sided, with Benjamini–Hochberg FDR. With BGC or aBGC, the treated libraries are recentred
 (trimmed sum) so that typical genes show no change. Adapted from TRANSIT's resampling (DeJesus et al. 2015).
 
 ## Control-conditioned Gumbel
@@ -57,11 +57,13 @@ reads, nonzero mean). Adapted from TRANSIT's Gumbel method (DeJesus et al. 2013)
 **Pre-registered simulation benchmark** (Gale-calibrated; 140 signal and 40 null experiments; amended before
 unblinding). Full results: `output/treated_vs_control/benchmark_blind_2026-10-22/RESULT.md`.
 
-- **Normalization:** BGC beats CPM and TTR for both the z-score (AUC +0.012 vs CPM) and resampling (+0.008 vs total
-  reads).
+- **Normalization:** the beta-geometric corrections beat CPM and TTR for both the z-score (BGC: AUC +0.012 vs CPM) and
+  resampling (+0.008 vs total reads). The adaptive form, aBGC, is within 0.01 AUC of BGC: slightly ahead in the
+  simulations (z-score +0.0016, resampling +0.0028; R27), slightly behind on real data (SGD rapamycin AUC 0.590 vs
+  0.597; `output/conditions/ADDENDUM_abgc.md`). BGC is the default.
 - **Ranking:** the z-score with BGC ranks affected genes best (precision at K +0.086 over resampling).
-- **Calls:** only resampling with BGC (FDR 0.063) and the Gumbel with TTR (FDR 0.010) pass the calibration gates. The
-  z-score has no error control: 64 false calls per null experiment, FDR 0.20.
+- **Calls:** only resampling with BGC or aBGC (FDR 0.063 and 0.062) and the Gumbel with TTR (FDR 0.010) pass the
+  calibration gates. The z-score has no error control: 64 false calls per null experiment with BGC (FDR 0.20).
 
 **Real data** (Gale fluconazole; `output/treated_vs_control/benchmark_phase2_2026-10-22/RESULT.md`):
 - **Published hits:** all methods recover Gale's published hits. Of the 19 strict hits, the z-score calls 19,

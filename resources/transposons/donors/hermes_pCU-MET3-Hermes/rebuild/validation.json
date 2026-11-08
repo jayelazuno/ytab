@@ -1,0 +1,12 @@
+{
+ "real": "pCU-MET3-Hermes.gbk",
+ "length": 10679,
+ "windows": 1068,
+ "covered": 0.9054,
+ "end_positions": [
+  4216,
+  6419
+ ],
+ "flank_windows": 60,
+ "flank_covered": 1.0
+}

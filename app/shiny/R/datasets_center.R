@@ -13,6 +13,7 @@ datasets_catalog <- function(repo_root) {
     # projects (a project has one reference), but it is still one study and is listed once.
     catalog$id <- catalog$study
     catalog$open_config <- ifelse(file.exists(file.path(repo_root, catalog$project_config)), catalog$project_config, "")
+    catalog$dataset <- ytab_dataset_label(catalog$project, repo_root)   # the standard name shown, e.g. Gale_et_al_2020_Hermes
   }
   list(catalog = catalog, libraries = libraries)
 }
@@ -50,7 +51,7 @@ datasets_merge_group <- function(g) {
   g$runs <- as.character(sum(suppressWarnings(as.integer(g$runs)), na.rm = TRUE))
   g$runs_included <- as.character(sum(suppressWarnings(as.integer(g$runs_included)), na.rm = TRUE))
   g$conditions <- join("conditions"); g$in_app <- join("in_app"); g$backgrounds <- join("backgrounds")
-  g$project <- paste(g$project, collapse = " ")
+  g$project <- paste(g$project, collapse = " "); if ("dataset" %in% names(g)) g$dataset <- paste(g$dataset, collapse = " ")
   g[1, , drop = FALSE]
 }
 
@@ -64,9 +65,9 @@ datasets_table_data <- function(x, libraries) {
   # hidden column: conditions, strains and every run ID and name, so the table's search finds them
   hidden <- vapply(seq_len(nrow(x)), function(i) {
     l <- libraries[libraries$study == x$study[[i]] & libraries$project == x$project[[i]], , drop = FALSE]
-    paste(x$conditions[[i]], x$backgrounds[[i]], x$design[[i]], x$project[[i]], paste(l$sample, l$display_name, collapse = " "))
+    paste(x$conditions[[i]], x$backgrounds[[i]], x$design[[i]], x$project[[i]], x$dataset[[i]] %||% "", paste(l$sample, l$display_name, collapse = " "))
   }, "")
-  data.frame(Study = study, Species = sprintf("<i>%s</i>", htmltools::htmlEscape(x$species)), Strain = htmltools::htmlEscape(x$strain),
+  data.frame(Study = study, Dataset = htmltools::htmlEscape(gsub(" ", ", ", x$dataset %||% x$project)), Species = sprintf("<i>%s</i>", htmltools::htmlEscape(x$species)), Strain = htmltools::htmlEscape(x$strain),
              Transposon = htmltools::htmlEscape(x$transposon), Libraries = suppressWarnings(as.integer(x$runs_included)),
              Conditions = n_conditions, Accession = htmltools::htmlEscape(x$accession),
              `Sites per coding kb` = suppressWarnings(as.numeric(datasets_number(x$median_sites_per_kb))),
@@ -77,7 +78,7 @@ datasets_table_data <- function(x, libraries) {
 datasets_detail_ui <- function(row, libraries) {
   field <- function(label, value) if (inherits(value, "shiny.tag") || (length(value) == 1L && !is.na(value) && nzchar(value))) tags$tr(tags$th(label), tags$td(value))
   link <- function(url, text) tags$a(href = url, target = "_blank", rel = "noopener", text)
-  projects <- strsplit(row$project, " ")[[1]]
+  projects <- strsplit(row$project, " ")[[1]]; names_shown <- strsplit(row$dataset %||% row$project, " ")[[1]]
   libs <- libraries[libraries$study == row$study & libraries$project %in% projects, , drop = FALSE]
   share <- suppressWarnings(as.numeric(row$max_top_site_share))
   tags$div(class = "ytab-dataset-detail",
@@ -89,22 +90,22 @@ datasets_detail_ui <- function(row, libraries) {
       field("Species", tags$i(row$species)), field("Strain", row$strain), field("Transposon", row$transposon), field("Read design", row$read_design),
       field("Accession", row$accession), field("Design", row$design),
       field("Libraries", sprintf("%s runs (%s analysed): %s", row$runs, row$runs_included, row$roles)),
-      field("Strains in the project", row$backgrounds), field("Conditions", row$conditions),
+      field("Strains in the dataset", row$backgrounds), field("Conditions", row$conditions),
       field("Density", if (nzchar(row$median_sites_per_kb)) sprintf("median %s insertion sites per coding kb (median gene) across the analysed libraries", datasets_number(row$median_sites_per_kb))),
       field("Top site", if (!is.na(share)) sprintf("up to %.1f%% of a library's reads at one site (%s)", 100 * share, row$max_top_site)),
       field("Results in the app", row$in_app),
-      field(if (length(projects) > 1) "Projects" else "Project",
+      field(if (length(projects) > 1) "Datasets" else "Dataset",
             if (length(projects) > 1)
-              tagList(lapply(projects, function(p) tags$div(tags$code(p), " - ",
-                sprintf("%d libraries", sum(libs$project == p & nzchar(libs$library))))),
-                tags$p(class = "text-muted", "One study, processed as separate projects because its strains are mapped to different reference genomes; a project has one reference."))
-            else tags$code(row$project)),
+              tagList(lapply(seq_along(projects), function(i) tags$div(tags$code(names_shown[[i]]), " - ",
+                sprintf("%d libraries", sum(libs$project == projects[[i]] & nzchar(libs$library))))),
+                tags$p(class = "text-muted", "One study, processed as separate datasets because its strains are mapped to different reference genomes; a dataset has one reference."))
+            else tags$code(names_shown[[1L]])),
       field("Experimental design", "Which runs make each library and which analyses use it: Methods > Experimental designs of the public datasets, or ytab datasets --find RUN"))),
     tags$div(class = "ytab-actions",
       if (nzchar(row$open_config))
         tagList(lapply(seq_along(projects), function(i) actionButton(paste0("datasets_open_project_", i),
-          if (length(projects) > 1) paste("Open", projects[[i]]) else "Open project", class = "btn-primary ytab-button")))
-      else tags$span(class = "text-muted", "This project is not on this computer; download the YTAB projects bundle to open it.")),
+          if (length(projects) > 1) paste("Open", names_shown[[i]]) else "Open dataset", class = "btn-primary ytab-button")))
+      else tags$span(class = "text-muted", "This dataset is not on this computer; download the YTAB datasets bundle to open it.")),
     if (nrow(libs)) tagList(tags$h5("Libraries"), DT::DTOutput("datasets_libraries")))
 }
 

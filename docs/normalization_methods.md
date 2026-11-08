@@ -21,16 +21,15 @@ any method, MidLC being one of them (see "Hybrid gene features" below).
 | Nonzero-mean scaling (`nzmean`) | Available in shared site runner | Equalizes means among occupied sites; does not adjust density differences. |
 | CPM (`cpm`) | Z-score default (`ytab fitness`) | Gene-level total-read scaling (the same scaling as `totreads`, at gene level); listed for reference, not a separate site method. |
 | MidLC common saturation (`midlc`) | Available in shared site runner | Binomial thinning of every library to the group's smallest depth-to-MidLC ratio (MidLC: depth with half the occupied sites expected, solved exactly); downsampling only, whole-number counts. A strongly selected library looks highly saturated and is thinned most, so it suits unselected libraries (parents) better than treated–control comparisons. |
-| Zero-preserving positive-count quantile (`quantile`) | Available, experimental | Hermes-specific adaptation: preserves zeros, averages tied rank targets and transforms positive counts within explicit groups; not a literal TRANSIT dense-rank port or an established improvement. |
-| Beta-geometric correction (`betageom`) | Available, experimental | Fits and transforms heavy-tailed site counts toward a geometric target; optional explicit final TTR. Catalogue-dependent fit; can compress genuine enrichment. |
-| Adaptive BGC (`aBGC`) | Available, experimental | Searches positive-count trimming fractions using a maximum geometric-quantile discrepancy; exposes candidate validity, tail convention and simulation sensitivity. Not biological optimization. |
-| Zero-inflated NB (`zinfnb`) | Available, experimental | Proper ZINB likelihood, correcting the inspected TRANSIT zero term; scales by inverse fitted NB mean. Catalogue- and model-dependent; convergence is not biological validation. |
+| Zero-preserving positive-count quantile (`quantile`) | Available; validated for ranking with the z-score (R27) | Hermes-specific adaptation: preserves zeros, averages tied rank targets and transforms positive counts within explicit groups; not a literal TRANSIT dense-rank port or an established improvement. |
+| Beta-geometric correction (`betageom`) | Available; validated (R13, R17); the default | Fits and transforms heavy-tailed site counts toward a geometric target; optional explicit final TTR. Catalogue-dependent fit; can compress genuine enrichment. |
+| Adaptive BGC (`aBGC`) | Available; validated (R27, R28); measured alternative to BGC | Searches positive-count trimming fractions using a maximum geometric-quantile discrepancy; exposes candidate validity, tail convention and simulation sensitivity. Not biological optimization. |
+| Zero-inflated NB (`zinfnb`) | Available; validated for ranking with the z-score (R27) | Proper ZINB likelihood, correcting the inspected TRANSIT zero term; scales by inverse fitted NB mean. Catalogue- and model-dependent; convergence is not biological validation. |
 | Empirical histogram, geometric quantile matching | Planned | Require separate adaptation, parameter review and validation before becoming selectable. |
 
-Descriptions are guidance on assumptions, **not automatic method recommendations**.
-Dataset evaluations characterize trade-offs and suitable data characteristics;
-they do not establish a preferred method. Users choose. Any later recommendations
-require broader, method-appropriate validation after the adaptations are complete.
+Every method above was measured in the pre-registered benchmarks (S1 Table): each test's default is the
+normalization that ranked best while passing its calibration gates, and the others are measured alternatives that
+users can choose. The recommendations by QC symptom are in `docs/methods/00_recommendations.md`.
 Methods marked `planned` or `existing_workflow` cannot be executed by the shared
 site-level runner. The `normalization` command (parent-only MidLC thinning written as hit files) now uses the same
 rule as `midlc`: automatic target = common saturation of the selected parents, MidLC computed exactly. Its earlier
@@ -183,7 +182,7 @@ method's output. Counts must be finite, nonnegative integers; empty samples fail
 explicitly rather than receiving an invented factor. All seven available methods
 preserve the zero pattern. Duplicate selections and incomplete catalogues fail.
 
-The four scalar methods return sample factors. Experimental `quantile` and
+The four scalar methods return sample factors. `quantile` and
 `betageom`/`aBGC` are nonlinear and leave `factor` blank rather than inventing a scalar. See
 [quantile mathematics and evaluation](quantile_normalization.md). Its normalized
 sites must be summed into genes **after** transformation, never approximated by
@@ -267,9 +266,11 @@ quality-control table.
 
 `RUN/experiment/methods` is the input for `ytab multicondition`, `ytab genetic-interactions` and `ytab resampling`.
 
-**Suggested method in the app: BGC.** The CLI still has no default. The app shows BGC (and TTR for comparison) first
-because, in the pre-registered Hermes benchmarks, BGC then TTR with recentering kept false discoveries lowest
-(resampling v3: FDR 7.0% vs 12.4% with TTR), and the multi-condition and GI tests were validated with BGC. Unnormalized
+**Suggested method in the app: BGC.** The CLI has no default. In the pre-registered Hermes benchmarks BGC with
+recentering kept false discoveries lowest (resampling v3: FDR 7.0% vs 12.4% with TTR), ranked independently annotated
+rapamycin-sensitive mutants best on real data (R17), and the multi-condition and GI tests were validated with it. Its
+adaptive form, aBGC, passes the same calibration gates and is within 0.01 AUC of BGC in every comparison: slightly
+ahead in the simulations (R27, R28), slightly behind on real data (`output/conditions/ADDENDUM_abgc.md`). Unnormalized
 counts can be shown alongside for reference.
 
 **Fix (2026-10-20).** `normalize-experiment` computed matched-pair diagnostics from per-sample scale factors, which

@@ -46,7 +46,7 @@ ytab_save_sample_labels <- function(sample_sheet, ids, labels, expected_md5) {
   if (length(labels) != nrow(rows) || anyNA(labels))
     stop("Provide one display name per sample.", call. = FALSE)
   effective <- ifelse(nzchar(labels), labels, ids)
-  if (anyDuplicated(effective)) stop("Display names must be unique within the project.", call. = FALSE)
+  if (anyDuplicated(effective)) stop("Display names must be unique within the dataset.", call. = FALSE)
   rows$display_name <- labels
   temporary <- tempfile(pattern = ".sample-labels-", tmpdir = dirname(sample_sheet))
   on.exit(unlink(temporary), add = TRUE)
@@ -68,21 +68,21 @@ validate_project_config_path <- function(path, repo_root) {
   fail <- function(message) list(valid = FALSE, path = NULL, data = NULL, message = message)
   if (is.null(path) || !length(path) || !nzchar(trimws(path[[1]]))) return(fail("Select a project.yaml file."))
   candidate <- ytab_resolve_path(path[[1]], repo_root)
-  if (!file.exists(candidate)) return(fail(paste("Project configuration does not exist:", candidate)))
+  if (!file.exists(candidate)) return(fail(paste("Dataset configuration does not exist:", candidate)))
   if (dir.exists(candidate)) return(fail(paste("Expected a project.yaml file, but received a directory:", candidate)))
   info <- file.info(candidate)
   if (is.na(info$isdir) || info$isdir) return(fail(paste("Expected a regular project.yaml file:", candidate)))
   if (!identical(basename(candidate), "project.yaml")) return(fail(paste("Expected a file named project.yaml, received:", basename(candidate))))
-  if (!requireNamespace("yaml", quietly = TRUE)) return(fail("The R package yaml is required to read project configuration."))
+  if (!requireNamespace("yaml", quietly = TRUE)) return(fail("The R package yaml is required to read dataset configuration."))
   config <- tryCatch(yaml::read_yaml(candidate), error = function(e) e)
-  if (inherits(config, "error")) return(fail(paste("Could not read project YAML:", conditionMessage(config))))
+  if (inherits(config, "error")) return(fail(paste("Could not read dataset YAML:", conditionMessage(config))))
   project_id <- trimws(as.character(config$project_id %||% ""))
   if (!nzchar(project_id)) return(fail("The project ID could not be resolved from project.yaml."))
   project_root <- normalizePath(dirname(dirname(candidate)), winslash = "/", mustWork = TRUE)
   sample_sheet <- ytab_resolve_path(config$sample_sheet %||% file.path("output", "projects", project_id, "config", "sample_sheet.csv"), repo_root)
   if (!file.exists(sample_sheet) || dir.exists(sample_sheet)) return(fail(paste("The referenced sample sheet could not be resolved:", sample_sheet)))
   expected_config <- normalizePath(file.path(project_root, "config"), winslash = "/", mustWork = TRUE)
-  if (!startsWith(sample_sheet, paste0(expected_config, "/"))) return(fail("The sample sheet must remain inside the project's config directory."))
+  if (!startsWith(sample_sheet, paste0(expected_config, "/"))) return(fail("The sample sheet must remain inside the dataset's config directory."))
   list(valid = TRUE, path = normalizePath(candidate, winslash = "/", mustWork = TRUE), data = config,
        project_root = project_root, sample_sheet = sample_sheet, message = "")
 }
@@ -144,6 +144,19 @@ read_project_summary <- function(project_config, repo_root) {
   info$analysis_ready <- info$raw_summary_complete
   info
 }
+
+# A dataset's standard name (display_name in its project.yaml, e.g. Gale_et_al_2020_Hermes) from its folder id, for
+# names that results store as ids (comparative representatives, the datasets catalog); the id when it has none.
+ytab_dataset_label <- local({
+  cache <- new.env(parent = emptyenv())
+  function(project_id, repo_root) vapply(as.character(project_id), function(id) {
+    if (is.na(id) || !nzchar(id)) return(if (is.na(id)) "" else id)
+    key <- paste(repo_root, id, sep = "|"); if (!is.null(cache[[key]])) return(cache[[key]])
+    path <- file.path(repo_root, "output", "projects", id, "config", "project.yaml")
+    label <- if (file.exists(path)) tryCatch(trimws(as.character(yaml::read_yaml(path)$display_name %||% "")), error = function(e) "") else ""
+    cache[[key]] <- if (length(label) == 1L && nzchar(label)) label else id
+  }, "", USE.NAMES = FALSE)
+})
 
 project_display_label <- function(info) {
   label <- trimws(as.character(info$display_name %||% info$project_id %||% ""))

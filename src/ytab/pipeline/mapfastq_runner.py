@@ -239,6 +239,11 @@ def build_mapfastq_command(sample: dict, config: dict, threads: int | None = Non
     for field,flag in (("mapq","--mapq"),("drop_flags","--drop-flags")):
         if sample.get(field) not in (None, ""):
             command.extend([flag,str(sample[field])])
+    # The transposon donor (plasmid or donor locus) whose reads are counted, not placed: sample sheet, then the
+    # project's mapping block (mapping.donor_fasta), e.g. resources/transposons/donors/<donor>/donor.fasta.
+    donor = sample.get("donor_fasta") or design.get("donor_fasta")
+    if donor not in (None, ""):
+        command.extend(["--donor-fasta", str(_resolve(donor, root))])
 
     fastq_1 = _resolve(sample.get("fastq_1") or sample.get("r1_fastq"), root)
     fastq_2 = _resolve(sample.get("fastq_2") or sample.get("r2_fastq"), root)

@@ -39,7 +39,7 @@ gene_domain_explorer_server <- function(input, output, session, active,
   output$gene_domain_project_indicator <- renderUI({
     req(active())
     p <- active()
-    tags$p(class = "text-muted", "Project: ", tags$b(p$project_id),
+    tags$p(class = "text-muted", "Dataset: ", tags$b(project_display_label(p)),
            " · Species: ", tags$b(p$species))
   })
 
@@ -74,7 +74,7 @@ gene_domain_explorer_server <- function(input, output, session, active,
     preset <- input$gene_domain_track_preset %||% "all"
     rows <- gene_domain_preset_track_rows(preset, data, input$gene_domain_samples %||% character())
     if (!identical(preset, "custom") && !nrow(rows))
-      return(tags$p(class = "ytab-warning", "No tracks match this preset for the current project."))
+      return(tags$p(class = "ytab-warning", "No tracks match this preset for the current dataset."))
     if (identical(preset, "matched_pairs") && !nrow(rows))
       return(tags$p(class = "ytab-warning", "No matched parent/treated pool pairs were detected. Use All tracks or Custom."))
     if (!length(gene_domain_matched_pools(data)))
@@ -194,7 +194,7 @@ gene_domain_explorer_server <- function(input, output, session, active,
     if (!nzchar(request$gene %||% "")) { plot_state(NULL); return() }
     req(active_project_path())
     if (!length(request$samples)) {
-      plot_state(list(status = "failure", error = "No tracks match this preset for the current project."))
+      plot_state(list(status = "failure", error = "No tracks match this preset for the current dataset."))
       return()
     }
     args <- c(

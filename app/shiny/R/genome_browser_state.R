@@ -140,7 +140,7 @@ genome_browser_reference_config <- function(project) {
   }
   list(
     id = paste0("ytab_", project$project_id %||% "project"),
-    name = paste(project$display_name %||% project$project_id %||% "YTAB project", "reference"),
+    name = paste(project$display_name %||% project$project_id %||% "YTAB dataset", "reference"),
     fastaURL = fasta_url,
     indexed = FALSE,
     chromosomeOrder = if (nrow(alias_rows)) as.list(alias_rows$canonical) else NULL,

@@ -18,7 +18,7 @@ STAGES = [
     ("Normalization", ["normalize-project", "normalize", "normalize-experiment", "normalize-genes", "ttr", "bgc-audit", "abgc-audit",
                        "normalization", "summary-normalized", "combine-hits", "summary-combined"]),
     ("Essentiality", ["essentiality", "hermes-hmm", "hybrid-inputs", "classifier", "cross-species"]),
-    ("Condition comparisons", ["comparison-design", "fitness", "fitness-zscore", "treated-vs-control", "resampling", "control-gumbel",
+    ("Condition comparisons", ["comparison-design", "fitness", "fitness-zscore", "treated-vs-control", "tvc-agreement", "resampling", "control-gumbel",
                                "multicondition-project", "multicondition", "multicondition-plots", "genetic-interactions"]),
     ("Gene Explorer", ["browser-tracks", "gene-insertions", "gene-profiles", "go"]),
     ("Screen planning and mutants", ["coverage", "mutants"]),

@@ -63,12 +63,9 @@ if ("classifier_label" %in% names(detail_joined) ||
     "Classifier label" %in% names(detail_joined))
   fail("gene detail lookup smoke unexpectedly contains classifier prediction columns")
 
-plot_label_input <- data.frame(feature_id = hit$gwk60_id_clean[[1]],
-                               label = hit$gwk60_id_clean[[1]],
-                               stringsAsFactors = FALSE)
-plot_label_data <- fitness_ma_apply_display_labels(plot_label_input, root)
-if (plot_label_data$label[[1]] != expected_gene)
-  fail("Fitness plot labels do not use the glabrata display mapping")
+# Treated vs Control labels and tables name genes through ytab_display_gene_names().
+if (ytab_display_gene_names(hit$gwk60_id_clean[[1]], "", root)[[1]] != expected_gene)
+  fail("Treated vs Control gene labels do not use the glabrata display mapping")
 
 fallback <- data.frame(feature_id = c("a", "b", "c"), stringsAsFactors = FALSE)
 fallback$cagl_id <- c("CAGL_TEST", "", "")

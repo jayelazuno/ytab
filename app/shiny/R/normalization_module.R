@@ -15,10 +15,11 @@ normalization_site_ui <- function() ytab_two_column_layout(
     selectizeInput("norm_methods", "Show methods", stats::setNames(norm_shown_methods, normalization_method_labels[norm_shown_methods]),
                    selected = "betageom", multiple = TRUE,
                    options = list(placeholder = "Choose methods to show\u2026", plugins = list("remove_button"))),
-    helpText("Each run normalizes with every method; choose the ones to look at. BGC is suggested for condition comparisons (see Methods)."),
+    helpText("Each run normalizes with every method; choose the ones to look at. BGC is suggested (see Methods)."),
     tags$details(class = "ytab-more-options", tags$summary("Settings"),
       numericInput("norm_trim", "Trim per tail (TTR and BGC scaling)", .05, min = 0, max = .45, step = .01),
       numericInput("norm_target", "Target scale", 100, min = 1, step = 1)),
+    uiOutput("norm_site_filter_note"),
     actionButton("norm_run", "Run normalization", class = "btn-primary"),
     ytab_reference_projects_ui("norm", display_modes = FALSE),
     tags$hr(),
@@ -26,7 +27,10 @@ normalization_site_ui <- function() ytab_two_column_layout(
     radioButtons("norm_plot", "View", c("Each normalization, before and after" = "native", "Replicate agreement (methods side by side)" = "pairs")),
     conditionalPanel("input.norm_plot == 'pairs'",
       radioButtons("norm_pair_plot", "Show", c("Shift and spread at shared sites" = "sites", "Gene-level shift and rank agreement" = "gene_summary",
-                                               "Gene log2 ratios, each pair" = "gene_ratios")),
+                                               "Gene log2 ratios, each pair" = "gene_ratios", "Libraries on principal components (PCA), before and after" = "pca")),
+      conditionalPanel("input.norm_pair_plot == 'pca'",
+        selectInput("norm_pca_colour", "Colour by", c("Role" = "role", "Pool" = "pool", "Library" = "display_name"), "role"),
+        checkboxInput("norm_pca_labels", "Name the libraries", FALSE)),
       ytab_plot_downloads_ui("norm", c(pairs = "Download pair diagnostics (TSV)", gene_agreement = "Download gene-level agreement (TSV)"))),
     downloadButton("norm_download_stats", "Download per-sample statistics (TSV)")),
   main = tagList(
@@ -48,8 +52,26 @@ normalization_site_ui <- function() ytab_two_column_layout(
       ytab_reference("MidLC depth correction follows Gale et al. 2020 (G3 10:3859–3870, doi:10.1534/g3.120.401595), with the target set to the smallest saturation among the libraries normalized together."),
       tags$p("Command: ", tags$code("ytab normalize-project"), ". The normalized counts for condition comparisons are written to the run's ", tags$code("experiment/methods"), " folder."))))
 
+# Top sites: how each gene's largest insertion site is treated before normalization (ytab normalize-project
+# --site-filter); the choice applies to the next normalization run and so to every method that reads it.
+norm_site_filters <- c("None: use every site as counted" = "none", "Winsorize: lower each gene's largest site to its second-largest" = "winsorize",
+                       "Drop the top site: remove each gene's largest site" = "drop-top")
+norm_site_filter_label <- function(x) c(none = "none", winsorize = "winsorized", `drop-top` = "top site dropped")[[x %||% "none"]] %||% x
+normalization_top_sites_ui <- function() ytab_two_column_layout(
+  controls = ytab_control_panel("Top sites",
+    radioButtons("norm_site_filter", "Before normalizing", norm_site_filters, "none"),
+    helpText("Applies to the next normalization run (Normalization subtab) and to every analysis that uses it.")),
+  main = ytab_plot_card("What the choice does", tags$div(
+    tags$p("A gene's reads are the sum over its insertion sites. When one site holds most of them, the gene's total follows that site rather than the many mutants behind the gene: a PCR jackpot, an insertion that does not disrupt the gene, a selection marker or the donor locus. Quality Control flags such libraries (", tags$b("Genes led by one site"), ") and shows them in ", tags$b("Genes with the most reads"), "."),
+    tags$ul(
+      tags$li(tags$b("None"), " (default): every site as counted."),
+      tags$li(tags$b("Winsorize"), ": in each gene of each library, the largest site is lowered to the gene's second-largest count; a gene with one site is unchanged. Adapted from TRANSIT's -winz option."),
+      tags$li(tags$b("Drop the top site"), ": the largest site of each gene is removed before summing (Nickels et al. 2025); a gene with one site loses it.")),
+    tags$p("Each library is treated on its own before any normalization method, so treated and control libraries follow one rule and the normalization is computed on the treated counts. Keep None unless QC flags single-site genes: in Gale et al. 2020, summing every site reproduced the published z-scores best."))))
+
 normalization_module_ui <- function() navset_tab(id = "normalization_tabs",
-  nav_panel("Normalization", value = "site", normalization_site_ui()))
+  nav_panel("Top sites", value = "top_sites", normalization_top_sites_ui()),
+  nav_panel("Normalization", value = "site", normalization_site_ui()), selected = "site")
 
 norm_plot_data <- function(run_dir) {
   read <- function(...) ytab_read_analysis_tsv(file.path(run_dir, ...))
@@ -57,7 +79,8 @@ norm_plot_data <- function(run_dir) {
        pairs = read("experiment", "comparison_diagnostics.tsv"), stats = read("plots", "native_stats.tsv"),
        scaling = read("plots", "native_scaling.tsv"), qq = read("plots", "native_qq.tsv"), ranked = read("plots", "native_ranked.tsv"),
        saturation = read("plots", "native_saturation.tsv"), midlc = read("plots", "native_midlc.tsv"),
-       abgc = read("experiment", "methods", "aBGC", "factors.tsv"), gene_pairs = read("plots", "pair_gene_agreement.tsv"))
+       abgc = read("experiment", "methods", "aBGC", "factors.tsv"), gene_pairs = read("plots", "pair_gene_agreement.tsv"),
+       pca = read("plots", "pca.tsv"), pca_variance = read("plots", "pca_variance.tsv"))
 }
 # Per-gene log2 ratios of every pair (large): read only for the view that shows them.
 norm_pair_genes <- function(run_dir) ytab_read_analysis_tsv(file.path(run_dir, "plots", "pair_genes.tsv.gz"))
@@ -234,6 +257,24 @@ norm_save_native <- function(file, parts, method, width, height) {
 # Replicate agreement: the one view where methods are compared side by side. sites: shift and spread of log2 ratios at
 # the sites both samples contain; gene_summary: per pair, the median gene log2 ratio (shift) and the Spearman
 # correlation of gene read sums (agreement no scaling can change); gene_ratios: every gene's log2 ratio, per pair.
+# Libraries on PC1 and PC2 under each method (plots/pca.tsv of `ytab normalize-project`), one panel per method.
+norm_pca_ggplot <- function(x, variance, colour = "role", labels = FALSE) {
+  x$PC1 <- as.numeric(x$PC1); x$PC2 <- as.numeric(x$PC2)
+  share <- function(m, pc) { v <- suppressWarnings(as.numeric(variance$variance_explained[variance$method == m & variance$pc == pc])); if (length(v)) sprintf("%.0f%%", 100 * v[[1L]]) else "?" }
+  methods <- unique(c("nonorm", intersect(norm_shown_methods, x$method)))
+  titles <- vapply(methods, function(m) sprintf("%s (PC1 %s, PC2 %s)", normalization_method_short[[m]], share(m, "PC1"), share(m, "PC2")), "")
+  x$panel <- factor(titles[x$method], levels = titles[methods[methods %in% x$method]])
+  x$.colour <- as.character(x[[colour]]); x$.tip <- sprintf("%s\n%s, pool %s\nPC1 %.2f, PC2 %.2f", x$display_name, x$role, x$pool, x$PC1, x$PC2)
+  p <- ggplot2::ggplot(x, ggplot2::aes(PC1, PC2, colour = .colour, text = .tip)) +
+    ggplot2::geom_hline(yintercept = 0, colour = "grey85") + ggplot2::geom_vline(xintercept = 0, colour = "grey85") +
+    ggplot2::geom_point(size = 3.5, alpha = .85) + ggplot2::facet_wrap(~panel, scales = "free") +
+    ggplot2::labs(colour = c(role = "Role", pool = "Pool", display_name = "Library")[[colour]]) +
+    ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = .3)) + ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = .15)) +
+    ggplot2::theme_minimal(base_size = 13) + ggplot2::theme(legend.position = "bottom", strip.text = ggplot2::element_text(face = "bold"), panel.grid = ggplot2::element_blank())
+  if (labels) p <- p + ggplot2::geom_text(ggplot2::aes(label = display_name), size = 3.2, colour = "black", vjust = -1.2, show.legend = FALSE)   # plotly cannot draw repelled labels per panel
+  p
+}
+
 norm_pair_kind <- function(kind) ifelse(kind == "control_control", "control vs control", "treated vs control")
 norm_ggplot <- function(data, choice = "sites", genes = NULL) {
   base <- ggplot2::theme_minimal(base_size = 12) + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 40, hjust = 1))
@@ -292,13 +333,13 @@ normalization_server <- function(input, output, session, repo_root, active, acti
   }
   output$norm_result_selector <- renderUI({
     x <- runs()
-    if (!nrow(x)) return(tags$p(class = "text-muted", "No normalization has been run for this project yet."))
+    if (!nrow(x)) return(tags$p(class = "text-muted", "No normalization has been run for this dataset yet."))
     m <- ytab_read_manifest(x$path[[1L]]) %||% list()
     design <- file.path(active()$project_root, "config", "comparison_design.csv")
     stale <- file.exists(design) && file.mtime(design) > x$modified[[1L]]
     tagList(
-      tags$p(class = "text-muted", sprintf("Latest normalization: %s, %s samples, trim %g%%, target %g.", format(x$modified[[1L]], "%d %b %Y %H:%M"),
-                                          m$samples %||% "?", 100 * as.numeric(m$trim %||% NA), as.numeric(m$target %||% NA))),
+      tags$p(class = "text-muted", sprintf("Latest normalization: %s, %s samples, trim %g%%, target %g, top sites %s.", format(x$modified[[1L]], "%d %b %Y %H:%M"),
+                                          m$samples %||% "?", 100 * as.numeric(m$trim %||% NA), as.numeric(m$target %||% NA), norm_site_filter_label(m$site_filter))),
       if (stale) tags$p(class = "text-warning", "The comparison design changed after this run; run normalization again to include the change."),
       if (nrow(x) > 1L) tags$details(class = "ytab-more-options", tags$summary(sprintf("Earlier runs (%d)", nrow(x) - 1L)),
         selectInput("norm_result", NULL, stats::setNames(x$path, vapply(seq_len(nrow(x)), function(i)
@@ -310,12 +351,15 @@ normalization_server <- function(input, output, session, repo_root, active, acti
     if (!design_ready()) { showNotification("Create the comparison design (Condition Comparisons → Design) first.", type = "error"); return() }
     args <- c(file.path(repo_root, "scripts", "local", "ytab_normalize_project.py"), "--project-config", active_project_path(),
               "--trim", as.character(input$norm_trim %||% .05),
-              "--target", as.character(input$norm_target %||% 100), "--output", ytab_new_run_dir(runs_dir(), "norm"))
+              "--target", as.character(input$norm_target %||% 100), "--site-filter", input$norm_site_filter %||% "none",
+              "--output", ytab_new_run_dir(runs_dir(), "norm"))
     tryCatch({
       jobs$start_job(python_bin(), args, active_project_path(), "site_normalization", wd = repo_root, selected_items = norm_shown_methods)
       showNotification("Normalization started. The result appears here when it finishes.", type = "message")
     }, error = function(e) showNotification(conditionMessage(e), type = "error"))
   }, ignoreInit = TRUE)
+
+  output$norm_site_filter_note <- renderUI(helpText(sprintf("Top sites: %s (change in the Top sites subtab).", norm_site_filter_label(input$norm_site_filter))))
 
   selected_run <- reactive({ req(nrow(runs()) > 0); path <- input$norm_result %||% runs()$path[[1L]]; req(path %in% runs()$path); path })
   data <- reactive({
@@ -333,7 +377,7 @@ normalization_server <- function(input, output, session, repo_root, active, acti
 
   output$norm_status <- renderUI({
     if (!design_ready()) return(ytab_empty_state("Comparison design needed",
-      "Normalization uses the samples in the project's comparison design (each treated sample with its matched control). Create it in Condition Comparisons → Design."))
+      "Normalization uses the samples in the dataset's comparison design (each treated sample with its matched control). Create it in Condition Comparisons → Design."))
     if (!nrow(runs())) return(ytab_empty_state("No normalization yet", "Choose methods and run normalization. BGC and TTR are preselected."))
     missing <- missing_methods()
     if (length(missing)) tags$p(class = "text-warning", sprintf("Not in this run: %s. Run normalization again to add every method.",
@@ -344,10 +388,16 @@ normalization_server <- function(input, output, session, repo_root, active, acti
   pair_plot <- reactive({
     d <- shown(); validate(need(length(input$norm_methods), "Choose at least one method to show."))
     if (identical(pair_choice(), "sites")) req(nrow(d$pairs) > 0)
+    if (identical(pair_choice(), "pca")) {
+      x <- data(); methods <- c("nonorm", input$norm_methods)
+      validate(need(nrow(x$pca) > 0, "This run has no PCA; run normalization again (or ytab normalize-project --refresh-summaries RUN)."))
+      return(norm_pca_ggplot(x$pca[x$pca$method %in% methods, , drop = FALSE], x$pca_variance, input$norm_pca_colour %||% "role", isTRUE(input$norm_pca_labels)))
+    }
     norm_ggplot(d, pair_choice(), if (identical(pair_choice(), "gene_ratios")) pair_genes())
   })
   output$norm_plot_caption <- renderUI(switch(pair_choice(),
     gene_summary = "Each point is one matched pair of samples. Normalized reads are summed over each gene's coding sequence (genes with at least 3 catalogue sites and reads in both samples). Shift: the median gene log2 ratio, near 0 when the two samples are on one scale. Rank agreement: the Spearman correlation of the gene sums, which no scaling can change; a method that reshapes counts (BGC) can raise it.",
+    pca = "Each point is one library, placed by the first two principal components of its gene totals (normalized reads summed over each gene's coding sites, genes with at least 3 catalogue sites; log2(1 + value), the 500 most variable genes, centred). One panel per method, unnormalized first; the panel title gives each component's share of the variance. Before normalization, libraries often separate by sequencing depth; after a good normalization, replicates of a condition sit together and libraries separate by condition (or pool) rather than by depth.",
     gene_ratios = "Every gene's log2 ratio between the two samples of each pair, under each method (violin: distribution; box: median and quartiles; axis cut at ±5). Controls from the same pool should centre on 0 with a narrow distribution.",
     "Each point is one matched pair of samples, compared at the insertion sites both contain. After a good normalization, controls from the same pool have a shift near 0 and a narrow spread; treated–control pairs also contain the treatment's effect."))
   output$norm_plot_frame <- renderUI({ req(nrow(runs()) > 0); plotly::plotlyOutput("norm_plotly", height = "520px") })
@@ -385,7 +435,7 @@ normalization_server <- function(input, output, session, repo_root, active, acti
     for (format in c("png", "pdf")) local({
       ext <- format
       output[[paste0("norm_native_", ext, "_", m)]] <- downloadHandler(
-        filename = function() paste0(active()$project_id, "_normalization_", m, "_", basename(selected_run()), ".", ext),
+        filename = function() paste0(project_display_label(active()), "_normalization_", m, "_", basename(selected_run()), ".", ext),
         content = function(file) norm_save_native(file, norm_native_ggplot(data(), m), m, width = 11, height = if (m %in% c("betageom", "aBGC")) 9 else 6))
     })
   })
@@ -409,14 +459,14 @@ normalization_server <- function(input, output, session, repo_root, active, acti
 
   for (format in c("png", "pdf")) local({
     ext <- format
-    output[[paste0("norm_download_", ext)]] <- downloadHandler(filename = function() paste0(active()$project_id, "_normalization_agreement_", basename(selected_run()), ".", ext),
+    output[[paste0("norm_download_", ext)]] <- downloadHandler(filename = function() paste0(project_display_label(active()), "_normalization_agreement_", basename(selected_run()), ".", ext),
       content = function(file) ytab_save_ggplot(file, pair_plot(), width = 11, height = 7))
   })
-  output$norm_download_stats <- downloadHandler(filename = function() paste0(active()$project_id, "_normalization_statistics_", basename(selected_run()), ".tsv"),
+  output$norm_download_stats <- downloadHandler(filename = function() paste0(project_display_label(active()), "_normalization_statistics_", basename(selected_run()), ".tsv"),
     content = function(file) file.copy(file.path(selected_run(), "plots", "native_stats.tsv"), file))
-  output$norm_download_pairs <- downloadHandler(filename = function() paste0(active()$project_id, "_normalization_pairs_", basename(selected_run()), ".tsv"),
+  output$norm_download_pairs <- downloadHandler(filename = function() paste0(project_display_label(active()), "_normalization_pairs_", basename(selected_run()), ".tsv"),
     content = function(file) file.copy(file.path(selected_run(), "experiment", "comparison_diagnostics.tsv"), file))
-  output$norm_download_gene_agreement <- downloadHandler(filename = function() paste0(active()$project_id, "_normalization_gene_agreement_", basename(selected_run()), ".tsv"),
+  output$norm_download_gene_agreement <- downloadHandler(filename = function() paste0(project_display_label(active()), "_normalization_gene_agreement_", basename(selected_run()), ".tsv"),
     content = function(file) file.copy(file.path(selected_run(), "plots", "pair_gene_agreement.tsv"), file))
   invisible(list(runs = runs, selected_run = selected_run, data = data, manifest = manifest))
 }

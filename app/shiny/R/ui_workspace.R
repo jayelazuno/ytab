@@ -1,5 +1,5 @@
 project_module_ui <- function() navset_tab(id="project_tabs",
-  nav_panel("Samples",value="samples",panel_card("Project and samples",uiOutput("project_metadata_ui"),actionButton("edit_sample_names","Edit sample names"),DT::DTOutput("sample_sheet_table"))),
+  nav_panel("Samples",value="samples",panel_card("Dataset and samples",uiOutput("project_metadata_ui"),actionButton("edit_sample_names","Edit sample names"),DT::DTOutput("sample_sheet_table"))),
   nav_panel("Logs & Provenance",value="provenance",panel_card("Logs and provenance",uiOutput("provenance_ui"),uiOutput("last_job_summary"),verbatimTextOutput("pipeline_job_text_logs"))),
   nav_panel("Help",value="help",panel_card("Quick start",uiOutput("help_ui"),low_memory_note())))
 
@@ -11,11 +11,11 @@ gene_explorer_module_ui <- function() navset_tab(id="gene_explorer_tabs",
 workspace_ui <- function(detected_cpu) {
   tags$div(class="ytab-workspace",
     tags$header(class="ytab-workspace-header",
-      actionLink("ytab_home",tagList(tags$b("YTAB"),tags$span("Yeast Transposon Analysis Browser")),class="ytab-workspace-brand",title="Home: choose or start a project"),
+      actionLink("ytab_home",tagList(tags$b("YTAB"),tags$span("Yeast Transposon Analysis Browser")),class="ytab-workspace-brand",title="Home: choose or start a dataset"),
       tags$div(class="ytab-workspace-project",project_badge(),project_switcher())),
     navbarPage(id="workspace_tabs", title=NULL, collapsible=TRUE, inverse=TRUE,
       header=job_progress_ui("global_job",compact=TRUE),
-      tabPanel("Project",value="project",project_module_ui()),
+      tabPanel("Dataset",value="project",project_module_ui()),
       tabPanel("Run",value="run",run_module_ui(detected_cpu)),
       tabPanel("Quality Control",value="quality_control",quality_control_ui()),
       tabPanel("Normalization",value="normalization",normalization_module_ui()),

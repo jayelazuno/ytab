@@ -8,7 +8,7 @@ options(scipen = 999)
 app_file <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL) %||% file.path(getwd(), "app.R")
 app_dir <- normalizePath(dirname(app_file), winslash = "/", mustWork = TRUE)
 repo_root <- normalizePath(file.path(app_dir, "../.."), winslash = "/", mustWork = TRUE)
-for (helper in c("datasets_center.R", "help_center.R", "project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "analysis_runs.R", "design_support.R", "reference_projects.R", "qc_library_correlation.R", "ui_qc.R", "qc_module.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_generated_plots.R", "fitness_condition_control_plot.R", "fitness_plot_utils.R", "ui_fitness.R", "treated_vs_control.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "normalization_module.R", "essentiality_module.R", "comparisons_module.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "cross_species.R", "go_analysis.R", "ui_workspace.R"))
+for (helper in c("datasets_center.R", "help_center.R", "project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "analysis_runs.R", "design_support.R", "reference_projects.R", "qc_library_correlation.R", "ui_qc.R", "qc_module.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_plot_utils.R", "ui_fitness.R", "treated_vs_control.R", "essentiality_targets.R", "essentiality_state.R", "essentiality_results.R", "essentiality_commands.R", "essentiality_generated_plots.R", "ui_essentiality.R", "essentiality_server.R", "normalization_module.R", "essentiality_module.R", "comparisons_module.R", "gene_domain_explorer_state.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "cross_species.R", "go_analysis.R", "ui_workspace.R"))
   source(file.path(app_dir, "R", helper), local = TRUE)
 source(file.path(app_dir, "R", "screen_planning.R"), local = TRUE)
 source(file.path(app_dir, "R", "mutant_screen.R"), local = TRUE)
@@ -170,20 +170,20 @@ server <- function(input, output, session) {
     if (nzchar(initial_path) && initial_path %in% values) selected <- initial_path
     if (!length(values) || !selected %in% values) selected <- character()
     updateSelectizeInput(session, "project_selector",
-      choices = c(list("Select a project…" = ""), choices),
+      choices = c(list("Select a dataset…" = ""), choices),
       selected = selected, server = TRUE)
   }
   observe({
     update_project_selector_choices(project_choices())
   })
   refresh_projects <- function() projects(discover_ytab_projects(repo_root, include_tests = isTRUE(input$show_test_projects)))
-  observeEvent(input$refresh_projects, { refresh_projects(); showNotification("Project list refreshed.") })
+  observeEvent(input$refresh_projects, { refresh_projects(); showNotification("Dataset list refreshed.") })
   observeEvent(input$show_test_projects, refresh_projects(), ignoreInit = TRUE)
   observeEvent(input$show_new_project, new_project_open(!new_project_open()))
   observeEvent(input$show_import_project, import_project_open(!import_project_open()))
 
   selected_info <- reactive({ req(input$project_selector); tryCatch(read_project_summary(input$project_selector, repo_root), error = function(e) NULL) })
-  output$open_project_action <- renderUI(actionButton("open_project", "Open project", class="btn-primary ytab-button",
+  output$open_project_action <- renderUI(actionButton("open_project", "Open dataset", class="btn-primary ytab-button",
     disabled = if (is.null(selected_info())) "disabled" else NULL))
   output$selected_project_preview <- renderUI({
     info <- selected_info(); req(info)
@@ -196,9 +196,9 @@ server <- function(input, output, session) {
   demo_project <- reactive(select_demo_project(projects(), demo_project_id))
   output$demo_project_card <- renderUI({
     demo <- demo_project(); if (is.null(demo)) return(NULL)
-    panel_card("Workflow demonstration project", tags$p(project_display_label(as.list(demo[1, ]))),
-      tags$p(class="ytab-warning", "A small example project for trying the workflow; its results are not for biological conclusions."),
-      actionButton("open_demo", "Open demonstration project", class="btn-primary ytab-button"))
+    panel_card("Workflow demonstration dataset", tags$p(project_display_label(as.list(demo[1, ]))),
+      tags$p(class="ytab-warning", "A small example dataset for trying the workflow; its results are not for biological conclusions."),
+      actionButton("open_demo", "Open demonstration dataset", class="btn-primary ytab-button"))
   })
   open_path <- function(path) {
     checked <- validate_project_config_path(path, repo_root)
@@ -262,7 +262,7 @@ server <- function(input, output, session) {
   }
   leave_project<-function(){
     if(jobs$job_is_running()){
-      showModal(modalDialog(title="Pipeline job running","A pipeline job is running. Switching projects will not stop the job. You may continue monitoring it from its project later.",footer=tagList(modalButton("Stay here"),actionButton("confirm_switch_project","Switch project",class="btn-danger"))))
+      showModal(modalDialog(title="Pipeline job running","A pipeline job is running. Switching datasets will not stop the job. You may continue monitoring it from its dataset later.",footer=tagList(modalButton("Stay here"),actionButton("confirm_switch_project","Switch dataset",class="btn-danger"))))
     } else switch_to_landing()
   }
   # The YTAB brand in the header goes to the home page, as does the switcher's own Home item.
@@ -278,7 +278,7 @@ server <- function(input, output, session) {
     if(!nzchar(path))return(invisible(FALSE))
     if(jobs$job_is_running()){
       pending_switch(path)
-      showModal(modalDialog(title="Pipeline job running","A pipeline job is running. Opening another project will not stop the job. You may continue monitoring it from its own project later.",footer=tagList(modalButton("Stay here"),actionButton("confirm_switch_to_project","Open the other project",class="btn-danger"))))
+      showModal(modalDialog(title="Pipeline job running","A pipeline job is running. Opening another dataset will not stop the job. You may continue monitoring it from its own dataset later.",footer=tagList(modalButton("Stay here"),actionButton("confirm_switch_to_project","Open the other dataset",class="btn-danger"))))
       invisible(FALSE)
     } else invisible(open_path(path))
   }
@@ -301,11 +301,11 @@ server <- function(input, output, session) {
         if(current_item)tags$span(class="ytab-project-item-flag","open now"))
     }))
     tagList(
-      tags$div(class="ytab-project-menu-header",sprintf("%d project%s",length(items),if(length(items)==1)"" else "s")),
-      if(!length(items))tags$div(class="ytab-project-menu-empty","No projects were found under output/projects.")
+      tags$div(class="ytab-project-menu-header",sprintf("%d dataset%s",length(items),if(length(items)==1)"" else "s")),
+      if(!length(items))tags$div(class="ytab-project-menu-empty","No datasets were found under output/datasets.")
       else tags$div(class="ytab-project-menu-list",items),
       tags$div(class="ytab-project-menu-foot",
-        actionLink("ytab_home_menu","Home: new, import or compare projects",class="ytab-project-item ytab-project-item-home")))
+        actionLink("ytab_home_menu","Home: new, import or compare datasets",class="ytab-project-item ytab-project-item-home")))
   })
   observeEvent(input$return_from_new_project,new_project_open(FALSE),ignoreInit=TRUE)
   observeEvent(input$return_from_import_project,import_project_open(FALSE),ignoreInit=TRUE)
@@ -353,17 +353,17 @@ server <- function(input, output, session) {
   output$fastq_message <- renderUI({
     if(nzchar(fastq_scan_warning())) return(tags$div(class="alert alert-warning",fastq_scan_warning()))
     if(identical(fastq_scan_state(),"scan_complete") && !nrow(fastq_files())) tags$div(class="alert alert-warning","No FASTQ files were found in the selected directory.")
-    else tags$p(class="text-muted",switch(fastq_scan_state(),no_directory="Select a directory, then scan FASTQs.",directory_selected="Directory selected. Click Scan FASTQs to review files.",scanning="Scanning…",scan_complete=sprintf("Scan complete: %d FASTQ files.",nrow(fastq_files())),initializing="Initializing project…",failed="Initialization failed.",""))
+    else tags$p(class="text-muted",switch(fastq_scan_state(),no_directory="Select a directory, then scan FASTQs.",directory_selected="Directory selected. Click Scan FASTQs to review files.",scanning="Scanning…",scan_complete=sprintf("Scan complete: %d FASTQ files.",nrow(fastq_files())),initializing="Initializing dataset…",failed="Initialization failed.",""))
   })
   validate_project_id <- function(id) {
-    id<-trimws(id %||% ""); if(!nzchar(id)) return("Project ID is required.")
-    if(!grepl("^[A-Za-z0-9_-]+$",id) || grepl("\\.\\.|[/\\\\]",id)) return("Project ID may contain only letters, numbers, hyphens, and underscores.")
+    id<-trimws(id %||% ""); if(!nzchar(id)) return("Dataset ID is required.")
+    if(!grepl("^[A-Za-z0-9_-]+$",id) || grepl("\\.\\.|[/\\\\]",id)) return("Dataset ID may contain only letters, numbers, hyphens, and underscores.")
     if(dir.exists(file.path(repo_root,"output","projects",id))) return("This project already exists. Open it from the existing-project list.")
     ""
   }
   validate_import_project_id <- function(id) {
-    id<-trimws(id %||% ""); if(!nzchar(id)) return("Project ID is required.")
-    if(!grepl("^[A-Za-z0-9_-]+$",id) || grepl("\\.\\.|[/\\\\]",id)) return("Project ID may contain only letters, numbers, hyphens, and underscores.")
+    id<-trimws(id %||% ""); if(!nzchar(id)) return("Dataset ID is required.")
+    if(!grepl("^[A-Za-z0-9_-]+$",id) || grepl("\\.\\.|[/\\\\]",id)) return("Dataset ID may contain only letters, numbers, hyphens, and underscores.")
     ""
   }
   init_args <- reactive(c(file.path(repo_root,"scripts/local/ytab_init_local_project.py"),"--project-id",trimws(input$project_id %||% ""),"--fastq-dir",fastq_directory(),"--species",input$species %||% "","--threads",as.character(input$threads %||% 2L),"--repo-root",repo_root))
@@ -378,7 +378,7 @@ server <- function(input, output, session) {
   })
   output$init_command <- renderText(tryCatch(format_command_for_display(locate_python_executable(),init_args()),error=function(e)conditionMessage(e)))
   initialize_ready <- reactive(nzchar(fastq_directory()) && identical(fastq_scan_state(),"scan_complete") && nrow(fastq_files())>0L && !nzchar(validate_project_id(input$project_id)) && nzchar(input$species %||% "") && as.integer(input$threads %||% 0L)>=2L && !initialization_running())
-  output$initialize_button <- renderUI(actionButton("initialize", "Initialize project", class="btn-primary", disabled=if(initialize_ready())NULL else "disabled"))
+  output$initialize_button <- renderUI(actionButton("initialize", "Initialize dataset", class="btn-primary", disabled=if(initialize_ready())NULL else "disabled"))
   observeEvent(input$initialize, {
     if(initialization_running())return()
     error <- validate_project_id(input$project_id); if(nzchar(error)){showNotification(error,type="error");return()}
@@ -396,8 +396,8 @@ server <- function(input, output, session) {
       log_text(paste(c(log_text(),status_result$stdout,status_result$stderr),collapse="\n"))
       projects(discover_ytab_projects(repo_root));project_created(TRUE);open_path(generated)
       go_to("run","run_tabs","samples")
-      showNotification("Project created. Review samples and run mapping; mapping has not started.",type="message")
-    } else {fastq_scan_state("failed");showNotification("Project initialization failed; see command output.",type="error",duration=NULL)}
+      showNotification("Dataset created. Review samples and run mapping; mapping has not started.",type="message")
+    } else {fastq_scan_state("failed");showNotification("Dataset initialization failed; see command output.",type="error",duration=NULL)}
   }, ignoreInit=TRUE)
   observeEvent(input$import_existing_hit_project, {
     error <- validate_import_project_id(input$import_project_id); if(nzchar(error)){showNotification(error,type="error");return()}
@@ -413,7 +413,7 @@ server <- function(input, output, session) {
       log_text(paste(c(log_text(),status_result$stdout,status_result$stderr),collapse="\n"))
       projects(discover_ytab_projects(repo_root));project_created(TRUE);open_path(generated)
       go_to("run","run_tabs","mapping")
-      showNotification("Hit-file project imported. Run Mapping to build its SummaryTables.",type="message")
+      showNotification("Hit-file dataset imported. Run Mapping to build its SummaryTables.",type="message")
     } else showNotification("Hit-file import failed; see command output.",type="error",duration=NULL)
   }, ignoreInit=TRUE)
 
@@ -460,8 +460,8 @@ server <- function(input, output, session) {
   job_progress_server("library_diagnostics_job",jobs,active,compact=FALSE)
   job_progress_server("fitness_job",jobs,active,compact=FALSE)
   included_samples <- reactive({d<-active()$samples;inc<-if("include"%in%names(d))tolower(as.character(d$include))%in%c("true","1","yes")else rep(TRUE,nrow(d));as.character(d$sample[inc])})
-  output$active_project_badge <- renderUI({p<-active();tagList(tags$b(p$project_id),tags$span(p$species))})
-  output$project_metadata_ui <- renderUI({p<-active();tags$dl(class="ytab-meta",tags$dt("Project ID"),tags$dd(p$project_id),tags$dt("Project config"),tags$dd(tags$code(p$project_config)),tags$dt("FASTQ directory"),tags$dd(tags$code(p$fastq_directory)),tags$dt("Sample sheet"),tags$dd(tags$code(p$sample_sheet)),tags$dt("Threads"),tags$dd(p$threads),tags$dt("Reference"),tags$dd(p$reference$fasta %||% "Not resolved"))})
+  output$active_project_badge <- renderUI({p<-active();tagList(tags$b(project_display_label(p)),tags$span(p$species))})
+  output$project_metadata_ui <- renderUI({p<-active();tags$dl(class="ytab-meta",tags$dt("Dataset"),tags$dd(project_display_label(p)),tags$dt("Folder"),tags$dd(tags$code(p$project_id)),tags$dt("Dataset config"),tags$dd(tags$code(p$project_config)),tags$dt("FASTQ directory"),tags$dd(tags$code(p$fastq_directory)),tags$dt("Sample sheet"),tags$dd(tags$code(p$sample_sheet)),tags$dt("Threads"),tags$dd(p$threads),tags$dt("Reference"),tags$dd(p$reference$fasta %||% "Not resolved"))})
   sample_name_editor <- reactiveVal(NULL)
   observeEvent(input$edit_sample_names, {
     if (jobs$job_is_running()) {
@@ -485,7 +485,7 @@ server <- function(input, output, session) {
     editor <- sample_name_editor()
     req(editor)
     if (!identical(active()$project_config, editor$config) || jobs$job_is_running()) {
-      showNotification("Project or job state changed. Reopen the name editor when idle.", type = "warning")
+      showNotification("Dataset or job state changed. Reopen the name editor when idle.", type = "warning")
       return()
     }
     labels <- vapply(seq_along(editor$ids), function(i) input[[paste0("sample_alias_", i)]] %||% "", "")
@@ -508,16 +508,16 @@ server <- function(input, output, session) {
     tagList(tags$ol(class="ytab-help-steps",
       step("Run","Mapping maps reads, creates hit files and builds SummaryTables for the selected samples in one run. Steps already done, here or on the HPC, are skipped."),
       step("Quality Control","mapping and library summaries, and how well libraries agree with each other."),
-      step("Normalization","site normalization of the project's libraries (BGC is suggested), and MidLC for the hybrid essentiality inputs."),
+      step("Normalization","site normalization of the dataset's libraries (BGC is suggested), and MidLC for the hybrid essentiality inputs."),
       step("Condition Comparisons","treated-versus-parent fitness, multi-condition tests and genetic interactions."),
       step("Essentiality","the Hermes HMM calls essential genes without labels; the hybrid model adds a classifier when labels are available."),
       step("Gene Explorer","genome browser, insertions in genes and domains, GO enrichment and comparisons across species.")),
-      tags$p("Project outputs: ",tags$code(p$project_root)),tags$p("Exports: ",tags$code(p$export_root)),
+      tags$p("Dataset outputs: ",tags$code(p$project_root)),tags$p("Exports: ",tags$code(p$export_root)),
       if(grepl("smoke",p$project_id%||%"",ignore.case=TRUE))tags$p(class="ytab-warning","Smoke-project outputs demonstrate software behavior, not final biological conclusions."))})
-  output$provenance_ui <- renderUI({p<-active();tagList(tags$p("Project status: ",tags$code(file.path(p$project_root,"manifests","project_status.json"))),tags$p("Logs: ",tags$code(file.path(p$project_root,"logs"))))})
+  output$provenance_ui <- renderUI({p<-active();tagList(tags$p("Dataset status: ",tags$code(file.path(p$project_root,"manifests","project_status.json"))),tags$p("Logs: ",tags$code(file.path(p$project_root,"logs"))))})
   output$last_job_summary <- renderUI({
     progress <- jobs$last_progress()
-    if (is.null(progress)) return(tags$p(class="text-muted","No persisted job is available for this project."))
+    if (is.null(progress)) return(tags$p(class="text-muted","No persisted job is available for this dataset."))
     progress <- job_progress_display(progress)
     tags$div(class="ytab-job-summary",
       tags$h4("Last job"),
@@ -527,7 +527,7 @@ server <- function(input, output, session) {
       tags$p(class="text-muted", progress$message %||% ""),
       tags$p("Progress record: ",tags$code(jobs$current_job()$progress_file %||% "unavailable")))
   })
-  output$project_created_card<-renderUI(if(project_created())tags$div(class="alert alert-success","Project is ready. Continue with the next available analysis step."))
+  output$project_created_card<-renderUI(if(project_created())tags$div(class="alert alert-success","Dataset is ready. Continue with the next available analysis step."))
   output$reference_readiness_ui<-renderUI({r<-reference_readiness(active(),repo_root);tags$dl(class="ytab-meta",tags$dt("Reference status"),tags$dd(r$label),tags$dt("FASTA"),tags$dd(if(r$fasta_found)paste("found —",r$fasta)else"missing"),tags$dt("Annotation"),tags$dd(if(r$annotation_found)"found"else"missing"),tags$dt("Bowtie2 index"),tags$dd(if(r$index_complete)paste("complete —",r$index_prefix)else"incomplete"),tags$dt("Mapping"),tags$dd(if(r$runnable)"ready"else"blocked"))})
   output$reference_actions_ui<-renderUI({r<-reference_readiness(active(),repo_root);tags$div(class="ytab-actions",actionButton("refresh_reference_status","Refresh reference status"),if(r$can_prepare&&!r$runnable)actionButton("prepare_reference","Prepare reference",class="btn-primary"),if(!r$fasta_found)tags$span(class="alert alert-warning","Reference files required"))})
   output$mapping_readiness <- renderUI(if(!reference_readiness(active(),repo_root)$runnable) blocked_card("Mapping blocked","Reference is not runnable.","Refresh or prepare the reference",active()$reference$reference_dir %||% "") else NULL)
@@ -552,21 +552,6 @@ server <- function(input, output, session) {
   observeEvent(input$run_next_ready_stage,{destination<-resolve_continue_destination(active(),repo_root,sample_pipeline_status());go_to(destination$top,"run_tabs",destination$nested)},ignoreInit=TRUE)
   observeEvent(input$enter_analysis_browser,go_to("quality_control","qc_tabs","overview"),ignoreInit=TRUE);observeEvent(input$enter_analysis_browser_summary,go_to("quality_control","qc_tabs","overview"),ignoreInit=TRUE)
   output$qc_selected_samples<-renderUI(selected_names_ui())
-  qc_download_slug<-function(...) {
-    value<-paste(unlist(list(...)),collapse=".")
-    value<-gsub("[^A-Za-z0-9_]+","_",value)
-    value<-gsub("_+","_",value)
-    value<-gsub("^_|_$","",value)
-    if(nzchar(value)) value else "ytab"
-  }
-  qc_download_dimensions<-function(prefix,default_height="medium") {
-    width_choice<-input[[paste0(prefix,"_plot_width")]]%||%"standard"
-    height_choice<-input[[paste0(prefix,"_plot_height")]]%||%default_height
-    css_height<-suppressWarnings(as.integer(sub("px$","",ytab_plot_height_px(height_choice,default=default_height))))
-    if(is.na(css_height))css_height<-520L
-    width<-switch(width_choice,wide=2000L,full=2400L,standard=1600L,1600L)
-    list(width=width,height=max(700L,as.integer(css_height*2L)))
-  }
 
   qc_eligibility<-reactive(qc_sample_eligibility(active(),sample_pipeline_status()))
   observe({ids<-qc_eligibility()$Sample;choices<-setNames(ids,ytab_sample_labels(ids,active()));selected<-intersect(qc_selected_samples(),ids);updateSelectizeInput(session,"qc_samples",choices=choices,selected=selected,server=TRUE)})
@@ -592,7 +577,7 @@ server <- function(input, output, session) {
   observeEvent(active_project_path(),{path<-active_project_path();if(!identical(path,fitness_selection_project())){design<-fitness_design();fitness_selected_comparisons(fitness_default_selection(design));fitness_selection_project(path);fitness_selected_result("");updateTextInput(session,"fitness_analysis_id",value=fitness_default_analysis_id(design))}},ignoreInit=FALSE)
   observe({design<-fitness_design();contract<-normalize_fitness_design_columns(design);if(!contract$valid)return();valid<-unname(as.character(contract$data$comparison_id[contract$data$valid%||%FALSE]));updateSelectizeInput(session,"fitness_comparisons",choices=as.list(setNames(valid,valid)),selected=unname(intersect(fitness_selected_comparisons(),valid)),server=TRUE)})
   observeEvent(input$fitness_comparisons,fitness_selected_comparisons(unname(as.character(input$fitness_comparisons%||%character()))),ignoreInit=TRUE)
-  output$fitness_design_state<-renderUI({design<-fitness_design();error<-attr(design,"design_error")%||%"";if(nzchar(error))return(tags$div(class="alert alert-danger",error));if(!nrow(design))tags$p(class="text-muted","No comparison design has been generated for this project.")else tags$p(sprintf("%d valid parent-treated comparisons were detected.",sum(design$valid)))})
+  output$fitness_design_state<-renderUI({design<-fitness_design();error<-attr(design,"design_error")%||%"";if(nzchar(error))return(tags$div(class="alert alert-danger",error));if(!nrow(design))tags$p(class="text-muted","No comparison design has been generated for this dataset.")else tags$p(sprintf("%d valid parent-treated comparisons were detected.",sum(design$valid)))})
   output$fitness_design_cards<-renderUI({x<-fitness_design_summary(fitness_design(),fitness_issues());tags$div(class="ytab-stat-grid",tags$div(tags$b(x$valid),"Valid comparisons"),tags$div(tags$b(x$included),"Included comparisons"),tags$div(tags$b(x$incomplete),"Incomplete comparisons"),tags$div(tags$b(x$issues),"Design issues"))})
   output$fitness_design_generate_action<-renderUI(if(!file.exists(fitness_design_path(active())))actionButton("fitness_generate_design","Generate design",class="btn-primary"))
   output$fitness_design_presets<-renderUI({design<-fitness_design();if(!nrow(design))return(NULL);backgrounds<-sort(unique(design$background[design$valid]));tags$div(class="ytab-actions",actionButton("fitness_design_all","Select all valid",class="btn-secondary"),actionButton("fitness_design_none","Select none",class="btn-secondary"),lapply(backgrounds,function(bg)actionButton(paste0("fitness_background_",make.names(bg)),paste("Select",bg,"background"),class="btn-secondary")))})
@@ -707,12 +692,12 @@ server <- function(input, output, session) {
     tracks <- genome_browser_tracks()
     reference <- genome_browser_reference_config(active())
     if (is.null(reference)) return(tags$p(class = "ytab-warning", "Indexed reference FASTA is not available for IGV."))
-    if (!nrow(tracks)) return(tags$p(class = "ytab-warning", "No CreateHitFile browser tracks were found for this project."))
+    if (!nrow(tracks)) return(tags$p(class = "ytab-warning", "No CreateHitFile browser tracks were found for this dataset."))
     tags$p(class = "text-muted", sprintf("%d insertion tracks discovered.", nrow(tracks)))
   })
   output$genome_browser_preset_message <- renderUI({
     rows <- genome_browser_selected_rows()
-    if (!nrow(rows)) tags$p(class = "ytab-warning", "No tracks match this preset for the current project.") else NULL
+    if (!nrow(rows)) tags$p(class = "ytab-warning", "No tracks match this preset for the current dataset.") else NULL
   })
   output$genome_browser_lane_key <- renderUI({
     rows <- genome_browser_selected_rows()
@@ -750,7 +735,7 @@ server <- function(input, output, session) {
     rows <- genome_browser_selected_rows()
     reference <- genome_browser_reference_config(active())
     paste(c(
-      paste("Project:", active()$project_id),
+      paste("Dataset:", project_display_label(active())),
       paste("Reference available:", if (is.null(reference)) "no" else "yes"),
       paste("Selected tracks:", nrow(rows)),
       paste("Locus:", input$genome_browser_locus %||% "")
@@ -799,7 +784,7 @@ server <- function(input, output, session) {
       names = as.list(unname(c("Genes", if (nrow(rows)) as.character(rows$display_label)))), locus = input$genome_browser_locus %||% ""))
   }, ignoreInit = TRUE)
   output$genome_browser_download_igv <- downloadHandler(
-    filename = function() paste0(active()$project_id, "_igv.zip"),
+    filename = function() paste0(project_display_label(active()), "_igv.zip"),
     content = function(file) {
       dir <- genome_browser_asset_dir(active()); m <- genome_browser_manifest(active())
       if (is.null(m)) stop("Open the genome browser once so its files are built.")
@@ -852,41 +837,8 @@ server <- function(input, output, session) {
   observeEvent(input$confirm_fitness_rerun,{removeModal();start_fitness_job(force=TRUE)},ignoreInit=TRUE)
   observeEvent(input$confirm_fitness_run,{removeModal();start_fitness_job()},ignoreInit=TRUE)
   current_fitness_result<-reactive({results<-fitness_results();if(!length(results))return(NULL);hit<-Filter(function(x)identical(x$run_id,fitness_selected_result())||identical(x$analysis_id,fitness_selected_result()),results);if(length(hit))hit[[1]]else fitness_result_state()$matching_result%||%choose_latest_fitness_result(results)})
-  output$fitness_result_selector<-renderUI({results<-fitness_results();if(length(results)<=1L)return(NULL);values<-unname(vapply(results,`[[`,"","run_id"));labels<-unname(vapply(results,fitness_result_display_name,""));selectInput("fitness_result_choice","Result",choices=as.list(setNames(values,labels)),selected=current_fitness_result()$run_id%||%"")})
   observeEvent(input$fitness_open_match_card,fitness_open_result(fitness_matching()$run_id))
   observeEvent(input$fitness_goto_run,go_to("fitness","fitness_tabs","fitness_run"))
-  observeEvent(input$fitness_result_choice,fitness_selected_result(input$fitness_result_choice%||%""),ignoreInit=TRUE)
-  output$fitness_results_state<-renderUI({
-    state<-fitness_result_state();result<-current_fitness_result()
-    if(state$status=="no_design")return(tags$p(class="ytab-warning","Generate a valid comparison design before running fitness analysis."))
-    if(state$status=="no_selection")return(tags$p(class="ytab-warning","Select one or more valid comparisons."))
-    if(is.null(result))return(tags$p(class="text-muted","No fitness result matches the current comparison selection."))
-    facts<-fitness_result_facts(result);matches<-identical(result$run_id,fitness_matching()$run_id);differs<-if(result$legacy||matches)character()else fitness_result_differences(result,fitness_selected_comparisons(),fitness_norm()$method,fitness_norm()$run)
-    tagList(
-      tags$div(
-        class=if(result$legacy)"ytab-result-card ytab-result-historical"else if(matches)"ytab-result-card ytab-result-matching"else"ytab-result-card",
-        title=paste("Analysis ID:",result$analysis_id,"\nRun ID:",result$run_id),
-        tags$div(class="ytab-result-heading",
-                 tags$h4(sub("^Z-score · ","",fitness_result_display_name(result))),
-                 tags$span(class="ytab-result-badge",if(result$legacy)"Historical result"else if(matches)"Matches the current Run settings"else"Selected result")),
-        tags$dl(class="ytab-meta",
-                tags$dt(if(facts$n_comparisons==1L)"Comparison"else sprintf("Comparisons (%d)",facts$n_comparisons)),tags$dd(facts$comparisons),
-                tags$dt("Normalization"),tags$dd(facts$normalization),
-                tags$dt("Call rule"),tags$dd(facts$rule),
-                if(nzchar(facts$calls))tagList(tags$dt("Calls"),tags$dd(facts$calls)),
-                if(isTRUE(result$classifier_annotation))tagList(tags$dt("Essentiality labels"),tags$dd(sprintf("Added from the classifier%s",if(nzchar(result$classifier_target%||%""))paste0(" (",result$classifier_target,")")else""))))
-      ),
-      if(!result$legacy&&!isTRUE(result$current))tags$p(class="ytab-warning","This result was made by an earlier version of the pipeline, so some plots are not available. Run it again to get every plot."),
-      if(length(differs))tags$p(class="ytab-warning",sprintf("This result differs from the current Run settings in %s. ",paste(differs,collapse=" and ")),if(!is.null(fitness_matching()))tagList("A result with those settings exists: ",actionLink("fitness_open_match_card","open it"),".")else tagList("No result exists for those settings yet: run it from ",actionLink("fitness_goto_run","Treated vs Control: Run"),".")),
-      if(result$legacy)tags$p(class="text-muted","This historical result lacks the complete design-aware cache signature and is not claimed as a current match.")
-    )
-  })
-  output$fitness_smoke_warning<-renderUI(if(fitness_smoke_project(active()))tags$div(class="alert alert-warning","This project uses a shallow FASTQ subset for software validation. Its fitness calls are not final biological conclusions."))
-  fitness_data<-reactive(fitness_result_data(current_fitness_result()));fitness_filtered<-reactive(filter_fitness_results(fitness_data(),input$fitness_call_filter%||%"All",input$fitness_full_gene_search%||%""))
-  observe({data<-fitness_data();column<-fitness_call_column(data);calls<-if(nzchar(column))sort(unique(as.character(data[[column]])))else character();calls<-calls[!is.na(calls)&nzchar(calls)];choices<-as.list(c("All",unname(calls)));names(choices)<-c("All calls",tools::toTitleCase(gsub("_"," ",calls)));updateSelectInput(session,"fitness_call_filter",choices=choices)})
-  output$fitness_summary_cards<-renderUI({data<-fitness_data();if(!nrow(data))return(NULL);counts<-fitness_call_counts(data);card<-function(key,label)tags$div(tags$b(counts[[key]]),label);tags$div(class="ytab-stat-grid",tags$div(tags$b(nrow(data)),"Total features"),if(sum(counts[c("depleted","enriched")])>0)tagList(card("depleted","Depleted"),card("enriched","Enriched"),card("mixed","Mixed (between conditions)"))else tagList(card("consistently_depleted","Consistently depleted"),card("consistently_enriched","Consistently enriched"),card("single_pool_depleted","Single-pool depleted"),card("single_pool_enriched","Single-pool enriched"),card("mixed","Mixed")))})
-  output$fitness_filtered_count<-renderUI(if(nrow(fitness_data()))tags$p(sprintf("Showing %d of %d features.",nrow(fitness_filtered()),nrow(fitness_data()))))
-  output$fitness_results_table<-DT::renderDT({x<-fitness_result_table_data(fitness_filtered(),repo_root);if(!nrow(x))return(NULL);ytab_gene_details_datatable(x,filter="top",options=list(pageLength=10,lengthMenu=c(10,25,50),autoWidth=FALSE,ordering=TRUE,searching=TRUE,scrollX=TRUE,columnDefs=list(list(className="dt-right",targets=which(vapply(x,is.numeric,FALSE))-1L),list(className="ytab-nowrap",targets=0))))})
   fitness_ma_selected_hits <- reactive({
     result <- current_fitness_result(); if (is.null(result)) return(data.frame())
     mode <- input$fitness_ma_mode %||% "combined"; pair <- input$fitness_ma_pair %||% ""
@@ -896,546 +848,6 @@ server <- function(input, output, session) {
     if (nrow(x) && "feature_id" %in% names(x)) x <- ytab_join_glabrata_display(x, repo_root, "feature_id")
     x
   })
-  fitness_ma_selected_hits_visible <- reactive({
-    x <- fitness_ma_selected_hits()
-    q <- trimws(input$fitness_gene_search %||% "")
-    if (!nrow(x) || !nzchar(q)) return(x)
-    fields <- intersect(c("feature_id", "original_feature_id", "cagl_display_id", "gene_display_name", "label", "hit_direction", "supporting_pool_ids"), names(x))
-    if (!length(fields)) return(x)
-    keep <- Reduce(`|`, lapply(x[fields], function(v) grepl(q, as.character(v), ignore.case = TRUE)))
-    x[keep, , drop = FALSE]
-  })
-  fitness_sgd_description_for_download <- function(data) {
-    description <- ytab_first_nonempty(
-      if (".ytab_sgd_description" %in% names(data)) data$.ytab_sgd_description else "",
-      if ("SGD_description" %in% names(data)) data$SGD_description else "",
-      if ("SGD description" %in% names(data)) data[["SGD description"]] else ""
-    )
-    if (!length(description) || length(description) != nrow(data)) {
-      details <- ytab_glabrata_gene_detail_columns(data)
-      description <- as.character(details$.ytab_sgd_description %||% "")
-    }
-    description[is.na(description) | !nzchar(trimws(description))] <- "Not available"
-    description
-  }
-  fitness_selected_top_hits_download_table <- function(data) {
-    if (!is.data.frame(data) || !nrow(data)) {
-      return(data.frame(
-        Message = "No selected top hits under current controls.",
-        check.names = FALSE,
-        stringsAsFactors = FALSE
-      ))
-    }
-    description <- fitness_sgd_description_for_download(data)
-    keep <- intersect(c("selected_rank", "cagl_display_id", "gene_display_name",
-                        "cg_to_sc_relationship_display", "hit_direction", "pair",
-                        "log2fc", "mean_abundance", "rank_z_strength",
-                        "supporting_pool_ids"), names(data))
-    out <- data[, keep, drop = FALSE]
-    for (nm in intersect(c("log2fc", "mean_abundance", "rank_z_strength"), names(out))) {
-      out[[nm]] <- round(as.numeric(out[[nm]]), 3)
-    }
-    names(out)[names(out) == "selected_rank"] <- "Rank"
-    names(out)[names(out) == "cagl_display_id"] <- "Gene ID"
-    names(out)[names(out) == "gene_display_name"] <- "Gene name"
-    names(out)[names(out) == "cg_to_sc_relationship_display"] <- "S. cerevisiae orthology"
-    names(out)[names(out) == "hit_direction"] <- "Hit direction"
-    names(out)[names(out) == "pair"] <- "Pair"
-    names(out)[names(out) == "log2fc"] <- "log2FC"
-    names(out)[names(out) == "mean_abundance"] <- "Abundance (per million)"
-    names(out)[names(out) == "rank_z_strength"] <- "|z|"
-    names(out)[names(out) == "supporting_pool_ids"] <- "Supporting pool IDs"
-    out[["SGD description"]] <- description
-    out
-  }
-  fitness_supporting_pool_ids_for_download <- function(result, feature_ids, direction, mode) {
-    feature_ids <- as.character(feature_ids %||% character())
-    if (!length(feature_ids)) return(character())
-    if (identical(mode, "individual")) return(rep("Current pair only", length(feature_ids)))
-    out <- rep("", length(feature_ids))
-    if (is.null(result) || !nzchar(result$output_dir %||% "")) return(out)
-    if (identical(direction, "none")) return(out)
-    path <- file.path(result$output_dir, "tables", "treated_vs_parent.by_pool.log2fc_z.csv")
-    if (!file.exists(path)) return(out)
-    pool_data <- tryCatch(read.csv(path, stringsAsFactors = FALSE, check.names = FALSE),
-                          error = function(e) data.frame())
-    if (!nrow(pool_data) || !all(c("feature_id", "log2FC", "z") %in% names(pool_data))) return(out)
-    pz <- fitness_ma_numeric(pool_data$z)
-    pl <- fitness_ma_numeric(pool_data$log2FC)
-    keep <- if (identical(direction, "depleted")) {
-      pz < 0 & pl < 0
-    } else if (identical(direction, "enriched")) {
-      pz > 0 & pl > 0
-    } else {
-      pz * pl > 0
-    }
-    labels <- if ("pool" %in% names(pool_data)) paste0("pool", pool_data$pool) else as.character(pool_data$contrast)
-    valid <- keep & !is.na(labels) & nzchar(labels)
-    if (!any(valid, na.rm = TRUE)) return(out)
-    support_map <- tapply(labels[valid], as.character(pool_data$feature_id[valid]),
-                          function(v) paste(unique(v), collapse = ";"))
-    out <- unname(support_map[feature_ids])
-    out[is.na(out)] <- ""
-    out
-  }
-  fitness_full_result_download_table <- function(data) {
-    out <- fitness_result_table_data(data, repo_root)
-    if (!is.data.frame(out) || !nrow(out)) {
-      return(data.frame(
-        Message = "No filtered fitness result rows under current controls.",
-        check.names = FALSE,
-        stringsAsFactors = FALSE
-      ))
-    }
-    description <- fitness_sgd_description_for_download(out)
-    hidden <- c(".ytab_gene_detail_name", ".ytab_sgd_description", ".ytab_sgd_essentiality")
-    out <- out[, setdiff(names(out), c(hidden, "Fitness call", "Comparisons depleted",
-                                       "Comparisons enriched")), drop = FALSE]
-    mode <- input$fitness_ma_mode %||% "combined"
-    pair <- if (identical(mode, "individual")) input$fitness_ma_pair %||% "" else ""
-    direction <- input$fitness_ma_hit_direction %||% "both"
-    support_ids <- if ("feature_id" %in% names(data)) {
-      fitness_supporting_pool_ids_for_download(current_fitness_result(), data$feature_id,
-                                               direction, mode)
-    } else {
-      rep("", nrow(out))
-    }
-    context <- data.frame(
-      pair = rep(pair, nrow(out)),
-      hit_direction = rep(direction, nrow(out)),
-      supporting_pool_ids = support_ids,
-      check.names = FALSE,
-      stringsAsFactors = FALSE
-    )
-    if (nrow(context) != nrow(out)) {
-      context <- data.frame(pair = rep(pair, nrow(out)),
-                            hit_direction = rep(direction, nrow(out)),
-                            supporting_pool_ids = rep("", nrow(out)),
-                            check.names = FALSE,
-                            stringsAsFactors = FALSE)
-    }
-    display_id <- intersect(c("Gene ID", "Gene name", "S. cerevisiae orthology"), names(out))
-    out <- cbind(out[, display_id, drop = FALSE],
-                 context,
-                 out[, setdiff(names(out), display_id), drop = FALSE])
-    out[["SGD description"]] <- description
-    out
-  }
-  fitness_current_plot_download_table <- function(data, choice) {
-    if (!is.data.frame(data) || !nrow(data)) return(data)
-    if (!"feature_id" %in% names(data)) return(data)
-    data <- ytab_join_glabrata_display(data, repo_root, "feature_id")
-    description <- fitness_sgd_description_for_download(data)
-    mode <- input$fitness_ma_mode %||% "combined"
-    pair <- if (identical(mode, "individual")) input$fitness_ma_pair %||% "" else ""
-    direction <- input$fitness_ma_hit_direction %||% "both"
-    context <- data.frame(
-      pair = rep(pair, nrow(data)),
-      hit_direction = rep(direction, nrow(data)),
-      supporting_pool_ids = fitness_supporting_pool_ids_for_download(
-        current_fitness_result(), data$feature_id, direction, mode
-      ),
-      check.names = FALSE,
-      stringsAsFactors = FALSE
-    )
-    if (identical(choice, "condition_control")) {
-      keep <- intersect(c("cagl_display_id", "gene_display_name",
-                          "cg_to_sc_relationship_display", "control_abundance",
-                          "treated_abundance", "x_log10_control_plus_1",
-                          "y_log10_treated_plus_1", "highlighted", "labeled",
-                          "annotation_source"), names(data))
-    } else if (identical(choice, "selected_hit_heatmap")) {
-      keep <- intersect(c("cagl_display_id", "gene_display_name",
-                          "cg_to_sc_relationship_display", "rank",
-                          "hit_direction", "contrast", "log2FC"), names(data))
-    } else if (identical(choice, "ranked_mean_log2fc")) {
-      keep <- intersect(c("cagl_display_id", "gene_display_name",
-                          "cg_to_sc_relationship_display", "rank",
-                          "mean_log2FC"), names(data))
-    } else if (identical(choice, "mean_log2fc_distribution")) {
-      keep <- intersect(c("cagl_display_id", "gene_display_name",
-                          "cg_to_sc_relationship_display",
-                          "mean_log2FC"), names(data))
-    } else if (identical(choice, "effect_size")) {
-      keep <- intersect(c("cagl_display_id", "gene_display_name",
-                          "cg_to_sc_relationship_display", "mean_log2fc",
-                          "max_z", "min_z", "effect_column",
-                          "z_column"), names(data))
-    } else {
-      keep <- intersect(c("cagl_display_id", "gene_display_name",
-                          "cg_to_sc_relationship_display", "log2fc",
-                          "mean_abundance", "rank_z_strength",
-                          "highlighted", "labeled", "annotation_source"), names(data))
-    }
-    out <- data[, keep, drop = FALSE]
-    display_id <- intersect(c("cagl_display_id", "gene_display_name",
-                              "cg_to_sc_relationship_display"), names(out))
-    out <- cbind(out[, display_id, drop = FALSE],
-                 context,
-                 out[, setdiff(names(out), c(display_id, "pair",
-                                             "hit_direction",
-                                             "supporting_pool_ids")), drop = FALSE])
-    for (nm in intersect(c("control_abundance", "treated_abundance",
-                          "x_log10_control_plus_1", "y_log10_treated_plus_1",
-                          "log2fc", "mean_abundance", "rank_z_strength",
-                          "log2FC", "mean_log2FC", "mean_log2fc",
-                          "max_z", "min_z"), names(out))) {
-      out[[nm]] <- round(as.numeric(out[[nm]]), 3)
-    }
-    names(out)[names(out) == "cagl_display_id"] <- "Gene ID"
-    names(out)[names(out) == "gene_display_name"] <- "Gene name"
-    names(out)[names(out) == "cg_to_sc_relationship_display"] <- "S. cerevisiae orthology"
-    names(out)[names(out) == "control_abundance"] <- "Control abundance"
-    names(out)[names(out) == "treated_abundance"] <- "Treated abundance"
-    names(out)[names(out) == "x_log10_control_plus_1"] <- "Control abundance log10(+1)"
-    names(out)[names(out) == "y_log10_treated_plus_1"] <- "Treated abundance log10(+1)"
-    names(out)[names(out) == "log2fc"] <- "log2FC"
-    names(out)[names(out) == "mean_abundance"] <- "Abundance (per million)"
-    names(out)[names(out) == "rank_z_strength"] <- "|z|"
-    names(out)[names(out) == "highlighted"] <- "Highlighted"
-    names(out)[names(out) == "labeled"] <- "Labeled"
-    names(out)[names(out) == "annotation_source"] <- "Annotation source"
-    names(out)[names(out) == "rank"] <- "Rank"
-    names(out)[names(out) == "hit_direction"] <- "Hit direction"
-    names(out)[names(out) == "pair"] <- "Pair"
-    names(out)[names(out) == "supporting_pool_ids"] <- "Supporting pool IDs"
-    names(out)[names(out) == "contrast"] <- "Contrast"
-    names(out)[names(out) == "log2FC"] <- "log2FC"
-    names(out)[names(out) == "mean_log2FC"] <- "Mean log2FC"
-    names(out)[names(out) == "mean_log2fc"] <- "Mean log2FC"
-    names(out)[names(out) == "max_z"] <- "Maximum z-score"
-    names(out)[names(out) == "min_z"] <- "Minimum z-score"
-    names(out)[names(out) == "effect_column"] <- "Effect column"
-    names(out)[names(out) == "z_column"] <- "Z-score column"
-    out[["SGD description"]] <- description
-    out
-  }
-  output$fitness_selected_top_hits_table <- DT::renderDT({
-    x <- fitness_ma_selected_hits_visible()
-    if (!nrow(x)) return(NULL)
-    details <- ytab_glabrata_gene_detail_columns(x)
-    keep <- intersect(c("selected_rank", "cagl_display_id", "gene_display_name", "cg_to_sc_relationship_display", "hit_direction", "pair", "log2fc", "mean_abundance", "rank_z_strength", "supporting_pool_ids"), names(x))
-    x <- x[, keep, drop = FALSE]
-    for (nm in intersect(c("log2fc", "mean_abundance", "rank_lfc_strength", "rank_cpm_support", "rank_z_strength"), names(x))) x[[nm]] <- round(as.numeric(x[[nm]]), 3)
-    for (nm in intersect(c("candidate_rank_order", "valid_pool_n", "rank_support_n", "selected_min_support_pools"), names(x))) x[[nm]] <- as.integer(x[[nm]])
-    names(x)[names(x) == "selected_rank"] <- "Rank"; names(x)[names(x) == "cagl_display_id"] <- "Gene ID"; names(x)[names(x) == "gene_display_name"] <- "Gene name"; names(x)[names(x) == "cg_to_sc_relationship_display"] <- "S. cerevisiae orthology"; names(x)[names(x) == "hit_direction"] <- "Hit direction"; names(x)[names(x) == "log2fc"] <- "log2FC"; names(x)[names(x) == "mean_abundance"] <- "Abundance (per million)"; names(x)[names(x) == "rank_z_strength"] <- "|z|"; names(x)[names(x) == "supporting_pool_ids"] <- "Supporting pool IDs"
-    x <- cbind(x, details)
-    ytab_gene_details_datatable(x, class = "compact stripe hover", order = list(list(0, "asc")), options = list(pageLength = 10, lengthMenu = c(10, 25, 50, 100), autoWidth = FALSE, ordering = TRUE, searching = TRUE, scrollX = TRUE, columnDefs = list(list(className = "dt-right", targets = which(vapply(x, is.numeric, FALSE)) - 1L), list(className = "ytab-nowrap", targets = 0))))
-  })
-  output$fitness_visualization_selector<-renderUI({
-    result<-current_fitness_result()
-    plots<-fitness_generated_plot_inventory_for_result(active(),result)
-    result_ok<-!is.null(result)&&nrow(fitness_ma_data(result,"combined"))
-    control_z_choices<-fitness_control_z_scope_choices(result)
-    library_size_choices<-fitness_library_size_scope_choices(result)
-    mean_log2fc_ok<-nrow(fitness_mean_log2fc_data(result))>0L
-    choices<-c(if(result_ok)c("MA plot"="combined_ma","Condition versus control log-log scatter"="condition_control","Top selected hits log2FC heatmap"="selected_hit_heatmap"),if(length(library_size_choices))c("Feature-level library sizes"="library_sizes"),if(mean_log2fc_ok)c("Ranked log2FC"="ranked_mean_log2fc","log2FC distribution"="mean_log2fc_distribution"),if(length(control_z_choices))c("Control-control z histogram"="control_z"),"Effect size versus z-score"="effect_size")
-    if(nrow(plots))choices<-c(choices,setNames(paste0("generated:",seq_len(nrow(plots))),tools::file_path_sans_ext(gsub("_", " ", plots$filename))))
-    default_choice <- if(result_ok)"combined_ma"else"effect_size"
-    selected <- input$fitness_visualization_choice %||% default_choice
-    if(!(selected %in% unname(choices))) selected <- default_choice
-    selectInput("fitness_visualization_choice","Plot",choices=as.list(choices),selected=selected)
-  })
-  output$fitness_plot_controls<-renderUI({
-    choice<-input$fitness_visualization_choice%||%"effect_size"
-    point_choices<-c("combined_ma","condition_control","ranked_mean_log2fc","effect_size")
-    ytab_plot_customization_controls("fitness",
-                                     include_points = choice %in% point_choices,
-                                     include_bars = identical(choice,"library_sizes"),
-                                     include_value_labels = identical(choice,"library_sizes"),
-                                     include_labels = !startsWith(choice,"generated:"),
-                                     default_height = "large",
-                                     default_show_value_labels = TRUE, open = isTRUE(isolate(input$fitness_display_open)))
-  })
-  output$fitness_ma_controls<-renderUI({
-    if(!((input$fitness_visualization_choice%||%"") %in% c("combined_ma","condition_control","selected_hit_heatmap")))return(NULL)
-    result<-current_fitness_result();pairs<-fitness_ma_pair_choices(result)
-    selected_pair <- input$fitness_ma_pair %||% ""
-    if (!selected_pair %in% unname(pairs)) selected_pair <- if (length(pairs)) unname(pairs[[1]]) else ""
-    tagList(
-      selectInput("fitness_ma_mode", "Comparison view", choices=c("Combined across pools"="combined","Individual treated-control pair"="individual"), selected=input$fitness_ma_mode%||%"combined"),
-      uiOutput("fitness_ma_support_control"),
-      conditionalPanel("input.fitness_ma_mode == 'individual'", selectInput("fitness_ma_pair", "Pair", choices=if(length(pairs))as.list(pairs) else list("No pair data available"=""), selected=selected_pair)),
-      selectInput("fitness_ma_hit_direction", "Hit direction", choices=c("Depleted in treatment"="depleted","Enriched in treatment"="enriched","Both depleted and enriched"="both","None"="none"), selected=input$fitness_ma_hit_direction%||%"both"),
-      numericInput("fitness_ma_top_n", tagList("Number of hits",tags$span(title="Top hits are called genes with at least a 2-fold change, ranked by |z| then |log2FC| (as in Gale et al. 2020); the ranking is written by the pipeline."," ⓘ")), value=input$fitness_ma_top_n%||%10, min=0, max=100, step=1),
-      selectInput("fitness_ma_annotation_mode", "Annotation mode", choices=c("None"="none","Top highlighted hits"="top","Custom feature list"="custom","Top highlighted hits + custom feature list"="top_custom"), selected=input$fitness_ma_annotation_mode%||%"top"),
-      conditionalPanel("input.fitness_ma_annotation_mode == 'custom' || input.fitness_ma_annotation_mode == 'top_custom'", textAreaInput("fitness_ma_custom_features", "Custom features", value="", placeholder="Feature or gene IDs, separated by commas or new lines", rows=3)),
-      uiOutput("fitness_ma_selection_status")
-    )
-  })
-  output$fitness_current_plot_downloads<-renderUI({
-    result<-current_fitness_result();if(is.null(result))return(NULL)
-    choice<-input$fitness_visualization_choice%||%"effect_size"
-    tagList(
-      tags$details(class="ytab-more-options", open=FALSE,
-        tags$summary("Current plot downloads"),
-        tags$div(class="ytab-actions",
-          downloadButton("download_fitness_ma_plot", "Download current plot"),
-          downloadButton("download_fitness_ma_data", "Download current plotted data")
-        ),
-        if(choice%in%c("combined_ma","condition_control","selected_hit_heatmap"))
-          tagList(tags$hr(),tags$p("Download selected top hits"),downloadButton("download_fitness_ma_top_hits", "Download selected top hits CSV"))
-      )
-    )
-  })
-  output$fitness_library_size_controls<-renderUI({
-    if(!identical(input$fitness_visualization_choice%||%"","library_sizes"))return(NULL)
-    result<-current_fitness_result();choices<-fitness_library_size_scope_choices(result)
-    if(!length(choices))return(tags$p(class="text-muted","Feature-level library-size data are unavailable for this result."))
-    selected<-input$fitness_library_size_scope%||%"combined";if(!(selected%in%unlist(choices,use.names=FALSE)))selected<-"combined"
-    tagList(
-      selectInput("fitness_library_size_scope","Library-size scope",choices=choices,selected=selected),
-      tags$p(class="text-muted","Default combines backgrounds; individual backgrounds remain available for background-specific library-size checks.")
-    )
-  })
-  output$fitness_control_z_controls<-renderUI({
-    if(!identical(input$fitness_visualization_choice%||%"","control_z"))return(NULL)
-    result<-current_fitness_result();choices<-fitness_control_z_scope_choices(result)
-    if(!length(choices))return(tags$p(class="text-muted","Control-control z-score data are unavailable for this result."))
-    selected<-input$fitness_control_z_scope%||%"combined";if(!(selected%in%unlist(choices,use.names=FALSE)))selected<-"combined"
-    tagList(
-      selectInput("fitness_control_z_scope","Histogram scope",choices=choices,selected=selected),
-      tags$p(class="text-muted","Default combines backgrounds; individual backgrounds remain available for parent-parent noise-model diagnostics.")
-    )
-  })
-  output$fitness_ma_support_control<-renderUI({
-    if(!identical(input$fitness_ma_mode%||%"combined", "combined"))return(NULL)
-    result<-current_fitness_result();pools<-length(fitness_ma_available_pools(result))
-    if(!pools)return(tags$p(class="text-muted","Minimum supporting pools is unavailable because by-pool z-score data are missing or incomplete."))
-    choices<-c("All support classes"="0",setNames(as.character(seq_len(pools)),paste0(">= ",seq_len(pools)," supporting pool",ifelse(seq_len(pools)==1,"","s"))))
-    selected<-as.character(input$fitness_ma_min_support%||%"0");if(!selected%in%unname(choices))selected<-"0"
-    selectInput("fitness_ma_min_support",tagList("Concordance filter",tags$span(title="Optionally filters top-hit selection by how many valid pools show evidence in the selected direction."," ⓘ")),choices=choices,selected=selected)
-  })
-  output$fitness_ma_selection_status<-renderUI({
-    if(!identical(input$fitness_visualization_choice%||%"", "combined_ma"))return(NULL)
-    result<-current_fitness_result();if(is.null(result))return(NULL)
-    mode<-input$fitness_ma_mode%||%"combined";direction<-input$fitness_ma_hit_direction%||%"both"
-    threshold<-if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L
-    n<-as.integer(input$fitness_ma_top_n%||%10);if(is.na(n)||n<0)n<-0L
-    ranked<-fitness_ma_rank_data(result,mode,input$fitness_ma_pair%||%"",direction,threshold)
-    if(!nrow(ranked))return(tags$p(class="text-muted","No MA candidates are available for the selected comparison."))
-    ranked_total<-sum(!is.na(ranked$overall_candidate_rank))
-    passing<-sum(!is.na(ranked$support_pass)&ranked$support_pass)
-    highlighted<-fitness_ma_highlight_rows(ranked,direction,n,threshold)
-    labels<-fitness_ma_label_table(ranked,highlighted,input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",mode,input$fitness_ma_pair%||%"")
-    if(identical(direction,"none")||n==0L) return(tags$p(class="text-muted","Automatic hit highlighting is off; the MA plot shows the neutral feature cloud."))
-    if(!passing)return(tags$p(class="text-muted",if(threshold>0L)sprintf("Ranked candidates passing log2FC/abundance filters: %d; Passing concordance filter: 0.",ranked_total)else"Ranked candidates passing log2FC/abundance filters: 0."))
-    if(threshold>0L) tags$p(class="text-muted",sprintf("Ranked candidates passing log2FC/abundance filters: %d; Passing concordance filter: %d; Selected top hits: %d; Labeled: %d.",ranked_total,passing,length(highlighted),nrow(labels$data))) else tags$p(class="text-muted",sprintf("Ranked candidates passing log2FC/abundance filters: %d; Selected top hits: %d; Labeled: %d.",ranked_total,length(highlighted),nrow(labels$data)))
-  })
-  output$fitness_selected_top_hits_empty <- renderUI({
-    if (nrow(fitness_ma_selected_hits_visible())) return(NULL)
-    if (nrow(fitness_ma_selected_hits())) return(tags$p(class = "text-muted", "No selected top hits match the current search."))
-    tags$p(class = "text-muted", "No selected top hits pass the current log2FC, CPM, and concordance filters.")
-  })
-  output$fitness_selected_top_hits_count <- renderUI({
-    total <- nrow(fitness_ma_selected_hits()); visible <- nrow(fitness_ma_selected_hits_visible())
-    if (!total) return(NULL)
-    if (nzchar(trimws(input$fitness_gene_search %||% ""))) tags$p(class = "text-muted", sprintf("Showing %d of %d selected top hits matching search.", visible, total))
-    else tags$p(class = "text-muted", sprintf("Showing %d selected top hit%s.", total, if (total == 1L) "" else "s"))
-  })
-  output$fitness_selected_visualization<-renderUI({
-    choice<-input$fitness_visualization_choice%||%"effect_size"
-    fitness_height<-ytab_plot_height_px(input$fitness_plot_height%||%"large",default="large")
-    if(identical(choice,"combined_ma"))return(ytab_plot_frame(plotOutput("fitness_ma_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
-    if(identical(choice,"selected_hit_heatmap"))return(ytab_plot_frame(plotOutput("fitness_selected_hit_heatmap",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
-    if(identical(choice,"library_sizes"))return(ytab_plot_frame(plotOutput("fitness_library_size_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
-    if(identical(choice,"ranked_mean_log2fc"))return(ytab_plot_frame(plotOutput("fitness_ranked_mean_log2fc_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
-    if(identical(choice,"mean_log2fc_distribution"))return(ytab_plot_frame(plotOutput("fitness_mean_log2fc_distribution_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
-    if(identical(choice,"control_z"))return(ytab_plot_frame(plotOutput("fitness_control_z_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
-    if(startsWith(choice,"generated:")){
-      plots<-fitness_generated_plot_inventory_for_result(active(),current_fitness_result());index<-suppressWarnings(as.integer(sub("^generated:","",choice)))
-      if(is.na(index)||index<1L||index>nrow(plots))return(tags$p(class="text-muted","Selected plot is unavailable."))
-      return(tags$article(class="ytab-static-image-card ytab-release-card",tags$div(class="ytab-plot-card-header",tags$h4(plots$title[[index]])),tags$div(class="ytab-diagnostic-preview",tags$img(src=plots$served_url[[index]],alt=plots$filename[[index]],loading="lazy",style=paste0("width:100%;max-height:",fitness_height,";object-fit:contain"))),tags$details(tags$summary("Show filename"),tags$code(plots$filename[[index]]))))
-    }
-    if(identical(choice,"condition_control"))return(ytab_plot_frame(plotOutput("fitness_condition_control_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered"))
-    if(identical(choice,"effect_size"))return(tagList(uiOutput("fitness_effect_plot_state"),ytab_plot_frame(plotOutput("fitness_effect_plot",width="100%",height=fitness_height),input$fitness_plot_width%||%"standard","app-rendered")))
-    tags$p(class="text-muted","Selected plot is unavailable.")
-  })
-  output$fitness_ma_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
-    result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";pair<-input$fitness_ma_pair%||%"";direction<-input$fitness_ma_hit_direction%||%"both";n<-suppressWarnings(as.integer(input$fitness_ma_top_n%||%10));if(is.na(n))n<-10
-    min_support<-if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L
-    plot_fitness_ma(result,mode,pair,direction,n,input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),min_support,repo_root)
-  }))
-  output$fitness_condition_control_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
-    result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";pair<-input$fitness_ma_pair%||%"";direction<-input$fitness_ma_hit_direction%||%"both";n<-suppressWarnings(as.integer(input$fitness_ma_top_n%||%10));if(is.na(n))n<-10
-    min_support<-if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L
-    plot_fitness_condition_control_scatter(result,mode,pair,direction,n,input$fitness_ma_annotation_mode%||%"top",input$fitness_ma_custom_features%||%"",input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),min_support,repo_root)
-  }))
-  output$fitness_control_z_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
-    result<-current_fitness_result();req(!is.null(result))
-    plot_fitness_control_control_z_histogram(result,input$fitness_control_z_scope%||%"combined")
-  }))
-  output$fitness_library_size_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
-    result<-current_fitness_result();req(!is.null(result))
-    plot_fitness_library_sizes_feature_reads(result,input$fitness_library_size_scope%||%"combined")
-  }))
-  output$fitness_ranked_mean_log2fc_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
-    result<-current_fitness_result();req(!is.null(result))
-    plot_fitness_ranked_mean_log2fc(result)
-  }))
-  output$fitness_mean_log2fc_distribution_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
-    result<-current_fitness_result();req(!is.null(result))
-    plot_fitness_mean_log2fc_distribution(result)
-  }))
-  output$fitness_selected_hit_heatmap<-renderPlot(ytab_with_plot_display_options(input,"fitness",{
-    result<-current_fitness_result();req(!is.null(result));mode<-input$fitness_ma_mode%||%"combined";pair<-input$fitness_ma_pair%||%""
-    plot_fitness_selected_hit_heatmap(result,fitness_ma_selected_hits(),mode,pair,input$fitness_text_size%||%"medium")
-  }))
-  fitness_effect_data<-reactive(normalize_fitness_result_columns(fitness_data())$data)
-  fitness_effect_columns<-reactive({data<-fitness_effect_data();effect<-intersect(c("mean_log2fc"),names(data));z<-intersect(c("max_z","min_z"),names(data));list(effect=if(length(effect))effect[[1]]else"",z=if(length(z))z[[1]]else"")})
-  output$fitness_effect_plot_state<-renderUI({columns<-fitness_effect_columns();if(!nzchar(columns$effect)||!nzchar(columns$z))tags$p(class="text-muted","This result does not contain the columns required for this plot.")})
-  output$fitness_effect_plot<-renderPlot(ytab_with_plot_display_options(input,"fitness",{data<-fitness_effect_data();columns<-fitness_effect_columns();req(nrow(data),nzchar(columns$effect),nzchar(columns$z));old<-qc_plot_par(mar=c(5,5,3,1));on.exit(par(old),add=TRUE);point_opacity<-suppressWarnings(as.numeric(input$fitness_point_opacity%||%0.55));if(is.na(point_opacity))point_opacity<-0.55;point_size<-suppressWarnings(as.numeric(input$fitness_point_size%||%1.5));if(is.na(point_size))point_size<-1.5;plot(as.numeric(data[[columns$effect]]),as.numeric(data[[columns$z]]),pch=16,cex=point_size,col=rgb(0,0,0,max(0.1,min(1,point_opacity))),xlab="Mean log2 fold change",ylab=gsub("_"," ",columns$z),main="Effect size versus z-score")}))
-  output$fitness_comparison_results<-DT::renderDT({result<-current_fitness_result();if(is.null(result)||!file.exists(result$comparison_summary))return(NULL);x<-read.csv(result$comparison_summary,stringsAsFactors=FALSE,check.names=FALSE);compact_qc_table(x)})
-  output$fitness_result_technical<-renderUI({result<-current_fitness_result();if(is.null(result))return(NULL);tags$div(class="ytab-technical-console",tags$p("Result: ",tags$code(relative_project_path(result$table,active()$project_root))),tags$p("Manifest: ",tags$code(if(file.exists(result$manifest))relative_project_path(result$manifest,active()$project_root)else"Legacy manifest unavailable")),tags$p("Normalization: ",if(toupper(result$normalization%||%"CPM")=="CPM")"total reads (CPM), from the SummaryTable gene reads"else sprintf("%s, Site Normalization run %s",result$normalization,basename(result$normalization_run%||%""))))})
-  fitness_download_path<-function(path,message="No fitness result is available for download."){if(!nzchar(path%||%"")||!file.exists(path)){showNotification(message,type="warning");validate(need(FALSE,message))};path}
-  output$download_fitness_full<-downloadHandler(filename=function()"treated_vs_parent_results.csv",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$table;file.copy(fitness_download_path(path),file,overwrite=TRUE)})
-  output$download_fitness_filtered<-downloadHandler(filename=function()"treated_vs_parent_results.filtered.csv",content=function(file)write.csv(fitness_full_result_download_table(fitness_filtered()),file,row.names=FALSE))
-  output$download_fitness_design<-downloadHandler(filename=function()"comparison_design.csv",content=function(file)file.copy(fitness_download_path(fitness_design_path(active()),"No comparison design is available for download."),file,overwrite=TRUE))
-  output$download_fitness_comparison<-downloadHandler(filename=function()"treated_vs_parent_comparison_summary.csv",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$comparison_summary;file.copy(fitness_download_path(path,"No comparison-level fitness summary is available for download."),file,overwrite=TRUE)})
-  output$download_fitness_manifest<-downloadHandler(filename=function()"treated_vs_parent_manifest.json",content=function(file){result<-current_fitness_result();path<-if(is.null(result))""else result$manifest;file.copy(fitness_download_path(path,"No fitness run manifest is available for download."),file,overwrite=TRUE)})
-  fitness_current_plot_slug<-function(){
-    choice<-input$fitness_visualization_choice%||%"effect_size"
-    mode<-input$fitness_ma_mode%||%"combined"
-    pair<-input$fitness_ma_pair%||%""
-    scope<-if(identical(choice,"library_sizes"))input$fitness_library_size_scope%||%"combined" else if(identical(choice,"control_z"))input$fitness_control_z_scope%||%"combined" else ""
-    qc_download_slug(active()$project_id,"fitness",choice,mode,pair,scope,input$fitness_ma_hit_direction%||%"")
-  }
-  fitness_current_ma_state<-function(){
-    mode<-input$fitness_ma_mode%||%"combined"
-    list(
-      mode=mode,
-      pair=input$fitness_ma_pair%||%"",
-      direction=input$fitness_ma_hit_direction%||%"both",
-      n=as.integer(input$fitness_ma_top_n%||%10),
-      annotation=input$fitness_ma_annotation_mode%||%"top",
-      custom=input$fitness_ma_custom_features%||%"",
-      min_support=if(identical(mode,"combined"))as.integer(input$fitness_ma_min_support%||%0)else 0L
-    )
-  }
-  fitness_current_plot_data<-function(){
-    result<-current_fitness_result();req(!is.null(result))
-    choice<-input$fitness_visualization_choice%||%"effect_size"
-    state<-fitness_current_ma_state()
-    if(identical(choice,"combined_ma")){
-      data<-fitness_ma_rank_data(result,state$mode,state$pair,state$direction,state$min_support)
-      hi<-fitness_ma_highlight_rows(data,state$direction,state$n,state$min_support)
-      ann<-fitness_ma_annotation_rows(data,hi,state$annotation,state$custom)
-      highlighted<-seq_len(nrow(data))%in%hi
-      data$plotted<-TRUE;data$highlighted<-highlighted;data$labeled<-seq_len(nrow(data))%in%ann$rows
-      data$annotation_source<-ifelse(data$labeled&highlighted,"top_hit",ifelse(data$labeled,"custom",ifelse(highlighted,"top_hit","none")))
-      data$comparison_view<-if(identical(state$mode,"individual"))"individual_pair"else"combined";data$pair<-if(nzchar(state$pair))state$pair else NA_character_
-      return(data)
-    }
-    if(identical(choice,"condition_control")){
-      data<-fitness_condition_control_plot_data(result,state$mode,state$pair)
-      ranked<-fitness_ma_rank_data(result,state$mode,state$pair,state$direction,state$min_support)
-      hi<-fitness_ma_highlight_rows(ranked,state$direction,state$n,state$min_support)
-      ann<-fitness_ma_annotation_rows(ranked,hi,state$annotation,state$custom)
-      data$x_log10_control_plus_1<-log10(qc_plot_numeric(data$control_abundance)+1)
-      data$y_log10_treated_plus_1<-log10(qc_plot_numeric(data$treated_abundance)+1)
-      data$highlighted<-as.character(data$feature_id)%in%as.character(ranked$feature_id[hi])
-      data$labeled<-as.character(data$feature_id)%in%as.character(ranked$feature_id[ann$rows])
-      data$comparison_view<-if(identical(state$mode,"individual"))"individual_pair"else"combined";data$pair<-if(nzchar(state$pair))state$pair else NA_character_
-      return(data)
-    }
-    if(identical(choice,"selected_hit_heatmap")){
-      hm<-fitness_selected_hit_heatmap_data(result,fitness_ma_selected_hits(),state$mode,state$pair)
-      return(hm$data)
-    }
-    if(identical(choice,"library_sizes")){
-      data<-fitness_library_size_data(result);scope<-input$fitness_library_size_scope%||%"combined"
-      if(!identical(scope,"combined"))data<-data[as.character(data$background)==scope,,drop=FALSE]
-      data$plot_scope<-scope
-      return(data)
-    }
-    if(identical(choice,"ranked_mean_log2fc")){
-      data<-fitness_mean_log2fc_data(result)
-      data$plot_type<-"ranked_mean_log2FC"
-      return(data)
-    }
-    if(identical(choice,"mean_log2fc_distribution")){
-      data<-fitness_mean_log2fc_data(result)
-      data$plot_type<-"mean_log2FC_distribution"
-      return(data)
-    }
-    if(identical(choice,"control_z")){
-      data<-fitness_control_z_data(result);scope<-input$fitness_control_z_scope%||%"combined"
-      if(!identical(scope,"combined"))data<-data[as.character(data$background)==scope,,drop=FALSE]
-      data$plot_scope<-scope
-      return(data)
-    }
-    if(startsWith(choice,"generated:")){
-      plots<-fitness_generated_plot_inventory_for_result(active(),result);index<-suppressWarnings(as.integer(sub("^generated:","",choice)))
-      return(data.frame(message="Current selected plot is a static generated PNG; plotted source data are not available through this button.", file=if(!is.na(index)&&index>=1L&&index<=nrow(plots))plots$file[[index]]else NA_character_, stringsAsFactors=FALSE))
-    }
-    data<-fitness_effect_data()
-    columns<-fitness_effect_columns()
-    data$effect_column<-columns$effect;data$z_column<-columns$z
-    data
-  }
-  fitness_render_current_plot<-function(file){
-    result<-current_fitness_result();req(!is.null(result))
-    choice<-input$fitness_visualization_choice%||%"effect_size"
-    if(startsWith(choice,"generated:")){
-      plots<-fitness_generated_plot_inventory_for_result(active(),result);index<-suppressWarnings(as.integer(sub("^generated:","",choice)))
-      validate(need(!is.na(index)&&index>=1L&&index<=nrow(plots)&&file.exists(plots$file[[index]]),"Selected generated plot is unavailable."))
-      file.copy(plots$file[[index]],file,overwrite=TRUE);return(invisible())
-    }
-    dim<-qc_download_dimensions("fitness","large")
-    grDevices::png(file,width=dim$width,height=dim$height,res=150)
-    on.exit(grDevices::dev.off(),add=TRUE)
-    ytab_with_plot_display_options(input,"fitness",{
-      state<-fitness_current_ma_state()
-      if(identical(choice,"combined_ma"))plot_fitness_ma(result,state$mode,state$pair,state$direction,state$n,state$annotation,state$custom,input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),state$min_support,repo_root)
-      else if(identical(choice,"condition_control"))plot_fitness_condition_control_scatter(result,state$mode,state$pair,state$direction,state$n,state$annotation,state$custom,input$fitness_text_size%||%"medium",qc_plot_grid_enabled(),as.numeric(input$fitness_point_size%||%1.5),state$min_support,repo_root)
-      else if(identical(choice,"selected_hit_heatmap"))plot_fitness_selected_hit_heatmap(result,fitness_ma_selected_hits(),state$mode,state$pair,input$fitness_text_size%||%"medium")
-      else if(identical(choice,"library_sizes"))plot_fitness_library_sizes_feature_reads(result,input$fitness_library_size_scope%||%"combined")
-      else if(identical(choice,"ranked_mean_log2fc"))plot_fitness_ranked_mean_log2fc(result)
-      else if(identical(choice,"mean_log2fc_distribution"))plot_fitness_mean_log2fc_distribution(result)
-      else if(identical(choice,"control_z"))plot_fitness_control_control_z_histogram(result,input$fitness_control_z_scope%||%"combined")
-      else {
-        data<-fitness_effect_data();columns<-fitness_effect_columns();req(nrow(data),nzchar(columns$effect),nzchar(columns$z))
-        old<-qc_plot_par(mar=c(5,5,3,1));on.exit(par(old),add=TRUE)
-        point_opacity<-suppressWarnings(as.numeric(input$fitness_point_opacity%||%0.55));if(is.na(point_opacity))point_opacity<-0.55
-        point_size<-suppressWarnings(as.numeric(input$fitness_point_size%||%1.5));if(is.na(point_size))point_size<-1.5
-        plot(as.numeric(data[[columns$effect]]),as.numeric(data[[columns$z]]),pch=16,cex=point_size,col=rgb(0,0,0,max(0.1,min(1,point_opacity))),xlab="Mean log2 fold change",ylab=gsub("_"," ",columns$z),main="Effect size versus z-score")
-      }
-    })
-  }
-  output$download_fitness_ma_plot<-downloadHandler(filename=function(){paste0(fitness_current_plot_slug(),".png")},content=function(file)fitness_render_current_plot(file))
-  output$download_fitness_ma_data <- downloadHandler(
-    filename = function() paste0(fitness_current_plot_slug(), ".csv"),
-    content = function(file) {
-      choice <- input$fitness_visualization_choice %||% "effect_size"
-      data <- fitness_current_plot_download_table(fitness_current_plot_data(), choice)
-      if (!nrow(data)) data <- data.frame(no_plotted_data = "No plotted data are available for the current Fitness plot.", stringsAsFactors = FALSE)
-      write.csv(data, file, row.names = FALSE)
-    }
-  )
-  output$download_fitness_ma_top_hits <- downloadHandler(
-    filename = function() paste0(active()$project_id, ".fitness.ma_top_selected_hits.csv"),
-    content = function(file) {
-      result <- current_fitness_result(); req(!is.null(result))
-      mode <- input$fitness_ma_mode %||% "combined"; pair <- input$fitness_ma_pair %||% ""
-      direction <- input$fitness_ma_hit_direction %||% "both"; n <- as.integer(input$fitness_ma_top_n %||% 10)
-      min_support <- if (identical(mode, "combined")) as.integer(input$fitness_ma_min_support %||% 0) else 0L
-      top <- fitness_ma_selected_hits_visible()
-      if (!nrow(top)) top <- data.frame(no_top_hits_selected = "No top hits selected under current controls", comparison_view = if (identical(mode, "individual")) "individual_pair" else "combined", hit_direction = direction, selected_min_support_pools = min_support, stringsAsFactors = FALSE)
-      else top <- fitness_selected_top_hits_download_table(top)
-      write.csv(top, file, row.names = FALSE)
-    }
-  )
-  output$download_fitness_heatmap_data <- downloadHandler(
-    filename = function() paste0(active()$project_id, ".fitness.selected_top_hits_log2fc_heatmap.csv"),
-    content = function(file) {
-      result <- current_fitness_result(); req(!is.null(result))
-      mode <- input$fitness_ma_mode %||% "combined"; pair <- input$fitness_ma_pair %||% ""
-      hm <- fitness_selected_hit_heatmap_data(result, fitness_ma_selected_hits(), mode, pair)
-      data <- hm$data
-      if (!nrow(data)) data <- data.frame(no_heatmap_data = "No selected top-hit heatmap data under current controls", stringsAsFactors = FALSE)
-      write.csv(data, file, row.names = FALSE)
-    }
-  )
 
   screen_coverage_server(input, output, session, repo_root, active, active_project_path, python_bin)
   qc_library_correlation_server(input, output, session, repo_root, active, active_project_path, projects, jobs, python_bin)
@@ -1445,7 +857,7 @@ server <- function(input, output, session) {
                        projects, reference_projects)
   essentiality_module_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin,
                              projects, reference_projects)
-  comparisons_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin)
+  comparisons_server(input, output, session, repo_root, active, active_project_path, jobs, python_bin, fitness_selected_result)
   mutant_screen_server(input, output, session, repo_root, active, active_project_path, python_bin, go_to)
 
   go_analysis_server(input, output, session, repo_root, active,
@@ -1469,10 +881,10 @@ server <- function(input, output, session) {
     completed<-Filter(function(x)!x$is_legacy&&setequal(x$selected_samples,r$eligible),runs);completed<-choose_latest_diagnostics_result(completed)
     if(job_matches&&identical(p$status,"success")&&!grepl("Cached result reused",p$message%||%"",fixed=TRUE)&&!is.null(completed))return(result_card("Library Diagnostics complete",completed,"Complete","ytab-result-matching"))
     if(!is.null(state$matching_result))return(result_card("Matching cached diagnostics",state$matching_result,"Matching result · Cached","ytab-result-matching"))
-    tagList(tags$div(class="ytab-result-card ytab-result-no-match",tags$div(class="ytab-result-heading",tags$h4("No matching diagnostics result"),tags$span(class="ytab-result-badge","No matching result")),tags$dl(class="ytab-meta",tags$dt("Current sample set"),tags$dd(r$label),tags$dt("Selected samples"),tags$dd(length(r$eligible))),tags$p(if(is.null(historical))"No completed diagnostics results are available for this project."else"The latest available diagnostics were generated from a different sample selection."),tags$div(class="ytab-actions",actionButton("result_preview_diagnostics","Preview diagnostics",class="btn-secondary"),actionButton("result_run_diagnostics","Run diagnostics",class="btn-primary"))),if(!is.null(historical))result_card("Latest historical result",historical,if(historical$is_legacy)"Legacy result"else"Historical result"))
+    tagList(tags$div(class="ytab-result-card ytab-result-no-match",tags$div(class="ytab-result-heading",tags$h4("No matching diagnostics result"),tags$span(class="ytab-result-badge","No matching result")),tags$dl(class="ytab-meta",tags$dt("Current sample set"),tags$dd(r$label),tags$dt("Selected samples"),tags$dd(length(r$eligible))),tags$p(if(is.null(historical))"No completed diagnostics results are available for this dataset."else"The latest available diagnostics were generated from a different sample selection."),tags$div(class="ytab-actions",actionButton("result_preview_diagnostics","Preview diagnostics",class="btn-secondary"),actionButton("result_run_diagnostics","Run diagnostics",class="btn-primary"))),if(!is.null(historical))result_card("Latest historical result",historical,if(historical$is_legacy)"Legacy result"else"Historical result"))
   })
   observeEvent(input$result_preview_diagnostics,{updateRadioButtons(session,"library_diagnostics_mode",selected="preview")},ignoreInit=TRUE);observeEvent(input$result_run_diagnostics,{updateRadioButtons(session,"library_diagnostics_mode",selected="run")},ignoreInit=TRUE)
-  observeEvent(input$refresh_project_status,{run_cli("ytab_project_status.py",c("--show-next"));state$load(active_project_path(),repo_root);showNotification("Project status refreshed.")})
+  observeEvent(input$refresh_project_status,{run_cli("ytab_project_status.py",c("--show-next"));state$load(active_project_path(),repo_root);showNotification("Dataset status refreshed.")})
   refresh_preprocessing<-function(){run_cli("ytab_project_status.py",c("--show-next"));state$load(active_project_path(),repo_root);status_tick(status_tick()+1L);showNotification("Preprocessing status refreshed.")}
   for(id in c("refresh_preprocessing_status","refresh_preprocess_status"))local({key<-id;observeEvent(input[[key]],refresh_preprocessing(),ignoreInit=TRUE)})
   observeEvent(input$refresh_reference_status,refresh_preprocessing(),ignoreInit=TRUE)

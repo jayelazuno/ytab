@@ -1,0 +1,29 @@
+{
+ "donor": "pIMY015 (pUC19 + PARS + piggyBac donor) and pIMY029 (pPIC9K + PARS + PAOX1-PBase) (Yao et al. 2026). Not deposited; rebuilt from its published parts.",
+ "parts": [
+  {
+   "name": "pUC19 backbone",
+   "source": "GenBank M77789",
+   "length": 2686,
+   "role": "vector"
+  },
+  {
+   "name": "pPIC9K (P. pastoris expression vector",
+   "source": "GenBank Z46234",
+   "length": 9273,
+   "role": "transposase vector"
+  },
+  {
+   "name": "piggyBac IFP2 element (transposase and TIRs)",
+   "source": "GenBank J04364",
+   "length": 2472,
+   "role": "transposon and transposase"
+  },
+  {
+   "name": "kanMX4 cassette (G418/zeocin-style marker)",
+   "source": "GenBank AJ002680",
+   "length": 3941,
+   "role": "marker"
+  }
+ ]
+}

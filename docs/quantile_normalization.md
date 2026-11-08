@@ -1,8 +1,7 @@
-# Experimental zero-preserving quantile normalization for Hermes
+# Zero-preserving quantile normalization for Hermes
 
-This is an optional positive-count distribution sensitivity analysis, not a
-default replacement for CPM or TTR. No Shiny UI or existing fitness results are
-changed. The method assumes comparable positive-count distributions are an
+This is a measured alternative for positive-count distribution matching: with the z-score it ranks planted effects
+within 0.01 AUC of BGC in the pre-registered benchmark (R27). It is not a default. The method assumes comparable positive-count distributions are an
 appropriate reference within the explicitly chosen normalization group; real
 treatment-induced distribution changes may violate that assumption.
 

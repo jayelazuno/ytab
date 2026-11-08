@@ -94,7 +94,7 @@ comparative_comparison_ui <- function() {
                           "one-to-one table cannot express), or the gene's name alone (weakest). The routes are ",
                           "unioned, so a gap in any one source costs an edge rather than a wrong answer."),
                    tags$p(tags$b("Orthologs. "),
-                          "Through the S. cerevisiae hub, from each project's own ortholog table (reference: ",
+                          "Through the S. cerevisiae hub, from each dataset's own ortholog table (reference: ",
                           "orthology_file), as whole families rather than one-to-one pairs. Where a family has ",
                           "expanded in a species, every member gets its own panel, numbered within the family: the ",
                           "expansion is usually the point of the comparison, and keeping only unambiguous pairs ",
@@ -168,8 +168,8 @@ comparative_availability_display <- function(availability) {
   if (!is.data.frame(availability) || !nrow(availability)) return(data.frame())
   data.frame(
     Species = as.character(availability$label %||% availability$species),
-    `YTAB project outputs` = as.character(availability$status %||% ""),
-    Projects = as.integer(availability$project_count %||% 0L),
+    `YTAB dataset outputs` = as.character(availability$status %||% ""),
+    Datasets = as.integer(availability$project_count %||% 0L),
     `Essentiality results` = as.integer(availability$classifier_projects %||% 0L),
     `Fitness results` = as.integer(availability$fitness_projects %||% 0L),
     `Insertion summaries` = as.integer(availability$summary_projects %||% 0L),
@@ -414,7 +414,7 @@ comparative_server <- function(input, output, session, repo_root, active = funct
       parts <- lapply(split(d, d$species), function(x) sprintf(
         "%s: %s (%s, %s sites/coding kb)", ytab_species_italic(x$label[[1]]),
         paste(unique(ifelse(nzchar(x$call), x$call, "no call")), collapse = "/"),
-        x$project[[1]], x$sites_per_coding_kb[[1]]))
+        ytab_dataset_label(x$project[[1]], repo_root), x$sites_per_coding_kb[[1]]))
       paste(unlist(parts), collapse = " \u00b7 ")
     }
     tagList(
@@ -462,7 +462,7 @@ comparative_server <- function(input, output, session, repo_root, active = funct
                         Gene = reps$gene, Name = reps$gene_name,
                         `Matched by` = reps$matched_by, Call = reps$call,
                         `P(ES)` = reps$P_ES, `Sites per coding kb` = reps$sites_per_coding_kb,
-                        Project = reps$project, Libraries = reps$n_libraries, Status = reps$status,
+                        Dataset = ytab_dataset_label(reps$project, repo_root), Libraries = reps$n_libraries, Status = reps$status,
                         check.names = FALSE, stringsAsFactors = FALSE)
     DT::datatable(shown, rownames = FALSE, selection = "none", escape = FALSE,
                   options = list(dom = "t", scrollX = TRUE))
@@ -685,7 +685,7 @@ comparative_server <- function(input, output, session, repo_root, active = funct
         "The axis is reads at each insertion site, on a log scale." else
         "Every insertion site is one tick, with the reads at it in its width.",
       paste(vapply(names(reps), function(s) sprintf("%s from %s (%s libraries, %s sites/coding kb)",
-        ytab_species_italic(label_of[[s]] %||% s), htmltools::htmlEscape(reps[[s]]$project),
+        ytab_species_italic(label_of[[s]] %||% s), htmltools::htmlEscape(ytab_dataset_label(reps[[s]]$project, repo_root)),
         length(reps[[s]]$libraries), reps[[s]]$sites_per_coding_kb), character(1)), collapse = "; "))))
   })
 
@@ -744,6 +744,7 @@ comparative_server <- function(input, output, session, repo_root, active = funct
     calls <- run$calls
     cols <- intersect(c("label", "project", "sites_per_coding_kb", "represented", "status"), names(calls))
     data <- unique(calls[, cols, drop = FALSE])
+    if ("project" %in% names(data)) { data$project <- ytab_dataset_label(data$project, repo_root); names(data)[names(data) == "project"] <- "Dataset" }
     names(data)[names(data) == "label"] <- "Species"
     data$Species <- ytab_species_italic(data$Species)
     DT::datatable(data, rownames = FALSE, selection = "none", escape = FALSE,

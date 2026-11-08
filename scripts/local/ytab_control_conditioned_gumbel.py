@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Experimental control-conditioned Hermes Gumbel on combined replicate tracks.
+"""Control-conditioned Hermes Gumbel on combined replicate tracks.
 
 Input is a YTAB `normalize` output (ttr default, totreads or nzmean); no normalization is run here.
 """

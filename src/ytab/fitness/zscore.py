@@ -17,7 +17,12 @@ unchanged:
    threshold; final_call is depleted, enriched or none. combine="pairs" (the earlier YTAB rule): per gene across pairs,
    consistently depleted/enriched (2+ pairs, none opposite), single-pool, mixed, or none. The per-pair table is always
    written.
-5. Optional recentering (recenter="trimmed-sum", off by default): one scalar per treated library or treated mean, from genes
+5. Noise reference (noise=): "control" (default) fits SD(A) on the two controls, as above. "comparison" fits the same curve
+   to each treated-vs-control comparison's own log ratios (the deviation from genes of similar abundance in that
+   comparison, as Nickels et al. 2025 describe their z) and calls at |z| >= comparison_z (3, the published rule); it
+   widens with a noisy treated library and needs only one control. noise_controls="all" fits the control curve on every
+   pair of the background's controls pooled, instead of the first two (Gale et al. had two).
+6. Optional recentering (recenter="trimmed-sum", off by default): one scalar per treated library or treated mean, from genes
    with pooled mean >= the median after dropping the recenter_trim log-ratio tails (TMM-like, as in resampling).
 
 Writes the same tables as before into OUTPUT/tables, so the app and the runner read them unchanged.
@@ -56,10 +61,14 @@ class Settings:
     recenter_trim: float = .2
     hit_min_log2FC: float = 1.     # top hits: called genes with |log2FC| at least this (2-fold, Gale et al. 2020)
     hit_min_abundance: float = 0.  # optional abundance floor for top hits (per million); off by default
+    noise: str = "control"         # control (two-control noise model) | comparison (fitted to each comparison's own log ratios)
+    noise_controls: str = "first-two"   # first-two (Gale et al. 2020: one control pair) | all (every pair of the background's controls, pooled)
+    comparison_z: float = 3.       # call threshold with noise="comparison" (|z| >= 3, Gale et al. 2020; Nickels et al. 2025)
 
     def __post_init__(self):
-        if self.combine not in {"replicates", "pairs"} or self.recenter not in {"none", "trimmed-sum"} or not 0 <= self.recenter_trim < .5:
-            raise ValueError("Invalid combine, recenter or recenter_trim")
+        if self.combine not in {"replicates", "pairs"} or self.recenter not in {"none", "trimmed-sum"} or not 0 <= self.recenter_trim < .5 \
+                or self.noise not in {"control", "comparison"} or self.noise_controls not in {"first-two", "all"}:
+            raise ValueError("Invalid combine, recenter, recenter_trim or noise")
 
 
 def clean_name(x: str) -> str:
@@ -117,13 +126,18 @@ def sd_from_fit(coef: dict, a: np.ndarray) -> np.ndarray:
 def control_model(values: pd.DataFrame, c1: str, c2: str, s: Settings) -> dict:
     a = (values[c1].to_numpy()+values[c2].to_numpy())/2
     m = np.log2((values[c1].to_numpy()+s.pseudocount)/(values[c2].to_numpy()+s.pseudocount))
+    return noise_model(values.index.to_numpy(), a, m, s, f"{c1} vs {c2}")
+
+
+def noise_model(ids: np.ndarray, a: np.ndarray, m: np.ndarray, s: Settings, label: str) -> dict:
+    """Running SD of M against A over 41 genes, fitted as SD(A) = m1 + m2 * A^m3."""
     order = np.argsort(-a, kind="stable")  # descending A; ties keep gene order
-    tab = pd.DataFrame(dict(feature_id=values.index.to_numpy()[order], A_ctrl=a[order], M_ctrl=m[order]))
+    tab = pd.DataFrame(dict(feature_id=ids[order], A_ctrl=a[order], M_ctrl=m[order]))
     half = s.window//2
     tab["run_A"] = running(tab.A_ctrl.to_numpy(), half, np.mean)
     tab["run_SD"] = running(tab.M_ctrl.to_numpy(), half, lambda v:np.std(v, ddof=1))
     fit = tab[tab.run_A.notna() & tab.run_SD.notna() & (tab.run_A >= s.min_abundance) & (tab.run_SD > 0)]
-    if len(fit) < 20:raise ValueError(f"Too few points to fit the control-control noise model for {c1} vs {c2}")
+    if len(fit) < 20:raise ValueError(f"Too few points to fit the noise model for {label}")
     x, y = fit.run_A.to_numpy(), fit.run_SD.to_numpy()
     slope = np.polyfit(np.log(x), np.log(y), 1)[0]
     m3 = max(min(slope, .3), -2.5); m1 = quantile7(y, .02)
@@ -132,6 +146,13 @@ def control_model(values: pd.DataFrame, c1: str, c2: str, s: Settings) -> dict:
                                     method="trf", xtol=1e-15, ftol=1e-15, gtol=1e-15, max_nfev=5000)
     coef = dict(m1=float(result.x[0]), m2=float(result.x[1]), m3=float(result.x[2]))
     return dict(table=tab, coef=coef, start=dict(m1=m1, m2=m2, m3=m3), converged=bool(result.success))
+
+
+def local_sd(model: dict, a: np.ndarray, m: np.ndarray, ids: np.ndarray, s: Settings, label: str) -> tuple[np.ndarray, float]:
+    """Per-gene SD and call threshold of one comparison: the background's control noise model, or (noise="comparison")
+    the curve fitted to this comparison's own log ratios with the fixed |z| threshold."""
+    if s.noise == "comparison":return sd_from_fit(noise_model(ids, a, m, s, label)["coef"], a), s.comparison_z
+    return sd_from_fit(model["coef"], a), model["threshold"]
 
 
 def recenter_factor(control: np.ndarray, treated: np.ndarray, trim: float) -> float:
@@ -347,7 +368,14 @@ def run(comparison_design: Path, output: Path, sample_files: dict | None = None,
     controls_by_bg = sample_map[sample_map.role == "control"].groupby("background", sort=True)["sample"].apply(lambda x:list(dict.fromkeys(x)))
     for bg, controls in controls_by_bg.items():
         if len(controls) < 2:raise ValueError("Each background requires at least two control (parent) samples for the noise model.")
-        c1, c2 = controls[:2]; model = control_model(values, c1, c2, s)
+        c1, c2 = controls[:2]
+        if s.noise_controls == "all" and len(controls) > 2:   # every control pair's (A, M) points pooled into one curve
+            pairs = [(a, b) for i, a in enumerate(controls) for b in controls[i+1:]]
+            a = np.concatenate([(values[x].to_numpy()+values[y].to_numpy())/2 for x, y in pairs])
+            m = np.concatenate([np.log2((values[x].to_numpy()+s.pseudocount)/(values[y].to_numpy()+s.pseudocount)) for x, y in pairs])
+            ids = np.concatenate([values.index.to_numpy() for _ in pairs])
+            model = noise_model(ids, a, m, s, f"{len(controls)} controls of {bg}"); c1, c2 = controls[0], f"{len(controls)-1} others"
+        else:model = control_model(values, c1, c2, s)
         z = model["table"].M_ctrl.to_numpy()/sd_from_fit(model["coef"], model["table"].A_ctrl.to_numpy())
         model["threshold"] = quantile7(np.abs(z), s.z_quantile); model["controls"] = [c1, c2]; models[bg] = model
         thresholds.append(dict(background=bg, z_quantile=s.z_quantile, z_threshold=model["threshold"], parent_comparison=f"{c1}_vs_{c2}"))
@@ -364,9 +392,8 @@ def run(comparison_design: Path, output: Path, sample_files: dict | None = None,
         p, t = values[row.parent_sample].to_numpy(), values[row.treated_sample].to_numpy()
         if s.recenter != "none":t = t*recenter_factor(p, t, s.recenter_trim)
         a = (t+p)/2; m = np.log2((t+s.pseudocount)/(p+s.pseudocount)); model = models[row.background]
-        sd = sd_from_fit(model["coef"], a)
+        sd, thr = local_sd(model, a, m, values.index.to_numpy(), s, row.comparison_id)
         with np.errstate(divide="ignore", invalid="ignore"):z = m/sd
-        thr = model["threshold"]
         pairs.append(pd.DataFrame(dict(feature_id=values.index, contrast=row.comparison_id, background=row.background, pool=row.pool,
             parent_sample=row.parent_sample, treated_sample=row.treated_sample, parent_cpm=p, treated_cpm=t, A_exp=a, log2FC=m,
             sd_local=sd, z=z, Zthr=thr, call=call_of(z, thr))))
@@ -378,11 +405,12 @@ def run(comparison_design: Path, output: Path, sample_files: dict | None = None,
         controls, treated = list(dict.fromkeys(group.parent_sample)), list(dict.fromkeys(group.treated_sample))
         p, t = values[controls].to_numpy().mean(1), values[treated].to_numpy().mean(1)
         factor = recenter_factor(p, t, s.recenter_trim) if s.recenter != "none" else 1.; t = t*factor
-        a = (t+p)/2; m = np.log2((t+s.pseudocount)/(p+s.pseudocount)); model = models[bg]; sd = sd_from_fit(model["coef"], a)
+        a = (t+p)/2; m = np.log2((t+s.pseudocount)/(p+s.pseudocount)); model = models[bg]
+        sd, thr = local_sd(model, a, m, values.index.to_numpy(), s, f"{bg} {condition}")
         with np.errstate(divide="ignore", invalid="ignore"):z = m/sd
         combined.append(pd.DataFrame(dict(feature_id=values.index, background=bg, treated_condition=condition, controls=";".join(controls),
             treated=";".join(treated), parent_mean=p, treated_mean=t, recenter_factor=factor, A_exp=a, log2FC=m, sd_local=sd, z=z,
-            Zthr=model["threshold"], call=call_of(z, model["threshold"]))))
+            Zthr=thr, call=call_of(z, thr))))
     combined = pd.concat(combined, ignore_index=True)
     combined.merge(annot, on="feature_id", how="left").to_csv(tables/"treated_vs_parent.combined.log2fc_z.csv", index=False)
 

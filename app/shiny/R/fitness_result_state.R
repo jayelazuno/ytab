@@ -18,11 +18,6 @@ normalize_fitness_result_columns <- function(result) {
   available<-intersect(names(aliases),names(out));missing<-setdiff(names(aliases),available);warnings<-if(!length(available))"Fitness result does not contain recognized display columns."else character()
   list(data=out,available=available,missing_optional=missing,warnings=warnings)
 }
-fitness_call_column <- function(data){hit<-intersect(c("final_call","fitness_call","call","status"),names(data));if(length(hit))hit[[1]]else""}
-fitness_call_counts <- function(data){column<-fitness_call_column(data);known<-c("none","depleted","enriched","single_pool_depleted","single_pool_enriched","mixed","consistently_depleted","consistently_enriched");values<-if(nzchar(column))as.character(data[[column]])else character();setNames(vapply(known,function(x)sum(values==x,na.rm=TRUE),0L),known)}
-filter_fitness_results <- function(data,call="All",search=""){if(!nrow(data))return(data);keep<-rep(TRUE,nrow(data));column<-fitness_call_column(data);if(call!="All"&&nzchar(column))keep<-keep&data[[column]]==call;if(nzchar(trimws(search))){fields<-intersect(c("feature_id","standard_name","common_name","gene","gene_id"),names(data));if(length(fields))keep<-keep&Reduce(`|`,lapply(data[fields],function(x)grepl(search,as.character(x),ignore.case=TRUE)))};data[keep,,drop=FALSE]}
-fitness_result_table_data <- function(data, repo_root = NULL){normalized<-normalize_fitness_result_columns(data);wanted<-c("feature_id","gene","fitness_call","mean_log2fc","min_z","max_z","comparisons_depleted","comparisons_enriched","classifier_label");visible<-intersect(wanted,names(normalized$data));if(!length(visible))return(data.frame());x<-normalized$data[,visible,drop=FALSE];if(!is.null(repo_root)&&"feature_id"%in%names(x)){mapped<-ytab_glabrata_regular_display_columns(x,repo_root,"feature_id",include_details=TRUE);x<-cbind(mapped,x[,setdiff(names(x),c("feature_id","gene")),drop=FALSE])};labels<-c(feature_id="Feature ID",gene="Gene",fitness_call="Fitness call",mean_log2fc="Mean log2 fold change",min_z="Minimum z-score",max_z="Maximum z-score",comparisons_depleted="Comparisons depleted",comparisons_enriched="Comparisons enriched",classifier_label="Classifier label");names(x)<-ifelse(names(x)%in%names(labels),unname(labels[names(x)]),names(x));x}
-fitness_smoke_project <- function(project) grepl("smoke|test",project$project_id,ignore.case=TRUE)||((project$project_type%||%"")%in%c("test","temporary","demo"))
 # "Z-score · BGC · 22 Oct 2026 14:05" (+ "· classifier-annotated"): the normalization and date tell results apart.
 fitness_result_display_name <- function(result) {
   if (is.null(result)) return("Z-score result")
@@ -46,34 +41,4 @@ validate_fitness_success <- function(status,result_path) {
   if(!"feature_id"%in%normalized$available)return(list(valid=FALSE,message="Fitness result is missing a feature-identifying column."))
   if(!"fitness_call"%in%normalized$available)return(list(valid=FALSE,message="Fitness result is missing a fitness-call/status column."))
   list(valid=TRUE,message=if(status%in%c("cached","cached_success"))"Cached result reused"else"Fitness analysis complete",feature_count=nrow(data),warnings=normalized$warnings)
-}
-fitness_download_table <- function(data,selected_calls=NULL,requested_columns=NULL) {
-  if(!is.data.frame(data))data<-data.frame()
-  out<-data;call_column<-fitness_call_column(out);calls<-unname(as.character(selected_calls%||%character()));calls<-calls[!is.na(calls)&nzchar(calls)&calls!="All"]
-  if(length(calls)&&nzchar(call_column))out<-out[!is.na(out[[call_column]])&out[[call_column]]%in%calls,,drop=FALSE]
-  if(!is.null(requested_columns)){visible<-intersect(as.character(requested_columns),names(out));out<-out[,visible,drop=FALSE]}
-  out
-}
-# What a user needs to remember about a z-score result: which comparisons, which normalization, which call rule, how many calls.
-fitness_result_facts <- function(result) {
-  ids <- result$selected_comparisons %||% character()
-  comparisons <- if (length(ids) > 3L) sprintf("%s and %d more", paste(ids[1:3], collapse = ", "), length(ids) - 3L) else paste(ids, collapse = ", ")
-  norm <- result$normalization %||% "CPM"; run <- result$normalization_run %||% ""
-  normalization <- if (toupper(norm) == "CPM") "Total reads (CPM)" else as.character(norm_method_label(norm))
-  if (nzchar(run) && file.exists(file.path(run, "manifest.json"))) normalization <- sprintf("%s, normalization run of %s", normalization, format(file.mtime(file.path(run, "manifest.json")), "%d %b %Y %H:%M"))
-  rule <- switch(result$call_rule %||% "", replicates = "Replicates averaged per condition, one z per gene",
-                 pairs = "Each comparison called separately, then combined", "Not recorded (earlier pipeline version)")
-  n <- result$calls %||% numeric(); get <- function(k) as.integer(if (k %in% names(n)) n[[k]] else 0L)
-  calls <- if (!length(n)) "" else if (identical(result$call_rule, "pairs"))
-    sprintf("%d depleted and %d enriched in all comparisons; %d depleted and %d enriched in only some", get("consistently_depleted"), get("consistently_enriched"), get("single_pool_depleted"), get("single_pool_enriched"))
-    else sprintf("%d depleted · %d enriched%s", get("depleted"), get("enriched"), if (get("mixed") > 0) sprintf(" · %d mixed", get("mixed")) else "")
-  list(comparisons = comparisons, n_comparisons = length(ids), normalization = normalization, rule = rule, calls = calls)
-}
-# Settings on the Run subtab that this result was not made with (empty when it was).
-fitness_result_differences <- function(result, comparisons, method = "CPM", run = "") {
-  out <- character()
-  if (!identical(toupper(result$normalization %||% "CPM"), toupper(method)) || (!identical(toupper(method), "CPM") && !identical(normalizePath(result$normalization_run %||% "", mustWork = FALSE), normalizePath(run, mustWork = FALSE))))
-    out <- c(out, sprintf("normalization (Run is set to %s)", if (toupper(method) == "CPM") "Total reads (CPM)" else paste0(norm_method_label(method), if (file.exists(file.path(run, "manifest.json"))) format(file.mtime(file.path(run, "manifest.json")), ", normalization run of %d %b %Y %H:%M") else "")))
-  if (!setequal(result$selected_comparisons %||% character(), comparisons %||% character())) out <- c(out, "comparisons")
-  out
 }
