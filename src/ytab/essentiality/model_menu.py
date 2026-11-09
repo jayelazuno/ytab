@@ -1,7 +1,7 @@
 """Side-by-side essentiality model menu: one row per gene with every available model's score and call.
 
 Models (see output/essentiality/hermes_hmm/hermes_hmm_methods.md):
-- hmm          Hermes window HMM v2 (P_ES_run, call). Unsupervised: needs no labels. Always present.
+- hmm          Window HMM v2 (P_ES_run, call). Unsupervised: needs no labels. Always present.
 - hybrid       random forest on SummaryTable gene features + HMM features, trained on labelled genes.
                Present only when labels and gene features (a SummaryTable feature table, or the legacy
                classifier's prediction table, which carries the same columns) are supplied. Labelled training genes get out-of-fold

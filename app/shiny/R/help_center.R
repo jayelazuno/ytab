@@ -5,7 +5,7 @@
 help_pages <- function(repo_root) {
   index <- file.path(repo_root, "docs", "methods", "index.tsv")
   pages <- if (file.exists(index)) utils::read.delim(index, stringsAsFactors = FALSE) else data.frame(order = integer(), section = character(), title = character(), file = character())
-  extra <- data.frame(order = c(0L, 999L), section = c("Getting started", "About"), title = c("Tutorial: Gale 2020 from dataset to results", "Release notes"),
+  extra <- data.frame(order = c(0L, 999L), section = c("Getting started", "About"), title = c("Tutorial: Gale et al. 2020 from dataset to results", "Release notes"),
                       file = c("docs/methods/tutorial.md", "docs/RELEASE_NOTES.md"), stringsAsFactors = FALSE)
   pages <- rbind(extra[1, ], pages, extra[2, ])
   pages <- pages[file.exists(file.path(repo_root, pages$file)), , drop = FALSE]
@@ -16,8 +16,22 @@ help_pages <- function(repo_root) {
 
 help_markdown <- function(repo_root, file) paste(readLines(file.path(repo_root, file), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
 
+# Pandoc turns the TeX in the methods pages into MathML, which browsers draw themselves: the equations render with
+# no JavaScript and no network, so the help centre still works offline. Pandoc ships in the ytab-local environment
+# and in the app image; without it the page still renders, with its equations left as TeX.
+help_html <- function(repo_root, file) {
+  path <- file.path(repo_root, file)
+  pandoc <- Sys.which("pandoc")
+  if (nzchar(pandoc)) {
+    out <- tryCatch(system2(pandoc, c("--from=gfm", "--to=html", "--mathml", shQuote(path)), stdout = TRUE, stderr = FALSE),
+                    error = function(e) character())
+    if (length(out) && !isTRUE(attr(out, "status") > 0)) return(paste(out, collapse = "\n"))
+  }
+  commonmark::markdown_html(help_markdown(repo_root, file), extensions = TRUE)
+}
+
 help_render <- function(repo_root, file) {
-  html <- commonmark::markdown_html(help_markdown(repo_root, file), extensions = TRUE)
+  html <- help_html(repo_root, file)
   sub_dir <- sub("^docs/?", "", dirname(file)); base <- if (nzchar(sub_dir)) paste0("ytab-docs/", sub_dir) else "ytab-docs"
   # relative image paths resolve against the page's folder
   html <- gsub('<img src="(?!https?:|/|ytab-docs/)([^"]+)"', paste0('<img class="ytab-help-image" src="', base, '/\\1"'), html, perl = TRUE)
@@ -72,6 +86,15 @@ help_search <- function(repo_root, query, pages = help_pages(repo_root), max_hit
   utils::head(rbind(tabs, sets, found), max_hits)
 }
 
+# A dialog title with a button that fills the window and puts it back. ytab_page_styles.js does the toggling,
+# so the size survives inside one dialog without a round trip to the server.
+modal_title_with_size_toggle <- function(title) {
+  tags$div(class = "ytab-modal-title",
+    tags$span(title),
+    tags$button(type = "button", class = "btn btn-default btn-sm ytab-modal-size",
+                `data-ytab-modal-size` = "", `aria-label` = "Fill the window", "Maximize"))
+}
+
 help_center_modal <- function(pages, selected) {
   sections <- unique(pages$section)
   nav <- lapply(sections, function(s) {
@@ -80,7 +103,8 @@ help_center_modal <- function(pages, selected) {
              lapply(seq_len(nrow(rows)), function(i) actionLink(paste0("help_page_", rows$id[[i]]), rows$title[[i]],
                                                                  class = if (identical(rows$id[[i]], selected)) "ytab-help-link active" else "ytab-help-link")))
   })
-  modalDialog(title = "Methods and help", size = "l", easyClose = TRUE, footer = modalButton("Close"),
+  modalDialog(title = modal_title_with_size_toggle("Methods and help"), size = "l", easyClose = TRUE,
+    footer = modalButton("Close"),
     tags$div(class = "ytab-help-center", tags$nav(class = "ytab-help-nav", nav), tags$article(class = "ytab-help-page", uiOutput("help_page_body"))))
 }
 
@@ -95,7 +119,11 @@ help_center_server <- function(input, output, session, repo_root, go_to = NULL, 
   open_page <- function(id) { current(id); showModal(help_center_modal(pages, id)) }
   output$help_page_body <- renderUI({ id <- current(); req(nzchar(id)); help_render(repo_root, pages$file[match(id, pages$id)]) })
   for (i in seq_len(nrow(pages))) local({ id <- pages$id[[i]]; observeEvent(input[[paste0("help_page_", id)]], open_page(id), ignoreInit = TRUE) })
-  first_method <- function() pages$id[match("Building a pool", pages$section)] %||% pages$id[[1]]
+  # Methods opens on the first methods page; Tutorial has its own link, so it is not that page.
+  first_method <- function() {
+    ids <- pages$id[!grepl("tutorial\\.md$", pages$file)]
+    if (length(ids)) ids[[1]] else pages$id[[1]]
+  }
   observeEvent(input$open_help_methods, open_page(first_method()), ignoreInit = TRUE)
   observeEvent(input$open_help_methods_nav, open_page(first_method()), ignoreInit = TRUE)
   observeEvent(input$open_help_tutorial, open_page("tutorial"), ignoreInit = TRUE)

@@ -281,10 +281,12 @@ def main():
     parser.add_argument("--discard-untrimmed", action="store_true")
     parser.add_argument("--trim-3p-seq", action="append", default=[],
                         help="3' sequence to trim (repeatable; a transposon profile's restriction-site or adaptor sequences)")
-    parser.add_argument("--hermes-preprocess", action="store_true", help="Trim detected Hermes terminal sequence and adapters; no mandatory Hermes match")
+    parser.add_argument("--detect-ends", "--hermes-preprocess", dest="detect_ends", action="store_true",
+                        help="Trim the transposon's terminal sequence and adapters, detected from its reference and "
+                             "primer catalogue; no mandatory match. --hermes-preprocess is the former name.")
     parser.add_argument("--primer-catalogue", type=Path)
-    parser.add_argument("--hermes-reference", type=Path)
-    parser.add_argument("--hermes-overlap", type=int, default=16)
+    parser.add_argument("--transposon-reference", "--hermes-reference", dest="transposon_reference", type=Path)
+    parser.add_argument("--end-overlap", "--hermes-overlap", dest="end_overlap", type=int, default=16)
     parser.add_argument("--adapter-error-rate", type=float, default=.1)
     parser.add_argument("--min-read-length", type=int, default=25)
     parser.add_argument("--junction-read-end", choices=("start","end"), default="start")
@@ -336,27 +338,27 @@ def main():
         prefix = derive_prefix(args.input_file_name)
 
     cleanup_directory = None
-    if args.hermes_preprocess:
-        from ytab.mapping.hermes_preprocess import DEFAULT_CATALOGUE, prepare_fastqs
+    if args.detect_ends:
+        from ytab.mapping.read_cleanup import DEFAULT_CATALOGUE, prepare_fastqs
         if args.trim_5p_seq is not None or args.clean_adapters is not None or args.trim_3p_seq or args.delete_originals:
-            raise ValueError("Automatic Hermes cleanup cannot be combined with legacy trimming/deletion flags")
+            raise ValueError("End detection cannot be combined with declared trimming/deletion flags")
         if args.junction_mate == "both":
-            raise ValueError("Automatic Hermes cleanup requires one designated junction mate")
-        cleanup_directory = tempfile.TemporaryDirectory(prefix="hermes-cleanup-",dir=os.environ.get("TMPDIR") or args.out_dir)
+            raise ValueError("End detection requires one designated junction mate")
+        cleanup_directory = tempfile.TemporaryDirectory(prefix="read-cleanup-",dir=os.environ.get("TMPDIR") or args.out_dir)
         inputs = [args.r1,args.r2] if pe_mode else [args.input_file_name]
         outputs = [str(Path(cleanup_directory.name)/f"read{i+1}.fastq") for i in range(len(inputs))]
-        print(f"Starting automatic Hermes/adaptor cleanup: {prefix}; junction mate={args.source_junction_mate or args.junction_mate}",flush=True)
+        print(f"Starting transposon-end and adaptor cleanup: {prefix}; junction mate={args.source_junction_mate or args.junction_mate}",flush=True)
         report = prepare_fastqs(inputs,outputs,
             junction_index=1 if pe_mode and args.junction_mate=="R2" else 0,
             read_end=args.junction_read_end,require_junction=args.require_junction,
             catalogue=args.primer_catalogue or DEFAULT_CATALOGUE,
-            reference=args.hermes_reference,overlap=args.hermes_overlap,
+            reference=args.transposon_reference,overlap=args.end_overlap,
             error_rate=args.adapter_error_rate,min_length=args.min_read_length)
         report["junction_mate"] = args.source_junction_mate or args.junction_mate
         report["require_mate_alignment"] = args.require_mate_alignment
-        report_path = Path(args.out_dir)/f"{prefix}.hermes_preprocessing.json"
+        report_path = Path(args.out_dir)/f"{prefix}.read_cleanup.json"
         report_path.write_text(json.dumps(report,indent=2)+"\n")
-        print(f"Hermes preprocessing report: {report_path}",flush=True)
+        print(f"Read cleanup report: {report_path}",flush=True)
         print(json.dumps(dict(junction_mate=report['junction_mate'],retained=report['retained_reads_or_pairs'],mates=report['mates'])),flush=True)
         if pe_mode:
             args.r1,args.r2=outputs

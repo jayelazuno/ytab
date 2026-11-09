@@ -7,7 +7,7 @@ landing_ui <- function(species_choices, detected_cpu, shinyfiles_available) {
           tags$div(class = "ytab-logo-mark", "Y"),
           tags$span(class = "ytab-kicker", "LOCAL ANALYSIS WORKSPACE")),
         tags$h1("YTAB"), tags$h2("Yeast Transposon Analysis Browser"),
-        tags$p("Hermes and Ac/Ds libraries, any yeast with a reference genome."),
+        tags$p("Hermes, Ac/Ds and piggyBac libraries, any yeast with a reference genome."),
         tags$div(class = "ytab-hero-pills",
           tags$span("Mapping"),
           tags$span("Quality control"),
@@ -36,7 +36,13 @@ landing_ui <- function(species_choices, detected_cpu, shinyfiles_available) {
           sliderInput("threads", "CPU threads", min = 1L, max = max(2L, detected_cpu), value = min(2L, detected_cpu), step = 1L),
           conditionalPanel("input.threads > 4", tags$div(class="ytab-warning", "Higher thread counts may increase memory use on low-memory computers.")),
           uiOutput("fastq_message"),
-          tags$div(id = "fastq_preview", class = "datatables html-widget html-widget-output shiny-report-size shiny-report-theme"),
+          # Ticked rows are the FASTQs that become analysed samples. Everything found stays recorded in the
+          # sample sheet, so an unticked file can be taken up later from Run > Samples.
+          DT::DTOutput("fastq_preview"),
+          tags$div(class = "ytab-actions",
+            actionButton("fastq_select_all", "Select all files", class = "btn-secondary"),
+            actionButton("fastq_select_none", "Clear selection", class = "btn-secondary")),
+          uiOutput("fastq_selection_summary"),
           verbatimTextOutput("init_command"), uiOutput("initialize_button"),
           actionButton("return_from_new_project","Return to landing page"),verbatimTextOutput("command_output"))),
       panel_card(tagList(tags$span(class = "ytab-card-eyebrow", "Import"), "Import insertion hit files"),

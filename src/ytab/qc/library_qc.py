@@ -1,11 +1,11 @@
 """Per-library QC table for a project: every QC metric in one table, flagged and commented, plus plot data.
 
-Collects, for each included library, the read and mapping metrics (Hermes cleanup, MapFastq), the Tn-seq count
+Collects, for each included library, the read and mapping metrics (read cleanup, MapFastq), the Tn-seq count
 statistics computed from the hit file (tnseq_stats.statistics, over the project's empirical site catalogue), the
 strand correlation, the SummaryTable gene-level metrics and the saved library diagnostics (MidLC, jackpots).
 
 Flags (green / yellow / red; grey = not flagged) never use invented cut-offs:
-- "rule of thumb": only where published Tn-seq QC guidance is scale-free and carries over to Hermes (skewness of the
+- "rule of thumb": only where published Tn-seq QC guidance is scale-free and carries over to these libraries (skewness of the
   positive counts: above 30 often signals a problem, below 50 is desired; see docs/library_qc.md for the source).
 - "project-relative": a library is compared with the project's libraries of the same role (parents with parents,
   treated with treated) by robust z = (x - median) / (1.4826 MAD), in the metric's bad direction only; yellow beyond
@@ -41,8 +41,8 @@ TTR_HINT = "TTR is robust to isolated outlier sites; BGC if many sites are affec
 
 # key, theme, label, bad direction ("low", "high", "both" or None), rule ("rule_of_thumb", "relative", None), comment
 METRICS = [
-    ("input_reads", "reads", "Reads sequenced", "low", "relative", "Reads entering Hermes cleanup (the junction read)."),
-    ("retained_fraction", "reads", "Reads retained after cleanup", "low", "relative", "Fraction of reads kept after Hermes/adaptor trimming and the length filter."),
+    ("input_reads", "reads", "Reads sequenced", "low", "relative", "Reads entering read cleanup (the junction read)."),
+    ("retained_fraction", "reads", "Reads retained after cleanup", "low", "relative", "Fraction of reads kept after transposon-end and adaptor trimming and the length filter."),
     ("adapter_fraction", "reads", "Reads with 3' adaptor", "high", "relative", "Fraction of reads with adaptor at the 3' end (short fragments or primer dimers)."),
     ("mapped_reads", "reads", "Mapped reads", "low", "relative", "Primary alignments that map to the reference."),
     ("percent_mapped", "reads", "Mapped (%)", "low", "relative", "Primary alignments that map to the reference."),
@@ -63,7 +63,7 @@ METRICS = [
     ("skewness", "insertions", "Skewness", "high", "rule_of_thumb", "Skewness of the read counts at occupied sites: above 30 often signals a problem, below 50 is desired (can be higher under strong selection)."),
     ("kurtosis", "insertions", "Kurtosis", None, None, "Excess kurtosis of the read counts at occupied sites; not very meaningful on its own."),
     ("pickands_tail_index", "insertions", "Tail index (Pickands)", "high", "relative", "Heaviness of the upper tail of the read counts; higher means a few sites carry more of the reads."),
-    ("fr_corr", "insertions", "Strand correlation (W vs C)", None, None, "Correlation of read counts on the two strands at a position. For Hermes the two orientations are separate insertions, so it is shown, not flagged."),
+    ("fr_corr", "insertions", "Strand correlation (W vs C)", None, None, "Correlation of read counts on the two strands at a position. For Hermes and Ac/Ds the two orientations are separate insertions; for piggyBac they are the two ends of one occupied TTAA. Shown, not flagged."),
     ("sites_per_coding_kb", "genes", "Insertion sites per coding kb (median gene)", "low", "relative", "Distinct insertion positions inside a gene's coding blocks per kb of coding sequence, median over genes. This is the density the essentiality recommendation is stated in (docs/methods/00_recommendations.md): about 36 for the label-free HMM, about 18 when curated labels are available, reached by pooling independent inductions. Insertions per kb of genome is not the same measure, because it counts the whole reference rather than coding sequence."),
     ("percent_features_hit", "genes", "Genes hit (%)", "low", "relative", "SummaryTable: features with at least one insertion."),
     ("mean_hits_per_feature", "genes", "Insertions per gene", "low", "relative", "SummaryTable: mean insertion sites per feature."),
@@ -289,7 +289,7 @@ def plot_data(sample: str, counts: np.ndarray, n_points: int = 400) -> dict[str,
     return {"histogram":histogram, "qq":qq, "ranked":ranked, "lorenz":lorenz}
 
 
-def _hermes(path: Path) -> dict:
+def _cleanup(path: Path) -> dict:
     if not path.is_file():return {}
     data = json.loads(path.read_text()); mate = (data.get("mates") or [{}])[0]
     reads = _float(mate.get("input_reads"))
@@ -414,7 +414,11 @@ def build(project_config: Path, output: Path) -> dict:
         name = str(s["sample"]); role = str(s.get("library_role") or s.get("condition") or s.get("guessed_condition") or "library").strip().lower()
         row = dict(sample=name, display_name=s.get("display_name") or name, role=role, pool=s.get("pool") or s.get("guessed_pool") or "",
                    background=s.get("background") or s.get("guessed_background") or "")
-        row |= (_hermes(project/"mapfastq"/name/f"{name}.hermes_preprocessing.json") or _mapping_log(project/"mapfastq"/name/f"{name}_log.txt")) \
+        # The cleanup report was named after Hermes before the step was understood to apply to any transposon;
+        # runs made then still carry that name.
+        cleanup = _cleanup(project/"mapfastq"/name/f"{name}.read_cleanup.json") \
+            or _cleanup(project/"mapfastq"/name/f"{name}.hermes_preprocessing.json")
+        row |= (cleanup or _mapping_log(project/"mapfastq"/name/f"{name}_log.txt")) \
             | _mapping(project/"mapfastq"/name/f"{name}.mapping_stats.csv") | _donor(project/"mapfastq"/name/f"{name}.donor_reads.csv")
         if name in hits:
             row |= insertion_metrics(*hits[name], universe, genome_bp)

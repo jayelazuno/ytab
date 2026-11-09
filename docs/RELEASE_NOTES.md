@@ -1,5 +1,71 @@
 # Release notes
 
+## 2026-11-09: donor-plasmid reads, building a dataset, and the help centre
+
+**Quality control**
+- **Reads from the transposon donor (%)** and **donor reads placed on the genome (%)**: the share of a library's
+  reads that come from the donor plasmid or an unexcised donor locus rather than from a genomic insertion. The reads
+  are counted against the donor sequence with the transposon masked out, and only alignments of at least 30 bases
+  count, so a read that merely carries the transposon end is not counted. Under *Reads and Mapping*, with their own
+  plot group.
+- `ytab donor-reads` reads the FASTQs directly: counting them needs no remapping to the genome.
+- Donors for five constructs ship under `resources/transposons/donors/`, built from their published parts and
+  checked against the real pCU-MET3-Hermes sequence.
+- **Build QC table** picks up metrics added since a stored table was made.
+
+**Building a dataset from FASTQ**
+- The scan now lists the FASTQ files with checkboxes: tick the ones this dataset should analyse, with
+  *Select all files* / *Clear selection* and a running count. Unticked files are still recorded as samples with
+  `include=no`, so they can be taken up later from Run > Samples.
+- The same choice on the command line: `ytab_init_local_project.py --include-fastq FILE` (repeatable) or
+  `--include-fastq-list PATH`. The command the app shows is the command that ran.
+- Mapping runs one sample at a time, at the chosen thread count, and can be stopped and resumed; the dataset card
+  says so.
+
+**Read cleanup is named for what it does**
+- `hermes_cleanup` is now `detect_ends`, `--hermes-preprocess` is `--detect-ends`, `--hermes-reference` is
+  `--transposon-reference`, `--hermes-overlap` is `--end-overlap`, and the report is written as
+  `<sample>.read_cleanup.json`. The method was never specific to one transposon: it builds its adapters from the
+  element's own terminal sequence and a catalogue of the primers used.
+- A library design can name its `primer_catalogue` and `reference`, so an element other than Hermes can use detected
+  ends; the designs that declare the sequence their construct leaves (Ac/Ds, piggyBac) are unchanged.
+- Nothing has to be re-run: the former names are still read, and the QC table accepts either report filename.
+
+**The app**
+- Dialogs display as dialogs. Bootstrap is loaded for the whole app, not only the workspace, so the directory
+  chooser, Methods, Datasets, Search and every confirmation open over the page instead of unstyled at the bottom of
+  it. The landing page keeps the proportions it was designed with.
+- **Maximize / Restore** on the Methods and Datasets dialogs.
+- Help pages scroll inside the dialog, with the contents list fixed beside them.
+- **Equations render.** The methods pages are converted with pandoc to MathML, which the browser draws itself: no
+  JavaScript, no network, so the help centre still works offline.
+- Public datasets opens at a readable width, one row per study.
+- Buttons that are not ready are disabled, rather than looking enabled and refusing the click.
+- Streaming a PCA no longer reports a missing function.
+
+**Documentation**
+- The tutorial follows the current tabs and names, including Multi-condition and Genetic Interactions, the donor
+  metric and picking FASTQ files.
+- *Read selection and transposon cleanup* states the two cleanup paths and lists the piggyBac design.
+- *Window HMM and hybrid*: the model is not specific to one transposon. `v2` uses the Hermes consensus as its
+  sequence covariate; `v3` learns the target-site model from the libraries' own insertion sites, and essentiality
+  has been run this way on Ac/Ds libraries.
+- The bench protocol for building a Hermes pool has left Methods: YTAB analyses sequenced libraries.
+- The README describes the release as it is, with the adapted methods and their references.
+
+**Testing the app**
+- An image for testers: `docker run --rm -p 3838:3838 -v "$PWD:/opt/ytab" ghcr.io/jayelazuno/ytab-app:v0.1`. It
+  carries the environment only and mounts the clone, so a `git pull` is enough to pick up changes.
+- `docs/testing.md` is the guide, including how to mount a FASTQ folder the container would not otherwise see.
+
+**Validation**
+- Python tests: 374 passed.
+- App smoke suite: 56 passed. The 15 failures all fail without this release's changes as well, which in turn fix
+  five that were failing (app initialization, the essentiality and library-correlation tab UIs, run mapping and
+  treated-vs-control agreement).
+- Verified in the container against the demo dataset: the landing page, all eight tabs, the QC table, the directory
+  chooser, both dialogs and the rendered equations.
+
 ## 2026-10-23: four species, two transposons
 
 **Mapping**

@@ -1,4 +1,4 @@
-# Hermes window HMM and hybrid: essentiality
+# Window HMM and hybrid: essentiality
 
 *Copied from `output/essentiality/hermes_hmm/hermes_hmm_methods.md` (the full methods write-up, with a PDF version).*
 
@@ -7,11 +7,17 @@
 
 # Summary
 
-YTAB offers two gene-essentiality models for Hermes Tn-seq, each defined by which data it needs.
+YTAB offers two gene-essentiality models, each defined by which data it needs. Neither is specific to one
+transposon: both read insertion sites and read counts, and the model is built for elements with no fixed site
+universe, which is what Hermes, Ac/Ds and piggyBac have in common and what separates them from the TA-site systems
+the published HMM was written for. The one place the transposon enters is the sequence covariate below: `v2` uses
+the Hermes nTnnnnAn consensus, while `v3` learns a target-site model from the libraries' own insertion sites, so any
+element can be modelled. Essentiality has been run this way on Ac/Ds libraries (SATAY in *S. cerevisiae*,
+*C. albicans*) as well as on Hermes.
 
 | model | needs labelled genes? | role |
 |---|---|---|
-| **Hermes window HMM** (`hermes_hmm_v2`) | **no**: genome, annotation and Hermes libraries only | **primary model**, including organisms without essentiality labels |
+| **Window HMM** (`hermes_hmm_v2`) | **no**: genome, annotation and the libraries only | **primary model**, including organisms without essentiality labels |
 | **Hybrid** (random forest on existing gene features + HMM posteriors) | **yes**: trained on labelled genes | when reliable labels exist for the organism or a close relative |
 
 **Supervised models depend on labels.** The hybrid, the current random forest and any retrained forest

@@ -1,8 +1,8 @@
 # Testing the YTAB app
 
-Thank you for trying this. You need **Docker** and about **3 GB of disk**; everything else — R, Shiny, Python and the
-analysis tools — is inside the image, so nothing is installed on your machine and nothing is left behind except the
-clone and the image.
+Thank you for trying this. You need **Docker** and about **7 GB of disk** (a 5.6 GB image and a ~800 MB clone);
+everything else — R, Shiny, Python and the analysis tools — is inside the image, so nothing is installed on your
+machine and nothing is left behind except the clone and the image.
 
 ## Run it
 
@@ -14,9 +14,9 @@ docker run --rm -p 3838:3838 -v "$PWD:/opt/ytab" ghcr.io/jayelazuno/ytab-app:v0.
 
 Then open <http://localhost:3838>. Stop it with Ctrl-C.
 
-The first run downloads the image (a few minutes). After that it starts in seconds. On an Apple Silicon Mac Docker
-runs it under emulation, so the first page may take a little longer to appear; that is expected and does not affect
-what you see.
+The first run downloads the image: about four minutes on a fast connection. After that it starts in seconds, and the
+first page takes 20-30 seconds to appear while R loads the app. On an Apple Silicon Mac Docker runs the image under
+emulation, so that first page is slower still; that is expected and does not affect what you see.
 
 `--depth 1` clones only the current state rather than the full history: about 800 MB instead of 3 GB. The clone
 carries demo projects, so there is data to look at straight away.
@@ -28,11 +28,13 @@ an analysis, and nothing you do affects anyone else's copy.
 
 Worth exercising:
 
-- **Quality Control** — the library table and its flags; each subtab's plots (Reads & Mapping, Insertions, Genes,
-  Saturation); hover a flagged cell for the reason.
-- **Site Normalization** — pick a run, compare methods, try the Top sites subtab.
-- **Treated vs Control** — the three methods, their options and the plots; try the gene labels and the downloads.
-- **Condition Comparisons**, **Essentiality**, **Comparative View**, **Gene Explorer**.
+- **Quality Control** — the library table and its flags; each subtab's plots (Reads & Mapping, Insertions & Genes,
+  Saturation & Bias, Library Agreement); hover a flagged cell for the reason. **Build QC table** recomputes it, which
+  is how newer metrics such as the reads from the transposon donor appear in a stored run.
+- **Normalization** — pick a run, compare methods, try the Top sites subtab.
+- **Condition Comparisons** — treated vs control with its three methods, their options and the plots; try the gene
+  labels and the downloads; then the dose-series and genetic-interaction views.
+- **Essentiality**, **Gene Explorer**, **Screen Planning**.
 - Plot customization: the style controls, and whether downloads match what is on screen.
 
 ## Telling us what you found
@@ -54,9 +56,18 @@ The interface is what we are testing.
 
 **Port 3838 already in use** — pick another: `-p 8080:3838`, then open <http://localhost:8080>.
 
+**"Start from FASTQ" cannot see your sequencing folder** — the container sees only what is mounted into it, which is
+the clone. To try the FASTQ workflow on your own reads, mount their folder as well and browse to `/data`:
+
+```bash
+docker run --rm -p 3838:3838 -v "$PWD:/opt/ytab" -v /path/to/your/fastqs:/data:ro \
+  ghcr.io/jayelazuno/ytab-app:v0.1
+```
+
 **The page does not load** — give it a minute on the first run, then check the terminal for errors.
 
-**Docker says permission denied or cannot connect** — Docker Desktop is probably not running; start it and try again.
+**Docker says permission denied or cannot connect** — the Docker engine is not running. Start Docker Desktop, or
+`colima start` if you use Colima, and try again.
 
 ## Without Docker
 

@@ -1,13 +1,27 @@
-# Hermes read selection and automatic cleanup
+# Read selection and transposon cleanup
 
-The project mapping runner uses **R1 as the designated Hermes/junction read** by
-default. Users can declare R2 instead; it does not guess mate identity from mapping
-rate. Both sequencing mates may map well, but only one starts at the insertion.
-The default does not require the other mate to map, or even to be present.
+The project mapping runner uses **R1 as the designated junction read** by default.
+Users can declare R2 instead; it does not guess mate identity from mapping rate.
+Both sequencing mates may map well, but only one starts at the insertion. The
+default does not require the other mate to map, or even to be present. This holds
+for every transposon: what differs between them is only how much of the element
+the read carries before the genome begins.
 
-The existing CLI, master pipeline and Shiny mapping controls all use this runner.
-No changes to normalization, fitness, Poisson planning or reference annotation are
-introduced here.
+Reads are cleaned in one of two ways, both selected by the library design rather
+than by the transposon:
+
+- **Detected ends.** The cleaner reads the transposon's own reference sequence and
+  a catalogue of the primers used, and builds its 5′ and 3′ adapters from the
+  element's terminal 120 bases in outward-read orientation. Nothing in it is
+  specific to Hermes; given another element's reference and catalogue it finds that
+  element's ends. YTAB ships a catalogue for Hermes
+  (`resources/transposons/hermes/primers.json`), and a sample can name another with
+  the `primer_catalogue` and `hermes_reference` columns.
+- **Declared ends.** The design states the exact sequence its construct leaves on
+  the read, and that sequence is trimmed wherever it occurs at full length. This is
+  what the Ac/Ds and piggyBac designs use, and it is equivalent to detection when
+  the construct is fixed and known, which is the usual case for a published
+  library: the primer and element end are the same in every read.
 
 ## Running
 
@@ -86,7 +100,8 @@ Nonstandard end-facing exports are not accepted in concordant-pair mode.
 
 Custom `primer_catalogue` and `hermes_reference` paths may be provided in the same
 mapping settings. The catalogue must follow the bundled schema. For a non-Hermes
-dataset or an externally precleaned input, use `hermes_cleanup: false` or the CLI
+dataset or an externally precleaned input, use `hermes_cleanup: false` (the setting that turns end detection off)
+or the CLI
 flag `--no-hermes-cleanup`. Legacy direct `MapFastq.py` calls remain unchanged unless
 `--hermes-preprocess` is passed.
 
@@ -104,16 +119,17 @@ mapping:
 
 per sample with `transposon` and `library_design` columns in the sample sheet (one project can mix designs), or on
 the command line with `ytab mapfastq --transposon ac_ds --library-design ds_primer_tail`. Without a selection the
-transposon is Hermes with its default design, the automatic cleanup above.
+transposon is Hermes with its default design, which uses detected ends.
 
 | transposon | design | reads | trimming |
 |---|---|---|---|
-| hermes | `splinkerette_pcr` (default) | Hermes end, then genome (Gale et al. 2020) | automatic Hermes cleanup |
-| hermes | `splinkerette_pcr_retained_end` | as above, but the reads keep the Hermes end (Patterson et al. 2018) | automatic Hermes cleanup; reads with no detected junction discarded |
+| hermes | `splinkerette_pcr` (default) | Hermes end, then genome (Gale et al. 2020) | detected ends |
+| hermes | `splinkerette_pcr_retained_end` | as above, but the reads keep the Hermes end (Patterson et al. 2018) | detected ends; reads with no detected junction discarded |
 | hermes | `end_ligated_adapter` | Hermes end, genome, ligated adapter `GTCCCTTAAGCGGAG` (Levin lab; Grech et al. 2019) | 5′ Hermes end (reads without it discarded); 3′ adapter and Illumina read-through |
 | hermes | `terminal_10bp` | last 10 bp of the Hermes end, then genome (Guo et al. 2013, 50-bp reads) | anchored 5′ `AAGTTCTCTG`; 3′ adapter |
 | ac_ds | `ds_primer_tail` (default) | tag, Ds primer and end, then genome (Segal et al. 2018) | 5′ primer and end (as in the authors' pipeline); 3′ Illumina |
 | ac_ds | `satay_restriction` | genome from the MiniDs junction to a DpnII/NlaIII site, then Ds (Michel et al. 2017) | 3′ Ds sequence after the site; 3′ Illumina |
+| piggybac | `pb_tr_end` (default) | piggyBac terminal repeat, then the TTAA target site and genome (Gao et al. 2021; Chow et al. 2024; Song et al. 2026; Yao et al. 2026) | 5′ terminal repeat (reads without it discarded); 3′ Illumina and Nextera read-through |
 
 In every design the insertion is the first genomic base of the junction read. Checked on public data: all hits from
 a sample of Guo et al. (2013) reads match the authors' published positions and strands exactly. SATAY hits match the
@@ -122,7 +138,7 @@ mapping manifest records the transposon, design and profile it used.
 
 ### Choosing between the two splinkerette designs
 
-Both run the automatic cleanup; they differ in what happens to a read with no detectable Hermes end. The default
+Both detect the element's ends; they differ in what happens to a read with no detectable Hermes end. The default
 keeps it, because in most splinkerette libraries the sequencing primer stops exactly at the junction, so there is
 no transposon sequence left in the read to find — `hermes_5p_reads` in the cleanup report is then ~0, and requiring
 a junction would discard every read. `splinkerette_pcr_retained_end` discards it, for libraries whose reads do

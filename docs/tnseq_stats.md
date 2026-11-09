@@ -2,8 +2,8 @@
 
 The output `tnseq_stats.tsv` retains TRANSIT's original column names/order and
 tab-separated Excel-readable format. This is not an XLSX workbook. Hermes QC and
-provenance columns are appended; the existing diagnostics are not replaced or
-recomputed. No UI layout, normalization, classifier or fitness default changes.
+provenance columns are appended beside TRANSIT's diagnostics, which are reported
+as TRANSIT computes them.
 
 ## Mathematics and assumptions
 
@@ -38,12 +38,12 @@ information, filtering/normalization settings and completion flags. Total suppor
 and occupied-site counts already occur in the leading statistic fields.
 
 All 16 saved +2/+7 base-pair fractions, background fractions and enrichment
-ratios are copied where available. They retain the existing read-weighted,
-coordinate-offset convention, not a new adjacent-TA or strand-aware motif test.
-Saved discovery curves, motif tables, centromere profiles and TSS/TTS/tRNA
-metaplots are linked by file paths. Curves remain curves rather than a fabricated
-scalar. MidLC values are historical diagnostics, not validated new classifier
-targets or saturated-library estimates.
+ratios are copied where available. They follow the read-weighted,
+coordinate-offset convention, and are not an adjacent-TA or strand-aware motif
+test. Saved discovery curves, motif tables, centromere profiles and TSS/TTS/tRNA
+metaplots are linked by file paths. A discovery curve is reported as a curve and
+is not reduced to a single scalar. MidLC values are diagnostics; they are not
+estimates of a saturated library.
 
 Diagnostics join by explicit project/sample identity. Raw support totals and
 occupied-site counts must match to reuse the saved metrics. Mismatched rows

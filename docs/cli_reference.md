@@ -173,7 +173,8 @@ Initialize a project from local FASTQs. Stage: Start a project.
 usage: ytab_init_local_project.py [-h] --project-id PROJECT_ID
                                   --fastq-dir FASTQ_DIR --species SPECIES
                                   [--threads THREADS] [--repo-root REPO_ROOT]
-                                  [--force]
+                                  [--force] [--include-fastq FILENAME]
+                                  [--include-fastq-list PATH]
 
 Initialize (but do not run) a local YTAB project.
 
@@ -185,6 +186,15 @@ options:
   --threads THREADS
   --repo-root REPO_ROOT
   --force               Overwrite existing config files; never delete outputs.
+  --include-fastq FILENAME
+                        Analyse only this FASTQ, named relative to --fastq-
+                        dir. Repeatable. Other FASTQs in the directory are
+                        still recorded as samples with include=no. Without
+                        this option every FASTQ found is included.
+  --include-fastq-list PATH
+                        A text file of FASTQ filenames to analyse, one per
+                        line; blank lines and lines starting with # are
+                        ignored. Combines with --include-fastq.
 ```
 
 ### import-hits
@@ -331,7 +341,7 @@ usage: ytab_run_mapfastq.py [-h] --project-config PROJECT_CONFIG
                             [--progress-file PROGRESS_FILE]
                             [--junction-mate {R1,R2}]
                             [--require-mate-alignment | --no-require-mate-alignment]
-                            [--hermes-cleanup | --no-hermes-cleanup]
+                            [--detect-ends | --no-detect-ends | --hermes-cleanup | --no-hermes-cleanup]
                             [--transposon TRANSPOSON]
                             [--library-design LIBRARY_DESIGN]
 
@@ -348,14 +358,16 @@ options:
   --job-id JOB_ID
   --progress-file PROGRESS_FILE
   --junction-mate {R1,R2}
-                        Override the designated Hermes/junction read for
-                        selected samples (default R1)
+                        Override the designated junction read for selected
+                        samples (default R1)
   --require-mate-alignment, --no-require-mate-alignment
                         Require concordant pairs; default uses only the
                         designated junction mate
-  --hermes-cleanup, --no-hermes-cleanup
-                        Automatically trim observed Hermes/adaptor sequence
-                        (default enabled)
+  --detect-ends, --no-detect-ends, --hermes-cleanup, --no-hermes-cleanup
+                        Trim the transposon end and adaptors detected from the
+                        element's own sequence, instead of a sequence the
+                        design declares (default enabled where the design asks
+                        for it). --hermes-cleanup is the former name.
   --transposon TRANSPOSON
                         Transposon profile in resources/transposons (default:
                         the project's, else hermes)

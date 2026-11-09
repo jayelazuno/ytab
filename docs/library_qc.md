@@ -28,8 +28,18 @@ Code: `src/ytab/qc/library_qc.py` (package module) and `scripts/local/ytab_qc.py
 
 ## Metrics
 
-- **Reads & Mapping:** reads sequenced, retained after Hermes cleanup, with 3' adaptor (Hermes cleanup record);
-  mapped %, mapped with MAPQ above the threshold %, mean MAPQ (MapFastq).
+- **Reads & Mapping:** reads sequenced, retained after read cleanup, with 3' adaptor (the cleanup record);
+  mapped %, mapped with MAPQ above the threshold %, mean MAPQ (MapFastq); reads from the transposon donor % and
+  donor reads placed on the genome % (`donor_reads`, see below).
+- **Reads from the transposon donor.** Induction leaves donor behind: plasmid that was never lost, or a donor locus
+  that did not excise. Those reads carry the transposon end like any library read, so counting them needs the donor
+  sequence itself. `donor_reads` aligns the reads locally to the donor with the transposon **masked out**, and counts
+  only reads with at least 30 aligned bases, so a read that merely carries the transposon end is not counted. Two
+  metrics follow: **reads from the transposon donor %**, the share of reads that come from the donor, and **donor
+  reads placed on the genome %**, the part of them that also aligns to the genome and so enters the library as
+  apparent insertions. The rest fail to map and are dropped, which is why a high donor share shows up as unmapped
+  reads. The stage reads the FASTQs directly and needs no remapping to the genome; both metrics are relative, so a
+  library is flagged against the others of its role in the same dataset.
 - **Insertions** (from the hit file; strands combined; definitions adapted from TRANSIT's `tnseq_stats`, see `docs/tnseq_stats.md`):
   reads at insertion sites (total_cts), insertion sites, insertions per kb of genome, catalogue density, mean reads
   per catalogue site (mean_ct), NZmean, NZmedian, max reads at a site (and where), top site's share of reads, top 1%
@@ -75,7 +85,8 @@ The app uses neutral wording throughout; the sources of the rules are given here
   the hint; click a library for its count histogram, QQ against a geometric fit and ranked counts); downloads (Excel,
   TSV, flags).
 - **Reads & Mapping, Insertions & Genes, Saturation & Bias:** one plot at a time from a menu: every QC-table metric of
-  the theme across libraries (coloured by flag), plus the theme's curves and summaries (total and mapped reads; count
+  the theme across libraries (coloured by flag), plus the theme's curves and summaries (total and mapped reads;
+  transposon donor; count
   distributions, genes by insertion count, genes hit by role, insertions per gene by role, insertion signal along
   chromosomes; saturation curves, jackpots and depth, centromere bias, TSS/TTS/tRNA metaplots, +2/+7 sequence bias).
   Every plot takes the shared display options (style, height, width, text size, label mode and angle, grid, point

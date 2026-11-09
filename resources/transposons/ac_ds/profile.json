@@ -11,7 +11,7 @@
       ],
       "source": "berman-lab/transposon-pipeline MapFastq.py (TnPrimerAndTail, AdapterSeq)",
       "mapping": {
-        "hermes_cleanup": false,
+        "detect_ends": false,
         "trim_5p_seq": "GTATTTTACCGACCGTTACCGACCGTTTTCATCCCTA",
         "trim_5p_overlap": 37,
         "discard_untrimmed": true,
@@ -27,7 +27,7 @@
         "Kingma et al. 2025 (S. cerevisiae nrp1 SATAY, HiSeq X runs of ArrayExpress E-MTAB-14476 / ENA ERP164453)"
       ],
       "mapping": {
-        "hermes_cleanup": false,
+        "detect_ends": false,
         "trim_3p_seq": [
           "GTATCGGTTTTCGATTACCGTATTTATCCCGTTCG",
           "TGTGATTTTACCGAACAAAAATACCGGTTCCCGTCCG",
@@ -42,7 +42,7 @@
       ],
       "source": "read structure checked on 2,000 reads of ERR13705629 (47% carry the Ds end; 72% of those map at MAPQ >= 20, the rest include the ADE2 donor locus and concatemers)",
       "mapping": {
-        "hermes_cleanup": false,
+        "detect_ends": false,
         "trim_5p_seq": "TTTACCGACCGTTACCGACCGTTTTCATCCCTA",
         "trim_5p_overlap": 33,
         "trim_5p_times": 2,
@@ -61,7 +61,7 @@
       ],
       "source": "read structure checked on the first 2,000 reads of SRR29762408 (99% begin with this sequence; 71% of the trimmed reads map at MAPQ >= 20)",
       "mapping": {
-        "hermes_cleanup": false,
+        "detect_ends": false,
         "trim_5p_seq": "CGGTACGGGATTTTCCCATCCTACTTTCATCCCTG",
         "trim_5p_overlap": 30,
         "discard_untrimmed": true,

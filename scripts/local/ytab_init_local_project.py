@@ -22,7 +22,29 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threads", type=int)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--force", action="store_true", help="Overwrite existing config files; never delete outputs.")
+    parser.add_argument("--include-fastq", action="append", metavar="FILENAME", default=None,
+                        help="Analyse only this FASTQ, named relative to --fastq-dir. Repeatable. "
+                             "Other FASTQs in the directory are still recorded as samples with include=no. "
+                             "Without this option every FASTQ found is included.")
+    parser.add_argument("--include-fastq-list", type=Path, metavar="PATH", default=None,
+                        help="A text file of FASTQ filenames to analyse, one per line; blank lines and "
+                             "lines starting with # are ignored. Combines with --include-fastq.")
     return parser.parse_args()
+
+
+def resolve_included_fastqs(args: argparse.Namespace) -> list[str] | None:
+    """The FASTQ filenames to include, or None when the whole directory is wanted."""
+    names: list[str] = list(args.include_fastq or [])
+    if args.include_fastq_list is not None:
+        text = args.include_fastq_list.expanduser().read_text(encoding="utf-8")
+        names += [line.strip() for line in text.splitlines()
+                  if line.strip() and not line.strip().startswith("#")]
+    if not names:
+        return None
+    seen: dict[str, None] = {}
+    for name in names:
+        seen.setdefault(Path(name).name, None)
+    return list(seen)
 
 
 def main() -> int:
@@ -36,7 +58,12 @@ def main() -> int:
     selected = args.threads if args.threads is not None else (default_threads() if detected >= 2 else 0)
     print("Available species:", ", ".join(list_available_species(root / "resources" / "species")) or "none")
     try:
-        config = create_project_config(args.project_id, args.fastq_dir, args.species, root, selected)
+        include_files = resolve_included_fastqs(args)
+    except OSError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+    try:
+        config = create_project_config(args.project_id, args.fastq_dir, args.species, root, selected, include_files)
     except (OSError, ValueError, RuntimeError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
@@ -54,6 +81,7 @@ def main() -> int:
         "Detected CPU count": detected, "Selected thread count": selected,
         "Thread selection": "default" if args.threads is None else "user-selected", "FASTQs found": fastq_count,
         "Samples detected": len(samples), "Included samples": sum(bool(row.get("include")) for row in samples),
+        "FASTQ selection": "whole directory" if include_files is None else f"{len(include_files)} chosen files",
         "Output project dir": config["output_project_dir"], "Output export dir": config["output_export_dir"],
         "project.yaml": str(config_path), "sample_sheet.csv": str(config_path.with_name("sample_sheet.csv")),
         "reference_resolved.json": str(config_path.with_name("reference_resolved.json")),

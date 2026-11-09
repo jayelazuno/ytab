@@ -23,11 +23,13 @@ launcher_config <- read_launcher_config(app_dir)
 demo_project_id <- as.character(launcher_config$demo_project_id %||% "")
 
 ui <- tagList(
-  tags$head(tags$title("YTAB — Yeast Transposon Analysis Browser"), tags$link(rel="stylesheet", href="ytab.css"),
-    tags$link(rel="stylesheet", href="ytab-landing.css?v=20261023_1"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet", href="ytab_help.css?v=20261027_1"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20261101_1"),
+  # Bootstrap's CSS and JS, which fluidPage() used to supply. Without it Shiny's showModal() and the
+  # shinyFiles directory chooser render their markup inline and unstyled instead of as a dialog.
+  tags$head(shiny::bootstrapLib(), tags$title("YTAB — Yeast Transposon Analysis Browser"), tags$link(rel="stylesheet", href="ytab.css?v=20261109_1"),
+    tags$link(rel="stylesheet", href="ytab-landing.css?v=20261023_1"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet", href="ytab_help.css?v=20261109_8"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20261101_1"),
     tags$script(src="https://cdn.jsdelivr.net/npm/igv@3/dist/igv.min.js"),
     tags$script(src="ytab_igv_browser.js?v=20261022_1"),
-    tags$script(src="ytab_page_styles.js?v=20261023_2"),
+    tags$script(src="ytab_page_styles.js?v=20261109_2"),
     tags$script(src="ytab_nav_menus.js?v=20261022_2&screen_coverage=4")),
   uiOutput("app_shell")
 )
@@ -184,7 +186,7 @@ server <- function(input, output, session) {
 
   selected_info <- reactive({ req(input$project_selector); tryCatch(read_project_summary(input$project_selector, repo_root), error = function(e) NULL) })
   output$open_project_action <- renderUI(actionButton("open_project", "Open dataset", class="btn-primary ytab-button",
-    disabled = if (is.null(selected_info())) "disabled" else NULL))
+    disabled = is.null(selected_info())))
   output$selected_project_preview <- renderUI({
     info <- selected_info(); req(info)
     tags$div(class="ytab-project-preview",
@@ -349,7 +351,38 @@ server <- function(input, output, session) {
     fastq_scan_warning(if(truncated)"More than 5,000 FASTQ files were found; the preview is limited to the first 5,000 files." else "")
   }, ignoreInit=TRUE)
   output$fastq_dir_text <- renderText(if(nzchar(fastq_directory())) fastq_directory() else "No directory selected")
-  output$fastq_preview <- DT::renderDT(DT::datatable(fastq_files(), rownames=FALSE, options=list(pageLength=8,scrollX=TRUE)))
+  # Every scanned FASTQ starts ticked; untick the ones this dataset should not analyse.
+  output$fastq_preview <- DT::renderDT(
+    DT::datatable(fastq_files(), rownames=FALSE, filter="top",
+      selection=list(mode="multiple", target="row", selected=seq_len(nrow(fastq_files()))),
+      options=list(pageLength=8,scrollX=TRUE)))
+  fastq_preview_proxy <- DT::dataTableProxy("fastq_preview")
+  observeEvent(input$fastq_select_all, DT::selectRows(fastq_preview_proxy, seq_len(nrow(fastq_files()))), ignoreInit=TRUE)
+  observeEvent(input$fastq_select_none, DT::selectRows(fastq_preview_proxy, NULL), ignoreInit=TRUE)
+  # An empty selection and a table that has not reported one yet both arrive as NULL, so remember whether the
+  # table has spoken: before it does, every scanned file counts as wanted; afterwards NULL means the user cleared it.
+  fastq_selection_reported <- reactiveVal(FALSE)
+  observeEvent(fastq_files(), fastq_selection_reported(FALSE), ignoreInit = TRUE)
+  observeEvent(input$fastq_preview_rows_selected, fastq_selection_reported(TRUE), ignoreNULL = FALSE, ignoreInit = TRUE)
+  selected_fastq_filenames <- reactive({
+    files <- fastq_files()
+    if (!nrow(files)) return(character())
+    rows <- input$fastq_preview_rows_selected
+    if (is.null(rows)) return(if (fastq_selection_reported()) character() else as.character(files$filename))
+    as.character(files$filename[rows])
+  })
+  output$fastq_selection_summary <- renderUI({
+    files <- fastq_files()
+    if (!nrow(files)) return(NULL)
+    chosen <- length(selected_fastq_filenames())
+    if (!chosen) return(tags$div(class="alert alert-warning",
+      "No FASTQ files are selected. Tick the files this dataset should analyse."))
+    tags$p(class="text-muted", sprintf(
+      "%d of %d FASTQ files selected. %s Mapping runs one sample at a time, at %d threads per sample on this computer's %d cores, and can be stopped and resumed.",
+      chosen, nrow(files),
+      if (chosen < nrow(files)) "The rest are recorded as samples with include=no and can be taken up later from Run \u203a Samples." else "",
+      as.integer(input$threads %||% 2L), detected_cpu))
+  })
   output$fastq_message <- renderUI({
     if(nzchar(fastq_scan_warning())) return(tags$div(class="alert alert-warning",fastq_scan_warning()))
     if(identical(fastq_scan_state(),"scan_complete") && !nrow(fastq_files())) tags$div(class="alert alert-warning","No FASTQ files were found in the selected directory.")
@@ -366,7 +399,14 @@ server <- function(input, output, session) {
     if(!grepl("^[A-Za-z0-9_-]+$",id) || grepl("\\.\\.|[/\\\\]",id)) return("Dataset ID may contain only letters, numbers, hyphens, and underscores.")
     ""
   }
-  init_args <- reactive(c(file.path(repo_root,"scripts/local/ytab_init_local_project.py"),"--project-id",trimws(input$project_id %||% ""),"--fastq-dir",fastq_directory(),"--species",input$species %||% "","--threads",as.character(input$threads %||% 2L),"--repo-root",repo_root))
+  init_args <- reactive({
+    args <- c(file.path(repo_root,"scripts/local/ytab_init_local_project.py"),"--project-id",trimws(input$project_id %||% ""),"--fastq-dir",fastq_directory(),"--species",input$species %||% "","--threads",as.character(input$threads %||% 2L),"--repo-root",repo_root)
+    # Naming every file would only repeat the default, so a full selection stays implicit.
+    chosen <- selected_fastq_filenames()
+    if (nrow(fastq_files()) && length(chosen) && length(chosen) < nrow(fastq_files()))
+      args <- c(args, as.vector(rbind("--include-fastq", chosen)))
+    args
+  })
   import_args <- reactive({
     args <- c(file.path(repo_root,"scripts/local/ytab_import_existing_hit_project.py"),
       "--project-id",trimws(input$import_project_id %||% ""),"--species",input$import_species %||% "",
@@ -377,12 +417,17 @@ server <- function(input, output, session) {
     args
   })
   output$init_command <- renderText(tryCatch(format_command_for_display(locate_python_executable(),init_args()),error=function(e)conditionMessage(e)))
-  initialize_ready <- reactive(nzchar(fastq_directory()) && identical(fastq_scan_state(),"scan_complete") && nrow(fastq_files())>0L && !nzchar(validate_project_id(input$project_id)) && nzchar(input$species %||% "") && as.integer(input$threads %||% 0L)>=2L && !initialization_running())
-  output$initialize_button <- renderUI(actionButton("initialize", "Initialize dataset", class="btn-primary", disabled=if(initialize_ready())NULL else "disabled"))
+  initialize_ready <- reactive(nzchar(fastq_directory()) && identical(fastq_scan_state(),"scan_complete") && nrow(fastq_files())>0L && length(selected_fastq_filenames())>0L && !nzchar(validate_project_id(input$project_id)) && nzchar(input$species %||% "") && as.integer(input$threads %||% 0L)>=2L && !initialization_running())
+  output$initialize_button <- renderUI({
+    chosen <- length(selected_fastq_filenames())
+    label <- if (chosen && nrow(fastq_files())) sprintf("Initialize dataset from %d FASTQ file%s", chosen, if(chosen==1L)"" else "s") else "Initialize dataset"
+    actionButton("initialize", label, class="btn-primary", disabled = !initialize_ready())
+  })
   observeEvent(input$initialize, {
     if(initialization_running())return()
     error <- validate_project_id(input$project_id); if(nzchar(error)){showNotification(error,type="error");return()}
     if(!identical(fastq_scan_state(),"scan_complete") || !nrow(fastq_files())){showNotification("Scan the FASTQ directory and confirm at least one file before initialization.",type="error");return()}
+    if(!length(selected_fastq_filenames())){showNotification("Tick at least one FASTQ file to analyse.",type="error");return()}
     if(!nzchar(input$species %||% "")){showNotification("Choose a species/reference.",type="error");return()}
     if(as.integer(input$threads %||% 0L)<2L){showNotification("Use at least two threads.",type="error");return()}
     script<-init_args()[[1]];if(!file.exists(script)||dir.exists(script)){showNotification("Initialization script is unavailable.",type="error");return()}
@@ -571,7 +616,7 @@ server <- function(input, output, session) {
   matching_cache<-reactive(qc_result_state()$matching_result)
   output$library_diagnostics_cache_ui<-renderUI({if(!identical(input$library_diagnostics_mode,"run"))return(NULL);if(!is.null(matching_cache()))tags$div(class="alert alert-info",tags$b("Cached diagnostics available"),tags$p("A matching successful result already exists for this sample set."))else{base<-file.path(active()$project_root,"manifests","library_diagnostics","runs");if(dir.exists(base)&&length(list.files(base,pattern="manifest\\.json$",recursive=TRUE)))tags$p(class="text-muted","Existing diagnostics were found, but they were generated from a different sample selection.")}})
   output$qc_execution_summary<-renderUI({r<-qc_resolution();tags$dl(class="ytab-execution-summary",tags$dt("Samples"),tags$dd(length(r$eligible)),tags$dt("Sample set"),tags$dd(if(length(r$eligible))r$label else"None"),tags$dt("Matching cache"),tags$dd(if(is.null(matching_cache()))"No"else"Yes"),tags$dt("Execution"),tags$dd(if(identical(input$library_diagnostics_mode,"run"))"Run diagnostics"else"Preview command"))})
-  output$library_diagnostics_action<-renderUI({r<-qc_resolution();mode<-input$library_diagnostics_mode%||%"preview";force<-FALSE;actionButton("run_library_diagnostics",diagnostic_action_label(mode,!is.null(matching_cache()),force),class="btn-primary",disabled=if(!length(r$eligible)||jobs$job_is_running())"disabled"else NULL)})
+  output$library_diagnostics_action<-renderUI({r<-qc_resolution();mode<-input$library_diagnostics_mode%||%"preview";force<-FALSE;actionButton("run_library_diagnostics",diagnostic_action_label(mode,!is.null(matching_cache()),force),class="btn-primary",disabled=!length(r$eligible)||jobs$job_is_running())})
 
   fitness_design<-reactive({fitness_design_tick();read_fitness_design(active())});fitness_issues<-reactive({fitness_design_tick();read_fitness_design_issues(active())})
   observeEvent(active_project_path(),{path<-active_project_path();if(!identical(path,fitness_selection_project())){design<-fitness_design();fitness_selected_comparisons(fitness_default_selection(design));fitness_selection_project(path);fitness_selected_result("");updateTextInput(session,"fitness_analysis_id",value=fitness_default_analysis_id(design))}},ignoreInit=FALSE)
@@ -602,7 +647,7 @@ server <- function(input, output, session) {
       tags$dt("Normalization"),tags$dd(fitness_norm()$label),if(isTRUE(input$fitness_annotate_classifier))tagList(tags$dt("Classifier annotation"),tags$dd("Yes")),
       if(!is.null(match))tagList(tags$dt("Existing result"),tags$dd(fitness_result_display_name(match)," ",actionLink("fitness_open_match_summary","Open it"))),
       tags$dt("Output"),tags$dd(tags$code(file.path("treated_vs_parent",aid))))})
-  output$fitness_run_action<-renderUI({mode<-input$fitness_execution_mode%||%"preview";force<-FALSE;error<-validate_fitness_analysis_id(input$fitness_analysis_id%||%"");actionButton("fitness_run",fitness_action_label(mode,!is.null(fitness_matching()),force),class="btn-primary",disabled=if(!length(fitness_selected_comparisons())||nzchar(error)||jobs$job_is_running())"disabled"else NULL)})
+  output$fitness_run_action<-renderUI({mode<-input$fitness_execution_mode%||%"preview";force<-FALSE;error<-validate_fitness_analysis_id(input$fitness_analysis_id%||%"");actionButton("fitness_run",fitness_action_label(mode,!is.null(fitness_matching()),force),class="btn-primary",disabled=!length(fitness_selected_comparisons())||nzchar(error)||jobs$job_is_running())})
   observeEvent(input$fitness_continue_analysis,go_to("fitness","fitness_tabs","fitness_run"),ignoreInit=TRUE);observeEvent(input$fitness_change_design,go_to("fitness","fitness_tabs","fitness_design"),ignoreInit=TRUE)
   output$essentiality_readiness<-renderUI({s<-sample_pipeline_status();if(!any(s$hit_file%in%c("success","skipped")))blocked_card("Essentiality preprocessing blocked","Raw hit files are unavailable.","Create hit files")})
   output$fitness_readiness<-renderUI({s<-sample_pipeline_status();if(!all(s$summary[s$included]%in%c("success","skipped")))blocked_card("Fitness analysis blocked","Fitness analysis requires raw SummaryTable outputs.","Complete raw SummaryTable")else if(!file.exists(file.path(active()$project_root,"config","comparison_design.csv")))blocked_card("Comparison design required","Raw summaries are ready.","Generate comparison design")})

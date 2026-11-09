@@ -1,10 +1,12 @@
 /* Help center (methods, tutorial, release notes) and search */
-.ytab-help-center { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; max-height: 75vh; }
-.ytab-help-nav { overflow-y: auto; border-right: 1px solid #dce5ec; padding-right: 12px; }
+/* A grid item will not shrink below its content unless min-height is set, so without the min-height:0 below the
+   page grows past the 75vh and the modal spills onto the page behind it instead of scrolling inside its own panes. */
+.ytab-help-center { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; height: 75vh; min-height: 0; }
+.ytab-help-nav { overflow-y: auto; min-height: 0; border-right: 1px solid #dce5ec; padding-right: 12px; }
 .ytab-help-nav h5 { margin: 14px 0 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #617285; letter-spacing: .04em; }
 .ytab-help-link { display: block; padding: 4px 8px; border-radius: 6px; color: #102235; font-size: 14px; }
 .ytab-help-link.active, .ytab-help-link:hover { background: #e6f2f4; color: #0a6574; text-decoration: none; }
-.ytab-help-page { overflow-y: auto; padding-right: 8px; font-size: 14px; line-height: 1.55; }
+.ytab-help-page { overflow-y: auto; min-height: 0; padding-right: 8px; font-size: 14px; line-height: 1.55; }
 .ytab-help-page h1 { font-size: 24px; margin-top: 0; } .ytab-help-page h2 { font-size: 19px; margin-top: 22px; } .ytab-help-page h3 { font-size: 16px; }
 .ytab-help-page table { border-collapse: collapse; margin: 10px 0; font-size: 13px; display: block; overflow-x: auto; }
 .ytab-help-page th, .ytab-help-page td { border: 1px solid #dce5ec; padding: 4px 8px; vertical-align: top; }
@@ -28,3 +30,24 @@
 .ytab-dataset-detail { margin-top: 18px; padding-top: 12px; border-top: 1px solid #eef2f5; }
 .ytab-dataset-fields th { width: 190px; font-weight: 600; color: #455a64; vertical-align: top; }
 .ytab-dataset-fields td { vertical-align: top; }
+
+/* Bootstrap 3 defines modal-sm and modal-lg only, while Shiny emits modal-xl for size = "xl"; without this the
+   Datasets dialog falls back to the 600px default. The dataset list scrolls inside the dialog rather than running
+   down the page behind it. */
+.modal-xl { width: 92vw; max-width: 1400px; }
+.ytab-datasets { max-height: 70vh; overflow-y: auto; }
+/* The table is wider than the dialog and scrolls sideways, so cells keep their own width instead of wrapping into
+   very tall rows; without this one squeezed column sets the height of every row. */
+.ytab-datasets table.dataTable th, .ytab-datasets table.dataTable td { white-space: nowrap; }
+
+.modal-dialog.ytab-modal-max .ytab-datasets { max-height: calc(96vh - 215px); }
+
+/* Dialog size control: the title row carries a button that fills the window and puts the dialog back. */
+.ytab-modal-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.ytab-modal-size { flex: none; font-weight: 600; }
+.modal-dialog.ytab-modal-max { width: 96vw; max-width: none; margin: 2vh auto; }
+/* Leave room for the dialog's own title row, padding and footer, so Close stays on screen when maximized.
+   A dialog whose content has no height of its own scrolls its body rather than growing past the window. */
+.modal-dialog.ytab-modal-max .modal-body { max-height: calc(96vh - 150px); overflow-y: auto; }
+.modal-dialog.ytab-modal-max .ytab-help-center { height: calc(96vh - 195px); }
+.modal-dialog.ytab-modal-max .ytab-search-results { max-height: calc(96vh - 260px); }

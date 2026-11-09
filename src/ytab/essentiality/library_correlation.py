@@ -1,4 +1,4 @@
-"""Correlation of Hermes libraries across pools, strains, conditions and species, generalized from TRANSIT's corrplot (DeJesus et al. 2015).
+"""Correlation of Tn-seq libraries across pools, strains, conditions and species, generalized from TRANSIT's corrplot (DeJesus et al. 2015).
 
 Each library is summarized per gene by insertion density: distinct insertion sites (>= min_reads reads) in
 the CDS (last 3 bp excluded) per kb. Optionally "reads": reads per kb. Libraries are
@@ -286,7 +286,7 @@ def run(samples, output, metric="density", orthologs=None, boot=500, seed=2026, 
     write_tsv(output/"pairs.tsv", ["sample_a", "sample_b", "pair_type", "species_a", "species_b", "condition_a", "condition_b", "genes", "rho", "ci_low", "ci_high",
                                    "shared_sites", "site_jaccard", "shared_site_read_rho", "clone_evidence", "flag", "note"], rows)
     write_tsv(output/"correlation_matrix.tsv", ["sample"]+names, [dict(sample=a) | {b:(None if not np.isfinite(R[i, j]) else float(R[i, j])) for j, b in zip(o, names)} for i, a in zip(o, names)])
-    plot(R[np.ix_(o, o)], labels, output/"correlation.png", f"Hermes libraries: Spearman correlation of gene insertion {'density' if metric == 'density' else 'reads per kb'}")
+    plot(R[np.ix_(o, o)], labels, output/"correlation.png", f"Library agreement: Spearman correlation of gene insertion {'density' if metric == 'density' else 'reads per kb'}")
     summary = {}
     for t in PAIR_TYPES:
         vals = [r["rho"] for r in rows if r["pair_type"] == t and r["rho"] is not None]

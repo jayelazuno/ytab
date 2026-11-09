@@ -1,7 +1,11 @@
-"""Evidence-based cleanup of a user-designated Hermes junction read.
+"""Evidence-based cleanup of a user-designated junction read.
 
 Mate identity is declared (default R1), not guessed from alignment rate. Cutadapt
-aligners recognize terminal Hermes/primer overhang and adapter read-through.
+aligners recognize the transposon's terminal and primer overhang and adapter
+read-through. The element's ends come from its own reference sequence, so the
+method is not specific to one transposon: give it another element's reference and
+primer catalogue and it finds that element's ends. Only the default catalogue is
+Hermes, because that is the one YTAB ships.
 """
 from collections import Counter
 from contextlib import ExitStack
@@ -22,7 +26,7 @@ def reverse_complement(sequence):
     return str(Seq(sequence).reverse_complement())
 
 
-class HermesCleaner:
+class ReadCleaner:
     def __init__(self, catalogue=DEFAULT_CATALOGUE, reference=None, overlap=16, error_rate=.1, min_length=25):
         if overlap < 12 or not 0 <= error_rate <= .2 or min_length < 1:
             raise ValueError("Require overlap >=12, error rate in [0,.2], and min length >=1")
@@ -134,7 +138,7 @@ def prepare_fastqs(inputs, outputs, junction_index=0, read_end="start", require_
         raise ValueError("Junction read end must be start or end")
     if len(inputs)==2 and read_end=="end":
         raise ValueError("Concordant mapping assumes the normal start-facing paired-read layout; use single-mate mapping for reverse-complemented exports")
-    cleaner = HermesCleaner(**options)
+    cleaner = ReadCleaner(**options)
     counts = [Counter() for _ in inputs]
     kept = 0
     with ExitStack() as stack:

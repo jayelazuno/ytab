@@ -28,9 +28,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--keep-going", action="store_true")
     parser.add_argument("--job-id")
     parser.add_argument("--progress-file", type=Path)
-    parser.add_argument("--junction-mate", choices=("R1","R2"), help="Override the designated Hermes/junction read for selected samples (default R1)")
+    parser.add_argument("--junction-mate", choices=("R1","R2"), help="Override the designated junction read for selected samples (default R1)")
     parser.add_argument("--require-mate-alignment", action=argparse.BooleanOptionalAction, default=None, help="Require concordant pairs; default uses only the designated junction mate")
-    parser.add_argument("--hermes-cleanup", action=argparse.BooleanOptionalAction, default=None, help="Automatically trim observed Hermes/adaptor sequence (default enabled)")
+    parser.add_argument("--detect-ends", "--hermes-cleanup", dest="detect_ends", action=argparse.BooleanOptionalAction,
+                        default=None, help="Trim the transposon end and adaptors detected from the element's own "
+                                           "sequence, instead of a sequence the design declares (default enabled "
+                                           "where the design asks for it). --hermes-cleanup is the former name.")
     parser.add_argument("--transposon", help="Transposon profile in resources/transposons (default: the project's, else hermes)")
     parser.add_argument("--library-design", help="Library design within the transposon profile (default: the profile's default)")
     return parser.parse_args()
@@ -54,7 +57,7 @@ def main() -> int:
             force=args.force, dry_run=args.dry_run, keep_going=args.keep_going,
             job_id=args.job_id, progress_file=args.progress_file,
             junction_mate=args.junction_mate, require_mate_alignment=args.require_mate_alignment,
-            hermes_cleanup=args.hermes_cleanup,
+            detect_ends=args.detect_ends,
             transposon=args.transposon, library_design=args.library_design,
         )
     except (FileNotFoundError, OSError, ValueError) as exc:

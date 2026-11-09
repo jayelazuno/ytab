@@ -12,7 +12,7 @@ import pysam
 import pytest
 import yaml
 
-from ytab.mapping.hermes_preprocess import HermesCleaner, prepare_fastqs, reverse_complement
+from ytab.mapping.read_cleanup import ReadCleaner, prepare_fastqs, reverse_complement
 from ytab.pipeline.mapfastq_runner import build_mapfastq_command, mapping_fingerprint, run_mapfastq_sample, validate_mapping_inputs
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -33,7 +33,7 @@ def write_fastq(path,seqs):
 
 @pytest.fixture
 def cleaner():
-    return HermesCleaner()
+    return ReadCleaner()
 
 
 def test_catalogue_sequencing_primer_ends_exactly_at_boundary(cleaner):
@@ -118,7 +118,7 @@ def test_default_r1_and_explicit_r2_without_mate_agreement(tmp_path):
     cmd=build_mapfastq_command(s,cfg)
     assert '--r1' not in cmd and '--r2' not in cmd
     assert cmd[cmd.index('--input-file-name')+1]==s['fastq_1']
-    assert '--hermes-preprocess' in cmd and '--discard-untrimmed' not in cmd
+    assert '--detect-ends' in cmd and '--discard-untrimmed' not in cmd
     s['junction_mate']='R2';cmd=build_mapfastq_command(s,cfg)
     assert cmd[cmd.index('--input-file-name')+1]==s['fastq_2']
     assert cmd[cmd.index('--source-junction-mate')+1]=='R2'
@@ -155,7 +155,7 @@ def test_fingerprint_changes_when_input_or_settings_change(tmp_path):
 
 def test_catalogue_content_changes_invalidate_cache(tmp_path):
     s=sample(tmp_path);cfg=config(tmp_path)
-    cleaner=HermesCleaner()
+    cleaner=ReadCleaner()
     catalogue=tmp_path/'primers.json'
     data=cleaner.catalogue;data['reference']=str(cleaner.reference)
     catalogue.write_text(json.dumps(data));s['primer_catalogue']=str(catalogue)
@@ -203,7 +203,7 @@ def test_real_cleaning_preserves_forward_and_reverse_insertion_endpoints(tmp_pat
     result,rows,s,cfg=run_alignment(tmp_path,index,[forward,reverse])
     assert len(rows)==2
     assert {(a.reference_end if a.is_reverse else a.reference_start+1) for a in rows}=={301,675}
-    report=result['hermes_preprocessing']
+    report=result['read_cleanup']
     assert report['mates'][0]['hermes_5p_reads']==1
     assert report['mates'][0]['adapter_3p_reads']==1
     assert report['retained_reads_or_pairs']==2

@@ -264,7 +264,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
                                            "Preview normalization scan", "Run normalization scan",
                                            "Use cached normalization", "Rerun normalization"),
                  class = "btn-primary",
-                 disabled = if (!valid || jobs$job_is_running()) "disabled" else NULL)
+                 disabled = !valid || jobs$job_is_running())
   })
 
   evaluate_target_argument <- reactive({
@@ -319,7 +319,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
                                            "Use cached target evaluation",
                                            "Rerun feature-level evaluation"),
                  class = "btn-primary",
-                 disabled = if (!valid || jobs$job_is_running()) "disabled" else NULL)
+                 disabled = !valid || jobs$job_is_running())
   })
   output$summary_normalized_run_panel <- renderUI({
     complete <- identical(essentiality_feature_evaluation_state(active()$project_root),
@@ -578,8 +578,8 @@ essentiality_server <- function(input, output, session, active, active_project_p
                   checkboxInput("essentiality_failed_target_ack",
                                 "I acknowledge the retention warning.", FALSE)),
         actionButton("use_selected_evaluated_target", "Use selected target",
-                     disabled = if (!selected_evaluated_passes() &&
-                                   !isTRUE(input$essentiality_failed_target_ack)) "disabled" else NULL)
+                     disabled = !selected_evaluated_passes() &&
+                                !isTRUE(input$essentiality_failed_target_ack))
       ),
       if (nzchar(selected_target_tag()))
         actionButton("continue_to_combine", "Continue to Combine Parents",
@@ -673,7 +673,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
                                            "Use cached combined library",
                                            "Recombine parent libraries"),
                  class = "btn-primary",
-                 disabled = if (!ready || jobs$job_is_running()) "disabled" else NULL)
+                 disabled = !ready || jobs$job_is_running())
   })
   observeEvent(input$run_combine_hits, {
     req(nzchar(selected_target_tag()), nrow(combine_inputs()), all(combine_inputs()$Available))
@@ -773,8 +773,7 @@ essentiality_server <- function(input, output, session, active, active_project_p
                                            "Use cached feature table",
                                            "Rebuild combined feature table"),
                  class = "btn-primary",
-                 disabled = if (!combined_hits_cached() || jobs$job_is_running())
-                   "disabled" else NULL)
+                 disabled = !combined_hits_cached() || jobs$job_is_running())
   })
   output$combined_summary_run_panel <- renderUI({
     if (combined_feature_cached()) return(NULL)
@@ -967,8 +966,8 @@ essentiality_server <- function(input, output, session, active, active_project_p
                                            "Preview classifier", "Run classifier",
                                            "Use cached predictions", "Rerun classifier"),
                  class = "btn-primary",
-                 disabled = if (!classifier_ready() || !seed_valid ||
-                               jobs$job_is_running()) "disabled" else NULL)
+                 disabled = !classifier_ready() || !seed_valid ||
+                   jobs$job_is_running())
   })
   observeEvent(input$run_classifier, {
     req(classifier_ready())

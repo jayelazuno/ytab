@@ -100,11 +100,11 @@ normalization cannot change ranks, zero patterns or log-ratio spread (IQR); it
 can shift overall log-ratio centering. Control/control centering is an offset
 diagnostic, not proof that real treatment effects are correctly estimated.
 
-No gene-level significance testing, fitness calls, independent-induction claims,
-or downstream CPM re-normalization occur in this validation runner. The three
-original Gale induced pools remain the parent-library catalogue/classifier
-inputs; Gale's two controls and two treated Cg1-derived cultures are the assay
-validation samples. See the generated
+This validation runner measures centering and dispersion only: it makes no
+gene-level significance tests, fitness calls or independent-induction claims, and
+does not re-normalize to CPM. The three Gale induced pools are the parent-library
+catalogue inputs; Gale's two controls and two treated Cg1-derived cultures are the
+assay validation samples. See the generated
 [Gale validation report](../output/normalization/gale_flu_ttr_validation_v1/INTERPRETATION.md).
 
 ## Calculation and grouping
@@ -170,9 +170,8 @@ records the different control-replicate structure and mixed method results.
 
 Outputs include per-method gene matrices, annotations, count-stratified
 control/treatment metrics, treatment-effect agreement within library strata,
-gene effects with evidence flags, plots and hash-based provenance. There is no
-UI integration or change to existing fitness/classifier defaults. Results of the
-first four-sample Gale evaluation are in the
+gene effects with evidence flags, plots and hash-based provenance. The
+four-sample Gale evaluation is in the
 [gene-level report](../output/normalization/gale_flu_gene_validation_v1/INTERPRETATION.md).
 
 ### Shared site-method calculations
@@ -275,20 +274,20 @@ counts can be shown alongside for reference.
 
 **Fix (2026-10-20).** `normalize-experiment` computed matched-pair diagnostics from per-sample scale factors, which
 nonlinear methods (quantile, BGC, aBGC) do not have, so it failed for them (`TypeError`). Diagnostics now compare
-normalized values directly. For scalar methods this equals the previous formula (tested).
+normalized values directly. For a scalar method this is equivalent to scaling the raw counts.
 
 ## Hybrid gene features from any method (`ytab hybrid-inputs`)
 
-MidLC is no longer special to the classifier branch. The hybrid essentiality model's gene features (hits, reads,
-freedom and neighbourhood indices, longest free interval, and the current random forest's scores) are built from the
-parents normalized with the chosen method, default BGC:
+The hybrid essentiality model's gene features (hits, reads, freedom and neighbourhood indices, longest free
+interval, and the random forest's scores) are built from the parents normalized with the chosen method, default BGC.
+Any site-normalization method can supply them:
 
 ```sh
 ytab hybrid-inputs --project-config output/projects/PROJECT/config/project.yaml --normalization betageom --samples P1,P2,P3
 ```
 
 `ytab essentiality --labels ...` runs it automatically with the HMM's own parent libraries (`--normalization`, default
-`betageom`; `--rf` still takes an existing prediction table). Steps: the parents are normalized with the method from
+`betageom`; `--rf` takes an existing prediction table). Steps: the parents are normalized with the method from
 the newest Site Normalization run whose parent catalogue holds them; written as hit files under
 `sample_normalization/<method>__<run>__<parents>/`; then combined, summarized (SummaryTable) and scored by the
 classifier exactly as for MidLC. Results for the same method, run and parents are reused untouched.

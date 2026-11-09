@@ -210,6 +210,6 @@ scan_fastq_directory <- function(path, limit = 5000L) {
     inferred_sample = sub("(_R?[12]|[._-][12])?(\\.fastq|\\.fq)(\\.gz)?$", "", filename, ignore.case = TRUE),
     extension = sub("^.*?(\\.(fastq|fq)(\\.gz)?)$", "\\1", filename, ignore.case = TRUE),
     compressed = ifelse(grepl("\\.gz$", filename, ignore.case = TRUE), "yes", "no"),
-    size = format(meta$size, big.mark = ","), modified = format(meta$mtime, "%Y-%m-%d %H:%M"), include = "yes",
+    size = format(meta$size, big.mark = ","), modified = format(meta$mtime, "%Y-%m-%d %H:%M"),
     stringsAsFactors = FALSE) |> structure(truncated = truncated)
 }

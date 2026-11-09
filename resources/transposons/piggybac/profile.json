@@ -19,7 +19,7 @@
       ],
       "source": "read structure checked on the first 2,000 reads of SRR33878342, SRR13106162, SRR24456510 and SRR36343507 (63-94% begin with this sequence; 70-85% of the trimmed reads map at MAPQ >= 20)",
       "mapping": {
-        "hermes_cleanup": false,
+        "detect_ends": false,
         "trim_5p_seq": "CATGCGTCAATTTTACGCAGACTATCTTTCTAGGG",
         "trim_5p_overlap": 30,
         "discard_untrimmed": true,

@@ -14,7 +14,7 @@ from pathlib import Path
 
 import yaml
 from .progress_tracker import ProgressTracker, make_job_id
-from ytab.mapping.transposons import resolve_design
+from ytab.mapping.transposons import detects_ends, resolve_design
 
 
 STATUS_FIELDS = [
@@ -211,13 +211,20 @@ def build_mapfastq_command(sample: dict, config: dict, threads: int | None = Non
     ]
     # The project's `mapping` block under any sample-sheet override, which is the contract transposons.py states
     # and what the run manifest already records; without the merge a project-level selection was silently ignored.
-    design = resolve_design({**(config.get("mapping") or {}), **{k: v for k, v in sample.items() if v not in (None, "")}}, root)["mapping"]
-    if _as_bool(design.get("hermes_cleanup", True)):
-        command.append("--hermes-preprocess")
-        for field, flag in (("primer_catalogue","--primer-catalogue"),("hermes_reference","--hermes-reference")):
-            if sample.get(field):
-                command.extend([flag,str(_resolve(sample[field],root))])
-        for field, flag in (("hermes_overlap","--hermes-overlap"),("adapter_error_rate","--adapter-error-rate"),("min_read_length","--min-read-length"),("junction_read_end","--junction-read-end")):
+    resolved = resolve_design({**(config.get("mapping") or {}), **{k: v for k, v in sample.items() if v not in (None, "")}}, root)
+    design = resolved["mapping"]
+    if detects_ends(design):
+        command.append("--detect-ends")
+        # The element's own files: a design names them relative to its transposon's folder, a sample by any path.
+        # Neither given, the cleaner falls back to the Hermes catalogue, the only one shipped.
+        folder = Path(resolved["profile"]).parent
+        for field, flag in (("primer_catalogue","--primer-catalogue"),("reference","--transposon-reference")):
+            value = sample.get(field) or design.get(field)
+            if value:
+                candidate = Path(str(value))
+                command.extend([flag, str(candidate if candidate.is_absolute() or candidate.exists()
+                                          else (folder/candidate if (folder/candidate).is_file() else _resolve(value, root)))])
+        for field, flag in (("end_overlap","--end-overlap"),("hermes_overlap","--end-overlap"),("adapter_error_rate","--adapter-error-rate"),("min_read_length","--min-read-length"),("junction_read_end","--junction-read-end")):
             if sample.get(field) not in (None, ""):
                 command.extend([flag,str(sample[field])])
         # The design says whether its reads retain the transposon end. Where they do, a read without a junction is
@@ -225,7 +232,7 @@ def build_mapfastq_command(sample: dict, config: dict, threads: int | None = Non
         if _as_bool(design.get("discard_untrimmed", False)):
             command.append("--require-junction")
     else:
-        # Profile-defined trimming for transposons and library designs without automatic Hermes cleanup.
+        # Trimming of the sequence a design declares its construct leaves on the read.
         if design.get("trim_5p_seq"):
             command.extend(["--trim-5p-seq", str(design["trim_5p_seq"])])
             if design.get("trim_5p_overlap") not in (None, ""):
@@ -287,14 +294,14 @@ def mapping_fingerprint(command: list[str]) -> str:
     if "--trim-5p-seq" in command or "--trim-3p-seq" in command:
         import cutadapt
         payload["tools"]["cutadapt_version"]=cutadapt.__version__
-    if "--hermes-preprocess" in command:
+    if "--detect-ends" in command:
         import cutadapt
         payload["tools"]["cutadapt_version"]=cutadapt.__version__
-        from ytab.mapping.hermes_preprocess import DEFAULT_CATALOGUE
+        from ytab.mapping.read_cleanup import DEFAULT_CATALOGUE
         catalogue=Path(command[command.index("--primer-catalogue")+1]) if "--primer-catalogue" in command else DEFAULT_CATALOGUE
         data=json.loads(catalogue.read_text())
-        reference=Path(command[command.index("--hermes-reference")+1]) if "--hermes-reference" in command else catalogue.parent/data["reference"]
-        files += [catalogue,reference,root/"src/ytab/mapping/hermes_preprocess.py"]
+        reference=Path(command[command.index("--transposon-reference")+1]) if "--transposon-reference" in command else catalogue.parent/data["reference"]
+        files += [catalogue,reference,root/"src/ytab/mapping/read_cleanup.py"]
     for path in files:
         payload["files"][str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()
     return hashlib.sha256(json.dumps(payload,sort_keys=True).encode()).hexdigest()
@@ -354,7 +361,7 @@ def run_mapfastq_sample(
     mate_flag="--junction-mate" if "--junction-mate" in command else "--source-junction-mate"
     manifest.update(mapping_strategy="paired_genome" if "--require-mate-alignment" in command else "single_mate",
         junction_mate=command[command.index(mate_flag)+1],genome_mapping_mate=command[command.index(mate_flag)+1],
-        require_mate_alignment="--require-mate-alignment" in command,hermes_cleanup="--hermes-preprocess" in command)
+        require_mate_alignment="--require-mate-alignment" in command,detect_ends="--detect-ends" in command)
     design = resolve_design({**(config.get("mapping") or {}), **{k:v for k,v in sample.items() if v not in (None, "")}}, root)
     manifest.update(transposon=design["transposon"], library_design=design["library_design"],
                     transposon_profile=str(design["profile"].relative_to(root)) if design["profile"].is_relative_to(root) else str(design["profile"]))
@@ -393,14 +400,20 @@ def run_mapfastq_sample(
             paths["qc"].mkdir(parents=True, exist_ok=True)
             shutil.copy2(stats, paths["qc"] / stats.name)
         manifest["status"] = "success"
-        preprocessing=paths["output"]/f"{name}.hermes_preprocessing.json"
-        if "--hermes-preprocess" in command:
+        # Runs made before the report was renamed still carry the old filename.
+        preprocessing=next((p for p in (paths["output"]/f"{name}.read_cleanup.json",
+                                        paths["output"]/f"{name}.hermes_preprocessing.json") if p.is_file()),
+                           paths["output"]/f"{name}.read_cleanup.json")
+        if "--detect-ends" in command:
             if not preprocessing.is_file():
-                raise RuntimeError("Hermes preprocessing report is missing")
-            manifest["hermes_preprocessing"]=json.loads(preprocessing.read_text())
-            manifest["genome_mapping_mate"]=manifest["hermes_preprocessing"]["junction_mate"]
+                raise RuntimeError("Read cleanup report is missing")
+            report=json.loads(preprocessing.read_text())
+            # Both keys carry the report: the old one so manifests stay readable by anything written against it.
+            manifest["read_cleanup"]=report
+            manifest["hermes_preprocessing"]=report
+            manifest["genome_mapping_mate"]=report["junction_mate"]
             manifest["junction_mate"]=manifest["genome_mapping_mate"]
-            manifest["require_mate_alignment"]=manifest["hermes_preprocessing"]["require_mate_alignment"]
+            manifest["require_mate_alignment"]=report["require_mate_alignment"]
         manifest["status"] = "success"
     except Exception as exc:
         manifest["status"] = "failed"
@@ -438,14 +451,14 @@ def run_mapfastq_project(
     keep_going: bool = False, job_id: str | None = None,
     progress_file: Path | None = None,
     junction_mate: str | None = None, require_mate_alignment: bool | None = None,
-    hermes_cleanup: bool | None = None,
+    detect_ends: bool | None = None,
     transposon: str | None = None, library_design: str | None = None,
 ) -> dict:
     config = load_project_for_mapping(project_config)
     if threads is not None:
         config["threads"] = threads
     for sample in config.get("samples",[]):
-        for key,value in (("junction_mate",junction_mate),("require_mate_alignment",require_mate_alignment),("hermes_cleanup",hermes_cleanup),
+        for key,value in (("junction_mate",junction_mate),("require_mate_alignment",require_mate_alignment),("detect_ends",detect_ends),
                           ("transposon",transposon),("library_design",library_design)):
             if value is not None:
                 sample[key]=value

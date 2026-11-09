@@ -65,12 +65,12 @@ def _version(root: Path) -> str | None:
         return None
 
 
-def create_project_config(project_id, fastq_dir, species, repo_root=None, threads=None) -> dict:
+def create_project_config(project_id, fastq_dir, species, repo_root=None, threads=None, include_files=None) -> dict:
     root = _root(repo_root)
     fastq_path = Path(fastq_dir).expanduser().resolve()
     selected_threads = default_threads() if threads is None else int(threads)
     reference = resolve_reference(str(species), root)
-    samples = discover_fastqs(fastq_path)
+    samples = discover_fastqs(fastq_path, include_files)
     project_dir = root / "output" / "projects" / str(project_id)
     export_dir = root / "output" / "exports" / str(project_id)
     config_dir = project_dir / "config"

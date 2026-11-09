@@ -36,7 +36,7 @@ datasets_search <- function(data, words) {
              snippet = sprintf("%s. %s libraries; %s. %s", x$transposon, x$runs_included, x$accession, x$design), stringsAsFactors = FALSE)
 }
 
-datasets_modal <- function() modalDialog(title = "Public datasets", size = "xl", easyClose = TRUE, footer = modalButton("Close"),
+datasets_modal <- function() modalDialog(title = modal_title_with_size_toggle("Public datasets"), size = "xl", easyClose = TRUE, footer = modalButton("Close"),
   tags$div(class = "ytab-datasets",
     tags$p(class = "text-muted", "Published Hermes, Ac/Ds and piggyBac libraries reprocessed with YTAB from raw reads. Search any field, including drug, strain or run ID; select a row for its conditions, QC, results and libraries. Sites per coding kb: median insertion sites per kb of coding sequence (median gene) across the analysed libraries, the density the essentiality recommendation is stated in; top site: the largest share of a library's reads at one site."),
     DT::DTOutput("datasets_table"), uiOutput("datasets_detail")))
@@ -121,7 +121,11 @@ datasets_server <- function(input, output, session, repo_root, data, open_projec
     DT::datatable(datasets_table_data(data$catalog, data$libraries), escape = FALSE, rownames = FALSE, filter = "none",
       selection = list(mode = "single", selected = if (!is.na(pre)) pre else NULL, target = "row"), class = "compact stripe hover",
       options = list(pageLength = 15, lengthMenu = c(15, 50), scrollX = TRUE, autoWidth = FALSE,
-                     search = list(search = ""), dom = "ftip", columnDefs = list(list(className = "dt-right", targets = c(4, 5, 7, 8)), list(visible = FALSE, targets = 10))))
+                     search = list(search = ""), dom = "ftip",
+                     # 0-based over the columns of datasets_table_data(): Libraries, Conditions, sites per kb and
+                     # top site read as numbers; the last column is the concatenated search text and stays hidden.
+                     columnDefs = list(list(className = "dt-right", targets = c(5, 6, 8, 9)),
+                                       list(visible = FALSE, targets = 11))))
   })
   observeEvent(input$datasets_table_rows_selected, { i <- input$datasets_table_rows_selected; if (length(i)) selected(grouped$id[[i]]) }, ignoreInit = TRUE)
   current <- reactive({ x <- data$catalog; g <- x[x$id == selected(), , drop = FALSE]; if (!nrow(g)) NULL else datasets_merge_group(g) })
