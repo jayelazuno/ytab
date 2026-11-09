@@ -1,0 +1,94 @@
+# Builds the YTAB Shiny app image and publishes it to the GitHub Container Registry (ghcr.io).
+#
+# Run it from the Actions tab ("Run workflow", choose a tag), or by pushing a tag like app-v0.1. It needs no secrets:
+# GITHUB_TOKEN is issued to the job and `packages: write` lets it push to ghcr.io under this repository's owner.
+#
+# The package is created private on first push. Make it public once, under
+# https://github.com/users/jayelazuno/packages/container/ytab-app/settings, so testers can pull without a token.
+name: App image
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to publish (for example v0.1)"
+        required: true
+        default: "v0.1"
+  push:
+    tags: ["app-v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out the image tag
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            tag="${{ github.event.inputs.tag }}"
+          else
+            tag="${GITHUB_REF_NAME#app-}"
+          fi
+          echo "image=ghcr.io/${{ github.repository_owner }}/ytab-app" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: containers/app.Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
+            ${{ steps.meta.outputs.image }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # What the solver actually chose, so the image can be rebuilt as it was and the conda fallback can match it.
+      - name: Record the solved environment
+        run: |
+          docker run --rm --entrypoint micromamba \
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }} \
+            env export -n ytab-local > environment.lock.yml
+          head -5 environment.lock.yml
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: environment-lock
+          path: environment.lock.yml
+
+      # The image is only useful if the app actually starts in it, so prove that before anyone pulls it.
+      - name: Smoke test (the app answers with the repository mounted)
+        run: |
+          docker run -d --name ytab-test -p 3838:3838 -v "$PWD:/opt/ytab" \
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
+          for i in $(seq 1 60); do
+            if curl -fsS --max-time 5 http://localhost:3838 > /tmp/page.html; then ok=1; break; fi
+            sleep 5
+          done
+          docker logs ytab-test | tail -30
+          test "${ok:-0}" = 1 || { echo "the app did not answer on port 3838"; exit 1; }
+          grep -qi "ytab\|shiny" /tmp/page.html || { echo "port answered but the page is not the app"; exit 1; }
+          echo "app responded, $(wc -c < /tmp/page.html) bytes"
+          docker rm -f ytab-test
+
+      - name: Report
+        run: |
+          echo "### Image published" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo 'docker run --rm -p 3838:3838 -v "$PWD:/opt/ytab" ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
