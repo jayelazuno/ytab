@@ -46,6 +46,9 @@ __pycache__/
 # Large sequencing and alignment files
 *.fastq
 *.fastq.gz
+# The Gale et al. 2020 read subsample is the one exception: it ships with the app so the mapping stage can be run
+# on first launch. It is 200,000 read pairs per library fetched from ENA, not the full libraries.
+!/data/fastq/gale_2020/**/*.fastq.gz
 *.fq
 *.fq.gz
 *.bam

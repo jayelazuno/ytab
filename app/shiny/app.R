@@ -199,7 +199,7 @@ server <- function(input, output, session) {
   output$demo_project_card <- renderUI({
     demo <- demo_project(); if (is.null(demo)) return(NULL)
     panel_card("Workflow demonstration dataset", tags$p(project_display_label(as.list(demo[1, ]))),
-      tags$p(class="ytab-warning", "A small example dataset for trying the workflow; its results are not for biological conclusions."),
+      tags$p(class="text-muted", "The published screen the tutorial follows, reprocessed with YTAB from the raw reads: fluconazole against three untreated parent libraries in C. glabrata. Its results can be read against the paper's."),
       actionButton("open_demo", "Open demonstration dataset", class="btn-primary ytab-button"))
   })
   open_path <- function(path) {
