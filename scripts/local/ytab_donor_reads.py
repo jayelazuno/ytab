@@ -29,6 +29,31 @@ def resolve(value, root):
     return p if p.is_absolute() else root/p
 
 
+def library_fastqs(sample: dict, config: dict, root) -> list:
+    """The FASTQs that make up one library.
+
+    Most libraries are one sequencing run and carry their own `fastq_1`. A library merged from several runs carries
+    none: its reads are those of the runs named in `runs`, which sit in the sample sheet as their own rows. Counting
+    the merged library means counting all of them, which is what the QC table reports on.
+    """
+    direct = resolve(sample.get("fastq_1") or sample.get("r1_fastq"), root)
+    if direct is not None and direct.is_file():
+        return [direct]
+    runs = str(sample.get("runs") or "").split()
+    if not runs:
+        return []
+    # The loader has already turned every sheet row's FASTQ into an absolute path, so the runs are looked up there
+    # rather than guessed from the run name.
+    by_name = {str(s.get("sample")): s for s in config.get("samples", [])}
+    found = []
+    for run in runs:
+        entry = by_name.get(run) or {}
+        path = resolve(entry.get("fastq_1") or entry.get("r1_fastq"), root)
+        if path is not None and path.is_file():
+            found.append(path)
+    return found
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--project-config", type=Path); p.add_argument("--samples", help="Comma-separated sample names")
@@ -60,12 +85,14 @@ def main():
     for sample in get_included_samples(config):
         name = str(sample["sample"])
         if wanted and name not in wanted:continue
-        fastq = resolve(sample.get("fastq_1") or sample.get("r1_fastq"), root)
-        if fastq is None or not fastq.is_file():print(f"{name}: no FASTQ ({fastq})"); continue
+        fastqs = library_fastqs(sample, config, root)
+        if not fastqs:
+            print(f"{name}: no FASTQ ({sample.get('fastq_1') or sample.get('runs') or None})"); continue
         out = project/"mapfastq"/name; out.mkdir(parents=True, exist_ok=True)
         design = resolve_design({**(config.get("mapping") or {}), **{k: v for k, v in sample.items() if v not in (None, "")}}, root)
         tn = str(a.transposon_fasta) if a.transposon_fasta else next((str(x) for x in sorted((ROOT/"resources/transposons"/design["transposon"]).glob("*.fasta"))), None)
-        row = donor_reads.from_fastq(str(fastq), name, str(out), str(donor) if donor else None, index, a.mapq, a.threads, tn)
+        row = donor_reads.from_fastqs([str(f) for f in fastqs], name, str(out), str(donor) if donor else None,
+                                      index, a.mapq, a.threads, tn)
         value = row.get("percent_donor") if row.get("percent_donor") is not None else row.get("percent_recurrent_flank")
         print(f"{name}: {value}% donor reads, {row.get('percent_donor_shared')}% placed on the genome ({row['source']})", flush=True)
 

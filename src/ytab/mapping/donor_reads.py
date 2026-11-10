@@ -185,9 +185,45 @@ def _write(row: dict, sample: str, out_dir: str) -> Path:
     return path
 
 
+def from_fastqs(fastqs: list[str], sample: str, out_dir: str, donor_fasta: str | None = None,
+                genome_index: str | None = None, mapq: int = 20, threads: int = 4,
+                transposon_fasta: str | None = None) -> dict:
+    """Donor reads for one library whose reads are spread over several runs.
+
+    A library merged from runs has no FASTQ of its own; its share of donor reads is the share across all the reads
+    that went into it, so each run is counted and the counts are added. The flank tables are merged before the
+    recurring ones are chosen, so a flank is judged against the library's reads, not one run's.
+    """
+    totals: dict[str, int | None] = {}
+    merged: Counter = Counter()
+    row: dict = {}
+    for fastq in fastqs:
+        part = _count(fastq, sample, donor_fasta, genome_index, mapq, threads, transposon_fasta)
+        merged.update(part.pop("_flanks"))
+        row = row or dict(sample=sample, donor=part["donor"], source=part["source"])
+        for key in ("reads", "donor_reads", "donor_only_reads", "donor_shared_reads", "recurrent_flank_reads"):
+            value = part.get(key)
+            if value is None:
+                totals.setdefault(key, None)
+            else:
+                totals[key] = (totals.get(key) or 0) + value
+    row |= totals
+    recurring = _recurring(merged, row.get("reads") or 0)
+    row["top_flanks"] = ";".join(f"{k}:{n}" for k, n in recurring[:5])
+    return row | dict(path=str(_write(row, sample, out_dir)))
+
+
 def from_fastq(fastq: str, sample: str, out_dir: str, donor_fasta: str | None = None, genome_index: str | None = None,
                mapq: int = 20, threads: int = 4, transposon_fasta: str | None = None) -> dict:
     """Donor reads straight from a FASTQ, without remapping the library to the genome."""
+    row = _count(fastq, sample, donor_fasta, genome_index, mapq, threads, transposon_fasta)
+    row.pop("_flanks", None)
+    return row | dict(path=str(_write(row, sample, out_dir)))
+
+
+def _count(fastq: str, sample: str, donor_fasta: str | None, genome_index: str | None,
+           mapq: int, threads: int, transposon_fasta: str | None) -> dict:
+    """The counts for one FASTQ, with its flank table under `_flanks`; nothing is written."""
     flanks, reads = flank_counts(fastq)
     recurring = _recurring(flanks, reads)
     row = dict(sample=sample, donor=Path(donor_fasta).parent.name if donor_fasta else "", reads=reads,
@@ -212,7 +248,7 @@ def from_fastq(fastq: str, sample: str, out_dir: str, donor_fasta: str | None = 
                         block = []
             unplaced = kept-len(placed_on_genome(sub, genome_index, mapq, threads)) if genome_index else kept
             row["recurrent_flank_reads"] = unplaced
-    return row | dict(path=str(_write(row, sample, out_dir)))
+    return row | {"_flanks": flanks}
 
 
 def count(sam: str, clean_fastq: str | None, sample: str, out_dir: str, mapq: int, threads: int, donor_fasta: str | None = None,
