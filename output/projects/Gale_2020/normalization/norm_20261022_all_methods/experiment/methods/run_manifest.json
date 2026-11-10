@@ -1,0 +1,119 @@
+{
+  "status": "success",
+  "methods": [
+    "nonorm",
+    "ttr",
+    "totreads",
+    "nzmean",
+    "midlc",
+    "quantile",
+    "betageom",
+    "aBGC",
+    "zinfnb"
+  ],
+  "group_by": "library_id",
+  "observations": [
+    "Gale_2020::SRR11561502",
+    "Gale_2020::SRR11561503",
+    "Gale_2020::SRR11561504",
+    "Gale_2020::SRR11561505"
+  ],
+  "universe_sites": 544647,
+  "catalogue": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/matrix",
+  "reference_sha256": "80e6b150de90067c22f3509723598c798e5e42b48c0c2972c6fbd32deaa26c20",
+  "source_hashes": {
+    "raw_counts.npz": "4c888ea7550403db1d1839fbcb02f04002949dc976a8f05c5de610f3f8b87647",
+    "observations.tsv": "b2665ba772187222f79b65c906f91f797a70b2335172175e95b707852e3cccdb",
+    "sites.tsv.gz": "a9621114581729071412bf4739c5605c4a65f9426c4b8cb1782a4309a0d2f691",
+    "run_manifest.json": "dae91b849003f38f3e27ce3aea298972fac5e1b2dd69c3d32f295896e8e22253"
+  },
+  "implementation_sha256": "ae03ed2899cf87fa0b7387f97fcbab7a0fd5ce1df723f195242231308e8b9fa7",
+  "ttr_implementation_sha256": "a9689699530e83f0aada0d4229e3c96c18744d53b38dc3764ac785aec48d82d5",
+  "quantile_implementation_sha256": "24fe697adf203dbbdcbe913518463c9cf9167eaf906ec2796a47c9e411ff5019",
+  "zinfnb_implementation_sha256": "3fa81ed172adb0c877ac0b47fa07d749615eb77c84d0d52270d19903b7d6ab31",
+  "zinfnb_parameters": {
+    "likelihood": "proper ZINB; zero term includes (1-pi)",
+    "fit_universe": "full empirical catalogue",
+    "optimizer": "L-BFGS-B",
+    "maxiter": 1000,
+    "ftol": 1e-12,
+    "gtol": 1e-07,
+    "log_mean_size_bounds": [
+      [
+        -18.0,
+        25.0
+      ],
+      [
+        -14.0,
+        18.0
+      ]
+    ],
+    "start_sizes": [
+      0.2,
+      2.0,
+      20.0
+    ],
+    "pi": "profiled analytically; [0,1-1e-12]",
+    "target": "NB component mean 1; no group target"
+  },
+  "betageom_implementation_sha256": "5c7893f1eceb6af5656fdcf98efe53cd5dcfb44f5649e170d0447e0d88556aec",
+  "bgc_parameters": {
+    "cdf": "analytic",
+    "seed": 0,
+    "draws": 200000,
+    "post_ttr": true,
+    "trim": 0.05,
+    "target": 100,
+    "fit_universe": "full catalogue including zeros",
+    "fit_trim_each_tail": 0.001,
+    "rho_lower_bound": 0.0001,
+    "kappa_lower_bound": 10
+  },
+  "adaptive_bgc_implementation_sha256": "e0c2e59d7f75bb4d9db7106451671ae6ab6744d327c8b2b798921d1a993c23ab",
+  "abgc_parameters": {
+    "cdf": "analytic",
+    "seed": 0,
+    "draws": 200000,
+    "post_ttr": true,
+    "tail": "endpoint",
+    "fractions": [
+      0.0,
+      0.02,
+      0.04,
+      0.06,
+      0.08,
+      0.1,
+      0.12,
+      0.14,
+      0.16,
+      0.18,
+      0.2,
+      0.22,
+      0.24,
+      0.26,
+      0.28,
+      0.3
+    ],
+    "trim": 0.05,
+    "target": 100,
+    "fit_universe": "positive counts only",
+    "score": "maximum normalized squared quantile discrepancy; not a p-value"
+  },
+  "midlc_implementation_sha256": "5c57aad12efba19d2690b1d71bfcec1f6784f1bc3838b5e430aedc2fe5ad59a8",
+  "midlc_parameters": {
+    "target": "common saturation: smallest total/MidLC ratio in the normalization group",
+    "thinning": "binomial, downsample only",
+    "seed": 1,
+    "midlc": "depth with half the occupied sites expected under binomial thinning (exact)"
+  },
+  "software_versions": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.0"
+  },
+  "ttr_parameters": {
+    "trim_each_tail": 0.05,
+    "target": 100
+  },
+  "scale_warning": "Units differ by method. Compare within-method relative results; larger absolute normalized counts are not evidence of better normalization.",
+  "workflow_policy": "Opt-in evaluation only; the fitness z-score default (CPM) is unchanged; no downstream double normalization"
+}

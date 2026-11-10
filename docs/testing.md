@@ -1,7 +1,8 @@
 # Testing the YTAB app
 
-Thank you for trying this. You need **Docker** and about **7 GB of disk** (a 5.6 GB image and a ~800 MB clone);
-everything else — R, Shiny, Python and the analysis tools — is inside the image, so nothing is installed on your
+Thank you for trying this. You need **Docker** and about **22 GB of free disk**: the image is 5.6 GB and the clone
+expands to about 16 GB, most of it the processed public datasets that currently travel with the repository.
+Everything else — R, Shiny, Python and the analysis tools — is inside the image, so nothing is installed on your
 machine and nothing is left behind except the clone and the image.
 
 ## Run it
@@ -18,8 +19,8 @@ The first run downloads the image: about four minutes on a fast connection. Afte
 first page takes 20-30 seconds to appear while R loads the app. On an Apple Silicon Mac Docker runs the image under
 emulation, so that first page is slower still; that is expected and does not affect what you see.
 
-`--depth 1` clones only the current state rather than the full history: about 800 MB instead of 3 GB. The clone
-carries demo projects, so there is data to look at straight away.
+`--depth 1` clones only the current state rather than the full history: about 4.4 GB to download, which expands to
+about 16 GB on disk. The clone carries the processed public datasets, so there is data to look at straight away.
 
 ## What to look at
 

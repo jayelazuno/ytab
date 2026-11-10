@@ -1,0 +1,2 @@
+background	role	libraries	n_libraries	sites_per_coding_kb	supports_hmm	supports_hybrid	hmm_target	hybrid_target
+BG14	parent	SRR11561506 SRR11561507 SRR11561508	3	20.68383899738846	False	True	36.0	18.0

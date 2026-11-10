@@ -1,0 +1,32 @@
+{
+  "status": "success",
+  "method": "TTR",
+  "implementation": "density * trimmed positive-site mean",
+  "trim_each_tail": 0.05,
+  "target": 100,
+  "universe_sites": 536004,
+  "observations": 5,
+  "independent_libraries": 3,
+  "datasets": [
+    {
+      "dataset": "Gale_2020",
+      "unique_sites": 536004,
+      "additional_to_all_other_datasets": 536004
+    }
+  ],
+  "minimum_support_depth": 7899160,
+  "reference_sha256": "80e6b150de90067c22f3509723598c798e5e42b48c0c2972c6fbd32deaa26c20",
+  "manifest": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/catalogue_sources.yaml",
+  "manifest_sha256": "938b6114b6de08b862bbd1c7d1b77eb9ee7adf4b29d3e62b7de58392ff26a9c8",
+  "code_sha256": "a9689699530e83f0aada0d4229e3c96c18744d53b38dc3764ac785aec48d82d5",
+  "coordinate_definition": "Exact YTAB chromosome + 1-based Hit position; W/C raw counts summed without coordinate shifts",
+  "matrix_orientation": "sites x observations; implicit sparse zeros equal explicit tabular zeros",
+  "warnings": [
+    "Observed catalogue is not all possible Hermes insertion sites or proof of saturation.",
+    "Raw support is usable called-insertion count, not total FASTQ sequencing depth.",
+    "Read abundance is not measured viable-mutant abundance.",
+    "Repeated sequencing/outgrowth observations are not independent induction libraries.",
+    "Density correction can scale real differences in library complexity; this is an evaluation, not a validated replacement for fitness CPM or classifier MidLC.",
+    "Adding all-zero sites to the common universe changes absolute TTR factors equally, not their ratios."
+  ]
+}

@@ -1,0 +1,3 @@
+target,target_tag,input_feature_count,output_prediction_count,prediction_label,prediction_count,prediction_fraction,probability_column,mean_probability,median_probability,minimum_probability,maximum_probability
+betageom,betageom__norm_20261020_231352__9b8641,5234,5234,No,2755,0.5263660680168132,RF - G4,0.2720582728314864,0.1,0.0,1.0
+betageom,betageom__norm_20261020_231352__9b8641,5234,5234,Yes,2479,0.4736339319831869,RF - G4,0.2720582728314864,0.1,0.0,1.0

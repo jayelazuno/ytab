@@ -1,0 +1,13 @@
+method	observation_id	display_name	role	library_id	raw_total_support	occupied_sites	factor	effective_scale
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	Gale_2020::BG14::Cg1	9419088	168364	1.0	1.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	Gale_2020::BG14::Cg1	12247129	166656	1.0	1.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	Gale_2020::BG14::Cg1	9775885	171278	1.0	1.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	Gale_2020::BG14::Cg1	10813576	166286	1.0	1.0
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	Gale_2020::BG14::Cg1	9419088	168364		13.771843593318636
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	Gale_2020::BG14::Cg1	12247129	166656		10.537240764652463
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	Gale_2020::BG14::Cg1	9775885	171278		12.854575702304157
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	Gale_2020::BG14::Cg1	10813576	166286		11.589428028498423
+ttr	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	Gale_2020::BG14::Cg1	9419088	168364	9.317285358826505	9.317285358826505
+ttr	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	Gale_2020::BG14::Cg1	12247129	166656	7.043684296191335	7.043684296191335
+ttr	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	Gale_2020::BG14::Cg1	9775885	171278	8.862667493427827	8.862667493427827
+ttr	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	Gale_2020::BG14::Cg1	10813576	166286	7.971158914231469	7.971158914231469

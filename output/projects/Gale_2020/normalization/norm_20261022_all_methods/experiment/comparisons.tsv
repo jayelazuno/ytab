@@ -1,0 +1,3 @@
+comparison_id	pair_id	parent_sample	treated_sample	background	pool	parent_condition	treated_condition	include	notes
+Cg1_FLU1_vs_control1	Cg1_culture_contrast1	SRR11561505	SRR11561503	BG14	Cg1	parent	treated	true	Parent condition denotes the no-drug control culture only; numbered contrast; both contrasts derive from Cg1
+Cg1_FLU2_vs_control2	Cg1_culture_contrast2	SRR11561504	SRR11561502	BG14	Cg1	parent	treated	true	Parent condition denotes the no-drug control culture only; numbered contrast; both contrasts derive from Cg1

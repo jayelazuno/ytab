@@ -1,0 +1,32 @@
+{
+  "sample_name": "combined_parent_hits.ttr__norm_20261020_231352__9b8641",
+  "output_hits": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/ttr__norm_20261020_231352__9b8641/combined_parent_hits.ttr__norm_20261020_231352__9b8641.txt",
+  "n_input_files": 3,
+  "input_files": [
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561508/SRR11561508_normalized_hits.txt",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561507/SRR11561507_normalized_hits.txt",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561506/SRR11561506_normalized_hits.txt"
+  ],
+  "combined_unique_sites": 529418,
+  "combined_reads": 275996296,
+  "output_summary_csv": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/ttr__norm_20261020_231352__9b8641/combined_parent_hits.ttr__norm_20261020_231352__9b8641.combine_summary.csv",
+  "chrom_col": "Chromosome",
+  "position_col": "Hit position",
+  "reads_col": "Hit count",
+  "preserved_columns": [
+    "Chromosome",
+    "Source",
+    "Up feature type",
+    "Up feature name",
+    "Up gene name",
+    "Up feature dist",
+    "Down feature type",
+    "Down feature name",
+    "Down gene name",
+    "Down feature dist",
+    "IntergenicType",
+    "Hit position",
+    "Hit count"
+  ],
+  "annotation_conflict_policy": "For non-key/non-count columns, unique non-empty values are collapsed with ';'."
+}

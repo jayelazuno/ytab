@@ -1,0 +1,88 @@
+{
+  "status": "success",
+  "project": "Gale_2020",
+  "normalization": "betageom",
+  "normalized": null,
+  "conditions": [
+    "parent",
+    "control",
+    "FLU"
+  ],
+  "reference_condition": "control",
+  "stratified": false,
+  "samples": [
+    {
+      "observation_id": "SRR11561508",
+      "condition": "parent",
+      "library": "Cg1"
+    },
+    {
+      "observation_id": "SRR11561505",
+      "condition": "control",
+      "library": "Cg1"
+    },
+    {
+      "observation_id": "SRR11561504",
+      "condition": "control",
+      "library": "Cg1"
+    },
+    {
+      "observation_id": "SRR11561503",
+      "condition": "FLU",
+      "library": "Cg1"
+    },
+    {
+      "observation_id": "SRR11561502",
+      "condition": "FLU",
+      "library": "Cg1"
+    }
+  ],
+  "tests": [
+    "anova",
+    "all-pairs"
+  ],
+  "anova_calls": {
+    "varies": 781,
+    "not significant": 4062,
+    "not tested": 391
+  },
+  "anova_warning": "replicate noise differs 3.7x between conditions; p-values may be mildly anti-conservative",
+  "all_pairs_calls": {
+    "control vs parent": {
+      "not significant": 4244,
+      "not tested": 583,
+      "depleted": 274,
+      "enriched": 133
+    },
+    "FLU vs parent": {
+      "not tested": 465,
+      "not significant": 4393,
+      "depleted": 195,
+      "enriched": 181
+    },
+    "FLU vs control": {
+      "not significant": 4206,
+      "not tested": 435,
+      "depleted": 240,
+      "enriched": 353
+    }
+  },
+  "recommendation": null,
+  "adopted_from": "/Users/joshuaayelazuno/Desktop/ytab/output/essentiality/multicondition/Gale_2020_Cg1_v2_plots/run_inputs",
+  "plots": {
+    "status": "success",
+    "message": null,
+    "notes": [],
+    "responsive_genes": {
+      "source": "all-pairs (any pair called) because ANOVA's replicate-noise warning fired",
+      "selected": 891,
+      "plotted": 891
+    }
+  },
+  "files": {
+    "anova": "tests/anova_genes.tsv",
+    "pairs": "tests/pairs_genes.tsv",
+    "correlation": "plots/response_correlation.tsv",
+    "heatmap": "plots/heatmap_matrix.tsv"
+  }
+}

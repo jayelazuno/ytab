@@ -1,0 +1,50 @@
+{
+  "status": "success",
+  "methods": [
+    "betageom"
+  ],
+  "group_by": "library_id",
+  "observations": [
+    "Gale_2020::SRR11561508",
+    "Gale_2020::SRR11561507",
+    "Gale_2020::SRR11561506"
+  ],
+  "universe_sites": 536004,
+  "catalogue": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/catalogue",
+  "reference_sha256": "80e6b150de90067c22f3509723598c798e5e42b48c0c2972c6fbd32deaa26c20",
+  "source_hashes": {
+    "raw_counts.npz": "26411a933468ddcf7d863366969f95e9bf5831349fecf8b4320e9475add46c88",
+    "observations.tsv": "4f31c42d942641cab6899c9fecfdb72b7c36f617768e20993d57c6deff24f44b",
+    "sites.tsv.gz": "6c50e3087b403f6e3ba330ac2af75aa73c821521f47fa4e78f50692e4b92df7c",
+    "run_manifest.json": "db6d26a2ea04d2601b00fa1c0d28e73322ac4e0c9596989b49c6a96a5a06b794"
+  },
+  "implementation_sha256": "ae03ed2899cf87fa0b7387f97fcbab7a0fd5ce1df723f195242231308e8b9fa7",
+  "ttr_implementation_sha256": "a9689699530e83f0aada0d4229e3c96c18744d53b38dc3764ac785aec48d82d5",
+  "quantile_implementation_sha256": null,
+  "zinfnb_implementation_sha256": null,
+  "zinfnb_parameters": null,
+  "betageom_implementation_sha256": "5c7893f1eceb6af5656fdcf98efe53cd5dcfb44f5649e170d0447e0d88556aec",
+  "bgc_parameters": {
+    "cdf": "analytic",
+    "seed": 0,
+    "draws": 200000,
+    "post_ttr": true,
+    "trim": 0.05,
+    "target": 100,
+    "fit_universe": "full catalogue including zeros",
+    "fit_trim_each_tail": 0.001,
+    "rho_lower_bound": 0.0001,
+    "kappa_lower_bound": 10
+  },
+  "adaptive_bgc_implementation_sha256": null,
+  "abgc_parameters": null,
+  "midlc_implementation_sha256": null,
+  "midlc_parameters": null,
+  "software_versions": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.0"
+  },
+  "ttr_parameters": null,
+  "scale_warning": "Units differ by method. Compare within-method relative results; larger absolute normalized counts are not evidence of better normalization.",
+  "workflow_policy": "Opt-in evaluation only; the fitness z-score default (CPM) is unchanged; no downstream double normalization"
+}

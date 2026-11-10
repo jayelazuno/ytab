@@ -1,0 +1,13 @@
+method	observation_id	sample	display_name	role	pool	PC1	PC2	PC3	PC4
+nonorm	Gale_2020::SRR11561502	SRR11561502	Cg1 — FLU-treated 2	treated	Cg1	-19.4725	19.16892	0.36118	0.0
+nonorm	Gale_2020::SRR11561503	SRR11561503	Cg1 — FLU-treated 1	treated	Cg1	-24.04955	-17.27279	0.21183	0.0
+nonorm	Gale_2020::SRR11561504	SRR11561504	Cg1 — no-drug control 2	control	Cg1	20.08097	-0.68798	-7.60671	0.0
+nonorm	Gale_2020::SRR11561505	SRR11561505	Cg1 — no-drug control 1	control	Cg1	23.44108	-1.20815	7.0337	0.0
+betageom	Gale_2020::SRR11561502	SRR11561502	Cg1 — FLU-treated 2	treated	Cg1	-45.81227	40.3894	1.23296	0.0
+betageom	Gale_2020::SRR11561503	SRR11561503	Cg1 — FLU-treated 1	treated	Cg1	-33.26528	-47.40677	-0.18103	0.0
+betageom	Gale_2020::SRR11561504	SRR11561504	Cg1 — no-drug control 2	control	Cg1	37.67493	4.61599	-25.221	0.0
+betageom	Gale_2020::SRR11561505	SRR11561505	Cg1 — no-drug control 1	control	Cg1	41.40262	2.40139	24.16906	0.0
+ttr	Gale_2020::SRR11561502	SRR11561502	Cg1 — FLU-treated 2	treated	Cg1	-42.57873	30.74522	1.09782	0.0
+ttr	Gale_2020::SRR11561503	SRR11561503	Cg1 — FLU-treated 1	treated	Cg1	-24.52047	-40.36784	-0.41791	0.0
+ttr	Gale_2020::SRR11561504	SRR11561504	Cg1 — no-drug control 2	control	Cg1	32.05201	6.00701	-20.14084	0.0
+ttr	Gale_2020::SRR11561505	SRR11561505	Cg1 — no-drug control 1	control	Cg1	35.04719	3.61561	19.46092	0.0

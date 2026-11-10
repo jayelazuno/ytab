@@ -1,0 +1,17 @@
+{
+  "id": "midlc",
+  "name": "MidLC common saturation",
+  "status": "available",
+  "input_level": "raw insertion-site counts",
+  "description": "Thins every library by binomial sampling to the same depth relative to its own complexity: the group's smallest depth-to-MidLC ratio. MidLC is the depth at which a library is expected to show half of its occupied sites. Downsampling only; counts stay whole numbers.",
+  "formula": "MidLC_j: sum_s[1-(1-p)^c_sj] = occupied_j/2, MidLC_j = p*total_j; p_j = min_group(total/MidLC) * MidLC_j / total_j; counts ~ Binomial(c, p_j)",
+  "may_suit": "Comparing libraries sequenced to different saturation, and essentiality inputs that should not depend on sequencing depth.",
+  "caution": "Discards reads (random, seeded); the most saturated libraries lose the most. Does not correct insertion-site preference or skew. Units are thinned reads, not a common scale.",
+  "diagnostics": [
+    "MidLC",
+    "saturation ratio",
+    "thinning fraction",
+    "sites retained"
+  ],
+  "source": "src/ytab/normalization/midlc.py"
+}

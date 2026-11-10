@@ -1,0 +1,102 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "profile": "classifier",
+  "target": "recommended",
+  "analysis_id": "treated_vs_parent_raw_cpm",
+  "threads": 4,
+  "status": "success",
+  "plan_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/manifests/orchestrator/pipeline_plan.json",
+  "log_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/logs/orchestrator/pipeline_run.20261022T003824Z.log",
+  "results": [
+    {
+      "stage": "sample_normalization",
+      "status": "success",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_sample_normalization.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--threads",
+        "4",
+        "--targets",
+        "auto",
+        "--sample-mode",
+        "parents",
+        "--force"
+      ],
+      "returncode": 0,
+      "output": null
+    },
+    {
+      "stage": "summary_normalized",
+      "status": "success",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_summary_normalized.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--threads",
+        "4",
+        "--targets",
+        "recommended",
+        "--sample-mode",
+        "parents",
+        "--force"
+      ],
+      "returncode": 0,
+      "output": null
+    },
+    {
+      "stage": "combined_hits",
+      "status": "success",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_combine_hits.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--target",
+        "recommended",
+        "--force"
+      ],
+      "returncode": 0,
+      "output": null
+    },
+    {
+      "stage": "summary_combined",
+      "status": "success",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_summary_combined.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--threads",
+        "4",
+        "--target",
+        "recommended",
+        "--force"
+      ],
+      "returncode": 0,
+      "output": null
+    },
+    {
+      "stage": "classifier",
+      "status": "success",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_classifier.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--target",
+        "recommended",
+        "--force"
+      ],
+      "returncode": 0,
+      "output": null
+    }
+  ],
+  "warnings": [],
+  "start_time": "2026-10-22T00:45:28.402027+00:00",
+  "end_time": "2026-10-22T00:45:54.716809+00:00",
+  "elapsed_seconds": 449.724
+}

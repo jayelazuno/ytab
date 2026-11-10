@@ -1,0 +1,16 @@
+{
+  "id": "nzmean",
+  "name": "Nonzero-mean scaling",
+  "status": "available",
+  "input_level": "raw insertion-site counts",
+  "description": "Scales each library's mean reads per occupied site to the group average.",
+  "formula": "factor_j = mean_group(positive_site_mean) / positive_site_mean_j",
+  "may_suit": "A comparison method when the intended quantity is support per occupied site rather than density-adjusted support.",
+  "caution": "Does not adjust insertion density; ignores zeros when estimating the scale and remains sensitive to high counts.",
+  "diagnostics": [
+    "positive-site mean",
+    "density differences",
+    "high-count concentration"
+  ],
+  "source": "https://github.com/ioerger/transit/blob/50e23d6bec2605a24835fbd67f33691e330f3361/src/pytransit/norm_tools.py"
+}

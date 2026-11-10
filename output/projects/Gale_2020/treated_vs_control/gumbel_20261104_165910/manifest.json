@@ -1,0 +1,40 @@
+{
+  "status": "success",
+  "contract": 1,
+  "kind": "treated_vs_control",
+  "method": "gumbel",
+  "method_label": "Control-conditioned Gumbel (depletion only)",
+  "project": "Gale_2020",
+  "normalization": "ttr",
+  "normalization_run": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods",
+  "fdr": 0.05,
+  "groups": {
+    "BG14__treated": {
+      "background": "BG14",
+      "condition": "treated",
+      "comparisons": [
+        "Cg1_FLU1_vs_control1",
+        "Cg1_FLU2_vs_control2"
+      ],
+      "controls": [
+        "SRR11561505",
+        "SRR11561504"
+      ],
+      "treatments": [
+        "SRR11561503",
+        "SRR11561502"
+      ],
+      "status": "success",
+      "calls": {
+        "depleted run": 136,
+        "not significant": 3439,
+        "not tested": 1659
+      },
+      "warning": null,
+      "stratified": false
+    }
+  },
+  "files": {
+    "genes": "genes.tsv"
+  }
+}

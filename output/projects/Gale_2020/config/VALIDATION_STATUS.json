@@ -1,0 +1,30 @@
+{
+  "project_id": "Gale_2020",
+  "analysis_status": "requires_review",
+  "raw_summary_samples_successful": 7,
+  "library_qc_samples_successful": 7,
+  "classifier_parent_samples": ["SRR11561508", "SRR11561507", "SRR11561506"],
+  "normalization_status": "invalid_automatic_target_units",
+  "diagnostic_target_tag": "T409600",
+  "normalization_evidence": {
+    "sample": "SRR11561508",
+    "midlc_est_reads": 409600,
+    "automatic_target_multiplier": 409600,
+    "resulting_reads_target": 167772160000,
+    "input_reads": 23743484,
+    "thinning_probability": 1.0,
+    "all_three_parent_read_totals_unchanged": true
+  },
+  "classifier_status": "executed_but_provisional_due_to_normalization",
+  "classifier_model_changed": false,
+  "fitness_status": "success_existing_raw_cpm_method",
+  "fitness_source_pool": "Cg1",
+  "fitness_control_samples": ["SRR11561505", "SRR11561504"],
+  "fitness_treated_samples": ["SRR11561503", "SRR11561502"],
+  "fitness_independent_induction_pool_count": 1,
+  "fitness_classifier_annotation_used": false,
+  "fitness_result_table": "output/projects/Gale_2020/treated_vs_parent/Cg1_FLU_vs_no_drug_raw_cpm/treated_vs_parent_results.csv",
+  "fitness_workflow_manifest": "output/cli_workflows/20261015T202736Z_d5cda59d/workflow.json",
+  "workflow_manifest": "output/cli_workflows/20261015T194248Z_23d30f1e/workflow.json",
+  "warning": "Process exit success is not scientific validation. The report/archive from this execution predates this validation hold."
+}

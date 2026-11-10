@@ -1,0 +1,44 @@
+{
+  "_comment": [
+    "Metadata for the Zenodo record that holds the processed Tn-seq datasets, used by",
+    "scripts/local/ytab_upload_zenodo.py. The uploader refuses to run while any field still says CHANGE ME,",
+    "so the creators have to be filled in before anything is sent. The manuscript's author list is still a",
+    "placeholder too, so this is the one place that needs a real answer first.",
+    "Fields follow Zenodo's deposition metadata schema: https://developers.zenodo.org/#representation"
+  ],
+  "metadata": {
+    "upload_type": "dataset",
+    "title": "YTAB reprocessed Tn-seq datasets: Hermes, Ac/Ds and piggyBac libraries in yeasts and yeast-like fungi",
+    "description": "<p>Published transposon-sequencing (Tn-seq) datasets reprocessed from raw reads with YTAB, one archive per dataset. Each archive unpacks into a YTAB installation as <code>output/projects/&lt;dataset&gt;</code> and <code>output/exports/&lt;dataset&gt;</code>, and carries the insertion hit files, gene summary tables, quality-control tables, normalizations, condition comparisons, essentiality calls and genome-browser tracks, with the manifest recording the command and inputs behind every output.</p><p>Covers Hermes, Ac/Ds (including SATAY) and piggyBac libraries in <i>Candida glabrata</i>, <i>Candida albicans</i>, <i>Candida auris</i>, <i>Saccharomyces cerevisiae</i>, <i>Schizosaccharomyces pombe</i>, <i>Cryptococcus neoformans</i>, <i>Yarrowia lipolytica</i> and <i>Komagataella phaffii</i>. The raw reads remain at their original SRA/ENA accessions, which each dataset's record names; these archives are the processed results, not the reads.</p><p>YTAB itself, with the catalogue that lists these datasets and the code that produced them, is at https://github.com/jayelazuno/ytab</p>",
+    "creators": [
+      {
+        "name": "CHANGE ME: Family, Given",
+        "affiliation": "CHANGE ME",
+        "orcid": "CHANGE ME or remove this line"
+      }
+    ],
+    "license": "cc-by-4.0",
+    "access_right": "open",
+    "keywords": [
+      "Tn-seq",
+      "transposon insertion sequencing",
+      "Hermes",
+      "Ac/Ds",
+      "SATAY",
+      "piggyBac",
+      "gene essentiality",
+      "yeast",
+      "Candida glabrata",
+      "functional genomics"
+    ],
+    "related_identifiers": [
+      {
+        "identifier": "https://github.com/jayelazuno/ytab",
+        "relation": "isSupplementTo",
+        "resource_type": "software",
+        "scheme": "url"
+      }
+    ],
+    "notes": "Each archive's sha256 is published in bundles_index.tsv alongside the archives and in the YTAB dataset catalogue, so a download can be checked against the copy that was uploaded."
+  }
+}

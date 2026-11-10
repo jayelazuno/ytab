@@ -1,0 +1,48 @@
+{
+  "status": "success",
+  "methods": [
+    "betageom"
+  ],
+  "group_by": "library_id",
+  "observations": [
+    "Gale_2020::SRR11561508",
+    "Gale_2020::SRR11561507",
+    "Gale_2020::SRR11561506"
+  ],
+  "universe_sites": 536004,
+  "catalogue": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261020_231352/catalogue",
+  "reference_sha256": "80e6b150de90067c22f3509723598c798e5e42b48c0c2972c6fbd32deaa26c20",
+  "source_hashes": {
+    "raw_counts.npz": "26411a933468ddcf7d863366969f95e9bf5831349fecf8b4320e9475add46c88",
+    "observations.tsv": "4f31c42d942641cab6899c9fecfdb72b7c36f617768e20993d57c6deff24f44b",
+    "sites.tsv.gz": "0d01ecdd6b89b3304a40fd8d12e8914d41a320913bbb0503a8823558b83f6899",
+    "run_manifest.json": "4cc2fb98a2a9698746e74d1879accfab9d7666ec8b0148efdc5110964dc980e4"
+  },
+  "implementation_sha256": "4ce982b2ab489cdd0ccbabb2c6c6e0c328beebac618170936fb2e9252c478aa3",
+  "ttr_implementation_sha256": "f9530477fa4f572a11b8b42ec4a0507d030145cf656fab8a5b3e4c04ec172ce7",
+  "quantile_implementation_sha256": null,
+  "zinfnb_implementation_sha256": null,
+  "zinfnb_parameters": null,
+  "betageom_implementation_sha256": "ea29d4c7ad9cb9ffa364d1c69c80f0e68dad692b770c6dc50fbab863b14a9a8c",
+  "bgc_parameters": {
+    "cdf": "analytic",
+    "seed": 0,
+    "draws": 200000,
+    "post_ttr": true,
+    "trim": 0.05,
+    "target": 100,
+    "fit_universe": "full catalogue including zeros",
+    "fit_trim_each_tail": 0.001,
+    "rho_lower_bound": 0.0001,
+    "kappa_lower_bound": 10
+  },
+  "adaptive_bgc_implementation_sha256": null,
+  "abgc_parameters": null,
+  "software_versions": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.0"
+  },
+  "ttr_parameters": null,
+  "scale_warning": "Units differ by method. Compare within-method relative results; larger absolute normalized counts are not evidence of better normalization.",
+  "workflow_policy": "Opt-in evaluation only; existing fitness CPM and classifier MidLC are unchanged; no downstream double normalization"
+}

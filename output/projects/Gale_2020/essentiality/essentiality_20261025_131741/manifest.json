@@ -1,0 +1,85 @@
+{
+  "status": "success",
+  "contract": 1,
+  "calls": {
+    "GD": 2085,
+    "NE": 1450,
+    "ES": 1337,
+    "GA": 289,
+    "uncertain": 59
+  },
+  "project": "Gale_2020",
+  "species": "glabrata",
+  "libraries": [
+    "SRR11561508",
+    "SRR11561507",
+    "SRR11561506"
+  ],
+  "hmm_run": "/Users/joshuaayelazuno/Desktop/ytab/output/essentiality/default_update/hmm/glabrata_gale/joint",
+  "hmm_reused": true,
+  "models": [
+    "hmm",
+    "hybrid"
+  ],
+  "hybrid": true,
+  "features": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary_combined/betageom__norm_20261022_all_methods__9b8641/combined_feature_table.betageom__norm_20261022_all_methods__9b8641.txt",
+  "rf": null,
+  "labels": "resources/species/glabrata/essentiality_labels/labels.tsv",
+  "hybrid_normalization": {
+    "method": "given --features"
+  },
+  "hmm": {
+    "gene_calls": {
+      "ES": 1337,
+      "GD": 2085,
+      "NE": 1450,
+      "GA": 289,
+      "uncertain": 59,
+      "N/A": 14
+    },
+    "masked_fraction": 0.045355027721774244,
+    "converged": true,
+    "iterations": 101,
+    "notes": [],
+    "window": 100
+  },
+  "agreement": {
+    "not essential": 3777,
+    "consensus essential": 1163,
+    "HMM only": 174,
+    "hybrid only": 47
+  },
+  "hybrid_training": {
+    "tiers": [
+      "silver"
+    ],
+    "genes": 3290,
+    "essential": 924,
+    "folds": 5,
+    "seed": 90210
+  },
+  "chromosomes": 13,
+  "target_model": {
+    "file": "plots/target_model.tsv",
+    "used_in_fit": true
+  },
+  "evaluation": {
+    "HMM (label-free)": {
+      "all": 0.9295,
+      "gold": 0.9631,
+      "silver": 0.9309
+    },
+    "Hybrid": {
+      "all": 0.9477,
+      "gold": 0.9736,
+      "silver": 0.9477
+    }
+  },
+  "files": {
+    "genes": "models/genes.tsv",
+    "windows": "plots/windows.tsv.gz",
+    "guide": "models/MODELS.md",
+    "roc": "plots/roc.tsv",
+    "target_model": "plots/target_model.tsv"
+  }
+}

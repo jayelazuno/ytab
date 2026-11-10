@@ -1,0 +1,68 @@
+{
+  "status": "success",
+  "contract": 1,
+  "tables": [
+    "tables/feature_table.long.raw_reads.csv",
+    "tables/library_sizes.feature_reads.csv",
+    "tables/feature_reads_cpm.long.csv",
+    "tables/gene_values.long.csv",
+    "tables/background_specific_z_thresholds.csv",
+    "tables/background_noise_model_coefficients.csv",
+    "tables/control_control_z_scores.csv",
+    "tables/treated_vs_parent.by_pool.log2fc_z.csv",
+    "tables/treated_vs_parent.combined.log2fc_z.csv",
+    "tables/treated_vs_parent.summary_by_feature.csv",
+    "tables/top100_depleted_in_treated.csv",
+    "tables/top100_enriched_in_treated.csv",
+    "tables/top_hit_evidence.csv",
+    "tables/top_hit_evidence.by_pair.csv",
+    "tables/call_counts.by_pool.csv",
+    "tables/analysis_runtime_environment.csv"
+  ],
+  "method": "local-abundance z-score",
+  "project_id": "Gale_2020",
+  "analysis_id": "Cg1_FLU_vs_no_drug_raw_cpm",
+  "normalization": "CPM",
+  "normalization_run": "",
+  "value_unit": "CPM",
+  "value_scale": 1.0,
+  "n_features": 5234,
+  "library_sizes": true,
+  "library_sizes_source": "SummaryTable gene reads",
+  "settings": {
+    "pseudocount": 0.5,
+    "z_quantile": 0.99,
+    "window": 40,
+    "min_abundance": 0.1,
+    "combine": "replicates",
+    "recenter": "none",
+    "recenter_trim": 0.2,
+    "hit_min_log2FC": 1.0,
+    "hit_min_abundance": 0.0
+  },
+  "call_rule": "replicates",
+  "comparisons": [
+    "Cg1_FLU1_vs_control1",
+    "Cg1_FLU2_vs_control2"
+  ],
+  "backgrounds": {
+    "BG14": {
+      "controls": [
+        "SRR11561505",
+        "SRR11561504"
+      ],
+      "threshold": 3.014056028529938,
+      "coefficients": {
+        "m1": 1.1298984958802314e-41,
+        "m2": 0.5802175639310396,
+        "m3": -0.3041610947407834
+      },
+      "converged": true
+    }
+  },
+  "calls": {
+    "none": 3975,
+    "enriched": 670,
+    "depleted": 589
+  }
+}

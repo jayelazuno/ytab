@@ -1,0 +1,59 @@
+{
+  "method": "midlc",
+  "normalization_run": "output/projects/Gale_2020/normalization/norm_20261020_231352",
+  "tag": "midlc__norm_20261020_231352__9b8641",
+  "samples": [
+    "SRR11561508",
+    "SRR11561507",
+    "SRR11561506"
+  ],
+  "rounding": "thinned counts kept as whole numbers; strands share a site's count by largest remainder; thinned-out sites dropped",
+  "command": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_normalize.py",
+    "--catalogue",
+    "output/projects/Gale_2020/normalization/norm_20261020_231352/catalogue",
+    "--output",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/midlc__norm_20261020_231352__9b8641/engine",
+    "--method",
+    "midlc",
+    "--group-by",
+    "cohort",
+    "--observation",
+    "Gale_2020::SRR11561508",
+    "--observation",
+    "Gale_2020::SRR11561507",
+    "--observation",
+    "Gale_2020::SRR11561506"
+  ],
+  "created": "2026-10-22T00:28:12.853072+00:00",
+  "totals": {
+    "SRR11561508": {
+      "rows": 177199,
+      "sites": 174369,
+      "raw_reads": 23743484,
+      "normalized_reads": 4307144.0,
+      "written_reads": 4307144,
+      "raised_to_one": 0,
+      "rows_dropped": 17422
+    },
+    "SRR11561507": {
+      "rows": 276027,
+      "sites": 270196,
+      "raw_reads": 7899160,
+      "normalized_reads": 7438257.0,
+      "written_reads": 7438257,
+      "raised_to_one": 0,
+      "rows_dropped": 2420
+    },
+    "SRR11561506": {
+      "rows": 358808,
+      "sites": 349997,
+      "raw_reads": 9552015,
+      "normalized_reads": 9552015.0,
+      "written_reads": 9552015,
+      "raised_to_one": 0,
+      "rows_dropped": 0
+    }
+  }
+}

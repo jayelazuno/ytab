@@ -1,0 +1,4 @@
+group	background	condition	method_a	method_b	genes_tested_by_both	spearman_effect	spearman_score	depleted_n_a	depleted_n_b	depleted_n_both	depleted_a_recovered_by_b	depleted_b_recovered_by_a	enriched_n_a	enriched_n_b	enriched_n_both	enriched_a_recovered_by_b	enriched_b_recovered_by_a
+BG14__treated	BG14	treated	zscore	resampling	4799	0.9991484010970746	0.9537618571523289	296	280	170	0.5743243243243243	0.6071428571428571	615.0	365.0	332.0	0.5398373983739837	0.9095890410958904
+BG14__treated	BG14	treated	zscore	gumbel	2243	0.9059375732770704	0.4307289233748313	237	136	78	0.3291139240506329	0.5735294117647058					
+BG14__treated	BG14	treated	resampling	gumbel	2243	0.9059181120114862	0.38307931723073596	272	136	82	0.3014705882352941	0.6029411764705882					

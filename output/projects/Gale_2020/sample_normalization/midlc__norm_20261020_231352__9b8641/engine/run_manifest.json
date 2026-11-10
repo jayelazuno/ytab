@@ -1,0 +1,44 @@
+{
+  "status": "success",
+  "methods": [
+    "midlc"
+  ],
+  "group_by": "cohort",
+  "observations": [
+    "Gale_2020::SRR11561508",
+    "Gale_2020::SRR11561507",
+    "Gale_2020::SRR11561506"
+  ],
+  "universe_sites": 536004,
+  "catalogue": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261020_231352/catalogue",
+  "reference_sha256": "80e6b150de90067c22f3509723598c798e5e42b48c0c2972c6fbd32deaa26c20",
+  "source_hashes": {
+    "raw_counts.npz": "26411a933468ddcf7d863366969f95e9bf5831349fecf8b4320e9475add46c88",
+    "observations.tsv": "4f31c42d942641cab6899c9fecfdb72b7c36f617768e20993d57c6deff24f44b",
+    "sites.tsv.gz": "0d01ecdd6b89b3304a40fd8d12e8914d41a320913bbb0503a8823558b83f6899",
+    "run_manifest.json": "4cc2fb98a2a9698746e74d1879accfab9d7666ec8b0148efdc5110964dc980e4"
+  },
+  "implementation_sha256": "ae03ed2899cf87fa0b7387f97fcbab7a0fd5ce1df723f195242231308e8b9fa7",
+  "ttr_implementation_sha256": "a9689699530e83f0aada0d4229e3c96c18744d53b38dc3764ac785aec48d82d5",
+  "quantile_implementation_sha256": null,
+  "zinfnb_implementation_sha256": null,
+  "zinfnb_parameters": null,
+  "betageom_implementation_sha256": null,
+  "bgc_parameters": null,
+  "adaptive_bgc_implementation_sha256": null,
+  "abgc_parameters": null,
+  "midlc_implementation_sha256": "5c57aad12efba19d2690b1d71bfcec1f6784f1bc3838b5e430aedc2fe5ad59a8",
+  "midlc_parameters": {
+    "target": "common saturation: smallest total/MidLC ratio in the normalization group",
+    "thinning": "binomial, downsample only",
+    "seed": 1,
+    "midlc": "depth with half the occupied sites expected under binomial thinning (exact)"
+  },
+  "software_versions": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.0"
+  },
+  "ttr_parameters": null,
+  "scale_warning": "Units differ by method. Compare within-method relative results; larger absolute normalized counts are not evidence of better normalization.",
+  "workflow_policy": "Opt-in evaluation only; the fitness z-score default (CPM) is unchanged; no downstream double normalization"
+}

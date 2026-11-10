@@ -1,0 +1,49 @@
+{
+  "status": "success",
+  "revision": "library_correlation_v1",
+  "metric": "density",
+  "orthologs": null,
+  "bootstrap": 500,
+  "seed": 2026,
+  "min_reads": 1,
+  "samples": 7,
+  "by_pair_type": {
+    "same pool (shared clones)": {
+      "pairs": 10,
+      "median_rho": 0.9675222134374328,
+      "min_rho": 0.9634044161219155,
+      "max_rho": 0.9880621114670658,
+      "median_site_jaccard": 0.8471786230870758,
+      "median_shared_site_read_rho": 0.8547151543283933
+    },
+    "same strain, different pool": {
+      "pairs": 11,
+      "median_rho": 0.8662610106626409,
+      "min_rho": 0.8612633588489235,
+      "max_rho": 0.9239205573542556,
+      "median_site_jaccard": 0.2509228264856933,
+      "median_shared_site_read_rho": 0.4177314106707657
+    }
+  },
+  "flagged_pairs": [],
+  "clone_evidence_thresholds": {
+    "shared": 0.7,
+    "independent": 0.5,
+    "calibration": "Gale 2020: same pool 0.89-0.99, independent pools 0.42-0.43, different strains 0.33"
+  },
+  "interpretation": {
+    "same pool (shared clones)": "shares clones: high correlation reflects library structure, not biological similarity",
+    "same strain, different pool": "independent libraries: reproducibility of the insertion landscape",
+    "different strain": "strain differences in essentiality/accessibility, plus library noise",
+    "different species": "conservation of the insertion landscape over 1:1 orthologs"
+  },
+  "files": {
+    "samples": "samples.tsv",
+    "pairs": "pairs.tsv",
+    "matrix": "correlation_matrix.tsv",
+    "genes": "gene_values.tsv.gz",
+    "plot": "correlation.png",
+    "pca": "pca.tsv",
+    "pca_variance": "pca_variance.tsv"
+  }
+}

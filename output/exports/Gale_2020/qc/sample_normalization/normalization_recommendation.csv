@@ -1,0 +1,2 @@
+recommended_target,recommended_target_tag,min_site_retention_observed,mean_site_retention_observed,retention_threshold,reason
+13.239,T013p239,0.90199155,0.94852188,0.95,Common saturation: the smallest depth/MidLC ratio among the selected libraries.

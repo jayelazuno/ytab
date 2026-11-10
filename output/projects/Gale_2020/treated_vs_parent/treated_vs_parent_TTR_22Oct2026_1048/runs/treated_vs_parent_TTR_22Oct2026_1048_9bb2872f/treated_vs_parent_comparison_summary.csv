@@ -1,0 +1,3 @@
+comparison_id,pair_id,parent_sample,treated_sample,background,pool,result_rows,call_counts
+Cg1_FLU1_vs_control1,Cg1_culture_contrast1,SRR11561505,SRR11561503,BG14,Cg1,5234,"{""depleted"": 668, ""enriched"": 798, ""none"": 3768}"
+Cg1_FLU2_vs_control2,Cg1_culture_contrast2,SRR11561504,SRR11561502,BG14,Cg1,5234,"{""depleted"": 454, ""enriched"": 918, ""none"": 3862}"

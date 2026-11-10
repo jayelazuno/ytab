@@ -51,6 +51,26 @@ def _run(cmd: str) -> str:
     return subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True).stdout
 
 
+def _stream(cmd: str):
+    """Yield a command's stdout line by line.
+
+    An alignment against the donor returns one SAM record per aligned read, and a deeply sequenced library has tens
+    of millions of them: holding that output as a string, and again as a list of lines, needs tens of gigabytes and
+    is what the job gets killed for. Only one line is in memory at a time here.
+    """
+    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               text=True, bufsize=1 << 20)
+    try:
+        for line in process.stdout:
+            yield line
+    finally:
+        process.stdout.close()
+        error = process.stderr.read()
+        process.stderr.close()
+        if process.wait():
+            raise subprocess.CalledProcessError(process.returncode, cmd, stderr=error)
+
+
 def _index(fasta: str, where: str) -> str:
     prefix = os.path.join(where, "ref")
     subprocess.run(["bowtie2-build", "-q", str(fasta), prefix], check=True, stdout=subprocess.DEVNULL)
@@ -126,19 +146,20 @@ def donor_hits(fastq: str, donor_fasta: str, threads: int, keep_reads: str | Non
         reference = mask_transposon(donor_fasta, transposon_fasta, tmp)
         index = _index(reference, tmp)
         al = f"--al {shlex.quote(keep_reads)} " if keep_reads else ""
-        out = _run(f"bowtie2 --local -p {threads} --no-unal --no-hd {al}-x {shlex.quote(index)} -U {shlex.quote(fastq)}")
-    names = set()
-    for line in out.splitlines():
-        f = line.split("\t")
-        if len(f) > 5 and _aligned_bases(f[5]) >= MIN_ALIGN:names.add(f[0])
+        # Consumed inside the temporary directory's lifetime, because the index lives there.
+        names = set()
+        for line in _stream(f"bowtie2 --local -p {threads} --no-unal --no-hd {al}"
+                            f"-x {shlex.quote(index)} -U {shlex.quote(fastq)}"):
+            f = line.split("\t")
+            if len(f) > 5 and _aligned_bases(f[5]) >= MIN_ALIGN:names.add(f[0])
     return names
 
 
 def placed_on_genome(fastq: str, genome_index: str, mapq: int, threads: int) -> set:
     """Read names in `fastq` that the genome places at MAPQ >= mapq (used on small subsets only)."""
     if not genome_index or not os.path.getsize(fastq):return set()
-    out = _run(f"bowtie2 -p {threads} --no-unal --no-hd -x {shlex.quote(genome_index)} -U {shlex.quote(fastq)}")
-    return {f[0] for f in (l.split("\t") for l in out.splitlines() if l) if int(f[4]) >= mapq}
+    stream = _stream(f"bowtie2 -p {threads} --no-unal --no-hd -x {shlex.quote(genome_index)} -U {shlex.quote(fastq)}")
+    return {f[0] for f in (l.split("\t") for l in stream if l) if len(f) > 4 and int(f[4]) >= mapq}
 
 
 def flank_counts(fastq: str) -> tuple[Counter, int]:

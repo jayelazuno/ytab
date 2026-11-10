@@ -1,0 +1,63 @@
+{
+  "status": "success",
+  "project": "Gale_2020",
+  "methods": [
+    "nonorm",
+    "betageom",
+    "ttr"
+  ],
+  "suggested": "betageom",
+  "parents_in_catalogue": 5,
+  "samples": 4,
+  "trim": 0.05,
+  "target": 100.0,
+  "normalized": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261020_231352/experiment/methods",
+  "catalogue": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261020_231352/catalogue",
+  "method_summary": {
+    "nonorm": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.1353518528948863,
+        "median_iqr": 0.2814129351486483
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.11037134205867763,
+        "median_iqr": 1.1716279756484016
+      }
+    },
+    "betageom": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.005618651028745503,
+        "median_iqr": 0.20567502639151442
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.0036503611289456675,
+        "median_iqr": 0.8003285224787291
+      }
+    },
+    "ttr": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.017599644239418313,
+        "median_iqr": 0.2814129351486483
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.032272084486426614,
+        "median_iqr": 1.1716279756484014
+      }
+    }
+  },
+  "files": {
+    "effective_scale": "plots/effective_scale.tsv",
+    "distributions": "plots/distributions.tsv",
+    "comparisons": "experiment/comparison_diagnostics.tsv",
+    "factors": "experiment/methods/method_comparison.tsv",
+    "pca": "plots/pca.tsv",
+    "pca_variance": "plots/pca_variance.tsv"
+  },
+  "reading": "Matched controls from the same pool should differ little after normalization: a small median shift and a narrow spread of log2 ratios at shared sites. Units differ between methods; compare relative results, not absolute values."
+}

@@ -1,0 +1,27 @@
+version: 1
+project_config: project.yaml
+steps:
+  - id: raw_summaries
+    module: summary
+  - id: library_qc
+    module: library-qc
+  - id: parent_normalization
+    module: normalization
+    args: ["--targets", "auto", "--samples", "SRR11561508,SRR11561507,SRR11561506"]
+  - id: normalized_parent_summaries
+    module: summary-normalized
+    args: ["--targets", "recommended", "--samples", "SRR11561508,SRR11561507,SRR11561506"]
+  - id: combine_independent_parents
+    module: combine-hits
+    args: ["--target", "recommended", "--samples", "SRR11561508,SRR11561507,SRR11561506"]
+  - id: combined_parent_summary
+    module: summary-combined
+    args: ["--target", "recommended"]
+  - id: existing_essentiality_classifier
+    module: classifier
+    args: ["--target", "recommended", "--seed", "0"]
+  - id: report
+    module: report
+  - id: export
+    module: export
+    args: ["--include-hit-files", "--include-browser-tracks", "--include-logs"]

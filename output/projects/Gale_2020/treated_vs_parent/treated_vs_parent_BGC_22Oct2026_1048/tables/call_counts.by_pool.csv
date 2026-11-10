@@ -1,0 +1,7 @@
+background,pool,contrast,call,n
+BG14,Cg1,Cg1_FLU1_vs_control1,depleted,502
+BG14,Cg1,Cg1_FLU2_vs_control2,depleted,332
+BG14,Cg1,Cg1_FLU1_vs_control1,none,4076
+BG14,Cg1,Cg1_FLU2_vs_control2,none,4179
+BG14,Cg1,Cg1_FLU1_vs_control1,enriched,656
+BG14,Cg1,Cg1_FLU2_vs_control2,enriched,723

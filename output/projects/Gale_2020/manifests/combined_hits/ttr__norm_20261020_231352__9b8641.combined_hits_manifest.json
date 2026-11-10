@@ -1,0 +1,48 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "target": "ttr",
+  "target_tag": "ttr__norm_20261020_231352__9b8641",
+  "selected_samples": [
+    "SRR11561508",
+    "SRR11561507",
+    "SRR11561506"
+  ],
+  "input_normalized_hit_files": [
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561508/SRR11561508_normalized_hits.txt",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561507/SRR11561507_normalized_hits.txt",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561506/SRR11561506_normalized_hits.txt"
+  ],
+  "output_dir": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/ttr__norm_20261020_231352__9b8641",
+  "combined_hits_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/ttr__norm_20261020_231352__9b8641/combined_parent_hits.ttr__norm_20261020_231352__9b8641.txt",
+  "log_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/logs/combined_hits/ttr__norm_20261020_231352__9b8641.log",
+  "status": "success",
+  "start_time": "2026-10-21T16:59:28.531832+00:00",
+  "end_time": "2026-10-21T17:03:27.989084+00:00",
+  "elapsed_seconds": 239.457,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Users/joshuaayelazuno/Desktop/ytab/src/ytab/insertions/CombineHitFiles.py",
+    "--hits-txt",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561508/SRR11561508_normalized_hits.txt",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561507/SRR11561507_normalized_hits.txt",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561506/SRR11561506_normalized_hits.txt",
+    "--outdir",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/ttr__norm_20261020_231352__9b8641",
+    "--sample-name",
+    "combined_parent_hits.ttr__norm_20261020_231352__9b8641",
+    "--output-file",
+    "combined_parent_hits.ttr__norm_20261020_231352__9b8641.txt",
+    "--sort"
+  ],
+  "detected_outputs": [
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/ttr__norm_20261020_231352__9b8641/combined_parent_hits.ttr__norm_20261020_231352__9b8641.combine_manifest.json",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/ttr__norm_20261020_231352__9b8641/combined_parent_hits.ttr__norm_20261020_231352__9b8641.combine_summary.csv",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/ttr__norm_20261020_231352__9b8641/combined_parent_hits.ttr__norm_20261020_231352__9b8641.metadata.json",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/ttr__norm_20261020_231352__9b8641/combined_parent_hits.ttr__norm_20261020_231352__9b8641.txt"
+  ],
+  "warnings": [],
+  "error_message": null,
+  "total_combined_sites": 529418,
+  "total_combined_reads": 275996296
+}

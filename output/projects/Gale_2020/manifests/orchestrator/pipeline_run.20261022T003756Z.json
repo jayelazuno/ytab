@@ -1,0 +1,97 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "profile": "classifier",
+  "target": "recommended",
+  "analysis_id": "treated_vs_parent_raw_cpm",
+  "threads": 4,
+  "status": "success",
+  "plan_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/manifests/orchestrator/pipeline_plan.json",
+  "log_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/logs/orchestrator/pipeline_run.20261022T003756Z.log",
+  "results": [
+    {
+      "stage": "sample_normalization",
+      "status": "skipped",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_sample_normalization.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--threads",
+        "4",
+        "--targets",
+        "auto",
+        "--sample-mode",
+        "parents"
+      ],
+      "returncode": 0,
+      "message": "Successful project status found; existing stage outputs reused."
+    },
+    {
+      "stage": "summary_normalized",
+      "status": "skipped",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_summary_normalized.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--threads",
+        "4",
+        "--targets",
+        "recommended",
+        "--sample-mode",
+        "parents"
+      ],
+      "returncode": 0,
+      "message": "Successful project status found; existing stage outputs reused."
+    },
+    {
+      "stage": "combined_hits",
+      "status": "skipped",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_combine_hits.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--target",
+        "recommended"
+      ],
+      "returncode": 0,
+      "message": "Successful project status found; existing stage outputs reused."
+    },
+    {
+      "stage": "summary_combined",
+      "status": "skipped",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_summary_combined.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--threads",
+        "4",
+        "--target",
+        "recommended"
+      ],
+      "returncode": 0,
+      "message": "Successful project status found; existing stage outputs reused."
+    },
+    {
+      "stage": "classifier",
+      "status": "skipped",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_classifier.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--target",
+        "recommended"
+      ],
+      "returncode": 0,
+      "message": "Successful project status found; existing stage outputs reused."
+    }
+  ],
+  "warnings": [],
+  "start_time": "2026-10-22T00:37:56.329316+00:00",
+  "end_time": "2026-10-22T00:37:56.360299+00:00",
+  "elapsed_seconds": 0.173
+}

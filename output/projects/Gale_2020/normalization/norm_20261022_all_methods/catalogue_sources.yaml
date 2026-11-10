@@ -1,0 +1,16 @@
+version: 1
+description: Parent catalogue for Gale_2020 (app Normalization tab)
+sources:
+- project_config: /Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml
+  dataset: Gale_2020
+  observations:
+  - sample: SRR11561504
+    library_id: Gale_2020::BG14::Cg1
+  - sample: SRR11561505
+    library_id: Gale_2020::BG14::Cg1
+  - sample: SRR11561506
+    library_id: Gale_2020::BG14::Cg3
+  - sample: SRR11561507
+    library_id: Gale_2020::BG14::Cg2
+  - sample: SRR11561508
+    library_id: Gale_2020::BG14::Cg1

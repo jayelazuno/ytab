@@ -1,0 +1,5 @@
+sample_index	method	normalization_group	group_samples	factor	raw_total_support	occupied_sites	density	positive_site_mean	trimmed_nonzero_mean	trim_fraction_each_tail	target	observation_id	display_name
+0	nonorm	Gale_2020::BG14::Cg1	4	1.0	9419088	168364	0.30912499288530004	55.94478629635789				Gale_2020::SRR11561502	Cg1 — FLU-treated 2
+1	nonorm	Gale_2020::BG14::Cg1	4	1.0	12247129	166656	0.3059890167392825	73.4874771985407				Gale_2020::SRR11561503	Cg1 — FLU-treated 1
+2	nonorm	Gale_2020::BG14::Cg1	4	1.0	9775885	171278	0.3144752472702503	57.076127698828806				Gale_2020::SRR11561504	Cg1 — no-drug control 2
+3	nonorm	Gale_2020::BG14::Cg1	4	1.0	10813576	166286	0.30530967764441924	65.02998448456275				Gale_2020::SRR11561505	Cg1 — no-drug control 1

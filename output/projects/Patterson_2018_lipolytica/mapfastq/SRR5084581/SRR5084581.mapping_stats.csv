@@ -1,2 +1,0 @@
-sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
-SRR5084581,4196016,4196016,3945091,250925,94.02,0,0.0,3775910,95.712,39.86,/old_Users/jayelazuno/workspace/ytab/output/projects/Patterson_2018_lipolytica/mapfastq/SRR5084581/SRR5084581.sam

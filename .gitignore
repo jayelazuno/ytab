@@ -51,13 +51,28 @@ __pycache__/
 *.bam
 *.bai
 
-# Species references and normal outputs remain trackable.
-# No blanket resources/ or output/ exclusions.
+# Species references remain trackable.
+# Processed datasets do NOT travel with the repository: they are published on Zenodo and fetched per dataset from
+# the app's Datasets page, so a clone stays small enough to be useful. Gale et al. 2020 is the exception, because it
+# is the worked example the tutorial and the benchmarks use, and it ships with the app.
+/output/projects/*
+!/output/projects/Gale_2020/
+/output/exports/*
+!/output/exports/Gale_2020/
 
 # Machine-specific runtime state
 /output/**/logs/
 /output/**/cache/
 /output/**/tmp/
+# The legacy MidLC normalization targets (T013p239, T409600). Superseded by the named method targets
+# (betageom__*, midlc__*, ttr__*) and wrong either way, so they neither ship nor get published.
+/output/**/T013p239/
+/output/**/T409600/
+/output/**/T013p239.*
+/output/**/T409600.*
+# Dataset archives built for publication: large, regenerable, and published on Zenodo rather than in git.
+/output/zenodo/
+/output/**/bundles/
 /output/**/manifests/jobs/
 /output/**/manifests/argon/
 /output/**/manifests/orchestrator/current_job.json

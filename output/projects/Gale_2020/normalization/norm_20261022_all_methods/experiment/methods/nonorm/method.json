@@ -1,0 +1,15 @@
+{
+  "id": "nonorm",
+  "name": "Unnormalized baseline",
+  "status": "available",
+  "input_level": "raw insertion-site counts",
+  "description": "Preserves raw support and zeros without scaling.",
+  "formula": "factor_j = 1",
+  "may_suit": "Baseline for evaluating what normalization changes.",
+  "caution": "Unequal sequencing support remains; not an automatic recommendation for comparisons.",
+  "diagnostics": [
+    "support depth",
+    "occupied sites"
+  ],
+  "source": "https://github.com/ioerger/transit/blob/50e23d6bec2605a24835fbd67f33691e330f3361/src/pytransit/norm_tools.py"
+}

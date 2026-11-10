@@ -1,0 +1,23 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "target": "midlc",
+  "target_tag": "midlc__norm_20261020_231352__9b8641",
+  "combined_sample_name": "combined_parent_hits.midlc__norm_20261020_231352__9b8641",
+  "selected_parent_samples": [
+    "SRR11561508",
+    "SRR11561507",
+    "SRR11561506"
+  ],
+  "input_normalized_hit_files": [
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/midlc__norm_20261020_231352__9b8641/SRR11561508/SRR11561508_normalized_hits.txt",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/midlc__norm_20261020_231352__9b8641/SRR11561507/SRR11561507_normalized_hits.txt",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/midlc__norm_20261020_231352__9b8641/SRR11561506/SRR11561506_normalized_hits.txt"
+  ],
+  "output_combined_hits_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/midlc__norm_20261020_231352__9b8641/combined_parent_hits.midlc__norm_20261020_231352__9b8641.txt",
+  "total_input_files": 3,
+  "total_combined_sites": 519540,
+  "total_combined_reads": 21297416,
+  "timestamp": "2026-10-22T00:33:18.587031+00:00",
+  "warnings": []
+}

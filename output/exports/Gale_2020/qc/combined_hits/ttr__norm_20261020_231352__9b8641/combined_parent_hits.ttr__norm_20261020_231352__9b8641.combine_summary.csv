@@ -1,0 +1,4 @@
+file,rows_after_parse,unique_sites_after_parse,reads_after_parse,chrom_col,position_col,reads_col
+/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561508/SRR11561508_normalized_hits.txt,177199,174369,84940248,Chromosome,Hit position,Hit count
+/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561507/SRR11561507_normalized_hits.txt,276027,270196,92949451,Chromosome,Hit position,Hit count
+/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/ttr__norm_20261020_231352__9b8641/SRR11561506/SRR11561506_normalized_hits.txt,358808,349997,98106597,Chromosome,Hit position,Hit count

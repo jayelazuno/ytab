@@ -1,2 +1,0 @@
-sample,total_records,primary_records,primary_mapped,primary_unmapped,percent_mapped,primary_duplicates,percent_duplicates,mapq_ge_threshold,percent_mapq_ge_threshold,avg_mapq_mapped_primary,alignment_path
-yH298-parent-pool2-1_5mM-Zn-treated,95678857,95678857,89736852,5942005,93.79,0,0.0,83757016,93.336,39.0,/nfsscratch/jayelazuno/workspace/EO46-Zn-tox/ytab_work/Zn_toxicity_screen/mapfastq/yH298-parent-pool2-1_5mM-Zn-treated/yH298-parent-pool2-1_5mM-Zn-treated.sam

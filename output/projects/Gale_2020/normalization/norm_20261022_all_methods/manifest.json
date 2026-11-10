@@ -1,0 +1,141 @@
+{
+  "status": "success",
+  "project": "Gale_2020",
+  "methods": [
+    "nonorm",
+    "ttr",
+    "totreads",
+    "nzmean",
+    "midlc",
+    "quantile",
+    "betageom",
+    "aBGC",
+    "zinfnb"
+  ],
+  "suggested": "betageom",
+  "parents_in_catalogue": 5,
+  "samples": 4,
+  "trim": 0.05,
+  "target": 100,
+  "normalized": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/methods",
+  "catalogue": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/catalogue",
+  "method_summary": {
+    "nonorm": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.1353518528948863,
+        "median_iqr": 0.2814129351486483
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.11037134205867763,
+        "median_iqr": 1.1716279756484016
+      }
+    },
+    "ttr": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.017599644239418313,
+        "median_iqr": 0.2814129351486483
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.032272084486426614,
+        "median_iqr": 1.1716279756484014
+      }
+    },
+    "totreads": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.010192622693313213,
+        "median_iqr": 0.2814129351486484
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.04210678808616849,
+        "median_iqr": 1.1716279756484014
+      }
+    },
+    "nzmean": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.05286576745768812,
+        "median_iqr": 0.28141293514864846
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.05288159562679763,
+        "median_iqr": 1.1716279756484016
+      }
+    },
+    "midlc": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.03952836418663734,
+        "median_iqr": 0.3300013954230444
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.006300018389816736,
+        "median_iqr": 1.1667253028443754
+      }
+    },
+    "quantile": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.06650298225307669,
+        "median_iqr": 0.30630533789191655
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.04271167685940921,
+        "median_iqr": 1.1748787446761675
+      }
+    },
+    "betageom": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.005618651028745503,
+        "median_iqr": 0.20567502639151442
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.0036503611289456675,
+        "median_iqr": 0.8003285224787291
+      }
+    },
+    "aBGC": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.011701408347969318,
+        "median_iqr": 0.22239242133644793
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.017338445974453352,
+        "median_iqr": 0.8906798567623299
+      }
+    },
+    "zinfnb": {
+      "control_control": {
+        "pairs": 1,
+        "median_abs_shift": 0.13878187955119337,
+        "median_iqr": 0.28141293514864857
+      },
+      "treated_control": {
+        "pairs": 2,
+        "median_abs_shift": 0.05115627226453416,
+        "median_iqr": 1.1716279756484014
+      }
+    }
+  },
+  "files": {
+    "effective_scale": "plots/effective_scale.tsv",
+    "distributions": "plots/distributions.tsv",
+    "comparisons": "experiment/comparison_diagnostics.tsv",
+    "factors": "experiment/methods/method_comparison.tsv",
+    "pca": "plots/pca.tsv",
+    "pca_variance": "plots/pca_variance.tsv"
+  },
+  "reading": "Matched controls from the same pool should differ little after normalization: a small median shift and a narrow spread of log2 ratios at shared sites. Units differ between methods; compare relative results, not absolute values."
+}

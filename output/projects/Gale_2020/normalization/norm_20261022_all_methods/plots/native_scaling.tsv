@@ -1,0 +1,17 @@
+method	observation_id	display_name	role	statistic	before	after	factor
+ttr	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	density × trimmed nonzero mean	10.732739864542994	100.0	9.317285358826505
+ttr	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	density × trimmed nonzero mean	14.197115571189364	100.0	7.043684296191335
+ttr	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	density × trimmed nonzero mean	11.28328464022324	100.0	8.862667493427827
+ttr	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	density × trimmed nonzero mean	12.54522724687661	100.0	7.971158914231469
+totreads	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	total reads	9419088.0	10563919.5	1.1215437736647116
+totreads	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	total reads	12247129.0	10563919.5	0.8625629320961672
+totreads	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	total reads	9775885.0	10563919.500000002	1.0806100419552809
+totreads	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	total reads	10813576.0	10563919.5	0.976912679024959
+nzmean	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	nonzero mean	55.94478629635789	62.88459391957253	1.1240474418197293
+nzmean	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	nonzero mean	73.4874771985407	62.88459391957254	0.8557185022106227
+nzmean	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	nonzero mean	57.076127698828806	62.88459391957254	1.1017669988299315
+nzmean	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	nonzero mean	65.02998448456275	62.88459391957254	0.9670092099514571
+zinfnb	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	fitted NB mean (ZINB)	40.5217981371315	1.0	0.024678075652414498
+zinfnb	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	fitted NB mean (ZINB)	57.53977088547604	0.9999999999999999	0.01737928366086727
+zinfnb	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	fitted NB mean (ZINB)	41.77189246179542	0.9999999999999999	0.023939542622221394
+zinfnb	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	fitted NB mean (ZINB)	50.513403047410684	1.0	0.019796726010746567

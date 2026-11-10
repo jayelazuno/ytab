@@ -1,0 +1,10 @@
+version: 1
+project_config: project.yaml
+steps:
+  # Refresh/cache all raw summaries to keep project-wide completion status intact.
+  # The fitness design below selects only the four Cg1-derived screen cultures.
+  - id: project_raw_summaries
+    module: summary
+  - id: Cg1_FLU_fitness
+    module: fitness
+    args: ["--analysis-id", "Cg1_FLU_vs_no_drug_raw_cpm", "--comparison-design", "comparison_design.csv", "--input-mode", "raw-summary"]

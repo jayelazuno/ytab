@@ -1,0 +1,4 @@
+sample_index	method	normalization_group	group_samples	factor	raw_total_support	occupied_sites	density	positive_site_mean	trimmed_nonzero_mean	trim_fraction_each_tail	target	observation_id	display_name
+0	ttr	Gale_2020::BG14::Cg1	1	3.5772749530911674	23743484	174369	0.32531287079947163	136.16803445566586	85.93032058266904	0.05	100	Gale_2020::SRR11561508	Cg1 — parent library
+1	ttr	Gale_2020::BG14::Cg2	1	11.76479648738691	7899160	270196	0.5040932530354251	29.234925757598187	16.861829606296624	0.05	100	Gale_2020::SRR11561507	Cg2 — parent library
+2	ttr	Gale_2020::BG14::Cg3	1	10.27037529755955	9552015	349997	0.6529746046671293	27.29170535747449	14.911364797983486	0.05	100	Gale_2020::SRR11561506	Cg3 — parent library

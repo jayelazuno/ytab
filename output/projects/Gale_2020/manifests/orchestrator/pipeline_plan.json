@@ -1,0 +1,58 @@
+{
+  "project_id": "Gale_2020",
+  "profile": "classifier",
+  "target": "recommended",
+  "analysis_id": "treated_vs_parent_raw_cpm",
+  "plan": [
+    {
+      "stage": "sample_normalization",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "create_hit_file"
+      ],
+      "target": null,
+      "analysis_id": null
+    },
+    {
+      "stage": "summary_normalized",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "sample_normalization"
+      ],
+      "target": "recommended",
+      "analysis_id": null
+    },
+    {
+      "stage": "combined_hits",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "summary_normalized"
+      ],
+      "target": "recommended",
+      "analysis_id": null
+    },
+    {
+      "stage": "summary_combined",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "combined_hits"
+      ],
+      "target": "recommended",
+      "analysis_id": null
+    },
+    {
+      "stage": "classifier",
+      "branch": "classifier",
+      "current_status": "success",
+      "dependencies": [
+        "summary_combined"
+      ],
+      "target": "recommended",
+      "analysis_id": null
+    }
+  ]
+}

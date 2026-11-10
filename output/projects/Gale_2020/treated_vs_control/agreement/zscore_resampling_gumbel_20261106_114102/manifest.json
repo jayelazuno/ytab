@@ -1,0 +1,32 @@
+{
+ "status": "success",
+ "contract": 1,
+ "kind": "tvc_agreement",
+ "methods": [
+  "zscore",
+  "resampling",
+  "gumbel"
+ ],
+ "labels": {
+  "zscore": "Local-abundance z-score",
+  "resampling": "Resampling",
+  "gumbel": "Control-conditioned Gumbel"
+ },
+ "inputs": {
+  "zscore": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/treated_vs_parent/treated_vs_parent_BGC_22Oct2026_1048",
+  "resampling": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/treated_vs_control/resampling_BGC",
+  "gumbel": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/treated_vs_control/gumbel_20261104_165910"
+ },
+ "sources": {},
+ "groups": [
+  "BG14__treated"
+ ],
+ "depletion_only": [
+  "gumbel"
+ ],
+ "tables": [
+  "genes.tsv",
+  "pairs.tsv",
+  "sets.tsv"
+ ]
+}

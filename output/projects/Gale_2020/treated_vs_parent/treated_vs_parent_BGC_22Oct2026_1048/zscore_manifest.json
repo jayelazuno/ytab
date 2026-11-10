@@ -1,0 +1,67 @@
+{
+  "status": "success",
+  "contract": 1,
+  "tables": [
+    "tables/feature_table.long.raw_reads.csv",
+    "tables/library_sizes.feature_reads.csv",
+    "tables/gene_values.long.csv",
+    "tables/background_specific_z_thresholds.csv",
+    "tables/background_noise_model_coefficients.csv",
+    "tables/control_control_z_scores.csv",
+    "tables/treated_vs_parent.by_pool.log2fc_z.csv",
+    "tables/treated_vs_parent.combined.log2fc_z.csv",
+    "tables/treated_vs_parent.summary_by_feature.csv",
+    "tables/top100_depleted_in_treated.csv",
+    "tables/top100_enriched_in_treated.csv",
+    "tables/top_hit_evidence.csv",
+    "tables/top_hit_evidence.by_pair.csv",
+    "tables/call_counts.by_pool.csv",
+    "tables/analysis_runtime_environment.csv"
+  ],
+  "method": "local-abundance z-score",
+  "project_id": "Gale_2020",
+  "analysis_id": "treated_vs_parent_BGC_22Oct2026_1048",
+  "normalization": "betageom",
+  "normalization_run": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods",
+  "value_unit": "BGC reads per million",
+  "value_scale": 0.06303034495692013,
+  "n_features": 5234,
+  "library_sizes": true,
+  "library_sizes_source": "SummaryTable gene reads",
+  "settings": {
+    "pseudocount": 0.5,
+    "z_quantile": 0.99,
+    "window": 40,
+    "min_abundance": 0.1,
+    "combine": "replicates",
+    "recenter": "none",
+    "recenter_trim": 0.2,
+    "hit_min_log2FC": 1.0,
+    "hit_min_abundance": 0.0
+  },
+  "call_rule": "replicates",
+  "comparisons": [
+    "Cg1_FLU1_vs_control1",
+    "Cg1_FLU2_vs_control2"
+  ],
+  "backgrounds": {
+    "BG14": {
+      "controls": [
+        "SRR11561505",
+        "SRR11561504"
+      ],
+      "threshold": 2.7921061980791593,
+      "coefficients": {
+        "m1": 2.504925334675838e-45,
+        "m2": 1.0337412622308788,
+        "m3": -0.4042781538883979
+      },
+      "converged": true
+    }
+  },
+  "calls": {
+    "none": 4323,
+    "enriched": 615,
+    "depleted": 296
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "project": "Gale_2020",
+  "reference_sha256": "80e6b150de90067c22f3509723598c798e5e42b48c0c2972c6fbd32deaa26c20",
+  "universe_sites": 544647,
+  "parent_catalogue_sites": 536004,
+  "experiment_additional_sites": 8643,
+  "project_config": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+  "project_config_sha256": "ee72b5b7454b6b038ff8169cd1559482c2e490630122573c870cf8a64d6699a5",
+  "sample_sheet_sha256": "b5aa785ab1a239196b9c27170f6e067e1a23a3e0522211376e7eb5d2773977bc",
+  "design_sha256": "692fb809be09881b8a32bd1ef90fe5f5fa863c2a6b4d7c50e08bdeebe30d56f8",
+  "parent_catalogue": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261020_231352/catalogue",
+  "parent_manifest_sha256": "4cc2fb98a2a9698746e74d1879accfab9d7666ec8b0148efdc5110964dc980e4",
+  "parent_sites_sha256": "0d01ecdd6b89b3304a40fd8d12e8914d41a320913bbb0503a8823558b83f6899",
+  "implementation_sha256": "1965f4e17e1659f774b94f7e30e961eb972272748b367b7bd1a36ea274c53bb5",
+  "site_policy": "Parent empirical catalogue plus experiment-observed additions; zeros mean undetected, not impossible sites",
+  "scope": "Exploratory site-level validation; no fitness calls, no downstream CPM, no independent-induction claim"
+}

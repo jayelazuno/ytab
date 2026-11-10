@@ -1,0 +1,81 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "analysis_id": "Cg1_FLU_vs_no_drug_raw_cpm",
+  "input_mode": "raw-summary",
+  "comparison_design": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/comparison_design.csv",
+  "comparison_design_sha256": "692fb809be09881b8a32bd1ef90fe5f5fa863c2a6b4d7c50e08bdeebe30d56f8",
+  "included_comparisons": [
+    {
+      "comparison_id": "Cg1_FLU1_vs_control1",
+      "pair_id": "Cg1_culture_contrast1",
+      "parent_sample": "SRR11561505",
+      "treated_sample": "SRR11561503",
+      "background": "BG14",
+      "pool": "Cg1",
+      "parent_condition": "parent",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": "Parent condition denotes the no-drug control culture only; numbered contrast; both contrasts derive from Cg1"
+    },
+    {
+      "comparison_id": "Cg1_FLU2_vs_control2",
+      "pair_id": "Cg1_culture_contrast2",
+      "parent_sample": "SRR11561504",
+      "treated_sample": "SRR11561502",
+      "background": "BG14",
+      "pool": "Cg1",
+      "parent_condition": "parent",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": "Parent condition denotes the no-drug control culture only; numbered contrast; both contrasts derive from Cg1"
+    }
+  ],
+  "parent_samples": [
+    "SRR11561504",
+    "SRR11561505"
+  ],
+  "treated_samples": [
+    "SRR11561502",
+    "SRR11561503"
+  ],
+  "raw_summary_input_files": {
+    "SRR11561502": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561502/SRR11561502.feature_table.RDF_1.csv",
+    "SRR11561503": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561503/SRR11561503.feature_table.RDF_1.csv",
+    "SRR11561504": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561504/SRR11561504.feature_table.RDF_1.csv",
+    "SRR11561505": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561505/SRR11561505.feature_table.RDF_1.csv"
+  },
+  "input_file_sha256": {
+    "SRR11561502": "eebdb7956ddc5c27f574eba59b636324f02ad4e337096a8308e1b0c234f02e58",
+    "SRR11561503": "d01c4ac78ff5003112f3d77d6f7eb35b09176aca67009c9e9d320b780ce79d0b",
+    "SRR11561504": "b81b292cbd1d52e6959d8dc5bdf335fd47e9d86ed34955b0b469f79670d9c641",
+    "SRR11561505": "17b9f194893b25dad2943d8e1ac6659365366dcb7ec2dfea362b774df8c3ade0"
+  },
+  "implementation": "/Users/joshuaayelazuno/Desktop/ytab/src/ytab/fitness/zscore.py",
+  "implementation_sha256": "1baa5d561d2526c115be709b3d87da852fe26cd77e82f92956189a662b84a799",
+  "script": "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_fitness_zscore.py",
+  "script_sha256": "18e93d63f8f7ef7c59c9d514385051795510efe3ed7e6323657f441e7eeb1446",
+  "runtime_versions": {
+    "implementation": "ytab.fitness.zscore",
+    "python": "3.14.7",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "scipy": "1.18.0"
+  },
+  "cpm_normalization_detected": true,
+  "cpm_detection_evidence": [
+    "reads / total_feature_reads * 1e6 (ytab.fitness.zscore)"
+  ],
+  "normalization_method": "counts per million (CPM)",
+  "analysis_method": "local-abundance z-score: background-specific control-control noise model",
+  "pseudocount": "0.5",
+  "significance_thresholds": {
+    "z_quantile": "0.99"
+  },
+  "fold_change_thresholds": {},
+  "multiple_testing_method": null,
+  "classifier_annotation_used": false,
+  "classifier_prediction_table": null,
+  "warnings": [],
+  "timestamp": "2026-10-22T23:48:43.757917+00:00"
+}

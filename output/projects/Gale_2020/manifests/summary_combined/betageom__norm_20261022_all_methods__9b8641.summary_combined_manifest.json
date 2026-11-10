@@ -1,0 +1,49 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "target": "betageom",
+  "target_tag": "betageom__norm_20261022_all_methods__9b8641",
+  "target_resolution_source": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/betageom__norm_20261022_all_methods__9b8641/normalization_source.json",
+  "input_combined_hits_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/betageom__norm_20261022_all_methods__9b8641/combined_parent_hits.betageom__norm_20261022_all_methods__9b8641.txt",
+  "output_dir": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary_combined/betageom__norm_20261022_all_methods__9b8641",
+  "stable_combined_feature_table": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary_combined/betageom__norm_20261022_all_methods__9b8641/combined_feature_table.betageom__norm_20261022_all_methods__9b8641.txt",
+  "summary_stats_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary_combined/betageom__norm_20261022_all_methods__9b8641/combined_summary_stats.betageom__norm_20261022_all_methods__9b8641.csv",
+  "reference_files_used": {
+    "fasta": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "gff": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "gtf": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gtf",
+    "feature_table": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/reference_genome/C_glabrata_CBS138_version_s05-m03-r46_chromosomal_feature.tab",
+    "orthology_file": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  },
+  "log_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/logs/summary_combined/betageom__norm_20261022_all_methods__9b8641.log",
+  "status": "success",
+  "start_time": "2026-10-23T03:28:34.900566+00:00",
+  "end_time": "2026-10-23T03:28:49.045116+00:00",
+  "elapsed_seconds": 14.144,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Users/joshuaayelazuno/Desktop/ytab/src/ytab/summary/SummaryTable.py",
+    "--input-dir",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/combined_hits/betageom__norm_20261022_all_methods__9b8641",
+    "--hit-glob",
+    "combined_parent_hits.betageom__norm_20261022_all_methods__9b8641.txt",
+    "--output-dir",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary_combined/betageom__norm_20261022_all_methods__9b8641",
+    "--feature-db",
+    "glabrata",
+    "--feature-gff",
+    "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff",
+    "--reference-fasta",
+    "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna",
+    "--scer-orthologs",
+    "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt",
+    "--threads",
+    "8",
+    "--overwrite"
+  ],
+  "detected_feature_tables": [
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary_combined/betageom__norm_20261022_all_methods__9b8641/combined_parent_hits.betageom__norm_20261022_all_methods__9b8641.feature_table.RDF_1.csv"
+  ],
+  "warnings": [],
+  "error_message": null
+}

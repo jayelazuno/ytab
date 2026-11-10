@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "contract": 1,
+  "kind": "treated_vs_control",
+  "method": "resampling",
+  "method_label": "Resampling",
+  "project": "Gale_2020",
+  "normalization": "betageom",
+  "normalization_run": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods",
+  "fdr": 0.05,
+  "groups": {
+    "BG14__treated": {
+      "background": "BG14",
+      "condition": "treated",
+      "comparisons": [
+        "Cg1_FLU1_vs_control1",
+        "Cg1_FLU2_vs_control2"
+      ],
+      "controls": [
+        "SRR11561505",
+        "SRR11561504"
+      ],
+      "treatments": [
+        "SRR11561503",
+        "SRR11561502"
+      ],
+      "status": "success",
+      "calls": {
+        "depleted": 280,
+        "enriched": 365,
+        "not significant": 4154,
+        "not tested": 435
+      },
+      "warning": "treatment replicates are 3.5x noisier than the other condition's (threshold 2); permutation p-values are mildly anti-conservative in this regime (about 6% instead of 5% at p<=0.05 with BGC + recentering, 8-9% with TTR); treat calls near the q cutoff with caution and prefer BGC normalization",
+      "stratified": false
+    }
+  },
+  "files": {
+    "genes": "genes.tsv"
+  }
+}

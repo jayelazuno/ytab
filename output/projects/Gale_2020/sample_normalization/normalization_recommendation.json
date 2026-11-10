@@ -1,0 +1,43 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "selected_samples": [
+    "SRR11561504",
+    "SRR11561505",
+    "SRR11561506",
+    "SRR11561507",
+    "SRR11561508"
+  ],
+  "sample_mode": "parents",
+  "observed_midlc_values": {
+    "SRR11561504": 312255.22580202867,
+    "SRR11561505": 298940.8032273222,
+    "SRR11561506": 721477.4370576467,
+    "SRR11561507": 561776.4267669308,
+    "SRR11561508": 325282.3106152601
+  },
+  "saturation_ratios": {
+    "SRR11561504": 31.30735434416063,
+    "SRR11561505": 36.172967635258146,
+    "SRR11561506": 13.239520058943695,
+    "SRR11561507": 14.061038562013557,
+    "SRR11561508": 72.99346821255061
+  },
+  "candidate_targets": [
+    13.239
+  ],
+  "candidate_target_tags": [
+    "T013p239"
+  ],
+  "recommended_target": 13.239,
+  "recommended_target_tag": "T013p239",
+  "retention_threshold": 0.95,
+  "min_site_retention_observed": 0.90199155,
+  "mean_site_retention_observed": 0.94852188,
+  "reason": "Common saturation: the smallest depth/MidLC ratio among the selected libraries.",
+  "warnings": [
+    "A library keeps 90.2% of its insertion sites (below 95%).",
+    "Feature-level retention requires SummaryTable on normalized hits and will be confirmed in a later step."
+  ],
+  "timestamp": "2026-10-22T00:40:17.143089+00:00"
+}

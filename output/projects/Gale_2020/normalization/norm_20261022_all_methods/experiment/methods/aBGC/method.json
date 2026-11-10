@@ -1,0 +1,18 @@
+{
+  "id": "aBGC",
+  "name": "Adaptive beta-geometric correction (experimental)",
+  "status": "available",
+  "input_level": "raw insertion-site counts",
+  "description": "Searches positive-count trimming fractions for the smallest maximum geometric-quantile discrepancy; preserves zeros; optional explicit final TTR.",
+  "formula": "choose f minimizing max_r((corrected_r-geometric_quantile_r)^2/geometric_quantile_r); fit positive counts only",
+  "may_suit": "Sensitivity option for skewed counts when a geometric target and adaptive distribution-based fitting are appropriate.",
+  "caution": "The score is not a p-value or biological validation. Tail convention and grid affect selection; can compress real effects; invalid candidates are reported, not silently replaced.",
+  "diagnostics": [
+    "candidate table",
+    "tail sensitivity",
+    "selected parameters",
+    "effect preservation",
+    "seed reproducibility"
+  ],
+  "source": "https://github.com/ioerger/transit/blob/50e23d6bec2605a24835fbd67f33691e330f3361/src/pytransit/norm_tools.py"
+}

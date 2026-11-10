@@ -1,0 +1,59 @@
+{
+  "method": "betageom",
+  "normalization_run": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods",
+  "tag": "betageom__norm_20261022_all_methods__9b8641",
+  "samples": [
+    "SRR11561508",
+    "SRR11561507",
+    "SRR11561506"
+  ],
+  "rounding": "nearest whole number; sites with raw insertions kept at >= 1",
+  "command": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_normalize.py",
+    "--catalogue",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/catalogue",
+    "--output",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/betageom__norm_20261022_all_methods__9b8641/engine",
+    "--method",
+    "betageom",
+    "--group-by",
+    "library_id",
+    "--observation",
+    "Gale_2020::SRR11561508",
+    "--observation",
+    "Gale_2020::SRR11561507",
+    "--observation",
+    "Gale_2020::SRR11561506"
+  ],
+  "created": "2026-10-23T03:24:42.989889+00:00",
+  "totals": {
+    "SRR11561508": {
+      "rows": 177199,
+      "sites": 174369,
+      "raw_reads": 23743484,
+      "normalized_reads": 59244281.645,
+      "written_reads": 59229000,
+      "raised_to_one": 1,
+      "rows_dropped": 0
+    },
+    "SRR11561507": {
+      "rows": 276027,
+      "sites": 270196,
+      "raw_reads": 7899160,
+      "normalized_reads": 62226354.67,
+      "written_reads": 62205573,
+      "raised_to_one": 0,
+      "rows_dropped": 0
+    },
+    "SRR11561506": {
+      "rows": 358808,
+      "sites": 349997,
+      "raw_reads": 9552015,
+      "normalized_reads": 64218416.223,
+      "written_reads": 64201107,
+      "raised_to_one": 2,
+      "rows_dropped": 0
+    }
+  }
+}

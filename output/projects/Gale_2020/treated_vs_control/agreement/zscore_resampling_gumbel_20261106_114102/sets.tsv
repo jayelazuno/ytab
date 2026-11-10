@@ -1,0 +1,11 @@
+group	background	condition	direction	methods	n_methods	genes
+BG14__treated	BG14	treated	depleted	zscore&resampling	2	96
+BG14__treated	BG14	treated	depleted	resampling	1	94
+BG14__treated	BG14	treated	depleted	zscore&resampling&gumbel	3	71
+BG14__treated	BG14	treated	depleted	zscore	1	63
+BG14__treated	BG14	treated	depleted	gumbel	1	47
+BG14__treated	BG14	treated	depleted	resampling&gumbel	2	11
+BG14__treated	BG14	treated	depleted	zscore&gumbel	2	7
+BG14__treated	BG14	treated	enriched	zscore&resampling	2	332
+BG14__treated	BG14	treated	enriched	zscore	1	283
+BG14__treated	BG14	treated	enriched	resampling	1	33

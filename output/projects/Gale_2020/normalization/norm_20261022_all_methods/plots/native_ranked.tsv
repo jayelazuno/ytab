@@ -1,0 +1,2029 @@
+method	observation_id	display_name	role	rank	value
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1	72864.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2	68310.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3	21896.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4	16114.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5	15825.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6	13937.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	7	12838.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	8	10740.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	9	8257.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	10	7484.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	11	6702.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	12	6261.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	13	6183.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	14	6015.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	15	5140.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	16	5106.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	17	4907.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	18	4809.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	19	4617.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	21	4408.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	22	4398.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	23	4366.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	25	3950.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	26	3849.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	28	3694.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	30	3631.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	31	3474.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	33	3453.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	35	3384.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	38	3282.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	40	3178.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	42	3116.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	45	3063.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	48	3030.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	51	2960.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	54	2786.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	57	2729.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	61	2609.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	65	2589.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	69	2498.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	73	2473.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	78	2404.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	83	2284.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	88	2257.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	93	2245.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	99	2167.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	105	2129.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	112	2104.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	119	2050.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	126	1997.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	134	1931.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	142	1904.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	151	1848.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	161	1817.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	171	1779.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	181	1757.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	193	1724.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	205	1685.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	217	1656.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	231	1623.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	245	1580.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	261	1528.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	277	1477.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	294	1438.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	313	1399.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	332	1365.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	353	1320.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	375	1266.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	398	1238.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	423	1198.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	449	1171.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	477	1123.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	507	1090.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	539	1052.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	572	1018.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	608	990.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	646	948.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	686	917.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	729	891.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	774	851.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	823	825.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	874	801.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	928	781.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	986	748.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1048	722.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1113	702.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1182	678.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1256	655.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1334	631.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1417	611.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1506	592.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1600	572.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1699	552.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1805	534.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1918	517.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2037	502.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2164	483.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2299	468.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2443	452.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2595	437.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2757	421.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2929	408.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3111	391.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3305	379.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3511	364.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3730	353.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3963	341.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4210	328.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4472	315.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4751	305.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5047	293.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5361	283.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5696	273.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6051	262.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6428	253.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6829	243.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	7254	234.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	7707	225.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	8187	216.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	8697	206.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	9239	198.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	9815	190.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	10427	181.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	11077	173.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	11768	167.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	12501	159.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	13281	152.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	14109	145.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	14988	138.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	15922	131.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	16915	125.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	17969	119.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	19090	112.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	20280	106.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	21544	101.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	22887	95.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	24313	90.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	25829	85.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	27439	80.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	29150	75.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	30967	71.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	32897	66.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	34948	62.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	37127	58.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	39441	54.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	41900	50.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	44512	47.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	47286	44.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	50234	40.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	53366	37.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	56692	34.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	60226	32.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	63981	29.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	67969	26.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	72206	24.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	76707	22.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	81489	20.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	86569	18.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	91965	16.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	97698	14.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	103788	12.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	110258	10.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	117132	8.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	124433	7.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	132190	5.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	140431	4.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	149185	3.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	158484	1.0
+nonorm	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	168364	1.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1	80484.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2	80236.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3	24795.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4	23791.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5	18099.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6	15074.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	7	14952.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	8	13278.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	9	8812.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	10	8783.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	11	8751.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	12	7800.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	13	7695.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	14	7304.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	15	6669.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	16	6595.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	17	6523.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	18	6385.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	19	5914.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	21	5480.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	22	5443.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	23	5336.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	25	5287.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	26	4944.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	28	4841.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	29	4762.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	31	4556.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	33	4426.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	35	4268.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	38	4148.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	40	4061.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	42	4022.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	45	3942.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	48	3815.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	51	3764.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	54	3594.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	57	3567.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	61	3439.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	65	3340.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	69	3205.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	73	3140.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	78	3023.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	82	3000.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	87	2930.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	93	2825.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	99	2778.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	105	2689.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	111	2612.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	118	2560.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	126	2481.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	133	2437.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	142	2398.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	151	2355.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	160	2316.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	170	2232.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	181	2174.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	192	2138.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	204	2094.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	216	2034.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	230	2000.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	244	1943.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	259	1901.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	276	1863.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	293	1814.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	311	1737.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	330	1700.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	351	1667.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	373	1625.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	396	1586.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	421	1529.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	447	1482.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	475	1434.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	504	1394.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	536	1364.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	569	1317.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	605	1263.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	642	1210.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	682	1164.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	725	1130.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	770	1090.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	818	1053.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	869	1017.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	923	987.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	980	959.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1041	925.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1106	896.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1175	866.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1248	838.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1326	813.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1409	791.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1497	765.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1590	740.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1689	717.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1794	695.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1906	670.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2024	648.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2150	627.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2284	607.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2427	584.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2578	566.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2738	549.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2909	531.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3090	512.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3282	495.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3487	474.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3704	459.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3935	442.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4180	427.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4440	413.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4717	399.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5011	384.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5323	370.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5654	357.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6006	343.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6380	329.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6778	318.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	7200	306.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	7648	294.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	8125	283.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	8631	272.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	9168	260.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	9739	250.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	10346	240.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	10990	230.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	11675	220.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	12402	210.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	13174	201.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	13995	192.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	14866	183.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	15792	174.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	16776	165.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	17821	157.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	18931	149.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	20110	141.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	21362	134.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	22693	127.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	24106	120.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	25608	113.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	27203	107.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	28897	101.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	30697	95.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	32609	89.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	34640	83.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	36797	78.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	39089	73.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	41523	68.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	44110	63.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	46857	59.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	49775	55.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	52876	51.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	56169	47.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	59667	43.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	63383	39.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	67331	36.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	71525	33.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	75980	30.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	80712	27.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	85739	24.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	91079	21.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	96752	18.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	102778	16.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	109179	13.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	115979	11.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	123202	9.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	130876	7.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	139027	5.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	147686	3.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	156885	2.0
+nonorm	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	166656	1.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1	59208.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2	57271.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3	18498.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4	12877.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5	11707.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6	11487.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	7	10958.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	8	9775.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	9	7649.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	10	7156.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	11	6787.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	12	6554.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	13	6060.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	14	6045.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	15	5534.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	16	5431.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	17	5215.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	18	5166.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	19	5130.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	21	4761.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	22	4597.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	23	4360.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	25	4246.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	26	3892.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	28	3856.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	30	3700.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	32	3655.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	34	3622.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	36	3535.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	38	3501.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	40	3453.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	43	3243.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	45	3202.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	48	3144.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	51	3091.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	54	3016.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	58	2987.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	61	2928.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	65	2895.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	69	2747.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	74	2555.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	78	2450.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	83	2416.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	88	2375.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	94	2334.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	100	2263.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	106	2216.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	113	2144.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	120	2096.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	127	2040.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	135	2018.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	143	1990.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	152	1943.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	162	1892.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	172	1835.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	183	1785.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	194	1733.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	206	1684.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	219	1645.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	233	1608.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	247	1570.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	263	1534.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	279	1476.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	297	1432.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	315	1414.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	335	1375.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	356	1333.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	378	1293.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	402	1256.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	427	1214.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	453	1175.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	482	1137.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	512	1086.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	544	1045.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	577	1006.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	613	976.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	652	939.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	692	915.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	736	882.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	782	854.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	830	830.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	882	805.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	937	780.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	996	756.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1058	734.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1124	715.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1194	686.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1269	661.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1348	641.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1432	622.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1522	604.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1617	586.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1718	567.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1825	548.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1939	530.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2060	512.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2188	493.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2325	476.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2470	460.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2624	445.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2788	431.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2962	414.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3147	399.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3343	386.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3552	372.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3774	358.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4010	347.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4260	334.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4526	322.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4808	311.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5109	300.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5428	288.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5766	278.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6126	268.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6509	258.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6915	249.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	7347	239.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	7806	230.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	8293	221.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	8811	211.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	9361	203.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	9945	195.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	10566	186.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	11225	178.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	11926	170.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	12671	163.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	13462	155.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	14302	148.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	15195	141.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	16144	134.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	17151	128.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	18222	122.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	19360	115.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	20568	110.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	21853	104.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	23217	98.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	24666	93.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	26206	87.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	27842	83.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	29580	78.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	31427	73.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	33389	69.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	35473	64.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	37688	60.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	40041	56.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	42540	53.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	45196	49.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	48018	45.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	51015	42.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	54200	39.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	57584	36.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	61179	33.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	64998	30.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	69056	28.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	73367	25.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	77947	23.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	82814	21.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	87984	19.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	93476	16.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	99312	14.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	105512	12.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	112099	11.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	119097	9.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	126532	7.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	134432	5.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	142824	4.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	151741	2.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	161214	1.0
+nonorm	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	171278	1.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1	68375.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2	66066.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3	21081.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4	14501.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5	13750.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	6	12671.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	7	12178.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	8	10443.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	9	8401.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	10	7963.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	11	7551.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	12	7440.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	13	6755.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	14	6619.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	15	6547.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	16	6068.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	17	5889.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	18	5761.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	19	5686.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	21	5316.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	22	5058.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	23	4898.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	25	4686.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	26	4486.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	28	4421.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	29	4270.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	31	4055.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	33	4000.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	35	3979.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	38	3869.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	40	3766.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	42	3641.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	45	3576.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	48	3533.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	51	3421.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	54	3390.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	57	3302.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	61	3221.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	65	3174.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	69	3033.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	73	2901.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	77	2871.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	82	2751.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	87	2719.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	93	2627.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	99	2571.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	105	2501.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	111	2424.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	118	2363.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	126	2306.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	133	2264.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	142	2218.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	151	2132.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	160	2069.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	170	2020.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	180	1981.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	192	1917.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	204	1878.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	216	1839.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	230	1814.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	244	1762.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	259	1709.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	275	1645.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	293	1607.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	311	1566.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	330	1541.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	351	1498.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	372	1446.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	396	1400.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	420	1348.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	446	1312.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	474	1271.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	504	1218.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	535	1170.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	568	1134.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	604	1093.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	641	1050.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	681	1023.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	724	989.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	769	959.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	817	928.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	868	905.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	922	875.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	979	844.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1040	822.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1105	800.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1174	774.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1247	743.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1324	724.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1407	700.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1494	679.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1588	657.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1686	636.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1791	614.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1903	594.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2021	575.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2147	556.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2281	538.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2423	518.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2574	501.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2734	483.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2905	468.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3085	448.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3278	433.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3482	419.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3698	404.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3929	389.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4173	377.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4433	364.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4709	350.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5003	338.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5314	324.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5645	313.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5997	302.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	6370	292.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	6767	280.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	7188	270.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	7636	259.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	8111	248.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	8616	238.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	9153	229.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	9723	219.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	10328	210.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	10971	201.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	11655	192.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	12380	183.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	13151	176.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	13970	168.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	14840	160.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	15764	152.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	16746	144.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	17789	138.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	18896	131.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	20073	124.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	21323	118.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	22651	111.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	24061	105.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	25560	99.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	27151	94.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	28842	88.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	30638	83.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	32546	78.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	34573	73.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	36726	69.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	39013	64.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	41442	60.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	44023	56.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	46764	52.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	49676	48.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	52769	45.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	56055	41.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	59546	38.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	63254	35.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	67193	32.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	71377	29.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	75822	27.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	80543	24.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	85559	21.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	90887	19.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	96547	17.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	102559	14.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	108945	12.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	115729	10.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	122936	8.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	130591	6.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	138723	5.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	147362	3.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	156538	1.0
+nonorm	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	166286	1.0
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1	3667.821861827465
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2	3640.7530657992183
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3	3117.42300925311
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4	2977.567563107167
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5	2968.544631097752
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6	2909.8955730365496
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	7	2869.292378994179
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	8	2788.0859909094384
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	9	2670.787874787035
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	10	2625.6732147399566
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	11	2571.535622683463
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	12	2539.955360650508
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	13	2535.4438946458
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	14	2521.9094966316766
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	15	2449.726040556351
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	16	2449.726040556351
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	17	2431.68017653752
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	18	2422.6572445281045
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	19	2404.6113805092727
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	21	2382.054050485734
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	22	2382.054050485734
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	23	2377.542584481026
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	25	2332.4279244339477
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	26	2318.8935264198244
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	28	2300.8476624009927
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	30	2291.8247303915773
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	31	2273.778866372746
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	33	2269.267400368038
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	35	2260.2444683586223
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	38	2246.710070344499
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	40	2233.1756723303756
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	42	2224.1527403209598
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	45	2215.1298083115444
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	48	2210.6183423068364
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	51	2201.5954102974206
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	54	2170.015148264466
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	57	2160.99221625505
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	61	2142.946352236219
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	65	2138.434886231511
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	69	2120.3890222126797
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	73	2115.877556207972
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	78	2106.8546241985564
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	83	2079.7858281703093
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	88	2075.2743621656014
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	93	2075.2743621656014
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	99	2057.22849814677
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	105	2048.2055661373543
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	112	2043.6941001326466
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	119	2030.1597021185232
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	126	2021.1367701091076
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	134	2003.0909060902761
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	142	1998.5794400855684
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	151	1985.0450420714449
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	161	1976.0221100620292
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	171	1966.9991780526136
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	181	1962.4877120479057
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	193	1953.46478003849
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	205	1944.4418480290744
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	217	1935.4189160196588
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	231	1926.3959840102432
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	245	1912.8615859961196
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	261	1899.327187981996
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	277	1885.7927899678725
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	294	1872.2583919537492
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	313	1858.7239939396256
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	332	1849.70106193021
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	353	1831.6551979113788
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	375	1813.6093338925473
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	398	1804.5864018831317
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	423	1791.052003869008
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	449	1777.5176058548848
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	477	1759.4717418360533
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	507	1745.93734382193
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	539	1732.4029458078064
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	572	1714.3570817889752
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	608	1705.3341497795595
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	646	1682.7768197560204
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	686	1669.2424217418968
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	729	1655.7080237277733
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	774	1637.662159708942
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	823	1624.1277616948184
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	874	1610.5933636806951
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	928	1597.0589656665716
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	986	1579.0131016477403
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1048	1560.9672376289088
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1113	1551.9443056194932
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1182	1533.898441600662
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1256	1520.3640435865384
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1334	1502.3181795677071
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1417	1488.7837815535836
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1506	1475.24938353946
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1600	1457.2035195206288
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1699	1443.6691215065052
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1805	1430.134723492382
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1918	1416.6003254782584
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2037	1403.0659274641348
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2164	1385.0200634453035
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2299	1371.48566543118
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2443	1357.9512674170567
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2595	1339.9054033982252
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2757	1326.3710053841019
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2929	1312.8366073699783
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3111	1294.790743351147
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3305	1281.2563453370235
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3511	1263.2104813181923
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3730	1249.6760833040687
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3963	1236.1416852899451
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4210	1218.095821271114
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4472	1200.0499572522826
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4751	1186.515559238159
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5047	1168.4696952193278
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5361	1154.9352972052043
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5696	1141.4008991910807
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6051	1123.3550351722495
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6428	1109.820637158126
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6829	1091.7747731392947
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	7254	1073.7289091204634
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	7707	1060.1945111063399
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	8187	1042.1486470875086
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	8697	1024.1027830686771
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	9239	1006.0569190498459
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	9815	988.0110550310146
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	10427	969.9651910121833
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	11077	951.919326993352
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	11768	938.3849289792284
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	12501	920.3390649603972
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	13281	902.2932009415658
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	14109	884.2473369227346
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	14988	861.6900068991954
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	15922	843.644142880364
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	16915	825.5982788615328
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	17969	807.5524148427014
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	19090	784.9950848191622
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	20280	762.4377547956232
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	21544	744.3918907767918
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	22887	721.8345607532526
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	24313	703.7886967344214
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	25829	681.2313667108822
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	27439	658.6740366873431
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	29150	636.1167066638039
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	30967	618.0708426449726
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	32897	595.5135126214335
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	34948	572.9561825978943
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	37127	550.3988525743551
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	39441	527.841522550816
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	41900	505.2841925272769
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	44512	487.23832850844553
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	47286	469.1924644896142
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	50234	442.1236684613673
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	53366	419.5663384378281
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	56692	397.009008414289
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	60226	378.9631443954577
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	63981	356.4058143719185
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	67969	329.33701834367156
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	72206	311.2911543248402
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	76707	293.2452903060089
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	81489	270.68796028246976
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	86569	252.64209626363845
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	91965	230.0847662400993
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	97698	207.52743621656015
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	103788	180.45864018831315
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	110258	157.90131016477403
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	117132	130.83251413652704
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	124433	117.29811612240356
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	132190	85.71785408944875
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	140431	72.18345607532527
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	149185	54.13759205649395
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	158484	18.045864018831317
+betageom	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	168364	18.045864018831317
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1	3603.200549607855
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2	3603.200549607855
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3	3058.4787812656514
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4	3040.6190511560712
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5	2915.600940389008
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6	2830.767222368501
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	7	2826.302289841106
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	8	2772.7230995123646
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	9	2585.1959333617697
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	10	2580.7310008343748
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	11	2580.7310008343748
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	12	2527.1518105056334
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	13	2522.686877978238
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	14	2495.8972828138676
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	15	2455.7128900673115
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	16	2451.247957539916
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	17	2446.783025012521
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	18	2433.388227430336
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	19	2397.668767211175
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	21	2366.4142395194094
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	22	2361.949306992014
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	23	2353.0194419372237
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	25	2348.554509409829
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	26	2317.299981718063
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	28	2308.3701166632727
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	29	2299.4402516084824
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	31	2281.5805214989023
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	33	2268.1857239167166
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	35	2250.3259938071365
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	38	2236.931196224951
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	40	2228.001331170161
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	42	2223.5363986427656
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	45	2214.6065335879753
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	48	2196.746803478395
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	51	2192.2818709509997
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	54	2169.9572083140242
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	57	2165.4922757866293
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	61	2152.0974782044436
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	65	2138.7026806222584
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	69	2116.378017985283
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	73	2107.4481529304926
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	78	2089.5884228209125
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	82	2089.5884228209125
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	87	2076.193625238727
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	93	2062.7988276565416
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	99	2053.8689626017513
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	105	2040.474165019566
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	111	2027.0793674373808
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	118	2013.6845698551954
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	126	2000.28977227301
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	133	1991.3599072182199
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	142	1986.8949746908247
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	151	1977.9651096360344
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	160	1969.0352445812443
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	170	1951.1755144716637
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	181	1942.2456494168737
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	192	1933.3157843620834
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	204	1924.385919307293
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	216	1910.9911217251079
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	230	1902.0612566703176
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	244	1888.6664590881323
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	259	1879.736594033342
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	276	1870.8067289785517
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	293	1857.4119313963665
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	311	1839.552201286786
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	330	1830.6223362319959
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	351	1821.6924711772056
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	373	1808.2976735950203
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	396	1799.36780854023
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	421	1781.5080784306497
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	447	1768.1132808484642
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	475	1754.718483266279
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	504	1741.3236856840936
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	536	1727.9288881019083
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	569	1714.534090519723
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	605	1696.6743604101425
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	642	1674.3496977731668
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	682	1656.4899676635864
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	725	1643.0951700814012
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	770	1629.7003724992157
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	818	1611.8406423896354
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	869	1598.44584480745
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	923	1585.0510472252647
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	980	1571.6562496430793
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1041	1553.796519533499
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1106	1540.4017219513134
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1175	1527.0069243691282
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1248	1513.6121267869428
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1326	1500.2173292047576
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1409	1486.8225316225721
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1497	1468.9628015129917
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1590	1455.5680039308065
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1689	1442.173206348621
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1794	1428.7784087664359
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1906	1410.9186786568553
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2024	1397.52388107467
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2150	1384.1290834924846
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2284	1370.7342859102994
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2427	1352.8745558007188
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2578	1339.4797582185336
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2738	1326.0849606363481
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2909	1312.690163054163
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3090	1294.8304329445823
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3282	1281.435635362397
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3487	1263.5759052528167
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3704	1245.7161751432361
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3935	1232.321377561051
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4180	1214.4616474514703
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4440	1201.066849869285
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4717	1187.6720522870996
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5011	1169.8123221775193
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5323	1156.417524595334
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5654	1138.5577944857534
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6006	1125.1629969035682
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6380	1107.3032667939876
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6778	1089.4435366844073
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	7200	1076.0487391022218
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	7648	1058.1890089926414
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	8125	1044.7942114104562
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	8631	1026.9344813008756
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	9168	1009.0747511912953
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	9739	991.2150210817148
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	10346	973.3552909721343
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	10990	959.960493389949
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	11675	942.1007632803686
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	12402	919.776100643393
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	13174	906.3813030612076
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	13995	884.0566404242321
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	14866	866.1969103146516
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	15792	848.3371802050713
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	16776	826.0125175680956
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	17821	808.1527874585153
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	18931	790.2930573489348
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	20110	767.9683947119593
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	21362	750.1086646023788
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	22693	727.7840019654033
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	24106	709.9242718558228
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	25608	687.5996092188471
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	27203	665.2749465818716
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	28897	647.4152164722911
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	30697	625.0905538353156
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	32609	602.7658911983401
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	34640	580.4412285613645
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	36797	558.116565924389
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	39089	540.2568358148085
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	41523	517.932173177833
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	44110	491.1425780134623
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	46857	473.2828479038818
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	49775	450.9581852669063
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	52876	433.0984551573258
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	56169	410.7737925203503
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	59667	383.98419735597963
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	63383	361.65953471900406
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	67331	339.3348720820285
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	71525	321.47514197244806
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	75980	299.1504793354725
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	80712	276.8258166984969
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	85739	254.50115406152136
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	91079	227.7115588971507
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	96752	200.92196373278003
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	102778	183.06223362319957
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	109179	156.2726384588289
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	115979	133.94797582185336
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	123202	111.62331318487779
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	130876	89.29865054790224
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	139027	66.97398791092668
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	147686	40.18439274655601
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	156885	31.25452769176578
+betageom	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	166656	17.859730109580447
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1	3535.8512411305155
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2	3522.575203929775
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3	3004.809753100901
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4	2836.6466152248568
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5	2792.393157889055
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6	2787.9678121554753
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	7	2765.8410834875745
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	8	2712.736934684613
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	9	2597.67794561153
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	10	2571.1258712100494
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	11	2544.5737968085687
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	12	2531.297759607828
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	13	2491.4696480056073
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	14	2491.4696480056073
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	15	2451.641536403386
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	16	2442.7908449362258
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	17	2425.0894620019053
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	18	2420.6641162683254
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	19	2416.238770534745
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	21	2385.2613503996845
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	22	2367.559967465364
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	23	2341.0078930638833
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	25	2332.157201596723
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	26	2292.329089994502
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	28	2287.903744260922
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	30	2270.2023613266015
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	32	2261.351669859441
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	34	2256.926324125861
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	36	2248.0756326587007
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	38	2243.6502869251203
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	40	2234.79959545796
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	43	2208.2475210564794
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	45	2203.8221753228995
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	48	2194.9714838557393
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	51	2186.120792388579
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	54	2177.270100921419
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	58	2172.8447551878385
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	61	2159.5687179870984
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	65	2155.143372253518
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	69	2133.0166435856177
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	74	2102.0392234505566
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	78	2079.9124947826563
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	83	2075.487149049076
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	88	2066.6364575819157
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	94	2057.7857661147555
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	100	2044.509728914015
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	106	2035.6590374468549
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	113	2022.3830002461145
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	120	2009.1069630453742
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	127	1995.8309258446338
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	135	1991.4055801110537
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	143	1986.9802343774736
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	152	1973.7041971767333
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	162	1964.853505709573
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	172	1951.5774685088327
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	183	1938.3014313080923
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	194	1925.025394107352
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	206	1911.7493569066116
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	219	1898.4733197058713
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	233	1889.622628238711
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	247	1880.7719367715508
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	263	1867.4958995708105
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	279	1849.79451663649
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	297	1836.5184794357494
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	315	1832.0931337021693
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	335	1818.817096501429
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	356	1805.5410593006886
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	378	1792.2650220999483
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	402	1778.988984899208
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	427	1765.7129476984676
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	453	1748.0115647641471
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	482	1734.7355275634068
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	512	1712.6087988955062
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	544	1694.9074159611857
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	577	1681.6313787604454
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	613	1663.929995826125
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	652	1650.6539586253846
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	692	1637.3779214246442
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	736	1619.6765384903238
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	782	1606.4005012895834
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	830	1593.124464088843
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	882	1579.8484268881027
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	937	1566.5723896873624
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	996	1553.2963524866218
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1058	1540.0203152858815
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1124	1526.744278085141
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1194	1509.0428951508206
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1269	1491.3415122165002
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1348	1478.0654750157598
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1432	1464.7894378150195
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1522	1451.5134006142791
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1617	1438.2373634135388
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1718	1424.9613262127984
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1825	1411.685289012058
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1939	1393.9839060777376
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2060	1380.7078688769973
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2188	1363.0064859426768
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2325	1349.7304487419365
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2470	1336.4544115411961
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2624	1318.7530286068757
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2788	1305.4769914061353
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2962	1287.7756084718148
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3147	1274.4995712710743
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3343	1256.7981883367538
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3552	1243.5221511360135
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3774	1225.820768201693
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4010	1212.5447310009527
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4260	1194.8433480666322
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4526	1181.5673108658918
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4808	1168.2912736651515
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5109	1150.589890730831
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5428	1132.8885077965106
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5766	1119.6124705957702
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6126	1101.9110876614498
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6509	1088.6350504607094
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6915	1075.359013259969
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	7347	1057.6576303256486
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	7806	1039.9562473913281
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	8293	1022.2548644570076
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	8811	1004.5534815226871
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	9361	991.2774443219467
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	9945	973.5760613876263
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	10566	955.8746784533058
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	11225	938.1732955189854
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	11926	920.4719125846648
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	12671	902.7705296503443
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	13462	880.6438009824437
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	14302	862.9424180481233
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	15195	845.2410351138028
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	16144	827.5396521794823
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	17151	809.8382692451619
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	18222	792.1368863108414
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	19360	770.0101576429407
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	20568	752.3087747086203
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	21853	730.1820460407197
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	23217	708.0553173728191
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	24666	690.3539344384986
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	26206	668.2272057705981
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	27842	650.5258228362776
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	29580	628.3990941683769
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	31427	606.2723655004763
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	33389	588.5709825661559
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	35473	562.0189081646752
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	37688	544.3175252303547
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	40041	522.1907965624541
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	42540	504.4894136281336
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	45196	482.362684960233
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	48018	455.8106105587523
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	51015	438.1092276244318
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	54200	415.98249895653123
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	57584	393.85577028863065
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	61179	371.72904162073
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	64998	349.60231295282944
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	69056	331.900930018509
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	73367	305.3488556170282
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	77947	287.64747268270776
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	82814	269.9460897483873
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	87984	247.8193610804867
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	93476	216.84194094542585
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	99312	194.71521227752527
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	105512	172.58848360962466
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	112099	159.31244640888428
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	119097	137.1857177409837
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	126532	110.63364333950298
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	134432	79.65622320444214
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	142824	66.3801860037018
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	151741	35.402765868640955
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	161214	17.701382934320478
+betageom	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	171278	17.701382934320478
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1	3562.976490228032
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2	3549.6486479952587
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3	3025.4201868395135
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4	2852.158237813462
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5	2829.9451674255065
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	6	2789.961640727187
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	7	2772.191184416823
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	8	2701.109359175366
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	9	2603.3718494683626
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	10	2576.716165002816
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	11	2554.503094614861
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	12	2545.6178664596787
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	13	2501.1917256837683
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	14	2492.306497528586
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	15	2487.8638834509948
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	16	2452.3229708302665
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	17	2438.995128597493
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	18	2430.1099004423113
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	19	2425.66728636472
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	21	2394.5689878215826
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	22	2372.3559174336274
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	23	2354.585461123263
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	25	2336.8150048128987
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	26	2314.6019344249435
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	28	2310.1593203473526
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	29	2292.3888640369883
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	31	2270.175793649033
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	33	2265.7331795714417
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	35	2261.290565493851
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	38	2247.9627232610774
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	40	2234.6348810283043
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	42	2221.3070387955313
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	45	2212.421810640349
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	48	2207.979196562758
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	51	2190.208740252394
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	54	2190.208740252394
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	57	2176.8808980196204
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	61	2163.5530557868474
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	65	2159.110441709256
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	69	2136.897371321301
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	73	2119.1269150109365
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	77	2114.6843009333456
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	82	2092.4712305453904
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	87	2088.028616467799
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	93	2070.258160157435
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	99	2061.372932002253
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	105	2048.0450897694795
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	111	2034.7172475367065
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	118	2025.8320193815243
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	126	2012.5041771487513
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	133	2003.6189489935691
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	142	1994.733720838387
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	151	1976.9632645280228
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	160	1963.6354222952496
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	170	1954.7501941400674
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	180	1945.8649659848852
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	192	1928.094509674521
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	204	1919.209281519339
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	216	1910.3240533641567
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	230	1905.8814392865656
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	244	1892.5535970537926
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	259	1879.2257548210193
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	275	1861.4552985106552
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	293	1848.127456277882
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	311	1839.2422281226998
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	330	1830.3569999675176
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	351	1817.0291577347446
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	372	1803.7013155019713
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	396	1785.930859191607
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	420	1772.603016958834
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	446	1759.2751747260606
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	474	1745.9473324932874
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	504	1723.7342621053322
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	535	1705.9638057949678
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	568	1692.6359635621948
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	604	1674.8655072518304
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	641	1657.0950509414663
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	681	1648.2098227862841
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	724	1630.4393664759198
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	769	1617.1115242431467
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	817	1603.7836820103735
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	868	1590.4558397776002
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	922	1577.1279975448272
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	979	1559.3575412344628
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1040	1550.4723130792806
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1105	1537.1444708465076
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1174	1523.8166286137343
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1247	1506.0461723033702
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1324	1492.718330070597
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1407	1479.3904878378237
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1494	1466.0626456050506
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1588	1448.2921892946863
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1686	1434.964347061913
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1791	1421.63650482914
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1903	1403.8660485187756
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2021	1390.5382062860026
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2147	1377.2103640532293
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2281	1363.882521820456
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2423	1346.112065510092
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2574	1332.7842232773187
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2734	1315.0137669669543
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2905	1301.6859247341813
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3085	1283.915468423817
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3278	1270.587626191044
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3482	1252.8171698806796
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3698	1239.4893276479063
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3929	1221.7188713375422
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4173	1208.391029104769
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4433	1195.0631868719959
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4709	1177.2927305616315
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5003	1163.9648883288583
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5314	1146.1944320184941
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5645	1132.8665897857209
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5997	1115.0961334753567
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	6370	1101.7682912425835
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	6767	1083.9978349322191
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	7188	1070.669992699446
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	7636	1052.8995363890817
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	8111	1035.1290800787176
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	8616	1017.3586237683533
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	9153	999.588167457989
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	9723	981.8177111476248
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	10328	964.0472548372605
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	10971	950.7194126044874
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	11655	928.5063422165321
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	12380	910.7358859061678
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	13151	897.4080436733946
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	13970	879.6375873630303
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	14840	857.424516975075
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	15764	839.6540606647108
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	16746	817.4409902767554
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	17789	799.6705339663912
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	18896	781.900077656027
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	20073	759.6870072680716
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	21323	741.9165509577074
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	22651	719.7034805697521
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	24061	701.9330242593878
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	25560	679.7199538714325
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	27151	661.9494975610683
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	28842	639.7364271731129
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	30638	617.5233567851577
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	32546	599.7529004747934
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	34573	577.5398300868382
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	36726	559.7693737764738
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	39013	533.1136893109275
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	41442	515.3432330005633
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	44023	493.13016261260793
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	46764	470.9170922246526
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	49676	448.7040218366973
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	52769	430.93356552633304
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	56055	404.2778810607867
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	59546	382.06481067283136
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	63254	364.2943543624671
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	67193	342.0812839745118
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	71377	319.86821358655646
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	75822	302.0977572761922
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	80543	275.44207281064587
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	85559	248.78638834509948
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	90887	231.01593203473524
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	96547	213.24547572437098
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	102559	182.14717718123356
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	108945	159.93410679327823
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	115729	137.72103640532293
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	122936	111.06535193977656
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	130591	88.85228155182125
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	138723	75.52443931904806
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	147362	48.868754853501684
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	156538	17.77045631036425
+betageom	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	166286	17.77045631036425
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1	4914.150831247115
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2	4869.879202136781
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3	4117.261507261096
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4	3910.6605714128696
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5	3895.9033617094246
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6	3822.1173131922005
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	7	3763.0884743784213
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	8	3645.030796750863
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	9	3467.9442803095258
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	10	3408.9154414957466
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	11	3335.1293929785224
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	12	3290.857763868188
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	13	3276.1005541647432
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	14	3261.343344461299
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	15	3158.042876537185
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	16	3158.042876537185
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	17	3128.5284571302955
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	18	3113.7712474268506
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	19	3084.256828019961
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	21	3054.7424086130713
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	22	3054.7424086130713
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	23	3054.7424086130713
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	25	2995.713569799292
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	26	2966.1991503924028
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	28	2951.441940688958
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	30	2936.6847309855134
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	31	2907.1703115786236
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	33	2907.1703115786236
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	35	2892.4131018751787
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	38	2862.8986824682893
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	40	2848.1414727648444
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	42	2833.3842630614
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	45	2818.627053357955
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	48	2818.627053357955
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	51	2803.86984365451
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	54	2759.598214544176
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	57	2744.841004840731
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	61	2715.3265854338415
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	65	2715.3265854338415
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	69	2685.8121660269517
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	73	2685.8121660269517
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	78	2671.054956323507
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	83	2626.7833272131725
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	88	2626.7833272131725
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	93	2626.7833272131725
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	99	2597.268907806283
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	105	2582.511698102838
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	112	2582.511698102838
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	119	2567.7544883993933
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	126	2538.240068992504
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	134	2523.482859289059
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	142	2508.7256495856145
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	151	2493.9684398821696
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	161	2479.2112301787247
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	171	2464.45402047528
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	181	2464.45402047528
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	193	2449.6968107718353
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	205	2434.9396010683904
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	217	2420.1823913649455
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	231	2405.4251816615006
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	245	2390.667971958056
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	261	2375.910762254611
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	277	2346.396342847722
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	294	2331.639133144277
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	313	2316.881923440832
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	332	2302.124713737387
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	353	2272.6102943304977
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	375	2243.095874923608
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	398	2243.095874923608
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	423	2213.5814555167185
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	449	2198.8242458132736
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	477	2169.309826406384
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	507	2154.5526167029393
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	539	2125.03819729605
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	572	2110.280987592605
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	608	2095.52377788916
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	646	2066.0093584822707
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	686	2051.252148778826
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	729	2021.7377293719362
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	774	1992.2233099650466
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	823	1977.466100261602
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	874	1962.708890558157
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	928	1947.9516808547123
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	986	1918.4372614478227
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1048	1888.9228420409331
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1113	1874.1656323374884
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1182	1859.4084226340435
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1256	1829.894003227154
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1334	1815.1367935237092
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1417	1785.6223741168196
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1506	1770.8651644133747
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1600	1756.10795470993
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1699	1726.5935353030404
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1805	1711.8363255995957
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	1918	1682.3219061927061
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2037	1667.5646964892612
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2164	1652.8074867858165
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2299	1623.293067378927
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2443	1608.535857675482
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2595	1593.7786479720373
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2757	1564.2642285651477
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	2929	1549.507018861703
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3111	1519.9925994548134
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3305	1505.2353897513685
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3511	1475.720970344479
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3730	1460.9637606410342
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	3963	1446.2065509375893
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4210	1416.6921315307
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4472	1387.1777121238104
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	4751	1372.4205024203654
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5047	1357.6632927169208
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5361	1328.1488733100311
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	5696	1313.3916636065862
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6051	1283.8772441996966
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6428	1269.120034496252
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	6829	1239.6056150893623
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	7254	1224.8484053859177
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	7707	1195.333985979028
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	8187	1180.5767762755831
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	8697	1151.0623568686935
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	9239	1136.3051471652489
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	9815	1106.7907277583593
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	10427	1077.2763083514697
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	11077	1062.519098648025
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	11768	1047.76188894458
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	12501	1018.2474695376906
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	13281	988.733050130801
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	14109	973.9758404273562
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	14988	944.4614210204666
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	15922	914.947001613577
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	16915	900.1897919101322
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	17969	870.6753725032426
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	19090	841.1609530963531
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	20280	811.6465336894635
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	21544	796.8893239860187
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	22887	767.3749045791291
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	24313	737.8604851722395
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	25829	723.1032754687947
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	27439	693.5888560619052
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	29150	664.0744366550156
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	30967	634.560017248126
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	32897	605.0455978412364
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	34948	590.2883881377916
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	37127	560.773968730902
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	39441	531.2595493240125
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	41900	501.7451299171229
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	44512	486.9879202136781
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	47286	457.4735008067885
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	50234	427.95908139989893
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	53366	413.20187169645413
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	56692	383.68745228956453
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	60226	368.93024258611973
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	63981	339.4158231792302
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	67969	309.9014037723406
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	72206	295.1441940688958
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	76707	280.386984365451
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	81489	250.87256495856144
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	86569	236.11535525511664
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	91965	206.60093584822707
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	97698	191.84372614478227
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	103788	162.3293067378927
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	110258	147.5720970344479
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	117132	118.05767762755832
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	124433	103.30046792411353
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	132190	73.78604851722395
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	140431	59.02883881377916
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	149185	44.27162911033437
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	158484	14.75720970344479
+aBGC	Gale_2020::SRR11561502	Cg1 — FLU-treated 2	treated	168364	14.75720970344479
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1	4944.469953654784
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2	4944.469953654784
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3	4133.354657886696
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4	4111.132321016337
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5	3922.24245761829
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6	3800.0196048313173
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	7	3788.9084363961383
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	8	3711.1302573498833
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	9	3433.351046470401
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	10	3422.2398780352214
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	11	3422.2398780352214
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	12	3344.4616989889664
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	13	3333.3505305537874
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	14	3300.0170252482494
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	15	3233.350014637174
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	16	3233.350014637174
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	17	3222.2388462019944
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	18	3211.127677766815
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	19	3155.5718355909185
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	21	3100.015993415022
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	22	3100.015993415022
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	23	3088.904824979843
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	25	3077.7936565446635
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	26	3033.3489828039465
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	28	3022.237814368767
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	29	3011.126645933588
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	31	2977.79314062805
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	33	2955.5708037576915
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	35	2933.348466887333
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	38	2911.1261300169745
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	40	2900.014961581795
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	42	2888.9037931466155
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	45	2877.7926247114365
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	48	2855.570287841078
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	51	2844.4591194058985
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	54	2822.23678253554
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	57	2811.1256141003605
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	61	2788.903277230002
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	65	2766.6809403596435
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	69	2744.458603489285
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	73	2722.2362666189265
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	78	2700.0139297485675
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	82	2700.0139297485675
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	87	2677.791592878209
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	93	2655.5692560078505
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	99	2644.458087572671
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	105	2622.2357507023125
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	111	2600.013413831954
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	118	2588.902245396775
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	126	2566.679908526416
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	133	2555.568740091237
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	142	2544.4575716560576
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	151	2533.3464032208785
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	160	2522.235234785699
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	170	2500.0128979153405
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	181	2477.790561044982
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	192	2466.6793926098026
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	204	2455.568224174623
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	216	2433.3458873042646
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	230	2422.2347188690856
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	244	2400.012381998727
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	259	2388.9012135635476
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	276	2377.790045128368
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	293	2355.5677082580096
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	311	2333.345371387651
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	330	2311.1230345172926
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	351	2300.011866082113
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	373	2288.900697646934
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	396	2266.6783607765756
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	421	2244.4560239062166
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	447	2222.233687035858
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	475	2200.0113501654996
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	504	2188.90018173032
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	536	2166.6778448599616
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	569	2144.455507989603
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	605	2122.2331711192446
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	642	2088.8996658137066
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	682	2066.677328943348
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	725	2044.4549920729896
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	770	2022.232655202631
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	818	2000.0103183322724
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	869	1977.787981461914
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	923	1955.5656445915552
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	980	1944.454476156376
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1041	1911.1209708508381
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1106	1900.0098024156587
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1175	1877.7874655453002
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1248	1855.5651286749417
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1326	1833.342791804583
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1409	1811.1204549342244
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1497	1800.0092864990452
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1590	1777.7869496286867
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1689	1755.564612758328
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1794	1733.3422758879694
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	1906	1711.1199390176107
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2024	1688.8976021472522
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2150	1666.6752652768937
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2284	1644.452928406535
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2427	1622.2305915361765
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2578	1600.008254665818
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2738	1588.8970862306387
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	2909	1566.67474936028
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3090	1544.4524124899215
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3282	1522.230075619563
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3487	1500.0077387492042
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3704	1477.7854018788457
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	3935	1455.5630650084872
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4180	1433.3407281381285
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4440	1411.11839126777
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	4717	1388.8960543974113
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5011	1366.6737175270528
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5323	1344.4513806566943
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	5654	1322.2290437863355
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6006	1300.006706915977
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6380	1277.7843700456185
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	6778	1255.5620331752598
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	7200	1233.3396963049013
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	7648	1211.1173594345428
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	8125	1188.895022564184
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	8631	1166.6726856938255
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	9168	1144.450348823467
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	9739	1122.2280119531083
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	10346	1100.0056750827498
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	10990	1077.7833382123913
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	11675	1055.5610013420326
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	12402	1033.338664471674
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	13174	1000.0051591661362
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	13995	977.7828222957776
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	14866	955.5604854254191
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	15792	933.3381485550605
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	16776	900.0046432495226
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	17821	877.782306379164
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	18931	855.5599695088054
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	20110	822.2264642032675
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	21362	800.004127332909
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	22693	777.7817904625504
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	24106	755.5594535921917
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	25608	722.2259482866539
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	27203	700.0036114162954
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	28897	677.7812745459368
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	30697	644.4477692403989
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	32609	622.2254323700403
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	34640	588.8919270645024
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	36797	566.6695901941439
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	39089	544.4472533237853
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	41523	522.2249164534267
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	44110	488.8914111478888
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	46857	466.6690742775302
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	49775	444.44673740717167
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	52876	422.22440053681305
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	56169	400.0020636664545
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	59667	366.6685583609166
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	63383	344.446221490558
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	67331	322.22388462019944
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	71525	300.0015477498409
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	75980	277.77921087948226
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	80712	255.5568740091237
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	85739	233.3345371387651
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	91079	211.11220026840653
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	96752	177.77869496286866
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	102778	166.66752652768938
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	109179	133.33402122215148
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	115979	122.2228527869722
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	123202	100.00051591661362
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	130876	77.77817904625503
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	139027	55.55584217589646
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	147686	33.33350530553787
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	156885	22.222336870358582
+aBGC	Gale_2020::SRR11561503	Cg1 — FLU-treated 1	treated	166656	11.111168435179291
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1	5052.622189664556
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2	5025.674871319678
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3	4217.255320973349
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4	3961.2557966970116
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5	3893.8875008348173
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6	3880.4138416623787
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	7	3839.9928641450624
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	8	3759.1509091104294
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	9	3583.993339868725
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	10	3543.572362351408
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	11	3503.151384834092
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	12	3476.2040664892143
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	13	3422.309429799459
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	14	3422.309429799459
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	15	3354.941133937265
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	16	3341.467474764826
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	17	3314.5201564199483
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	18	3301.0464972475097
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	19	3301.0464972475097
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	21	3247.1518605577544
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	22	3220.2045422128767
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	23	3179.7835646955605
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	25	3166.3099055231214
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	26	3098.9416096609275
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	28	3098.9416096609275
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	30	3071.99429131605
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	32	3058.520632143611
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	34	3058.520632143611
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	36	3031.573313798733
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	38	3031.573313798733
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	40	3018.0996546262945
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	43	2977.6786771089783
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	45	2964.205017936539
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	48	2950.7313587641006
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	51	2937.2576995916615
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	54	2923.784040419223
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	58	2923.784040419223
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	61	2896.8367220743453
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	65	2896.8367220743453
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	69	2856.4157445570286
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	74	2802.5211078672737
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	78	2775.573789522396
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	83	2762.100130349957
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	88	2762.100130349957
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	94	2748.6264711775184
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	100	2721.6791528326407
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	106	2708.2054936602017
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	113	2681.258175315324
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	120	2667.7845161428854
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	127	2654.3108569704464
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	135	2640.8371977980078
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	143	2627.3635386255687
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	152	2613.88987945313
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	162	2600.416220280691
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	172	2573.468901935814
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	183	2559.995242763375
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	194	2533.047924418497
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	206	2519.5742652460585
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	219	2492.626946901181
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	233	2479.153287728742
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	247	2465.679628556303
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	263	2452.205969383864
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	279	2425.2586510389865
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	297	2398.311332694109
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	315	2398.311332694109
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	335	2371.364014349231
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	356	2357.8903551767926
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	378	2330.943036831915
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	402	2317.4693776594763
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	427	2290.5220593145987
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	453	2263.574740969721
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	482	2250.101081797282
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	512	2209.6801042799657
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	544	2182.732785935088
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	577	2155.7854675902104
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	613	2142.3118084177718
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	652	2115.364490072894
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	692	2101.890830900455
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	736	2074.9435125555774
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	782	2047.9961942106997
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	830	2034.5225350382611
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	882	2007.5752166933835
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	937	1994.1015575209447
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	996	1967.154239176067
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1058	1940.2069208311893
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1124	1926.7332616587505
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1194	1899.7859433138728
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1269	1872.8386249689952
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1348	1859.3649657965564
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1432	1832.417647451679
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1522	1818.94398827924
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1617	1791.9966699343624
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1718	1778.5230107619236
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1825	1751.575692417046
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	1939	1724.6283740721683
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2060	1711.1547148997295
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2188	1684.2073965548518
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2325	1657.2600782099742
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2470	1643.7864190375353
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2624	1616.8391006926577
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2788	1603.365441520219
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	2962	1576.4181231753414
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3147	1549.4708048304637
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3343	1522.523486485586
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3552	1509.0498273131473
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	3774	1482.1025089682696
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4010	1455.155190623392
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4260	1441.6815314509531
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4526	1414.7342131060755
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	4808	1387.786894761198
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5109	1374.3132355887592
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5428	1347.3659172438815
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	5766	1320.4185988990039
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6126	1306.944939726565
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6509	1279.9976213816874
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	6915	1253.0503030368097
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	7347	1239.576643864371
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	7806	1212.6293255194932
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	8293	1185.6820071746156
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	8811	1158.7346888297382
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	9361	1145.2610296572993
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	9945	1118.3137113124217
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	10566	1091.366392967544
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	11225	1064.4190746226664
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	11926	1037.4717562777887
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	12671	1023.9980971053499
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	13462	997.0507787604723
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	14302	970.1034604155947
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	15195	943.156142070717
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	16144	916.2088237258395
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	17151	889.2615053809618
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	18222	862.3141870360841
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	19360	835.3668686912065
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	20568	821.8932095187677
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	21853	794.9458911738901
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	23217	754.5249136565736
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	24666	741.0512544841348
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	26206	700.6302769668184
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	27842	687.1566177943796
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	29580	660.2092994495019
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	31427	633.2619811046243
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	33389	606.3146627597466
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	35473	579.3673444148691
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	37688	552.4200260699914
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	40041	525.4727077251138
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	42540	511.99904855267494
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	45196	471.5780710353585
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	48018	444.6307526904809
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	51015	431.1570935180421
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	54200	404.2097751731644
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	57584	377.2624568282868
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	61179	350.3151384834092
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	64998	323.36782013853156
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	69056	309.8941609660927
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	73367	282.9468426212151
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	77947	269.4731834487763
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	82814	242.52586510389867
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	87984	229.05220593145987
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	93476	202.1048875865822
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	99312	175.1575692417046
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	105512	148.21025089682695
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	112099	148.21025089682695
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	119097	121.26293255194933
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	126532	94.3156142070717
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	134432	67.36829586219407
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	142824	53.89463668975526
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	151741	26.94731834487763
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	161214	13.473659172438815
+aBGC	Gale_2020::SRR11561504	Cg1 — no-drug control 2	control	171278	13.473659172438815
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1	4902.215619727267
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2	4877.26795754036
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3	4091.416598652783
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4	3841.939976783711
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5	3804.51848350335
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	6	3742.149328036082
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	7	3717.201665849175
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	8	3617.411017101546
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	9	3467.7250439801023
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	10	3430.3035506997417
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	11	3392.882057419381
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	12	3380.4082263259274
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	13	3318.039070858659
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	14	3305.5652397652057
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	15	3293.091408671752
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	16	3243.1960842979374
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	17	3218.2484221110303
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	18	3205.7745910175768
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	19	3205.7745910175768
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	21	3155.8792666437625
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	22	3118.4577733634014
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	23	3093.5101111764943
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	25	3068.562448989587
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	26	3043.61478680268
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	28	3031.1409557092265
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	29	3006.193293522319
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	31	2968.7718002419583
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	33	2956.2979691485048
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	35	2956.2979691485048
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	38	2943.824138055051
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	40	2918.876475868144
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	42	2893.9288136812365
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	45	2881.454982587783
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	48	2881.454982587783
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	51	2856.507320400876
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	54	2844.0334893074223
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	57	2831.5596582139688
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	61	2819.085827120515
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	65	2806.611996027061
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	69	2769.1905027467005
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	73	2744.2428405597934
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	77	2731.76900946634
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	82	2706.8213472794328
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	87	2706.8213472794328
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	93	2681.873685092525
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	99	2669.3998539990716
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	105	2644.4521918121645
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	111	2619.5045296252574
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	118	2607.030698531804
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	126	2594.5568674383503
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	133	2582.0830363448963
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	142	2569.6092052514427
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	151	2532.187711971082
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	160	2519.7138808776285
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	170	2507.240049784175
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	180	2494.7662186907214
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	192	2469.818556503814
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	204	2457.3447254103603
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	216	2444.8708943169067
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	230	2432.397063223453
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	244	2407.449401036546
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	259	2394.9755699430925
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	275	2370.0279077561854
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	293	2345.080245569278
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	311	2332.6064144758243
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	330	2320.1325833823707
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	351	2307.658752288917
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	372	2282.71109010201
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	396	2257.763427915103
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	420	2232.8157657281954
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	446	2220.341934634742
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	474	2195.3942724478347
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	504	2170.4466102609276
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	535	2145.49894807402
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	568	2120.551285887113
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	604	2095.603623700206
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	641	2070.6559615132987
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	681	2058.182130419845
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	724	2033.2344682329378
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	769	2008.2868060460305
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	817	1983.3391438591234
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	868	1970.8653127656698
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	922	1945.9176505787625
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	979	1933.443819485309
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1040	1908.4961572984018
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1105	1896.022326204948
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1174	1871.074664018041
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1247	1846.1270018311338
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1324	1833.65317073768
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1407	1808.705508550773
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1494	1783.7578463638656
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1588	1771.284015270412
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1686	1746.336353083505
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1791	1721.3886908965976
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	1903	1708.914859803144
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2021	1683.967197616237
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2147	1659.0195354293296
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2281	1646.545704335876
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2423	1621.5980421489687
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2574	1596.6503799620616
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2734	1571.7027177751545
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	2905	1559.2288866817007
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3085	1534.2812244947936
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3278	1509.3335623078863
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3482	1484.3859001209792
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3698	1471.9120690275256
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	3929	1446.9644068406183
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4173	1422.0167446537112
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4433	1409.5429135602576
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	4709	1384.5952513733503
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5003	1359.6475891864432
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5314	1334.6999269995358
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5645	1309.7522648126287
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	5997	1297.2784337191752
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	6370	1272.3307715322678
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	6767	1247.3831093453607
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	7188	1234.909278251907
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	7636	1209.9616160649998
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	8111	1185.0139538780927
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	8616	1160.0662916911854
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	9153	1135.1186295042783
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	9723	1110.170967317371
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	10328	1085.2233051304638
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	10971	1060.2756429435565
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	11655	1035.3279807566494
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	12380	1010.3803185697421
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	13151	997.9064874762885
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	13970	972.9588252893813
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	14840	948.011163102474
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	15764	923.0635009155669
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	16746	898.1158387286597
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	17789	873.1681765417525
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	18896	848.2205143548452
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	20073	823.272852167938
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	21323	798.3251899810308
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	22651	773.3775277941236
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	24061	748.4298656072164
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	25560	711.0083723268556
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	27151	698.5345412334019
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	28842	661.1130479530411
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	30638	636.1653857661339
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	32546	611.2177235792267
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	34573	586.2700613923195
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	36726	561.3223992054122
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	39013	536.374737018505
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	41442	511.42707483159785
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	44023	486.4794126446906
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	46764	461.53175045778346
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	49676	436.58408827087624
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	52769	424.1102571774226
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	56055	386.6887638970618
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	59546	374.2149328036082
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	63254	349.26727061670096
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	67193	324.3196084297938
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	71377	299.37194624288657
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	75822	286.89811514943295
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	80543	261.95045296252573
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	85559	224.52895968216492
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	90887	212.0551285887113
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	96547	187.1074664018041
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	102559	162.1598042148969
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	108945	137.21214202798967
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	115729	124.73831093453606
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	122936	99.79064874762885
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	130591	74.84298656072164
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	138723	62.36915546726803
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	147362	37.42149328036082
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	156538	12.473831093453606
+aBGC	Gale_2020::SRR11561505	Cg1 — no-drug control 1	control	166286	12.473831093453606

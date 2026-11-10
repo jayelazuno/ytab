@@ -1,0 +1,18 @@
+{
+  "id": "zinfnb",
+  "name": "Zero-inflated negative-binomial scaling (experimental)",
+  "status": "available",
+  "input_level": "raw insertion-site counts",
+  "description": "Fits a proper ZINB mixture per sample over the full empirical catalogue; the zero term includes the (1-pi) factor.",
+  "formula": "P(0)=pi+(1-pi)*NB(0); P(x>0)=(1-pi)*NB(x); factor=1/fitted_NB_mean",
+  "may_suit": "Sensitivity analysis when a ZINB distribution and fitted NB-component mean are defensible scale references.",
+  "caution": "Catalogue-dependent zeros are not biological structural zeros. Fit convergence does not validate the model; no automatic preference or subsequent CPM.",
+  "diagnostics": [
+    "zero interpretation",
+    "convergence",
+    "parameter boundaries",
+    "CDF discrepancy",
+    "catalogue sensitivity"
+  ],
+  "source": "https://github.com/ioerger/transit/blob/50e23d6bec2605a24835fbd67f33691e330f3361/src/pytransit/norm_tools.py"
+}

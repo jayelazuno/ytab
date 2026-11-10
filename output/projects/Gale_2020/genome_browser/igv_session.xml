@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Session genome="reference/reference.fna" locus="ChrA" version="8">
+  <Resources>
+    <Resource path="reference/genes.bed.gz" name="Genes"/>
+    <Resource path="tracks/SRR11561502.insertions.bed.gz" name="Cg1 — FLU-treated 2"/>
+    <Resource path="tracks/SRR11561503.insertions.bed.gz" name="Cg1 — FLU-treated 1"/>
+    <Resource path="tracks/SRR11561504.insertions.bed.gz" name="Cg1 — no-drug control 2"/>
+    <Resource path="tracks/SRR11561505.insertions.bed.gz" name="Cg1 — no-drug control 1"/>
+    <Resource path="tracks/SRR11561506.insertions.bed.gz" name="Cg3 — parent library"/>
+    <Resource path="tracks/SRR11561507.insertions.bed.gz" name="Cg2 — parent library"/>
+    <Resource path="tracks/SRR11561508.insertions.bed.gz" name="Cg1 — parent library"/>
+  </Resources>
+</Session>

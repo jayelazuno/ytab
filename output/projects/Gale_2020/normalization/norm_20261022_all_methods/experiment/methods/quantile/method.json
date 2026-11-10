@@ -1,0 +1,17 @@
+{
+  "id": "quantile",
+  "name": "Hermes zero-preserving quantile (experimental)",
+  "status": "available",
+  "input_level": "raw insertion-site counts",
+  "description": "Maps positive counts toward a within-library mean empirical quantile function, averaging tied rank targets and preserving every zero. Ties take the average of their rank targets rather than a dense rank.",
+  "formula": "Q_group(p) = mean_j Q_positive,j(p); map positive ranks to Q_group; average targets within tied counts; retain zeros",
+  "may_suit": "Experimental sensitivity comparison when positive-count distribution matching is scientifically justified.",
+  "caution": "Nonlinear; may erase real abundance/composition differences. Unequal occupied-site counts and ties prevent exact full-distribution matching. Not a physical abundance estimate or a default method.",
+  "diagnostics": [
+    "positive-count distributions",
+    "ties and zeros",
+    "control behavior",
+    "gene-effect preservation"
+  ],
+  "source": "https://github.com/ioerger/transit/blob/50e23d6bec2605a24835fbd67f33691e330f3361/src/pytransit/norm_tools.py"
+}

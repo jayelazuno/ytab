@@ -1,0 +1,134 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "analysis_id": "Cg1_FLU_vs_no_drug_raw_cpm",
+  "input_mode": "raw-summary",
+  "comparison_design_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/comparison_design.csv",
+  "selected_comparisons": [
+    {
+      "comparison_id": "Cg1_FLU1_vs_control1",
+      "pair_id": "Cg1_culture_contrast1",
+      "parent_sample": "SRR11561505",
+      "treated_sample": "SRR11561503",
+      "background": "BG14",
+      "pool": "Cg1",
+      "parent_condition": "control",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": "Numbered culture-level contrast; control1 and control2 jointly define the noise model; both cultures derive from Cg1"
+    },
+    {
+      "comparison_id": "Cg1_FLU2_vs_control2",
+      "pair_id": "Cg1_culture_contrast2",
+      "parent_sample": "SRR11561504",
+      "treated_sample": "SRR11561502",
+      "background": "BG14",
+      "pool": "Cg1",
+      "parent_condition": "control",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": "Numbered culture-level contrast; control1 and control2 jointly define the noise model; both cultures derive from Cg1"
+    }
+  ],
+  "parent_samples": [
+    "SRR11561504",
+    "SRR11561505"
+  ],
+  "treated_samples": [
+    "SRR11561502",
+    "SRR11561503"
+  ],
+  "input_files": {
+    "SRR11561502": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561502/SRR11561502.feature_table.RDF_1.csv",
+    "SRR11561503": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561503/SRR11561503.feature_table.RDF_1.csv",
+    "SRR11561504": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561504/SRR11561504.feature_table.RDF_1.csv",
+    "SRR11561505": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561505/SRR11561505.feature_table.RDF_1.csv"
+  },
+  "output_dir": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/treated_vs_parent/Cg1_FLU_vs_no_drug_raw_cpm",
+  "stable_result_table": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/treated_vs_parent/Cg1_FLU_vs_no_drug_raw_cpm/treated_vs_parent_results.csv",
+  "comparison_summary_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/treated_vs_parent/Cg1_FLU_vs_no_drug_raw_cpm/treated_vs_parent_comparison_summary.csv",
+  "run_metadata_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/treated_vs_parent/Cg1_FLU_vs_no_drug_raw_cpm/treated_vs_parent_run_metadata.json",
+  "log_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/logs/treated_vs_parent/Cg1_FLU_vs_no_drug_raw_cpm.log",
+  "status": "failed",
+  "start_time": "2026-10-15T20:25:12.468660+00:00",
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/Rscript",
+    "/Users/joshuaayelazuno/Desktop/ytab/scripts/ytab_treated_vs_parent_screen.R",
+    "--project-id",
+    "Gale_2020",
+    "--comparison-design",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/comparison_design.csv",
+    "--comparisons",
+    "Cg1_FLU1_vs_control1,Cg1_FLU2_vs_control2",
+    "--output-dir",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/treated_vs_parent/Cg1_FLU_vs_no_drug_raw_cpm",
+    "--analysis-id",
+    "Cg1_FLU_vs_no_drug_raw_cpm",
+    "--sample-table",
+    "SRR11561502=/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561502/SRR11561502.feature_table.RDF_1.csv",
+    "--sample-table",
+    "SRR11561503=/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561503/SRR11561503.feature_table.RDF_1.csv",
+    "--sample-table",
+    "SRR11561504=/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561504/SRR11561504.feature_table.RDF_1.csv",
+    "--sample-table",
+    "SRR11561505=/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561505/SRR11561505.feature_table.RDF_1.csv"
+  ],
+  "warnings": [],
+  "cached_from": null,
+  "normalization": "CPM",
+  "scientific_parameters": {
+    "input_mode": "raw-summary",
+    "normalization": "CPM inside R",
+    "pseudocount": "0.5",
+    "z_threshold_quantile": "0.99",
+    "analysis_method": "background-specific parent-parent local noise model and z-score calls"
+  },
+  "selected_comparisons_sorted": [
+    "Cg1_FLU1_vs_control1",
+    "Cg1_FLU2_vs_control2"
+  ],
+  "comparison_definitions": [
+    {
+      "comparison_id": "Cg1_FLU1_vs_control1",
+      "pair_id": "Cg1_culture_contrast1",
+      "parent_sample": "SRR11561505",
+      "treated_sample": "SRR11561503",
+      "background": "BG14",
+      "pool": "Cg1",
+      "parent_condition": "control",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": "Numbered culture-level contrast; control1 and control2 jointly define the noise model; both cultures derive from Cg1"
+    },
+    {
+      "comparison_id": "Cg1_FLU2_vs_control2",
+      "pair_id": "Cg1_culture_contrast2",
+      "parent_sample": "SRR11561504",
+      "treated_sample": "SRR11561502",
+      "background": "BG14",
+      "pool": "Cg1",
+      "parent_condition": "control",
+      "treated_condition": "treated",
+      "include": "true",
+      "notes": "Numbered culture-level contrast; control1 and control2 jointly define the noise model; both cultures derive from Cg1"
+    }
+  ],
+  "comparison_set_sha256": "09c64d3ee21187861c6bce6b320af6ff4e1b6c495cb17c6116579b2f925a8e55",
+  "input_summary_hashes": {
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561502/SRR11561502.feature_table.RDF_1.csv": "eebdb7956ddc5c27f574eba59b636324f02ad4e337096a8308e1b0c234f02e58",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561503/SRR11561503.feature_table.RDF_1.csv": "d01c4ac78ff5003112f3d77d6f7eb35b09176aca67009c9e9d320b780ce79d0b",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561504/SRR11561504.feature_table.RDF_1.csv": "b81b292cbd1d52e6959d8dc5bdf335fd47e9d86ed34955b0b469f79670d9c641",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary/SRR11561505/SRR11561505.feature_table.RDF_1.csv": "17b9f194893b25dad2943d8e1ac6659365366dcb7ec2dfea362b774df8c3ade0"
+  },
+  "design_sha256": "c9f34b9ba58a438ba05bf76d7d08e0730a636eb79433b10fabccb886c891d0a6",
+  "script_sha256": "6ec5f98cacf3b47c581e6881ec6b91db4fe4cebf9bdaa4897543a78fb65e4760",
+  "runner_sha256": "8fcfc93d704785cf29ca6fcea767fff1fd9a72d614a66f191a0b206801588e2c",
+  "classifier_annotation": false,
+  "classifier_target": null,
+  "classifier_hash": null,
+  "cache_signature": "a30efdaad1ad40f5eafd02590a180fb81a91a3e507c0f22ee05af95e87443124",
+  "run_id": "Cg1_FLU_vs_no_drug_raw_cpm_a30efdaa",
+  "error_message": "Fitness analysis failed in R script: \u2139 In index: 1. See technical details.",
+  "end_time": "2026-10-15T20:25:18.866953+00:00",
+  "elapsed_seconds": 6.398
+}

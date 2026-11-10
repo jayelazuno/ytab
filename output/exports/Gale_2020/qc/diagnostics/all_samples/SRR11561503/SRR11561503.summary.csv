@@ -1,0 +1,2 @@
+sample,input_path,total_reads,unique_sites,jackpot_top_frac,jackpot_frac_reads,n_jackpot_sites,midlc_est,depth_ratio_R_over_midlc,per_gene_top_site_removed,per_gene_sites_removed,normalize_target,reads_target,thinning_p,reads_after_norm,normalized_written,normalized_output,midlc_points,midlc_max_sampled,seqbias_done,centromere_done
+SRR11561503,/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/create_hit_file/SRR11561503/SRR11561503_hits.txt,12247129,166656,0.001,0.0663588,167,306456,39.9637,0,0,NA,NA,NA,NA,0,NA,10,12247129,1,1

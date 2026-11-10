@@ -1,0 +1,47 @@
+{
+  "revision": "model_menu_v1",
+  "genes": 5234,
+  "models": [
+    "hmm",
+    "hybrid"
+  ],
+  "threshold": 0.5,
+  "hybrid_training": {
+    "tiers": [
+      "silver"
+    ],
+    "genes": 3290,
+    "essential": 924,
+    "folds": 5,
+    "seed": 90210
+  },
+  "agreement": {
+    "not essential": 3777,
+    "consensus essential": 1163,
+    "HMM only": 174,
+    "hybrid only": 47
+  },
+  "hmm_calls": {
+    "GD": 2085,
+    "NE": 1450,
+    "ES": 1337,
+    "GA": 289,
+    "uncertain": 59
+  },
+  "inputs": {
+    "hmm": {
+      "path": "/Users/joshuaayelazuno/Desktop/ytab/output/essentiality/default_update/hmm/glabrata_gale/joint/genes.tsv",
+      "sha256": "eaa7de6a64b19cd9bbf5ecc9664ebde7adc7f5596f7a94ac72513731a027f59c"
+    },
+    "features": {
+      "path": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary_combined/betageom__norm_20261022_all_methods__9b8641/combined_feature_table.betageom__norm_20261022_all_methods__9b8641.txt",
+      "sha256": "78a237270deb3b80639b7d356ea7457c89728d2eadb740b3f168f60c55e7398f"
+    },
+    "labels": {
+      "path": "resources/species/glabrata/essentiality_labels/labels.tsv",
+      "sha256": "3fdfa524435d7790429902480d789e8b0259fe45ea765a12f6bbf8a72d36150f"
+    }
+  },
+  "script_sha256": "aee0b9410b3e20f0b1ab1c82a2d7684a9b40f6eae2b9bc1f35a663e09fa79419",
+  "module_sha256": "c9d854b0ab8c8af711610afc1c484c60994bde153af59310ce415458200ebdf7"
+}

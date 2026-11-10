@@ -1,0 +1,107 @@
+{
+  "project": "Gale_2020",
+  "fetched_at": "2026-11-10T01:02:50.270940+00:00",
+  "reads_per_library": 200000,
+  "source": "ENA (https://www.ebi.ac.uk/ena)",
+  "note": "The first N read pairs of each run, not a random sample. For trying the mapping stage; insertion counts are far below the full libraries' and do not reproduce the stored results.",
+  "files": [
+    {
+      "run": "SRR11561502",
+      "file": "data/fastq/gale_2020/Cg1_FLU2/SRR11561502/SRR11561502_1.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/002/SRR11561502/SRR11561502_1.fastq.gz",
+      "reads": 200000,
+      "bytes": 9010863
+    },
+    {
+      "run": "SRR11561502",
+      "file": "data/fastq/gale_2020/Cg1_FLU2/SRR11561502/SRR11561502_2.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/002/SRR11561502/SRR11561502_2.fastq.gz",
+      "reads": 200000,
+      "bytes": 8993705
+    },
+    {
+      "run": "SRR11561503",
+      "file": "data/fastq/gale_2020/Cg1_FLU1/SRR11561503/SRR11561503_1.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/003/SRR11561503/SRR11561503_1.fastq.gz",
+      "reads": 200000,
+      "bytes": 9493786
+    },
+    {
+      "run": "SRR11561503",
+      "file": "data/fastq/gale_2020/Cg1_FLU1/SRR11561503/SRR11561503_2.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/003/SRR11561503/SRR11561503_2.fastq.gz",
+      "reads": 200000,
+      "bytes": 9849654
+    },
+    {
+      "run": "SRR11561504",
+      "file": "data/fastq/gale_2020/Cg1_control2/SRR11561504/SRR11561504_1.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/004/SRR11561504/SRR11561504_1.fastq.gz",
+      "reads": 200000,
+      "bytes": 9025592
+    },
+    {
+      "run": "SRR11561504",
+      "file": "data/fastq/gale_2020/Cg1_control2/SRR11561504/SRR11561504_2.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/004/SRR11561504/SRR11561504_2.fastq.gz",
+      "reads": 200000,
+      "bytes": 9308037
+    },
+    {
+      "run": "SRR11561505",
+      "file": "data/fastq/gale_2020/Cg1_control1/SRR11561505/SRR11561505_1.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/005/SRR11561505/SRR11561505_1.fastq.gz",
+      "reads": 200000,
+      "bytes": 9464188
+    },
+    {
+      "run": "SRR11561505",
+      "file": "data/fastq/gale_2020/Cg1_control1/SRR11561505/SRR11561505_2.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/005/SRR11561505/SRR11561505_2.fastq.gz",
+      "reads": 200000,
+      "bytes": 9777149
+    },
+    {
+      "run": "SRR11561506",
+      "file": "data/fastq/gale_2020/Cg3_parent/SRR11561506/SRR11561506_1.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/006/SRR11561506/SRR11561506_1.fastq.gz",
+      "reads": 200000,
+      "bytes": 10156552
+    },
+    {
+      "run": "SRR11561506",
+      "file": "data/fastq/gale_2020/Cg3_parent/SRR11561506/SRR11561506_2.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/006/SRR11561506/SRR11561506_2.fastq.gz",
+      "reads": 200000,
+      "bytes": 9740750
+    },
+    {
+      "run": "SRR11561507",
+      "file": "data/fastq/gale_2020/Cg2_parent/SRR11561507/SRR11561507_1.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/007/SRR11561507/SRR11561507_1.fastq.gz",
+      "reads": 200000,
+      "bytes": 9839144
+    },
+    {
+      "run": "SRR11561507",
+      "file": "data/fastq/gale_2020/Cg2_parent/SRR11561507/SRR11561507_2.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/007/SRR11561507/SRR11561507_2.fastq.gz",
+      "reads": 200000,
+      "bytes": 9409981
+    },
+    {
+      "run": "SRR11561508",
+      "file": "data/fastq/gale_2020/Cg1_parent/SRR11561508/SRR11561508_1.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/008/SRR11561508/SRR11561508_1.fastq.gz",
+      "reads": 200000,
+      "bytes": 9480807
+    },
+    {
+      "run": "SRR11561508",
+      "file": "data/fastq/gale_2020/Cg1_parent/SRR11561508/SRR11561508_2.fastq.gz",
+      "source": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR115/008/SRR11561508/SRR11561508_2.fastq.gz",
+      "reads": 200000,
+      "bytes": 10630898
+    }
+  ]
+}

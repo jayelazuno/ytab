@@ -1,0 +1,311 @@
+{
+  "status": "success",
+  "analysis": "experimental control-conditioned Hermes Gumbel",
+  "algorithm_revision": "ccg_v5_normalized_input",
+  "controls": [
+    {
+      "observation_id": "Gale_2020::SRR11561505",
+      "sample": "SRR11561505",
+      "display_name": "Cg1 \u2014 no-drug control 1",
+      "project": "Gale_2020",
+      "dataset": "Gale_2020",
+      "library_id": "Gale_2020::BG14::Cg1",
+      "pool": "Cg1",
+      "role": "control",
+      "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/create_hit_file/SRR11561505/SRR11561505_hits.txt",
+      "input_sha256": "f2c3892bde9c32aa2267342d9aece817db12d254d1de78e0e0b2fdb633564f8e"
+    },
+    {
+      "observation_id": "Gale_2020::SRR11561504",
+      "sample": "SRR11561504",
+      "display_name": "Cg1 \u2014 no-drug control 2",
+      "project": "Gale_2020",
+      "dataset": "Gale_2020",
+      "library_id": "Gale_2020::BG14::Cg1",
+      "pool": "Cg1",
+      "role": "control",
+      "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/create_hit_file/SRR11561504/SRR11561504_hits.txt",
+      "input_sha256": "24f5f244508ea2e34d2ad520b7b6f7070fe66291efa57f504c925230a420ff66"
+    }
+  ],
+  "treatments": [
+    {
+      "observation_id": "Gale_2020::SRR11561503",
+      "sample": "SRR11561503",
+      "display_name": "Cg1 \u2014 FLU-treated 1",
+      "project": "Gale_2020",
+      "dataset": "Gale_2020",
+      "library_id": "Gale_2020::BG14::Cg1",
+      "pool": "Cg1",
+      "role": "treated",
+      "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/create_hit_file/SRR11561503/SRR11561503_hits.txt",
+      "input_sha256": "f164e16ce4944e83288967effa316c63fd58b910d7d72a2c2e6ea1ac2eec7870"
+    },
+    {
+      "observation_id": "Gale_2020::SRR11561502",
+      "sample": "SRR11561502",
+      "display_name": "Cg1 \u2014 FLU-treated 2",
+      "project": "Gale_2020",
+      "dataset": "Gale_2020",
+      "library_id": "Gale_2020::BG14::Cg1",
+      "pool": "Cg1",
+      "role": "treated",
+      "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/create_hit_file/SRR11561502/SRR11561502_hits.txt",
+      "input_sha256": "4d96d56e94661a97c00dc471e69bc33dee0e70ec842f8456862ccca5860b7ac5"
+    }
+  ],
+  "parameters": {
+    "alpha_site": 0.05,
+    "min_control_reads": 1,
+    "eligibility": "control-support",
+    "min_sites": 3,
+    "calibration_sims": 1000,
+    "validation_sims": 1000,
+    "seed": 2026,
+    "nodes": 32,
+    "fdr": 0.05,
+    "tail_tolerance": 2.0,
+    "ks_confidence": 0.99,
+    "nterm": 0.0,
+    "cterm": 0.0,
+    "ignore_stop": true,
+    "treatment_dispersion": "replicates",
+    "dispersion_model": "linear-quadratic",
+    "inference": "exact"
+  },
+  "normalization": {
+    "method": "ttr",
+    "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/methods/ttr",
+    "catalogue": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/matrix",
+    "factors": {
+      "Gale_2020::SRR11561505": 7.971158914231469,
+      "Gale_2020::SRR11561504": 8.862667493427827,
+      "Gale_2020::SRR11561503": 7.043684296191335,
+      "Gale_2020::SRR11561502": 9.317285358826505
+    },
+    "group": "Gale_2020::BG14::Cg1",
+    "hashes": {
+      "normalized_counts.npz": "60037b74ddb7c2128c5ee436d8a5624d53e38f6f4fff7c431d9b4f206ea11e79",
+      "factors.tsv": "ae7de40077c32ce6591fb0892a365f68a98e1d28277faad4b6e3a9f849c2387c",
+      "method.json": "f60da13a8926f9f58346d094a691bbc38b913b412faa5766213f9e528513a88e",
+      "run_manifest": "2e16f9fd07c875d5fe80e55705b8f6a20b8496dde8f87f851269d597a2f70ad1"
+    },
+    "check": "normalized_counts == raw catalogue counts * factor (verified)"
+  },
+  "exposures": {
+    "rule": "exposure_j = (1/factor_j) / mean over controls of (1/factor); counts are the catalogue's raw integers",
+    "values": {
+      "Gale_2020::SRR11561505": 1.0529593544335663,
+      "Gale_2020::SRR11561504": 0.9470406455664337,
+      "Gale_2020::SRR11561503": 1.1916074019607847,
+      "Gale_2020::SRR11561502": 0.9008317359804098
+    },
+    "total_site_support": {
+      "Gale_2020::SRR11561505": 10813576.0,
+      "Gale_2020::SRR11561504": 9775885.0,
+      "Gale_2020::SRR11561503": 12247129.0,
+      "Gale_2020::SRR11561502": 9419088.0
+    }
+  },
+  "model": {
+    "combination": "replicate tracks summed within condition; combined control defines the null universe and baseline, combined treatment is compared",
+    "eligibility": "combined control count >= 1",
+    "background": "C_ij ~ NB(e_j*lambda_i), Var = mu*(1+linear_C) + phi_C*mu^2; log lambda_i ~ N(m, tau^2); m, tau, phi_C, linear_C fitted on control replicate tracks with zero-truncated (selection-conditioned) marginal likelihood",
+    "treatment_dispersion": "phi_T, linear_T fitted the same way on the treatment replicate tracks (replicate disagreement only; shared effects are not dispersion)",
+    "combined_tracks": "sum of independent replicates approximated by NB with the same mean, linear term unchanged and phi*sum(e^2)/sum(e)^2",
+    "encoding": "D_i = 1[F_i(T_i) <= alpha_site], F_i = predictive NB CDF of the combined treatment given the combined control (adaptive Gauss-Hermite posterior)",
+    "statistic": "R_g = longest run of consecutive D_i=1 across eligible sites in genomic order; last tied maximum; span = end-start+1",
+    "null": "per-gene seeded count-level simulation from the same predictive, identical encoding; discrete rounded/truncated Gumbel fitted by ML on calibration runs",
+    "adequacy": "not gating: p is the exact conditional tail P(R>=r) from the per-site null flag probabilities; Gumbel fit and checks reported in gumbel_check",
+    "inference": "exact",
+    "multiple_testing": "BH over genes with >=min_sites eligible sites; uncalibrated or run-free genes enter as p=1"
+  },
+  "genes": 5234,
+  "diagnostics": {
+    "background": {
+      "m": 2.840334676484859,
+      "tau": 1.6458933139492964,
+      "phi": 1.9763158386004935e-06,
+      "linear": 0.0001390504956586944,
+      "dispersion_model": "linear-quadratic",
+      "converged": true,
+      "starts_converged": 2,
+      "starts": 2,
+      "objective_per_site": 7.720975351832009,
+      "start_parameter_spread": 1.4124051633404253,
+      "start_objective_spread": 3.643793698770992e-06,
+      "boundary": [],
+      "sites": 173448,
+      "unique_profiles": 15944,
+      "selection_probability": 0.9815098605117274,
+      "integration_check": {
+        "nodes": 32,
+        "comparison_nodes": 64,
+        "max_abs_log_marginal_difference": 2.0958026425432763e-09,
+        "total_log_likelihood_difference": 4.55038227009652e-06
+      },
+      "posterior_predictive": {
+        "observed": {
+          "any_control_zero": 0.05380286887136202,
+          "control_sum_quantiles": {
+            "10": 3.0,
+            "50": 40.0,
+            "90": 267.0,
+            "99": 1188.5299999999988
+          },
+          "median_abs_log2_replicate_ratio": 0.1529514971343043,
+          "median_abs_log2_replicate_ratio_by_mean_count": {
+            "5-20": 0.23407162597494308,
+            "20-100": 0.12380515147478799,
+            "100-1000": 0.06243920422886191
+          }
+        },
+        "simulated": {
+          "any_control_zero": 0.050440433838153616,
+          "control_sum_quantiles": {
+            "10": 4.0,
+            "50": 35.0,
+            "90": 287.0,
+            "99": 1597.0
+          },
+          "median_abs_log2_replicate_ratio": 0.2620860021445396,
+          "median_abs_log2_replicate_ratio_by_mean_count": {
+            "5-20": 0.4320110035868518,
+            "20-100": 0.21204531964494383,
+            "100-1000": 0.09320909013509346
+          }
+        },
+        "simulated_selected_sites": 392681
+      }
+    },
+    "treatment_replicate_fit": {
+      "m": 2.690278857884986,
+      "tau": 1.6733958791403796,
+      "phi": 0.015781226417580552,
+      "linear": 3.5727030962647524,
+      "dispersion_model": "linear-quadratic",
+      "converged": true,
+      "starts_converged": 2,
+      "starts": 2,
+      "objective_per_site": 8.58559979317137,
+      "start_parameter_spread": 6.887953500278599e-05,
+      "start_objective_spread": 1.3462475578762678e-10,
+      "boundary": [],
+      "sites": 180529,
+      "unique_profiles": 29060,
+      "selection_probability": 0.9397786925192733,
+      "integration_check": {
+        "nodes": 32,
+        "comparison_nodes": 64,
+        "max_abs_log_marginal_difference": 6.375912860789867e-06,
+        "total_log_likelihood_difference": 0.016897781210750473
+      },
+      "posterior_predictive": {
+        "observed": {
+          "any_control_zero": 0.14423167468938508,
+          "control_sum_quantiles": {
+            "10": 3.0,
+            "50": 38.0,
+            "90": 272.0,
+            "99": 1222.7200000000012
+          },
+          "median_abs_log2_replicate_ratio": 0.5713295877134486,
+          "median_abs_log2_replicate_ratio_by_mean_count": {
+            "5-20": 0.9181526041534791,
+            "20-100": 0.49688489512536455,
+            "100-1000": 0.2654473341859096
+          }
+        },
+        "simulated": {
+          "any_control_zero": 0.1240333388330344,
+          "control_sum_quantiles": {
+            "10": 4.0,
+            "50": 35.0,
+            "90": 280.0,
+            "99": 1583.0
+          },
+          "median_abs_log2_replicate_ratio": 0.5964205686762788,
+          "median_abs_log2_replicate_ratio_by_mean_count": {
+            "5-20": 0.988541932044877,
+            "20-100": 0.510494635240233,
+            "100-1000": 0.2744924737889166
+          }
+        },
+        "simulated_selected_sites": 375778
+      }
+    },
+    "dispersion": {
+      "source": "replicates",
+      "model": "linear-quadratic",
+      "variance": "Var = mu*(1+linear) + phi*mu^2 per condition",
+      "control_replicate": {
+        "phi": 1.9763158386004935e-06,
+        "linear": 0.0001390504956586944
+      },
+      "treatment_replicate": {
+        "phi": 0.015781226417580552,
+        "linear": 3.5727030962647524
+      },
+      "combined_control": {
+        "phi": 9.909293991187935e-07,
+        "linear": 0.0001390504956586944
+      },
+      "combined_treatment": {
+        "phi": 0.008042990835098927,
+        "linear": 3.5727030962647524
+      }
+    },
+    "combined_exposures": {
+      "control": 2.0,
+      "treatment": 2.0924391379411946
+    },
+    "eligible_sites": 173448,
+    "gene_assigned_eligible_sites": 52001,
+    "observed_depleted_sites": 6736,
+    "expected_depleted_sites_null": 1827.0221882889873,
+    "detectable_sites": 40957,
+    "status_counts": {
+      "no depletion-detectable sites": 45,
+      "too few control-supported sites": 960,
+      "exact conditional tail": 2243,
+      "no depleted site": 1287,
+      "no control-supported sites": 699
+    },
+    "family_size": 3575,
+    "tail_inference_floor": 1.3986013986013986e-05,
+    "family_tail_magnitude_unvalidated": 7,
+    "family_with_depleted_run": 2243,
+    "family_null_fit_inadequate": 0,
+    "inference": "exact",
+    "family_gumbel_check_failed": 65,
+    "family_tail_extrapolated": 72,
+    "calls": {
+      "depleted run": 136,
+      "not significant": 3439,
+      "not tested": 1659
+    }
+  },
+  "reference_sha256": "80e6b150de90067c22f3509723598c798e5e42b48c0c2972c6fbd32deaa26c20",
+  "source_hashes": {
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/matrix/raw_counts.npz": "4c888ea7550403db1d1839fbcb02f04002949dc976a8f05c5de610f3f8b87647",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/matrix/observations.tsv": "b2665ba772187222f79b65c906f91f797a70b2335172175e95b707852e3cccdb",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/matrix/sites.tsv.gz": "a9621114581729071412bf4739c5605c4a65f9426c4b8cb1782a4309a0d2f691",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/matrix/run_manifest.json": "dae91b849003f38f3e27ce3aea298972fac5e1b2dd69c3d32f295896e8e22253",
+    "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.gff": "324ea1d8eae54f7ad6be4f5d924c1f0e611139383e3e5ebac40fe0b42c0d9c60",
+    "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/reference_genome/GCA_014217725.1_ASM1421772v1_genomic.fna": "80e6b150de90067c22f3509723598c798e5e42b48c0c2972c6fbd32deaa26c20"
+  },
+  "implementation_sha256": "9d89e5bd55e9b0fc38ef4d122cd3a58070d75505170f712fee6affe870894365",
+  "limitations": [
+    "Experimental run-based depletion evidence; not validated essentiality, fitness or a published Hermes method",
+    "Dispersion is shared across sites within each condition as a two-term mean-variance curve; site-specific dispersion is not modelled",
+    "Treatment dispersion from two replicates can absorb replicate-specific (non-shared) effects; it cannot separate them from noise",
+    "Summed replicate tracks use a moment-matched NB approximation",
+    "Sites are conditionally independent given lambda; shared clone, positional or depth-estimation dependence is not modelled",
+    "Plug-in background hyperparameters; their estimation uncertainty is not propagated into site flags",
+    "Lognormal abundance prior is an assumption; see posterior_predictive diagnostics",
+    "Scalar normalization exposures (ttr/totreads/nzmean) assume most sites are unaffected by treatment",
+    "Discrete Gumbel is an approximation; inadequate fits give no significance, not evidence of no depletion",
+    "Overlapping genes share sites; BH assumes valid p-values and tolerable dependence",
+    "Fitness, classifier and UI are unchanged"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "profile": "core",
+  "target": "recommended",
+  "analysis_id": "treated_vs_parent_raw_cpm",
+  "threads": 4,
+  "status": "success",
+  "plan_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/manifests/orchestrator/pipeline_plan.json",
+  "log_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/logs/orchestrator/pipeline_run.20261015T192738Z.log",
+  "results": [
+    {
+      "stage": "summary",
+      "status": "success",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_summary_table.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--threads",
+        "4"
+      ],
+      "returncode": 0,
+      "output": null
+    },
+    {
+      "stage": "library_diagnostics",
+      "status": "success",
+      "command": [
+        "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+        "/Users/joshuaayelazuno/Desktop/ytab/scripts/local/ytab_run_library_diagnostics.py",
+        "--project-config",
+        "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/config/project.yaml",
+        "--threads",
+        "4"
+      ],
+      "returncode": 0,
+      "output": null
+    }
+  ],
+  "warnings": [],
+  "start_time": "2026-10-15T19:28:52.723597+00:00",
+  "end_time": "2026-10-15T19:31:50.652545+00:00",
+  "elapsed_seconds": 252.191
+}

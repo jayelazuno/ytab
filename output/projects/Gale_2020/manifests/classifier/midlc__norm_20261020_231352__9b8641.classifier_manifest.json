@@ -1,0 +1,111 @@
+{
+  "project_id": "Gale_2020",
+  "species": "glabrata",
+  "target": "midlc",
+  "target_tag": "midlc__norm_20261020_231352__9b8641",
+  "target_resolution_source": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/sample_normalization/midlc__norm_20261020_231352__9b8641/normalization_source.json",
+  "input_combined_feature_table": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary_combined/midlc__norm_20261020_231352__9b8641/combined_feature_table.midlc__norm_20261020_231352__9b8641.txt",
+  "input_sha256": "25f33e0732958ab7b27291c02f079a4d69e04c8806ccafccf07b8fbb006361a5",
+  "input_feature_count": 5234,
+  "classifier_script": "/Users/joshuaayelazuno/Desktop/ytab/src/ytab/essentiality/Classifier.py",
+  "classifier_script_sha256": "bbf44ee573526471fa497752b152a1fe3e37b1d0a4c5384e8bb78a897ea73949",
+  "classifier_runner": "/Users/joshuaayelazuno/Desktop/ytab/src/ytab/pipeline/classifier_runner.py",
+  "classifier_runner_sha256": "28ec4a2bbc1738f63ced02a2fe03295f423b2e723b6858fae3dd27905c3b6e8d",
+  "classifier_resources": {
+    "orthology_file": [
+      {
+        "path": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt",
+        "sha256": "2a869b00f071b3d9659cfd64c5ba0ec5cee0b2a8b1581218bb970ad71b338840"
+      }
+    ],
+    "kornmann_wig_files": [
+      {
+        "path": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/Kornmann/07 - WildType1.wig",
+        "sha256": "78decdbafd3bd01a9e94a74cfc0ec76d1a49d45c40abcbde576ac2a1034305d3"
+      },
+      {
+        "path": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/Kornmann/08 - WildType2.wig",
+        "sha256": "c752dcefe635fc6a7ed358f65821990cdbb4e99053d310f2ed768a6c79f34920"
+      }
+    ],
+    "cerevisiae_feature_table": [
+      {
+        "path": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/cerevisiae/SGD_features.tab",
+        "sha256": "ee5017b6e5a93c01ee245eae7c590e6fe194a3791e763b3651be977572df91e3"
+      }
+    ],
+    "cerevisiae_viable_annotations": [
+      {
+        "path": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/cerevisiae/cerevisiae_viable_annotations.txt",
+        "sha256": "dd7fc5147902419e757463d2d61da89041788ae66a8b1f187812f7ea6ddac9bc"
+      }
+    ],
+    "cerevisiae_inviable_annotations": [
+      {
+        "path": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/cerevisiae/cerevisiae_inviable_annotations.txt",
+        "sha256": "b03112f718254ee49059645b95ca6e86c2dbc6a913791088d203f2889869b8ad"
+      }
+    ],
+    "cerevisiae_paralogs": [
+      {
+        "path": "/Users/joshuaayelazuno/Desktop/ytab/resources/species/cerevisiae/hasParalogs_sc.txt",
+        "sha256": "c134b0a48935b72ee8b4bc29cf8efc0d336c89b73ed6092929875326dc621010"
+      }
+    ]
+  },
+  "output_dir": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/classifier/midlc__norm_20261020_231352__9b8641",
+  "stable_prediction_table": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/classifier/midlc__norm_20261020_231352__9b8641/essentiality_predictions.midlc__norm_20261020_231352__9b8641.csv",
+  "stable_prediction_sha256": "5ab5097357392a0073468b7569d1f30d9ddc5d3c75ae410d737ec7ddf031d7ea",
+  "detected_outputs": [
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/classifier/midlc__norm_20261020_231352__9b8641/classification - Scer training - filtered (table mode)/tables.xlsx",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/classifier/midlc__norm_20261020_231352__9b8641/classification - Scer training - filtered (table mode)/train_AUC.RF-G4.png",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/classifier/midlc__norm_20261020_231352__9b8641/combined_RF-G4.tsv",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/classifier/midlc__norm_20261020_231352__9b8641/combined_feature_table.midlc__norm_20261020_231352__9b8641.txt.predictions.csv"
+  ],
+  "classifier_summary_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/classifier/midlc__norm_20261020_231352__9b8641/classifier_summary.midlc__norm_20261020_231352__9b8641.csv",
+  "run_metadata_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/classifier/midlc__norm_20261020_231352__9b8641/classifier_run_metadata.midlc__norm_20261020_231352__9b8641.json",
+  "log_file": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/logs/classifier/midlc__norm_20261020_231352__9b8641.log",
+  "seed": 0,
+  "scientific_parameters": {
+    "mode": "scer-train-gla-classify",
+    "target_fpr": 0.1,
+    "combine": true,
+    "deterministic_ordering": true
+  },
+  "python_version": "3.14.7",
+  "numpy_version": "2.5.3",
+  "pandas_version": "3.0.5",
+  "scikit_learn_version": "1.9.0",
+  "status": "success",
+  "start_time": "2026-10-22T00:33:46.101811+00:00",
+  "end_time": "2026-10-22T00:34:15.481054+00:00",
+  "elapsed_seconds": 31.823,
+  "command_run": [
+    "/Users/joshuaayelazuno/miniforge3/envs/ytab-local/bin/python",
+    "/Users/joshuaayelazuno/Desktop/ytab/src/ytab/essentiality/Classifier.py",
+    "--mode",
+    "scer-train-classify",
+    "--feature-table",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/summary_combined/midlc__norm_20261020_231352__9b8641/combined_feature_table.midlc__norm_20261020_231352__9b8641.txt",
+    "--species",
+    "glabrata",
+    "--out-dir",
+    "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/classifier/midlc__norm_20261020_231352__9b8641",
+    "--threads",
+    "8",
+    "--target-fpr",
+    "0.10",
+    "--combine",
+    "--overwrite",
+    "--orthology-file",
+    "/Users/joshuaayelazuno/Desktop/ytab/resources/species/glabrata/C_glabrata_BG2_S_cerevisiae_orthologs.txt"
+  ],
+  "warnings": [],
+  "error_message": null,
+  "output_prediction_count": 5234,
+  "class_counts": {
+    "Yes": 1812,
+    "No": 3422
+  },
+  "excluded_feature_count": 0
+}

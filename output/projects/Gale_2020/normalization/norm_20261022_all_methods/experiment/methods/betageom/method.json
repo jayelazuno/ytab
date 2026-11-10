@@ -1,0 +1,18 @@
+{
+  "id": "betageom",
+  "name": "Beta-geometric correction (experimental)",
+  "status": "available",
+  "input_level": "raw insertion-site counts",
+  "description": "Fits beta-geometric parameters including catalogue zeros, maps counts to a group geometric target and optionally applies explicit post-TTR scaling.",
+  "formula": "p~Beta(kappa*rho,kappa*(1-rho)); X|p~Geom(p); corrected=Geom_target^-1(F_BG(X)); zeros retained",
+  "may_suit": "Sensitivity analysis for heavy-tailed insertion support dominated by a few sites when a geometric target is scientifically defensible.",
+  "caution": "May suppress genuine enrichment; catalogue zeros affect fitted parameters; not a viable-mutant abundance model. Analytic CDF default; seeded simulation available. No automatic preference.",
+  "diagnostics": [
+    "fit parameters",
+    "catalogue sensitivity",
+    "upper-tail concentration",
+    "effect preservation",
+    "CDF safeguards"
+  ],
+  "source": "https://github.com/ioerger/transit/blob/50e23d6bec2605a24835fbd67f33691e330f3361/src/pytransit/norm_tools.py"
+}

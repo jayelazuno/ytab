@@ -1,0 +1,131 @@
+{
+  "status": "success",
+  "analysis": "Hermes site-restricted resampling",
+  "algorithm_revision": "hermes_resampling_v3",
+  "parameters": {
+    "inference": "exact",
+    "opportunities": "any-support",
+    "samples": 10000,
+    "grid_bins": 65536,
+    "min_sites": 1,
+    "pseudocount": 1.0,
+    "fdr": 0.05,
+    "seed": 2026,
+    "nterm": 0.0,
+    "cterm": 0.0,
+    "ignore_stop": true,
+    "alternative": "two-sided",
+    "recenter": "trimmed-sum",
+    "recenter_trim": 0.2,
+    "winsorize": false,
+    "asymmetry_warning": 2.0
+  },
+  "controls": [
+    {
+      "observation_id": "Gale_2020::SRR11561505",
+      "sample": "SRR11561505",
+      "display_name": "Cg1 \u2014 no-drug control 1",
+      "project": "Gale_2020",
+      "dataset": "Gale_2020",
+      "library_id": "Gale_2020::BG14::Cg1",
+      "pool": "Cg1",
+      "role": "control",
+      "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/create_hit_file/SRR11561505/SRR11561505_hits.txt",
+      "input_sha256": "f2c3892bde9c32aa2267342d9aece817db12d254d1de78e0e0b2fdb633564f8e"
+    },
+    {
+      "observation_id": "Gale_2020::SRR11561504",
+      "sample": "SRR11561504",
+      "display_name": "Cg1 \u2014 no-drug control 2",
+      "project": "Gale_2020",
+      "dataset": "Gale_2020",
+      "library_id": "Gale_2020::BG14::Cg1",
+      "pool": "Cg1",
+      "role": "control",
+      "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/create_hit_file/SRR11561504/SRR11561504_hits.txt",
+      "input_sha256": "24f5f244508ea2e34d2ad520b7b6f7070fe66291efa57f504c925230a420ff66"
+    }
+  ],
+  "treatments": [
+    {
+      "observation_id": "Gale_2020::SRR11561503",
+      "sample": "SRR11561503",
+      "display_name": "Cg1 \u2014 FLU-treated 1",
+      "project": "Gale_2020",
+      "dataset": "Gale_2020",
+      "library_id": "Gale_2020::BG14::Cg1",
+      "pool": "Cg1",
+      "role": "treated",
+      "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/create_hit_file/SRR11561503/SRR11561503_hits.txt",
+      "input_sha256": "f164e16ce4944e83288967effa316c63fd58b910d7d72a2c2e6ea1ac2eec7870"
+    },
+    {
+      "observation_id": "Gale_2020::SRR11561502",
+      "sample": "SRR11561502",
+      "display_name": "Cg1 \u2014 FLU-treated 2",
+      "project": "Gale_2020",
+      "dataset": "Gale_2020",
+      "library_id": "Gale_2020::BG14::Cg1",
+      "pool": "Cg1",
+      "role": "treated",
+      "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/create_hit_file/SRR11561502/SRR11561502_hits.txt",
+      "input_sha256": "4d96d56e94661a97c00dc471e69bc33dee0e70ec842f8456862ccca5860b7ac5"
+    }
+  ],
+  "normalization": {
+    "method": "betageom",
+    "input": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/methods/betageom",
+    "catalogue": "/Users/joshuaayelazuno/Desktop/ytab/output/projects/Gale_2020/normalization/norm_20261022_all_methods/experiment/matrix",
+    "factors": null,
+    "group": "Gale_2020::BG14::Cg1",
+    "hashes": {
+      "normalized_counts.npz": "79a4ac1e6c19f84e3fc445a3d3ec13b4ee0cde0f3c9ebe5b5989792ce74c6624",
+      "factors.tsv": "689557cc4dbe8169f93c0992b11caf705a4a298f136ac1c4f7b56c2c5debe46e",
+      "method.json": "5dc7c091aac9b177d3de6beeb9fe17f9c740c0b965b365cec379a52645237931",
+      "run_manifest": "2e16f9fd07c875d5fe80e55705b8f6a20b8496dde8f87f851269d597a2f70ad1"
+    },
+    "check": "normalized_counts preserve raw zeros and within-sample count order (verified; nonlinear method)"
+  },
+  "model": {
+    "statistic": "T = mean(treatment) - mean(control) over eligible site x sample normalized counts",
+    "null": "site-restricted: labels exchangeable among samples within each site, independently across sites",
+    "p_value": "exact: convolution of per-site uniform K-subset-sum distributions on a grid; conservative bound after rounding",
+    "opportunities": "sites with >0 normalized support in any compared sample (label-invariant)",
+    "multiple_testing": "BH over genes with >= min_sites eligible sites; call direction from sign(T)"
+  },
+  "diagnostics": {
+    "inference": "exact",
+    "opportunities": "any-support",
+    "libraries": [
+      "library"
+    ],
+    "alternative": "two-sided",
+    "recenter": "trimmed-sum",
+    "treatment_rescale": 0.9821138091379545,
+    "winsorize": false,
+    "replicate_noise": {
+      "control_spread": 0.14613074100537013,
+      "treatment_spread": 0.5170779213199582,
+      "asymmetry": 3.5384609546389436,
+      "threshold": 2.0,
+      "warning": "treatment replicates are 3.5x noisier than the other condition's (threshold 2); permutation p-values are mildly anti-conservative in this regime (about 6% instead of 5% at p<=0.05 with BGC + recentering, 8-9% with TTR); treat calls near the q cutoff with caution and prefer BGC normalization"
+    },
+    "eligible_units": 191292,
+    "family_size": 4799,
+    "calls": {
+      "depleted": 280,
+      "enriched": 365,
+      "not significant": 4154,
+      "not tested": 435
+    },
+    "max_discretization_gap": 0.125
+  },
+  "implementation_sha256": "18abc2d6b8ede6031e83d0bc7297ba3de53b2c3b3caddaee6cdeb2402ab0439c",
+  "limitations": [
+    "Unequal replicate noise between conditions (see diagnostics.replicate_noise) makes permutation p-values mildly anti-conservative",
+    "Sites are treated as independent within a gene; sample-level effects shared across sites are not modelled",
+    "Exchangeability across conditions is assumed; unequal replicate noise between conditions can violate it",
+    "Scalar normalization assumes most sites are unaffected by treatment",
+    "Overlapping genes share sites; BH assumes valid p-values"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "ttr",
+  "name": "Trimmed total reads (TTR)",
+  "status": "available",
+  "input_level": "raw insertion-site counts",
+  "description": "Scales by site density times the trimmed positive-site mean; defaults trim 5% per tail and target 100.",
+  "formula": "factor_j = target / (density_j * trimmed_positive_mean_j)",
+  "may_suit": "Evaluation of robust scalar scaling when a few high-count sites influence read totals.",
+  "caution": "Does not correct missing mutants or all distribution skew; density can include genuine library-complexity differences.",
+  "diagnostics": [
+    "density",
+    "trimmed positive-site mean",
+    "outlier influence",
+    "matched-control agreement"
+  ],
+  "source": "https://github.com/ioerger/transit/blob/50e23d6bec2605a24835fbd67f33691e330f3361/src/pytransit/norm_tools.py"
+}

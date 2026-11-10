@@ -1,0 +1,16 @@
+{
+  "id": "totreads",
+  "name": "Total-read scaling",
+  "status": "available",
+  "input_level": "raw insertion-site counts",
+  "description": "Scales each library's total reads to the mean total within the selected normalization group.",
+  "formula": "factor_j = mean_group(total_support) / total_support_j",
+  "may_suit": "A simple baseline when support-depth differences dominate and a few sites do not dominate totals.",
+  "caution": "Sensitive to extreme counts and global composition changes; group membership sets the scale.",
+  "diagnostics": [
+    "total support",
+    "high-count concentration",
+    "matched-control agreement"
+  ],
+  "source": "https://github.com/ioerger/transit/blob/50e23d6bec2605a24835fbd67f33691e330f3361/src/pytransit/norm_tools.py"
+}
