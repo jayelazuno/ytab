@@ -60,7 +60,7 @@ from ytab.essentiality import multicondition as mc
 from ytab.essentiality.control_conditioned_gumbel import _json_ready, annotations, benjamini_hochberg, gene_sites, load_design
 from ytab.normalization.ttr import sha256, write_table
 
-MODEL = "Hermes site-paired genetic interactions"
+MODEL = "site-paired genetic interactions"
 REVISION = "hermes_gi_v1"
 CLASSES = ("Aggravating", "Alleviating", "Suppressive")
 

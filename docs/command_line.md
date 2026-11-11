@@ -1,5 +1,17 @@
 # Command-line analyses and master workflows
 
+The documentation writes commands as `ytab <command>`. To use them exactly as written, put YTAB's command directory
+on your PATH once per shell:
+
+```sh
+export PATH="$PWD/scripts/local:$PATH"   # from the YTAB folder
+ytab modules
+```
+
+Without that, the same command is `python scripts/local/ytab.py <command>`. Both run the same code; there is
+nothing to install.
+
+
 An opt-in [empirical site-catalogue and TTR evaluation](ttr_normalization.md) is
 available as `python scripts/local/ytab.py ttr --help`. It uses an explicit
 multi-project parent manifest and does not replace existing normalization stages.

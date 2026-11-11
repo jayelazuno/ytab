@@ -321,6 +321,11 @@ server <- function(input, output, session) {
 
   if (shinyfiles_available) {
     roots <- c(Home = normalizePath("~", mustWork=TRUE), `Repository parent` = dirname(repo_root))
+    # Running in a container, "~" is the container's own home and the computer's files are wherever they were
+    # mounted. These are the places YTAB's launcher and its documented command put them, so the chooser offers
+    # them by the names a user recognizes instead of showing a filesystem that is not theirs.
+    if (dir.exists("/host")) roots <- c(`My files` = "/host", roots)
+    if (dir.exists("/data")) roots <- c(`Mounted data` = "/data", roots)
     if (.Platform$OS.type == "windows") roots <- shinyFiles::getVolumes() else {
       if (dir.exists("/Volumes")) roots <- c(roots, Volumes="/Volumes")
       if (dir.exists("/mnt")) roots <- c(roots, Mounts="/mnt")

@@ -1,0 +1,19 @@
+#!/bin/sh
+# `ytab <command>` — the command the documentation uses.
+#
+# The docs are written as `ytab mapfastq …`, `ytab summary …` and so on. This wrapper makes that real without
+# installing anything: put this directory on your PATH and the documented commands work as written.
+#
+#   export PATH="$PWD/scripts/local:$PATH"     # from the YTAB folder, once per shell
+#   ytab modules
+#
+# Without it, the same thing is `python scripts/local/ytab.py <command>`.
+set -e
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+for py in "${YTAB_PYTHON:-}" python3 python; do
+    [ -n "$py" ] || continue
+    command -v "$py" >/dev/null 2>&1 || continue
+    exec "$py" "$here/ytab.py" "$@"
+done
+echo "ERROR: no Python found. Activate the ytab-local environment, or set YTAB_PYTHON." >&2
+exit 1

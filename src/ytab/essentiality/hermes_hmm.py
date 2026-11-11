@@ -32,7 +32,7 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.special import digamma, gammaln
 
-MODEL = "Hermes window HMM"
+MODEL = "window HMM"
 REVISION = "hermes_hmm_v2"
 REVISION_LEARNED = "hermes_hmm_v3"        # v2 with the learned target-site covariate in place of the motif count
 TARGET_OFFSETS = (-10, 17)               # target-site model: offsets around the hit coordinate, read outward from the transposon

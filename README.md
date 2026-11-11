@@ -16,7 +16,12 @@ from the interface.
 
 ## Try the app
 
-With [Docker](https://docs.docker.com/get-started/get-docker/), nothing else to install:
+With a container runtime — [Docker Desktop](https://docs.docker.com/get-started/get-docker/),
+[Podman](https://podman-desktop.io) or [Colima](https://github.com/abiosoft/colima) — and nothing else to install.
+Docker Desktop needs a paid subscription in larger organizations; Podman and Colima are open source and run the
+same image. Download YTAB and
+double-click **`YTAB.command`** (macOS) or **`YTAB.bat`** (Windows): it checks Docker, fetches the image the first
+time, starts the app and opens the browser. Or type it yourself:
 
 ```bash
 git clone --depth 1 https://github.com/jayelazuno/ytab.git
@@ -24,7 +29,9 @@ cd ytab
 docker run --rm -p 3838:3838 -v "$PWD:/opt/ytab" ghcr.io/jayelazuno/ytab-app:v0.1
 ```
 
-Then open <http://localhost:3838>. The clone carries demo projects, so there is data to explore immediately.
+Then open <http://localhost:3838>. The clone carries one worked dataset, Gale et al. (2020), with a sample of its
+reads, so there is data to explore and a mapping run to try immediately. The other published datasets are fetched
+per dataset from the Datasets page.
 `docs/testing.md` is the short guide for anyone evaluating the interface.
 
 ## Install locally
@@ -114,7 +121,7 @@ CLI as the app, so the portable commands can be wrapped for any scheduler.
 - `containers/` — the app image
 - `docs/` — methods, CLI reference, dataset catalogue and release notes
 - `tests/` — unit and integration tests
-- `output/` — project outputs; the demo projects live here
+- `output/` — project outputs; the Gale et al. (2020) dataset lives here
 
 ## Key references
 

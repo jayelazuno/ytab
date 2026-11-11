@@ -30,7 +30,7 @@ from scipy.stats import t as student_t
 from ytab.essentiality import control_conditioned_gumbel as ccg
 from ytab.normalization.ttr import sha256, write_table
 
-MODEL = "Hermes gene-level NB quasi-likelihood test for independent pools"
+MODEL = "gene-level NB quasi-likelihood test for independent pools"
 REVISION = "pooled_gene_ql_v1"
 LOG_PHI_GRID = np.linspace(np.log(1e-4), np.log(1e2), 121)
 

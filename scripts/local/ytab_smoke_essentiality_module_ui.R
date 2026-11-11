@@ -12,7 +12,12 @@ for (name in c("job_manager.R", "project_discovery.R", "ui_helpers.R", "ui_compo
 python <- unname(Sys.which("python"))
 config <- file.path(root, "output/projects/Gale_2020/config/project.yaml")
 hmm <- file.path(root, "output/essentiality/hermes_hmm/benchmark_v2/gale_blinded/joint_run1")
-features <- file.path(root, "output/projects/Gale_2020/summary_combined/T013p239/combined_feature_table.T013p239.txt")
+# The feature table of whichever combined target is present, rather than a fixed one: the legacy MidLC targets
+# (T<number>) are gone, and a target is named after its normalization method now.
+features <- {
+  targets <- Sys.glob(file.path(root, "output/projects/Gale_2020/summary_combined/*/combined_feature_table.*.txt"))
+  if (length(targets)) sort(targets)[[1]] else ""
+}
 labels <- file.path(root, "resources/species/glabrata/essentiality_labels/labels.tsv")
 stopifnot(nzchar(python), all(file.exists(c(config, file.path(hmm, "fit.json"), features, labels))))
 

@@ -28,7 +28,7 @@ from scipy.stats import nbinom, norm
 
 from ytab.normalization.ttr import sha256, write_table
 
-MODEL = "control-conditioned Hermes Gumbel"
+MODEL = "control-conditioned Gumbel"
 REVISION = "ccg_v5_normalized_input"
 NORMALIZATIONS = ("ttr", "totreads", "nzmean")   # scalar methods whose factors are valid count-model exposures
 DEFAULT_NORMALIZATION = "ttr"

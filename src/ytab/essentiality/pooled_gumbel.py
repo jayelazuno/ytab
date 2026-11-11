@@ -21,7 +21,7 @@ from scipy.stats import chi2
 from ytab.essentiality import control_conditioned_gumbel as ccg
 from ytab.normalization.ttr import sha256, write_table
 
-MODEL = "Hermes control-conditioned Gumbel for independent pools"
+MODEL = "control-conditioned Gumbel for independent pools"
 REVISION = "pooled_ccg_v1"
 
 

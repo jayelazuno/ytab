@@ -183,7 +183,7 @@ def main():
             hmm_dir = a.hmm_run.resolve()
             if not (hmm_dir/"genes.tsv").exists():raise ValueError(f"No HMM result in {hmm_dir}")
         else:
-            print("1/3 Fitting the Hermes window HMM (several minutes)", file=sys.stderr, flush=True)
+            print("1/3 Fitting the window HMM (several minutes)", file=sys.stderr, flush=True)
             covariate = a.sequence_covariate if a.sequence_covariate != "auto" else auto_sequence_covariate(cfg, a.libraries)
             print(f"   sequence covariate: {covariate}", file=sys.stderr, flush=True)
             fasta, gff, hits = project_files(a.project_config, a.libraries)

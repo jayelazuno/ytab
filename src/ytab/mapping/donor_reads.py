@@ -162,12 +162,24 @@ def placed_on_genome(fastq: str, genome_index: str, mapq: int, threads: int) -> 
     return {f[0] for f in (l.split("\t") for l in stream if l) if len(f) > 4 and int(f[4]) >= mapq}
 
 
+# A flank only matters at MIN_SHARE of the reads, so the table is thinned as it grows: every PRUNE_EVERY reads the
+# keys seen fewer than PRUNE_BELOW times are dropped. Without this the table holds one key per distinct read start,
+# which for a library merged from sixteen runs is hundreds of millions of keys and tens of gigabytes. A flank that
+# survives to matter is seen far more often than the threshold, so the recurring set is unchanged.
+PRUNE_EVERY = 20_000_000
+PRUNE_BELOW = 2
+
+
 def flank_counts(fastq: str) -> tuple[Counter, int]:
     """First-PREFIX-base counts over a FASTQ, and the number of reads."""
     counts, reads = Counter(), 0
     with _open(fastq) as h:
         for i, line in enumerate(h):
-            if i % 4 == 1:counts[line[:PREFIX]] += 1; reads += 1
+            if i % 4 == 1:
+                counts[line[:PREFIX]] += 1
+                reads += 1
+                if reads % PRUNE_EVERY == 0:
+                    for key in [k for k, n in counts.items() if n < PRUNE_BELOW]:del counts[key]
     return counts, reads
 
 

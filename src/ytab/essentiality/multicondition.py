@@ -41,7 +41,7 @@ from ytab.essentiality import resampling
 from ytab.essentiality.control_conditioned_gumbel import _json_ready, annotations, benjamini_hochberg, gene_sites, load_design
 from ytab.normalization.ttr import sha256, write_table
 
-MODEL = "Hermes site-restricted permutation ANOVA"
+MODEL = "site-restricted permutation ANOVA"
 REVISION = "hermes_anova_v2"
 
 

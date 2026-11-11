@@ -26,7 +26,7 @@ import numpy as np
 from ytab.essentiality.control_conditioned_gumbel import annotations, benjamini_hochberg, gene_sites, load_design, _json_ready
 from ytab.normalization.ttr import sha256, write_table
 
-MODEL = "Hermes site-restricted resampling"
+MODEL = "site-restricted resampling"
 REVISION = "hermes_resampling_v3"
 
 
