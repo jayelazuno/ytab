@@ -1,5 +1,41 @@
 # Release notes
 
+## 2026-11-10: one dataset ships, and a launcher to start it
+
+**Downloading and starting YTAB**
+- **`YTAB.command`** (macOS) and **`YTAB.bat`** (Windows): double-click to start. They find a container runtime,
+  download the image the first time, pick a free port, start the app and open the browser; closing the window
+  stops YTAB. Docker Desktop, Podman and Colima all work, and the launcher uses whichever is installed.
+- YTAB is downloaded from the releases page as a zip, about 0.8 GB, so git is not needed.
+- **Your own reads are reachable.** *Start from FASTQ › Browse local folders* opens on **My files**, your home
+  folder, shared with YTAB read-only. `YTAB_FILES` shares a narrower folder instead.
+
+**What travels with the app**
+- One worked dataset: **Gale et al. 2020**, the screen the tutorial follows, with 200,000 read pairs per library
+  so the mapping stage can be run on first launch. Its QC table carries the donor-plasmid metric: the induction
+  pools are 11% and 18% donor reads against about 1.2% in the treated and control cultures.
+- The other published datasets are no longer carried in the repository. They are archived per dataset and fetched
+  when wanted, which takes a clone from about 16 GB to 2.4 GB.
+- References and bowtie2 indexes for eight species, and ten library designs across Hermes, Ac/Ds and piggyBac, so
+  a library of your own can be analysed from reads to calls.
+
+**Naming**
+- `ytab <command>` works as the documentation writes it: put `scripts/local` on PATH, or call
+  `python scripts/local/ytab.py <command>`.
+- An analysis records itself by what it does rather than by one transposon: *site-restricted resampling*,
+  *window HMM*, *control-conditioned Gumbel*, *site-paired genetic interactions* and the rest. The algorithm
+  revisions behind them are unchanged, so existing results still match.
+
+**Donor-plasmid reads**
+- A library merged from several sequencing runs is counted across all of them, so merged libraries report a donor
+  share like any other.
+- Counting a deeply sequenced library no longer needs tens of gigabytes of memory.
+
+**Validation**
+- Python tests: 374 passed.
+- Verified from a clean checkout, in the published image: the landing page, the demo dataset, all eight tabs, the
+  directory chooser reaching the user's own files, and the launcher on a busy port.
+
 ## 2026-11-09: donor-plasmid reads, building a dataset, and the help centre
 
 **Quality control**
