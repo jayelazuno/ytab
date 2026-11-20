@@ -22,8 +22,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src")); sys.path.append(str(ROOT/"scripts/local"))
 import ytab_four_species_benchmark as fsb
-import ytab_hermes_hmm as runner
-from ytab.essentiality import hermes_hmm as hh
+import ytab_window_hmm as runner
+from ytab.essentiality import window_hmm as hh
 
 OUT = ROOT/"output/essentiality/default_update"
 SOURCES = {name:fsb.BENCH/"hmm"/name/"joint" for name in fsb.FITS} | {

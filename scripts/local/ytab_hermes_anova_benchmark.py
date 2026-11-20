@@ -21,9 +21,9 @@ from scipy.stats import beta
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import multicondition as mc
-from ytab.essentiality import resampling
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.fitness import multicondition as mc
+from ytab.fitness import resampling
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import sha256, write_table
 
@@ -216,7 +216,7 @@ def gale(workers):
                    flu_vs_control_per_pair_q_vs_published_v3=dict(this=len(flu), v3=len(v3calls), shared=len(flu & v3calls),
                                                                    jaccard=len(flu & v3calls)/len(flu | v3calls)),
                    pair_diagnostics={k:(v if isinstance(v, str) else {x:v[x] for x in ("treatment_rescale", "replicate_noise", "family_size", "calls")}) for k, v in pdiag.items()})
-    (target/"summary.json").write_text(json.dumps(ccg._json_ready(summary), indent=2)+"\n"); print(json.dumps(ccg._json_ready(summary), indent=1))
+    (target/"summary.json").write_text(json.dumps(ccg.json_ready(summary), indent=2)+"\n"); print(json.dumps(ccg.json_ready(summary), indent=1))
 
 
 def main():

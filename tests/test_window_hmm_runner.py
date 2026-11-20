@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 
 sys.path.append(str(Path(__file__).resolve().parents[1]/"scripts/local"))
-import ytab_hermes_hmm as runner
-from ytab.essentiality import hermes_hmm as hh
+import ytab_window_hmm as runner
+from ytab.essentiality import window_hmm as hh
 
 
 def genome(tmp_path, names, length=40_000, duplicate=False, seed=0):

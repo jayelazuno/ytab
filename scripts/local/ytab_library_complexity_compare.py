@@ -16,7 +16,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
+from ytab.fitness import control_conditioned_gumbel as ccg
 from ytab.normalization.ttr import write_table
 
 OUT = ROOT/"output/essentiality/pooled_gumbel/library_complexity"

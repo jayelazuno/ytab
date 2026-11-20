@@ -28,7 +28,7 @@ def _path(value, root):
 
 def _coding_genes_by_parent(gff):
     """CDS union per gene for GFF3 files whose CDS name their gene only through Parent (CDS -> transcript -> gene)."""
-    from ytab.essentiality.control_conditioned_gumbel import annotations
+    from ytab.core.annotation import annotations
     genes = {}
     for g in annotations(gff):
         blocks = sorted(g["blocks"])

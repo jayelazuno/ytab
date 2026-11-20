@@ -49,7 +49,7 @@ def check_preregistration():
 def fit_one(name):
     species, project, libraries, role = FITS[name]
     out = BENCH/"hmm"/name
-    cmd = [sys.executable, str(ROOT/"scripts/local/ytab_hermes_hmm.py"), str(out), "--project", project, "--libraries", *libraries,
+    cmd = [sys.executable, str(ROOT/"scripts/local/ytab_window_hmm.py"), str(out), "--project", project, "--libraries", *libraries,
            "--sequence-covariate", "learned"]
     run = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
     (out).mkdir(parents=True, exist_ok=True); (out/"stdout.txt").write_text(run.stdout); (out/"stderr.txt").write_text(run.stderr)

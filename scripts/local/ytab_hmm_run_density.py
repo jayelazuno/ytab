@@ -20,8 +20,8 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src")); sys.path.append(str(ROOT/"scripts/local"))
-from ytab.essentiality import hermes_hmm as hh
-import ytab_hermes_hmm as runner
+from ytab.essentiality import window_hmm as hh
+import ytab_window_hmm as runner
 import ytab_hmm_sensitivity as sens
 
 OUT = ROOT/"output/essentiality/hmm_run_density"

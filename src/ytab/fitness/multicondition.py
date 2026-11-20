@@ -37,8 +37,10 @@ from pathlib import Path
 
 import numpy as np
 
-from ytab.essentiality import resampling
-from ytab.essentiality.control_conditioned_gumbel import _json_ready, annotations, benjamini_hochberg, gene_sites, load_design
+from ytab.fitness import resampling
+from ytab.core.annotation import annotations, gene_sites
+from ytab.core.design import load_design
+from ytab.core.stats import benjamini_hochberg, json_ready
 from ytab.normalization.ttr import sha256, write_table
 
 MODEL = "site-restricted permutation ANOVA"
@@ -356,5 +358,5 @@ def run(normalized, gff, reference, output, samples, settings=None, normalizatio
                      "Recentering assumes most genes do not respond to each condition",
                      "Stratified designs need every library to contain the reference condition and >= 1 other condition",
                      "ANOVA p-values are Monte Carlo (seeded, staged; minimum about 1e-5)"])
-    (output/"run_manifest.json").write_text(json.dumps(_json_ready(manifest), indent=2, allow_nan=False)+"\n")
+    (output/"run_manifest.json").write_text(json.dumps(json_ready(manifest), indent=2, allow_nan=False)+"\n")
     return manifest

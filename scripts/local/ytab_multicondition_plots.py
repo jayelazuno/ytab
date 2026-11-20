@@ -16,7 +16,7 @@ import json
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]/"src"))
-from ytab.essentiality.multicondition_plots import run
+from ytab.fitness.multicondition_plots import run
 
 
 def main():

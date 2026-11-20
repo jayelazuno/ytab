@@ -27,7 +27,8 @@ import pandas as pd
 
 from ytab.fitness.contract import VERSION
 
-LABELS = {"zscore": "Local-abundance z-score", "resampling": "Resampling", "gumbel": "Control-conditioned Gumbel", "published": "Published"}
+LABELS = {"zscore": "Local-abundance z-score", "zscore_allcontrols": "Local-abundance z-score (all controls)",
+          "resampling": "Resampling", "gumbel": "Control-conditioned Gumbel", "published": "Published"}
 DEPLETION_ONLY = {"gumbel"}
 
 
@@ -56,7 +57,8 @@ def _tvc(path: Path, method: str) -> pd.DataFrame:
 def read_method(path: Path, method: str) -> pd.DataFrame:
     """One method's genes in the common shape: background, condition, ORF, Name, effect, score, call, tested. Gene IDs
     are matched without a GFF type prefix ("gene:SPAC1002.01" in resampling output from PomBase GFFs)."""
-    x = _zscore(Path(path)) if method == "zscore" else _tvc(Path(path), method)
+    # Any z-score variant writes the z-score layout (tables/), whatever the arm is called.
+    x = _zscore(Path(path)) if method.startswith("zscore") else _tvc(Path(path), method)
     x["ORF"] = x.ORF.str.replace(r"^gene:", "", regex=True); return x
 
 

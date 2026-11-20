@@ -35,7 +35,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality.control_conditioned_gumbel import Settings, annotations, gene_sites
+from ytab.core.annotation import annotations, gene_sites
+from ytab.fitness.control_conditioned_gumbel import Settings
 from ytab.normalization.experiment import evaluate
 from ytab.normalization.methods import METHODS
 from ytab.normalization.midlc import expected_occupied

@@ -18,7 +18,7 @@ import numpy as np
 from scipy.stats import beta
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]/"src"))
-from ytab.essentiality.control_conditioned_gumbel import Settings, analyze, synthetic_experiment
+from ytab.fitness.control_conditioned_gumbel import Settings, analyze, synthetic_experiment
 from ytab.normalization.ttr import sha256, write_table
 
 GENES = 300

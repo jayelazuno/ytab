@@ -28,7 +28,7 @@ from scipy.stats import beta
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
 from ytab.benchmarks import treated_vs_control as tvc  # noqa: E402
-from ytab.essentiality import control_conditioned_gumbel as ccg, resampling  # noqa: E402
+from ytab.fitness import control_conditioned_gumbel as ccg, resampling  # noqa: E402
 from ytab.normalization.ttr import sha256  # noqa: E402
 
 PREREG = ROOT/"docs/manuscript/preregistration_treated_vs_control.md"

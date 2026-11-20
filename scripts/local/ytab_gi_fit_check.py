@@ -28,8 +28,8 @@ from scipy.special import digamma, polygamma
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import multicondition as mc
-from ytab.essentiality.control_conditioned_gumbel import benjamini_hochberg
+from ytab.fitness import multicondition as mc
+from ytab.core.stats import benjamini_hochberg
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import write_table
 

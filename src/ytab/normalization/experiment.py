@@ -113,7 +113,7 @@ def evaluate(project_config, catalogue, output, methods, trim=.05, target=100, p
     counts, unfiltered, metadata, filtered = [], [], [], []
     genes = None
     if site_filter != "none":
-        from ytab.essentiality.control_conditioned_gumbel import annotations
+        from ytab.core.annotation import annotations
         genes = annotations(resolve(cfg["reference"]["gff"]))
     for sample in selected:
         row = samples[sample]

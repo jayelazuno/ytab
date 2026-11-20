@@ -51,7 +51,7 @@ from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality.control_conditioned_gumbel import annotations  # noqa: E402
+from ytab.core.annotation import annotations  # noqa: E402
 from ytab.normalization.ttr import sha256  # noqa: E402
 
 SPECIES = ROOT/"resources/species"

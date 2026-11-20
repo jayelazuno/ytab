@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ytab.essentiality import model_menu as mm
+from ytab.essentiality import hybrid_model as mm
 
 
 def tables(n=240, seed=3):
@@ -49,7 +49,7 @@ def test_chromosome_folds_group_genes():
 
 def test_summary_features_match_classifier_table_precision():
     import pandas as pd
-    from ytab.essentiality import model_menu as mm
+    from ytab.essentiality import hybrid_model as mm
     table = pd.DataFrame(dict(standard_name=["g1"], coding_length=[900], hits=[3], reads=[40], max_free_region=[120],
                               freedom_index=[0.762593], neighborhood_index=[0.1162031], upstream_hits_100=[2]))
     f = mm.summary_features(table)

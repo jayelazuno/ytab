@@ -26,14 +26,17 @@ from ytab.fitness import agreement as ag  # noqa: E402
 REPORT = ROOT/"output/comparison/report"; FIG = REPORT/"figures"; TAB = REPORT/"tables"
 DATASETS = {"Gale_2020": ("Gale et al. 2020", None), "Nickels_2025_glabrata": ("Nickels et al. 2025", {"BG2", "pdr1_KO"})}
 FILTERS = {"none": "All sites", "winsorize": "Winsorized", "drop-top": "Top site dropped"}
-METHODS = {"zscore": "z-score", "zscorecmp": "z-score (comparison noise)", "resampling": "Resampling", "gumbel": "Gumbel"}
+# The control-conditioned Gumbel is not reported here: it is depletion-only, it could not be applied to Nickels, and
+# on Gale it recovered no published hit that the z-score and resampling miss between them. The study record in
+# output/comparison/summary/ still carries it.
+METHODS = {"zscore": "z-score", "zscorecmp": "z-score (comparison noise)", "resampling": "Resampling"}
 NORMS = {"zscore": ["nonorm", "totreads", "nzmean", "ttr", "midlc", "quantile", "zinfnb", "betageom", "aBGC"],
-         "resampling": ["totreads", "nzmean", "ttr", "betageom", "aBGC"], "gumbel": ["totreads", "nzmean", "ttr"]}
+         "resampling": ["totreads", "nzmean", "ttr", "betageom", "aBGC"]}
 NORMS["zscorecmp"] = NORMS["zscore"]
 NORM_LABEL = dict(nonorm="Unnormalized", totreads="Total reads", nzmean="NZ mean", ttr="TTR", midlc="MidLC", quantile="Quantile",
                   zinfnb="ZINB", betageom="BGC", aBGC="aBGC", cpm="CPM (as published)")
-COLOURS = {"zscore": "#0072B2", "zscorecmp": "#56B4E9", "resampling": "#E69F00", "gumbel": "#009E73", "published": "#CC79A7"}
-DEFAULT = {"zscore": "betageom", "zscorecmp": "betageom", "resampling": "betageom", "gumbel": "ttr"}
+COLOURS = {"zscore": "#0072B2", "zscorecmp": "#56B4E9", "resampling": "#E69F00", "published": "#CC79A7"}
+DEFAULT = {"zscore": "betageom", "zscorecmp": "betageom", "resampling": "betageom"}
 MIN_TESTED = 100   # published genes a method must test in a dataset to be shown
 COLLAPSE = .25   # share of tested genes with control reads and no treated reads above which a condition is collapsed (Nickels: 0.42-0.70 vs <= 0.20)
 
@@ -196,6 +199,7 @@ def z_scatter(merged):
 def error_control():
     """R27 simulated nulls: false calls per experiment and the pooled false discovery rate, by method and normalization."""
     t = false_calls(); t = t[t.normalization.isin(NORM_LABEL) | t.normalization.eq("cpm")]   # cpm: Gale's workflow as published
+    t = t[t.method.isin(METHODS)]   # the written table lists the methods the report discusses, and no others
     t.to_csv(TAB/"error_control.tsv", sep="\t", index=False)
     order = [(m, n) for m in METHODS for n in NORMS[m] + (["cpm"] if m == "zscore" else []) if ((t.method == m) & (t.normalization == n)).any()]
     fig, axes = plt.subplots(1, 2, figsize=(15, 4.8))
@@ -228,7 +232,7 @@ def best_table(t):
             r = r.iloc[0]
             rows.append(dict(dataset=DATASETS[dataset][0], method=METHODS[method], which=label, filter=FILTERS[r["filter"]], normalization=NORM_LABEL[r.normalization],
                              depleted=f"{r.depleted_recovered:.0f}/{r.depleted_published:.0f} ({100*r.depleted_recall:.0f}%)",
-                             enriched="" if method == "gumbel" else f"{r.enriched_recovered:.0f}/{r.enriched_published:.0f} ({100*r.enriched_recall:.0f}%)",
+                             enriched=f"{r.enriched_recovered:.0f}/{r.enriched_published:.0f} ({100*r.enriched_recall:.0f}%)",
                              depleted_calls_per_condition=round(r.depleted_called_per_condition), spearman=round(r.spearman_vs_published_z, 2)))
     b = pd.DataFrame(rows); b.to_csv(TAB/"best.tsv", sep="\t", index=False); return b
 
@@ -243,11 +247,44 @@ def build_docx():
     return docx
 
 
+def controls_figure():
+    """The same z-score, its noise curve fitted on two controls or on all six: recovery of the published calls.
+
+    Nickels et al. 2025 sequenced six no-drug BG2 controls. The z-score's threshold comes from the control-to-control
+    scatter, so how many controls it is fitted on sets how permissive that threshold is. Both arms here are the same
+    method, normalization (BGC) and call rule (|z| >= 3) on the same comparisons; only the control set differs.
+    """
+    f = ROOT/"output/comparison/summary/published_recovery.tsv"
+    if not f.exists():print("no published_recovery.tsv; run ytab_method_comparison_evaluate.py"); return
+    t = pd.read_csv(f, sep="\t")
+    t = t[(t.dataset == "Nickels_2025_glabrata") & t.method.isin(["zscore", "zscore_allcontrols"]) & t.published.gt(0)]
+    if t.empty:print("no z-score arms to compare"); return
+    fig, axes = plt.subplots(1, 2, figsize=(9.2, 4.4))
+    for ax, direction in zip(axes, ("depleted", "enriched")):
+        d = t[t.direction == direction]
+        wide = d.pivot_table(index="group", columns="method", values=["both", "published"], aggfunc="sum")
+        both, pub = wide["both"], wide["published"]
+        if "zscore" not in both or "zscore_allcontrols" not in both:continue
+        x = 100*both["zscore"]/pub["zscore"]; y = 100*both["zscore_allcontrols"]/pub["zscore_allcontrols"]
+        ax.plot([0, 100], [0, 100], color="#9aa5ad", lw=1, zorder=1)
+        ax.scatter(x, y, s=46, c=COLOURS["zscore"], edgecolor="black", linewidth=.8*72/25.4, zorder=3)
+        tot_x = 100*both["zscore"].sum()/pub["zscore"].sum()
+        tot_y = 100*both["zscore_allcontrols"].sum()/pub["zscore_allcontrols"].sum()
+        ax.set_title(f"{direction.capitalize()}: {tot_x:.0f}% \u2192 {tot_y:.0f}% overall", fontweight="bold")
+        ax.set_xlabel("Recovered with two controls (%)", fontweight="bold")
+        ax.set_ylabel("Recovered with all six controls (%)", fontweight="bold")
+        ax.set_xlim(-3, 103); ax.set_ylim(-3, 103); style(ax)
+    fig.suptitle("Nickels et al. 2025: the control set behind the z-score threshold, one point per condition",
+                 fontweight="bold")
+    save(fig, "Nickels_2025_glabrata_6_controls")
+    print("wrote figures/Nickels_2025_glabrata_6_controls.png")
+
+
 if __name__ == "__main__":
     a = argparse.ArgumentParser(); a.add_argument("--docx", action="store_true", help="Only render report.md to report.docx"); a = a.parse_args()
     if a.docx:print(build_docx()); raise SystemExit
     t, merged = evaluate(); t = applicable(t)
     merged = {k:v for k, v in merged.items() if ((t.dataset == k[0]) & (t.method == k[2])).any()}
     for d in DATASETS:heatmaps(t, d); venns(merged, d)
-    z_scatter(merged); error_control()
+    z_scatter(merged); error_control(); controls_figure()
     with pd.option_context("display.width", 250, "display.max_columns", 30):print(best_table(t).to_string(index=False))

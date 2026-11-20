@@ -23,7 +23,7 @@ from pathlib import Path
 DEFAULT_TRANSPOSON = "hermes"
 MAPPING_KEYS = ("detect_ends", "primer_catalogue", "reference", "trim_5p_seq", "trim_5p_overlap", "trim_5p_times",
                 "discard_untrimmed", "trim_3p_seq", "donor_fasta")
-# Settings that were named after Hermes before they were understood to apply to any transposon. Read, never written.
+# this was the legacy key names but has since been updated to include other transposons.
 LEGACY_KEYS = {"hermes_cleanup": "detect_ends", "hermes_reference": "reference"}
 
 

@@ -20,8 +20,8 @@ import pandas as pd
 from scipy import sparse
 from sklearn.metrics import roc_auc_score
 
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import resampling
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.fitness import resampling
 from ytab.fitness import zscore
 from ytab.normalization.methods import normalize
 

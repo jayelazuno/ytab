@@ -28,7 +28,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT/"scripts/local"
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality.control_conditioned_gumbel import NONLINEAR_NORMALIZATIONS, NORMALIZATIONS  # noqa: E402
+from ytab.core.design import NONLINEAR_NORMALIZATIONS, NORMALIZATIONS  # noqa: E402
 from ytab.fitness import contract  # noqa: E402
 
 SCALAR = set(NORMALIZATIONS)

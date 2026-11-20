@@ -24,8 +24,11 @@ from ytab.fitness import agreement  # noqa: E402
 sys.path.append(str(ROOT/"scripts/local"))
 import ytab_method_comparison_summary as summ  # noqa: E402
 
-NAMES = {"zscore": "z-score", "resampling": "Resampling", "gumbel": "Gumbel", "published": "Published"}
-COLOURS = {"zscore": "#0072B2", "resampling": "#E69F00", "gumbel": "#009E73", "published": "#CC79A7"}
+ORDER = ("zscore", "zscore_allcontrols", "resampling", "gumbel", "published")
+NAMES = {"zscore": "z-score", "zscore_allcontrols": "z-score (all controls)", "resampling": "Resampling",
+         "gumbel": "Gumbel", "published": "Published"}
+COLOURS = {"zscore": "#0072B2", "zscore_allcontrols": "#56B4E9", "resampling": "#E69F00", "gumbel": "#009E73",
+           "published": "#CC79A7"}
 # Cunningham-lab scope (user, 2026-11-05): only strains whose design meets the z-score of Gale 2020 (>= 2 controls), so
 # every method is compared on data it is meant for. Single-control strains are not forced into the comparison.
 CUNNINGHAM = {"Gale_2020": None, "Nickels_2025_glabrata": {"BG2", "pdr1_KO"}, "Nickels_2026_glabrata_tolerance": None}
@@ -50,15 +53,17 @@ def save(fig, name, folder=None, exts=("png", "pdf")):
 
 
 def finished(run: Path, method: str) -> bool:
-    m = run/("zscore_manifest.json" if method == "zscore" else "manifest.json")
+    m = run/("zscore_manifest.json" if method.startswith("zscore") else "manifest.json")
     if not m.exists():return False
-    j = json.loads(m.read_text()); return method == "zscore" or any(g.get("status") == "success" for g in j.get("groups", {}).values())
+    j = json.loads(m.read_text())
+    return method.startswith("zscore") or any(g.get("status") == "success" for g in j.get("groups", {}).values())
 
 
 def per_dataset():
     rows, recovery = [], []
     for d in sorted(p for p in OUT.iterdir() if (p/"runs").is_dir() and p.name not in EXCLUDED):
-        inputs = {m: d/"runs"/m for m in ("zscore", "resampling", "gumbel") if finished(d/"runs"/m, m)}
+        inputs = {m: d/"runs"/m for m in ("zscore", "zscore_allcontrols", "resampling", "gumbel")
+                  if finished(d/"runs"/m, m)}
         pub = d/"published.tsv"
         if len(inputs) + pub.exists() < 2:continue
         agreement.run(inputs, d/"agreement", pub if pub.exists() else None, sources={"dataset": d.name})
@@ -93,7 +98,8 @@ def strip(ax, data, groups, value, colour_of, ylabel):
 def plots(pairs, rec):
     methods = [p for p in pairs if True]
     within = pairs[(pairs.method_a != "published") & (pairs.method_b != "published")]
-    keys = [k for k in [("zscore", "resampling"), ("zscore", "gumbel"), ("resampling", "gumbel")] if ((within.method_a == k[0]) & (within.method_b == k[1])).any()]
+    keys = [k for k in [("zscore", "resampling"), ("zscore", "gumbel"), ("resampling", "gumbel"),
+                        ("zscore", "zscore_allcontrols")] if ((within.method_a == k[0]) & (within.method_b == k[1])).any()]
     data = {k: within[(within.method_a == k[0]) & (within.method_b == k[1])] for k in keys}
     mix = lambda k: "#555555"
     fig, axes = plt.subplots(1, 3, figsize=(13, 4.2))
@@ -102,7 +108,7 @@ def plots(pairs, rec):
     strip(axes[2], data, keys, "spearman_score", mix, "Spearman, signed significance"); axes[2].set_ylim(-.2, 1)
     fig.suptitle("Method vs method, every background x condition of every dataset (bar: median; Gumbel pairs depleted only)", fontweight="bold"); save(fig, "A_method_agreement")
     if len(rec):
-        ms = [m for m in ("zscore", "resampling", "gumbel") if m in set(rec.method)]
+        ms = [m for m in ("zscore", "zscore_allcontrols", "resampling", "gumbel") if m in set(rec.method)]
         fig, axes = plt.subplots(1, 3, figsize=(13, 4.2))
         for ax, (val, lab) in zip(axes, [("recall", "Recall of published hits"), ("precision", "Precision vs published hits"), ("spearman_vs_published_z", "Spearman vs published z")]):
             d = {m: rec[(rec.method == m) & (rec.direction == "depleted")] for m in ms}; strip(ax, d, ms, val, COLOURS.get, lab); ax.set_ylim(0 if val != "spearman_vs_published_z" else -.2, 1)
@@ -112,7 +118,10 @@ def plots(pairs, rec):
 def upset(dataset, group, direction="depleted", folder=None, name=None, exts=("png", "pdf")):
     s = pd.read_csv(OUT/dataset/"agreement/sets.tsv", sep="\t"); s = s[(s.group == group) & (s.direction == direction)].sort_values("genes", ascending=False)
     if s.empty:return
-    methods = [m for m in ("zscore", "resampling", "gumbel", "published") if s.methods.str.contains(m).any()]
+    # Taken from the member sets themselves and matched exactly: "zscore" is a substring of "zscore_allcontrols",
+    # so a contains() test puts a method in the list that is not in the data, and the row lookup below then fails.
+    present = {m for row in s.methods for m in str(row).split("&")}
+    methods = [m for m in ORDER if m in present]
     fig, (top, bot) = plt.subplots(2, 1, figsize=(max(6, .55*len(s)+2), 5.5), gridspec_kw=dict(height_ratios=[3, 1.2]), sharex=True)
     x = np.arange(len(s)); members = [m.split("&") for m in s.methods]
     colour = [COLOURS[m[0]] if len(m) == 1 else ("#087f85" if len(m) == len(methods) else "#9aa5ad") for m in members]
@@ -173,7 +182,7 @@ def dataset_plots(d: Path):
     pairs = pd.read_csv(a/"pairs.tsv", sep="\t"); genes = pd.read_csv(a/"genes.tsv", sep="\t", low_memory=False)
     keep = np.array([in_scope(d.name, b) for b in pairs.background.astype(str)], dtype=bool); pairs = pairs[keep]
     genes = genes[np.array([in_scope(d.name, b) for b in genes.background.astype(str)], dtype=bool)]
-    methods = [m for m in ("zscore", "resampling", "gumbel", "published") if f"{m}_tested" in genes]
+    methods = [m for m in ORDER if f"{m}_tested" in genes]
     out = d/"plots"; n = 0
     # overview: of each method's depleted calls, the share each other method also calls, per condition
     both = pd.concat([pairs.assign(pair=pairs.method_a.map(NAMES)+" in "+pairs.method_b.map(NAMES), value=pairs.depleted_a_recovered_by_b),

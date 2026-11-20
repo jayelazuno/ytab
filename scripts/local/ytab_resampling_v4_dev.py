@@ -20,8 +20,8 @@ from scipy.stats import geom
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import resampling
-from ytab.essentiality.control_conditioned_gumbel import benjamini_hochberg
+from ytab.fitness import resampling
+from ytab.core.stats import benjamini_hochberg
 from ytab.normalization.betageom import beta_geometric_cdf, fit_parameters
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import ttr_parameters, write_table

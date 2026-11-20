@@ -104,3 +104,43 @@ On HPC:
 3. run import tests from repo root with `PYTHONPATH=src`
 4. identify any remaining missing packages or path assumptions
 5. continue cleanup there
+
+## 2026-11-14 — packages by question asked, not by where the code grew
+
+### Goal
+`src/ytab/essentiality/` had become the home of most analysis code, including every treated-vs-control method and
+the shared helpers they all import. A reader looking for the comparative methods found them under "essentiality",
+and `qc`, `normalization` and `screen_coverage` imported genome annotation from a Gumbel module. The packages now
+say what each module answers.
+
+### Shared helpers extracted to `src/ytab/core/`
+Both `control_conditioned_gumbel.py` and `library_correlation.py` had become de facto utility modules. What the
+rest of the repo imported from them now lives on its own:
+- `annotations`, `gene_sites`, `SITE_RULES`, `gene_key` -> `src/ytab/core/annotation.py`
+- `load_design`, `load_normalization`, `NORMALIZATIONS`, `NONLINEAR_NORMALIZATIONS`, `DEFAULT_NORMALIZATION`
+  -> `src/ytab/core/design.py`
+- `benjamini_hochberg`, `_json_ready` (now `json_ready`) -> `src/ytab/core/stats.py`
+- `read_hits` -> `src/ytab/core/hits.py`
+
+### Comparative methods moved to `src/ytab/fitness/`
+Each needs at least two conditions, so none of them is an essentiality classifier:
+- `src/ytab/essentiality/control_conditioned_gumbel.py` -> `src/ytab/fitness/control_conditioned_gumbel.py`
+- `src/ytab/essentiality/pooled_gumbel.py` -> `src/ytab/fitness/pooled_gumbel.py`
+- `src/ytab/essentiality/resampling.py` -> `src/ytab/fitness/resampling.py`
+- `src/ytab/essentiality/pooled_gene_ql.py` -> `src/ytab/fitness/pooled_gene_ql.py`
+- `src/ytab/essentiality/multicondition.py` -> `src/ytab/fitness/multicondition.py`
+- `src/ytab/essentiality/multicondition_plots.py` -> `src/ytab/fitness/multicondition_plots.py`
+- `src/ytab/essentiality/genetic_interactions.py` -> `src/ytab/fitness/genetic_interactions.py`
+
+### Library agreement moved to `src/ytab/qc/`
+It measures how alike libraries are, not what a treatment did, and it powers Quality Control > Library Agreement:
+- `src/ytab/essentiality/library_correlation.py` -> `src/ytab/qc/library_correlation.py`
+
+`src/ytab/essentiality/` now holds only single-condition essentiality: `hermes_hmm.py`, `Classifier.py`,
+`model_menu.py` and `contract.py`. Both package `__init__.py` files state the boundary.
+
+### Pre-registration checksums
+`docs/manuscript/preregistration_*.sha256` record source paths that no longer exist. They are left exactly as
+written: they are the provenance of a registered analysis, not a live index. Their recorded hashes had already
+diverged from the code before this migration (the files were developed further after registration), so verifying
+one means checking out the registered commit, where both the old paths and the recorded contents are intact.

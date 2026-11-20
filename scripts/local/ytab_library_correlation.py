@@ -26,7 +26,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality.library_correlation import Sample, refresh_pca, run
+from ytab.qc.library_correlation import Sample, refresh_pca, run
 
 
 def project_samples(name):

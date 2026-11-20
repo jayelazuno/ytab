@@ -24,8 +24,8 @@ from scipy.stats import beta
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import genetic_interactions as gi
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.fitness import genetic_interactions as gi
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import sha256, write_table
 
@@ -174,7 +174,7 @@ def zn(workers):
         p = np.array([float(r["p_value"]) for r in rows if r["status"] == "tested"])
         summary[label] = dict(tested=d["tested"], calls=d["calls"], p05_fraction=float(np.mean(p <= .05)), site_variance_scale=d["site_variance_scale"],
                               clone_sharing=d["clone_sharing"], warning=d["warning"])
-    (target/"summary.json").write_text(json.dumps(ccg._json_ready(summary), indent=2)+"\n"); print(json.dumps(ccg._json_ready(summary), indent=1))
+    (target/"summary.json").write_text(json.dumps(ccg.json_ready(summary), indent=2)+"\n"); print(json.dumps(ccg.json_ready(summary), indent=1))
 
 
 def main():

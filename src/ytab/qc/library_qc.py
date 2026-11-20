@@ -48,8 +48,9 @@ METRICS = [
     ("percent_mapped", "reads", "Mapped (%)", "low", "relative", "Primary alignments that map to the reference."),
     ("percent_mapq", "reads", "Mapped with MAPQ above threshold (%)", "low", "relative", "Uniquely placed alignments; low values mean repeats or the wrong reference."),
     ("mean_mapq", "reads", "Mean MAPQ", "low", "relative", "Mean mapping quality of mapped primary alignments."),
-    ("percent_donor", "reads", "Reads from the transposon donor (%)", "high", "relative", "Reads that start at the transposon end and run into the donor plasmid or donor locus rather than the genome: the donor was not lost after induction. Counted against the donor sequence when the project names one (mapping.donor_fasta), otherwise estimated from recurring unmapped flanks (a donor junction is one fixed sequence). These reads carry no insertion; high values waste depth and mean the donor persists in the pool."),
-    ("percent_donor_shared", "reads", "Donor reads placed on the genome (%)", "high", "relative", "Donor reads whose flank the donor shares with the host genome (a promoter, marker or CEN/ARS fragment on the plasmid): they map to that locus and look like insertions there. Only counted when the donor sequence is known."),
+    ("percent_donor", "reads", "Reads matching the transposon donor (%)", "high", "relative", "Reads that start at the transposon end and run into the donor sequence rather than the genome. Counted against the donor when the project names one (mapping.donor_fasta), otherwise estimated from recurring unmapped flanks. This is the total match: it splits into the two metrics below, and it is the lower of them, donor only, that measures how much donor the pool still carries. Where the donor shares sequence with the genome the two differ widely, so read this figure with them."),
+    ("percent_donor_only", "reads", "Reads from the donor itself (%)", "high", "relative", "Donor-matching reads that the genome cannot place: they come from the donor and nowhere else, so this is the pool's donor carry-over. These reads carry no insertion, and a high value means the donor persisted after induction and that depth was spent on it. Use this figure, not the total match, when comparing libraries or datasets."),
+    ("percent_donor_shared", "reads", "Donor reads also placed on the genome (%)", "high", "relative", "Donor-matching reads that also map to a real genomic locus, because the donor shares sequence with the host (a promoter, marker, CEN/ARS fragment or a deletion cassette built from the same parts). These are most likely genomic reads rather than donor carry-over, which is why they are counted apart from it. Only measured when the donor sequence is known and the reads were put against the genome; blank where they were not."),
     ("total_cts", "insertions", "Reads at insertion sites", "low", "relative", "Reads supporting called insertions."),
     ("unique_sites", "insertions", "Insertion sites", "low", "relative", "Distinct insertion positions (strands combined)."),
     ("insertions_per_kb", "insertions", "Insertions per kb of genome", "low", "relative", "Insertion sites per kilobase of reference: how densely the genome is covered (Hermes has no fixed set of possible sites)."),
@@ -108,7 +109,7 @@ def genome_length(fasta: Path) -> int:
 
 def coding_genes(fasta: Path, gff: Path) -> list[dict]:
     """Annotated genes with CDS blocks, on the chromosomes the reads were mapped to."""
-    from ytab.essentiality.control_conditioned_gumbel import annotations
+    from ytab.core.annotation import annotations
     chroms = {line[1:].split()[0] for line in open(fasta) if line.startswith(">")} if fasta and fasta.is_file() else set()
     return [g for g in annotations(gff) if g["blocks"] and (not chroms or g["chrom"] in chroms)]
 
@@ -119,8 +120,8 @@ TOP_GENES = 30
 def gene_reads(sample: str, sites: dict, genes: list[dict]) -> list[dict]:
     """Every gene with reads in one library (reads at sites in the gene's coding sequence), with its share of the
     library's reads, its insertion sites, its largest site's reads and that site's share of the gene's reads."""
-    from ytab.essentiality.control_conditioned_gumbel import gene_sites
-    from ytab.essentiality.library_correlation import SITE_RULES, gene_key
+    from ytab.core.annotation import gene_sites
+    from ytab.core.annotation import SITE_RULES, gene_key
     if not genes or not sites:return []
     keys = list(sites); reads = np.fromiter((sites[k] for k in keys), dtype=float, count=len(keys)); total = float(reads.sum())
     rows = []
@@ -326,6 +327,7 @@ def _donor(path: Path) -> dict:
     row = next(csv.DictReader(open(path)), {})
     counted = _float(row.get("percent_donor"))
     return dict(percent_donor=counted if counted is not None else _float(row.get("percent_recurrent_unmapped_flank")),
+                percent_donor_only=_float(row.get("percent_donor_only")),
                 percent_donor_shared=_float(row.get("percent_donor_shared")),
                 donor_source=row.get("donor") or ("estimate (recurring unmapped flanks)" if row.get("percent_recurrent_unmapped_flank") else ""))
 

@@ -24,8 +24,8 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import hermes_hmm as hh
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.essentiality import window_hmm as hh
 
 REF = ROOT/"resources/species/albicans/reference_genome"
 HAPA = REF/"C_albicans_SC5314_version_A22-s07-m01-r08_chromosomes_HapA.fasta"

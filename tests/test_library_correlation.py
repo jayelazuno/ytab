@@ -1,6 +1,7 @@
 import numpy as np
 
-from ytab.essentiality import library_correlation as lc
+from ytab.core.annotation import gene_key
+from ytab.qc import library_correlation as lc
 
 
 def write_gff(path, chrom, genes):
@@ -62,4 +63,4 @@ def test_conflicting_declaration_is_flagged():
 
 
 def test_gene_key_strips_annotation_prefix():
-    assert lc.gene_key("gene:SPAC1002.01") == "SPAC1002.01" and lc.gene_key("GWK60_A00011") == "GWK60_A00011"
+    assert gene_key("gene:SPAC1002.01") == "SPAC1002.01" and gene_key("GWK60_A00011") == "GWK60_A00011"

@@ -3,7 +3,7 @@
 
   1. HMM (label-free, any yeast; `ytab hermes-hmm`) on independent parent libraries of one strain, or reuse an
      earlier HMM fit (--hmm-run);
-  2. model table (`ytab_essentiality_model_menu.py`): HMM calls, plus the current random forest's scores when its
+  2. model table (`ytab_essentiality_hybrid_model.py`): HMM calls, plus the current random forest's scores when its
      prediction table is given (--rf), plus the hybrid (random forest on gene features + HMM posteriors) when
      curated labels are also given (--labels);
   3. plot summaries: window posteriors and insertion counts along each chromosome (plots/windows.tsv.gz); the
@@ -75,7 +75,7 @@ def export_target_model(hmm_dir, path, project_config, libraries, min_reads):
     """The insertion-target preference (position weight matrix, information per offset): the model the HMM fitted with
     when it learned one (sequence covariate "learned"); otherwise learned the same way from the same libraries' distinct
     sites as a diagnostic only (the fit used the Hermes motif). Returns True / False (used in the fit), None if unavailable."""
-    import ytab_hermes_hmm as hmm
+    import ytab_window_hmm as hmm
     if (hmm_dir/"target_model.tsv").exists():
         rows = list(csv.DictReader(open(hmm_dir/"target_model.tsv"), delimiter="\t")); used = True
     else:
@@ -108,7 +108,7 @@ def export_roc(genes_path, path, labels_path=None):
             if r.get("label") in ("essential", "nonessential"):lab[r.get("gene_id") or r.get("cglab_id")] = (r["label"], r.get("tier", ""))
         for g in genes:g["reference_label"], g["reference_tier"] = lab.get(g["ORF"], lab.get(g["ORF"].removeprefix("gene:"), ("", "")))
     labelled = [g for g in genes if g.get("reference_label") in ("essential", "nonessential")]
-    models = {"HMM (label-free)":"hmm_score", "Hybrid":"hybrid_score", "Random forest":"rf_existing_score"}
+    models = {"HMM (label-free)":"hmm_score", "Hybrid":"hybrid_score"}   # the legacy RF score is no longer carried
     rows, aucs = [], {}
     for model, column in models.items():
         for tier in ["all"]+sorted({g.get("reference_tier") or "" for g in labelled} - {""}):
@@ -189,7 +189,7 @@ def main():
             fasta, gff, hits = project_files(a.project_config, a.libraries)
             missing = [str(h) for h in hits if not h.exists()]
             if missing:raise ValueError(f"No hit file for: {', '.join(missing)}")
-            step([SCRIPTS/"ytab_hermes_hmm.py", out/"hmm", "--fasta", fasta, "--gff", gff, *[x for h in hits for x in ("--hits", h)],
+            step([SCRIPTS/"ytab_window_hmm.py", out/"hmm", "--fasta", fasta, "--gff", gff, *[x for h in hits for x in ("--hits", h)],
                   "--window", a.window, "--min-reads", a.min_reads, "--sequence-covariate", covariate])
             hmm_dir = out/"hmm/joint"
         hybrid_inputs = None
@@ -200,7 +200,7 @@ def main():
             a.features = Path(hybrid_inputs["features"])
             if a.with_classifier:a.rf = Path(hybrid_inputs["predictions"])
         print("2/3 Building the model table", file=sys.stderr, flush=True)
-        step([SCRIPTS/"ytab_essentiality_model_menu.py", "--hmm", hmm_dir/"genes.tsv", "--out", out/"models", "--train-tiers", a.train_tiers,
+        step([SCRIPTS/"ytab_essentiality_hybrid_model.py", "--hmm", hmm_dir/"genes.tsv", "--out", out/"models", "--train-tiers", a.train_tiers,
               *(["--features", a.features] if a.features else []), *(["--rf", a.rf] if a.rf else []),
               *(["--labels", a.labels] if a.labels else [])])
         print("3/3 Writing plot summaries", file=sys.stderr, flush=True)

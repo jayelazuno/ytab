@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 from scipy import sparse
 
-from ytab.essentiality.control_conditioned_gumbel import synthetic_experiment
-from ytab.essentiality.resampling import Settings, analyze, exact_p, monte_carlo_p, run, subset_sums
+from ytab.fitness.control_conditioned_gumbel import synthetic_experiment
+from ytab.fitness.resampling import Settings, analyze, exact_p, monte_carlo_p, run, subset_sums
 from ytab.normalization.methods import normalize, run_choices
 from ytab.normalization.ttr import sha256
 
@@ -157,7 +157,7 @@ def brute_force_one_sided(control, treatment, alternative):
 
 @pytest.mark.parametrize("alternative", ["depleted", "enriched"])
 def test_one_sided_exact_matches_enumeration(alternative):
-    from ytab.essentiality.resampling import exact_units
+    from ytab.fitness.resampling import exact_units
     rng = np.random.default_rng(5)
     control = rng.poisson(20, (5, 2))*1.37; treatment = rng.poisson(12, (5, 2))*.91
     sums, _ = subset_sums(control, treatment)
@@ -187,7 +187,7 @@ def test_recenter_removes_a_global_scale_shift():
 
 
 def test_noise_asymmetry_warning():
-    from ytab.essentiality.resampling import noise_asymmetry
+    from ytab.fitness.resampling import noise_asymmetry
     rng = np.random.default_rng(8); mu = np.exp(rng.normal(3, 1, 5000))
     quiet = np.column_stack([rng.poisson(mu), rng.poisson(mu)]).astype(float)
     noisy = np.column_stack([rng.negative_binomial(2, 2/(2+mu)), rng.negative_binomial(2, 2/(2+mu))]).astype(float)

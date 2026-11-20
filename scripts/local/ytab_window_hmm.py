@@ -37,9 +37,9 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import hermes_hmm as hh
-from ytab.essentiality.library_correlation import read_hits
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.essentiality import window_hmm as hh
+from ytab.core.hits import read_hits
 from ytab.normalization.ttr import sha256, write_table
 
 REF = ROOT/"resources/species/glabrata/reference_genome"

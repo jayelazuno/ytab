@@ -5,8 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
-from ytab.essentiality import multicondition as mc
-from ytab.essentiality import multicondition_plots as mp
+from ytab.fitness import multicondition as mc
+from ytab.fitness import multicondition_plots as mp
 
 
 def split_design(rng, genes=600, sites=12, a_effect=None, b_effect=None, ref_noise=.6):

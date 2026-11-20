@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 ROOT = Path(__file__).resolve().parents[2]; sys.path.insert(0, str(ROOT/"src")); sys.path.append(str(ROOT/"scripts/local"))
 from ytab.benchmarks import treated_vs_control as tvc  # noqa: E402
-from ytab.essentiality import control_conditioned_gumbel as ccg, resampling  # noqa: E402
+from ytab.fitness import control_conditioned_gumbel as ccg, resampling  # noqa: E402
 import ytab_tvc_phase2 as phase2  # noqa: E402
 
 run, samples = phase2.DESIGNS["gale_swap_null"]

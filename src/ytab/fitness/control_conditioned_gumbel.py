@@ -10,6 +10,11 @@ sites in each gene is scored against a discrete Gumbel fitted to simulated
 no-effect runs and checked on independent simulations and the exact conditional
 run distribution. Run-based depletion evidence for treated-vs-control comparisons, validated in
 pre-registered benchmarks (R6, R13, R27); not an essentiality classifier.
+
+TRANSIT's Gumbel answers a different question with the same statistic: it scores runs of TA sites carrying no
+insertions in a single condition, to call a gene essential. This one needs both conditions, because each site's
+depletion threshold is conditioned on the matched controls, and it says only that the treatment depleted a run of
+sites. That is why it lives beside the other comparative methods rather than in `ytab.essentiality`.
 """
 from dataclasses import asdict, dataclass
 import csv
@@ -27,11 +32,13 @@ from scipy.special import gammaln, logsumexp
 from scipy.stats import nbinom, norm
 
 from ytab.normalization.ttr import sha256, write_table
+from ytab.core.annotation import annotations, gene_sites
+from ytab.core.design import (DEFAULT_NORMALIZATION, NONLINEAR_NORMALIZATIONS, NORMALIZATIONS,
+                              load_design, load_normalization)
+from ytab.core.stats import benjamini_hochberg, json_ready
 
 MODEL = "control-conditioned Gumbel"
 REVISION = "ccg_v5_normalized_input"
-NORMALIZATIONS = ("ttr", "totreads", "nzmean")   # scalar methods whose factors are valid count-model exposures
-DEFAULT_NORMALIZATION = "ttr"
 DEFAULT_SIMULATIONS = {"exact":1000, "gumbel-mc":20000}   # exact: Gumbel diagnostic only; gumbel-mc: tested setting
 LOG_TAU_BOUNDS = (np.log(1e-3), np.log(20.))
 LOG_PHI_BOUNDS = (np.log(1e-6), np.log(1e2))
@@ -80,61 +87,6 @@ class Settings:
                 self.inference not in DEFAULT_SIMULATIONS or
                 not 0 <= self.nterm < 100 or not 0 <= self.cterm < 100 or self.nterm+self.cterm >= 100):
             raise ValueError("Invalid site alpha, FDR, tail tolerance, KS confidence, eligibility, dispersion, inference settings or terminal percentages")
-
-
-def annotations(path):
-    """Resolve CDS parents through transcript ancestry, using each gene's own CDS."""
-    records = {}
-    ambiguous = set()
-    cds = []
-    with Path(path).open() as handle:
-        for line in handle:
-            if line.startswith("##FASTA"):break
-            if line.startswith("#") or not line.strip():continue
-            fields=line.rstrip().split("\t")
-            if len(fields)!=9:raise ValueError("Expected nine-column GFF3")
-            attrs={unquote(k):unquote(v) for k,v in
-                   (entry.split("=",1) for entry in fields[8].split(";") if "=" in entry)}
-            rec=dict(chrom=fields[0],kind=fields[2],start=int(fields[3]),end=int(fields[4]),
-                     strand=fields[6],attrs=attrs)
-            if rec["start"]<1 or rec["end"]<rec["start"]:raise ValueError("Invalid inclusive GFF coordinates")
-            if fields[2]=="CDS":cds.append(rec)
-            elif attrs.get("ID"):
-                # A feature split across several rows carries one ID on each (RefSeq does this for a misc_feature
-                # interrupted by another annotation). That is ambiguous only if a CDS resolves through it, so the
-                # error is deferred to ancestor() rather than rejecting an otherwise valid annotation.
-                if attrs["ID"] in records:ambiguous.add(attrs["ID"])
-                else:records[attrs["ID"]]=rec
-    genes={}
-    def ancestor(identifier,seen):
-        if identifier in seen:raise ValueError("Cyclic GFF ancestry")
-        if identifier in ambiguous:raise ValueError(f"Duplicate non-CDS GFF ID in CDS ancestry: {identifier}")
-        if identifier not in records:raise ValueError(f"Unresolved GFF CDS parent: {identifier}")
-        record=records[identifier]
-        if record["kind"] in {"gene","pseudogene"} or not record["attrs"].get("Parent"):
-            return [identifier]
-        return [g for p in record["attrs"]["Parent"].split(",") for g in ancestor(p,seen|{identifier})]
-    for record in cds:
-        parents=record["attrs"].get("Parent","").split(",")
-        if not all(parents):raise ValueError("CDS must have explicit GFF Parent")
-        for gid in {g for p in parents for g in ancestor(p,set())}:
-            parent=records[gid]
-            if parent["chrom"]!=record["chrom"] or parent["strand"]!=record["strand"]:
-                raise ValueError("CDS and gene disagree on chromosome/strand")
-            identifier=parent["attrs"].get("locus_tag",gid)
-            gene=genes.setdefault(gid,dict(id=identifier,gff_id=gid,name=parent["attrs"].get("gene") or parent["attrs"].get("Gene") or parent["attrs"].get("Name",identifier),
-                description=parent["attrs"].get("description",parent["attrs"].get("Note","")),
-                chrom=parent["chrom"],strand=parent["strand"],blocks=[]))
-            gene["blocks"].append((record["start"],record["end"]))
-    if not genes:raise ValueError("No protein-coding CDS groups found in GFF3")
-    if len({g["id"] for g in genes.values()})!=len(genes):raise ValueError("Duplicate gene identifiers")
-    for gene in genes.values():
-        merged=[]
-        for a,b in sorted(set(gene["blocks"])):
-            if merged and a<=merged[-1][1]+1:merged[-1]=(merged[-1][0],max(b,merged[-1][1]))
-            else:merged.append((a,b))
-        gene["blocks"]=merged
-    return sorted(genes.values(),key=lambda g:g["id"])
 
 
 def _integer_counts(values, name):
@@ -456,39 +408,9 @@ def simulate_runs(rng, locations, log_weights, threshold, treatment_exposure, di
     return longest_runs(flags)
 
 
-def benjamini_hochberg(p):
-    p = np.asarray(p, dtype=float); order = np.argsort(p); ranked = p[order]*len(p)/np.arange(1, len(p)+1)
-    adjusted = np.empty_like(p); adjusted[order] = np.minimum(1, np.minimum.accumulate(ranked[::-1])[::-1])
-    return adjusted
-
-
 def _log2_ratio(treatment, control, treatment_exposure, control_exposure):
     if control <= 0 or treatment <= 0:return None
     return float(np.log2((treatment/treatment_exposure)/(control/control_exposure)))
-
-
-def gene_sites(genes, sites, settings):
-    """Catalogue indices in each gene's own CDS union (N/C-terminal trimming and last 3 bases excluded, as in TRANSIT's Gumbel method)."""
-    by_chrom = {}
-    for i, (chrom, p) in enumerate(sites):by_chrom.setdefault(chrom, []).append((p, i))
-    chroms = {}
-    for chrom, entries in by_chrom.items():
-        entries.sort(); positions, indices = np.asarray(entries, dtype=np.int64).T; chroms[chrom] = (positions, indices)
-    result = []
-    for gene in genes:
-        positions, indices = chroms.get(gene["chrom"], (np.array([], dtype=np.int64), np.array([], dtype=np.int64)))
-        selected = np.asarray([k for a, b in gene["blocks"]
-                               for k in range(np.searchsorted(positions, a), np.searchsorted(positions, b, side="right"))], dtype=int)
-        p = positions[selected]; idx = indices[selected]
-        lengths = np.array([b-a+1 for a, b in gene["blocks"]]); length = int(lengths.sum())
-        offset = np.zeros(len(p), dtype=int); cumulative = 0
-        for (a, b), width in zip(gene["blocks"], lengths):
-            mask = (p >= a) & (p <= b); offset[mask] = cumulative+p[mask]-a; cumulative += int(width)
-        oriented = offset if gene["strand"] != "-" else length-1-offset
-        keep = (oriented >= length*settings.nterm/100) & (oriented < length*(1-settings.cterm/100))
-        if settings.ignore_stop:keep &= oriented < length-3
-        result.append(idx[keep])
-    return result
 
 
 def combined_dispersion(dispersion, exposures):
@@ -562,8 +484,12 @@ def _gene_result(gene, idx, control, treatment, positions, threshold, flag_proba
             if not (agrees or beyond):reasons.append("fitted tail disagrees with exact conditional tail")
     else:reasons.append(fit["reason"])
     row["null_fit_adequate"] = not reasons
+    # No site in this gene has enough control support for a depletion to be visible at all, so depletion was never
+    # testable here. That is not the same as testing the gene and finding none, which is what "no depleted site"
+    # below records, and the two must not both read as "not significant": the gene is reported as not tested, and
+    # it is kept out of the Benjamini-Hochberg family so an untestable hypothesis does not enlarge the correction.
     if not row["n_detectable"]:
-        return row | dict(status="no depletion-detectable sites", in_family=True, p_family=1.)
+        return row | dict(status="no depletion-detectable sites", in_family=False)
     if not r:
         return row | dict(status="no depleted site", in_family=True, p_family=1.)
     row["gumbel_check"] = "; ".join(reasons) or "adequate"
@@ -700,135 +626,6 @@ def synthetic_experiment(rng, sites_per_gene, exposures, m=np.log(30), tau=1.5, 
     return controls, treated[:, 0] if treatments == 1 else treated, genes, indices, positions
 
 
-def _json_ready(value):
-    if isinstance(value, dict):return {str(k):_json_ready(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):return [_json_ready(v) for v in value]
-    if isinstance(value, (np.bool_,)):return bool(value)
-    if isinstance(value, np.integer):return int(value)
-    if isinstance(value, (float, np.floating)):return float(value) if np.isfinite(value) else None
-    return value
-
-
-NONLINEAR_NORMALIZATIONS = ("betageom", "aBGC")   # resampling only: count-reshaping, no scalar factor
-
-
-def load_normalization(normalized, normalization=None, nonlinear=False):
-    """Locate one scalar method inside a YTAB `normalize` output (run directory or its method folder).
-
-    nonlinear=True (resampling only) also accepts the beta-geometric corrections, which reshape counts.
-    """
-    normalized = Path(normalized).resolve()
-    if (normalized/"method.json").is_file():
-        folder, root = normalized, normalized.parent
-    else:
-        root = normalized
-        folder = root/(normalization or DEFAULT_NORMALIZATION)
-    if not (root/"run_manifest.json").is_file() or not (folder/"method.json").is_file():
-        raise ValueError(f"Expected a YTAB normalization output with {folder.name}/method.json and run_manifest.json: {normalized}")
-    method = json.loads((folder/"method.json").read_text())["id"]
-    if normalization and method != normalization:
-        raise ValueError(f"Normalized input is {method!r}, not the requested {normalization!r}")
-    if method not in NORMALIZATIONS+(NONLINEAR_NORMALIZATIONS if nonlinear else ()):
-        raise ValueError(f"{method!r} is not supported by the control-conditioned Gumbel; use one of {', '.join(NORMALIZATIONS)} "
-                         "(scalar factors only: distribution-reshaping methods cannot be expressed as count-model exposures)")
-    manifest = json.loads((root/"run_manifest.json").read_text())
-    if manifest.get("status") != "success" or method not in manifest.get("methods", []):
-        raise ValueError(f"Normalization run is incomplete or does not list {method!r}")
-    with (root/"observations.tsv").open() as handle:observations = [r["observation_id"] for r in csv.DictReader(handle, delimiter="\t")]
-    with (folder/"factors.tsv").open() as handle:factors = list(csv.DictReader(handle, delimiter="\t"))
-    if [r["observation_id"] for r in factors] != observations or len(set(observations)) != len(observations):
-        raise ValueError("Normalization factors and observations disagree")
-    return dict(method=method, root=root, folder=folder, manifest=manifest, observations=observations,
-                factors={r["observation_id"]:float(r["factor"]) if r["factor"] != "" else None for r in factors},
-                groups={r["observation_id"]:r["normalization_group"] for r in factors})
-
-
-def load_design(normalized, normalization, reference, output, controls, treatments, min_controls=2, min_treatments=1, stratified=False,
-                nonlinear=False, check_roles=True, independent=False):
-    """Validated controls/treatments from a YTAB scalar normalization output and its source catalogue.
-
-    stratified=True (resampling only) allows several independent libraries, each with >=1 control and
-    >=1 treatment sharing one normalization group; comparisons are then made within library.
-
-    Shared by the control-conditioned Gumbel and resampling so both read normalized input identically.
-    Returns raw integer counts and normalized counts (selected columns), factors, sites and provenance.
-    nonlinear=True (resampling only) accepts betageom/aBGC output: factors are None, and the normalized
-    counts are checked to keep every raw zero and the within-sample order of raw counts.
-    check_roles=False (multi-condition tests only): conditions are user-assigned, so catalogue roles are not compared.
-    independent=True (unstratified resampling only): the samples may come from different, independently made libraries
-    (e.g. one library per strain, as in SATAY mutant screens); labels are permuted among samples within each site, as in
-    TRANSIT's resampling. Differences in library composition then add to the noise, so the test is for library-level designs.
-    """
-    norm = load_normalization(normalized, normalization, nonlinear)
-    catalogue = Path(norm["manifest"].get("catalogue", "")).resolve()
-    reference, output = Path(reference).resolve(), Path(output).resolve()
-    if any(output == x or x in output.parents or output in x.parents for x in (catalogue, norm["root"])) or (output.exists() and any(output.iterdir())):
-        raise ValueError("Choose a new output directory, separate from the normalization and its catalogue")
-    controls = list(controls); treatments = [treatments] if isinstance(treatments, str) else list(treatments)
-    selected = controls+treatments
-    if len(controls) < min_controls or len(treatments) < min_treatments or len(set(selected)) != len(selected):
-        raise ValueError(f"Select >={min_controls} unique control observations and distinct treatment observations explicitly")
-    if not (catalogue/"run_manifest.json").is_file():
-        raise ValueError(f"Normalization source catalogue not found: {catalogue}")
-    stale = [name for name, digest in norm["manifest"].get("source_hashes", {}).items() if sha256(catalogue/name) != digest]
-    if stale or not norm["manifest"].get("source_hashes"):
-        raise ValueError(f"Catalogue changed since normalization (checksum mismatch: {stale}); renormalize")
-    source = json.loads((catalogue/"run_manifest.json").read_text())
-    if source.get("status") != "success" or sha256(reference) != source.get("reference_sha256") or norm["manifest"].get("reference_sha256") != source.get("reference_sha256"):
-        raise ValueError("Successful catalogue and checksum-identical reference required")
-    with (catalogue/"observations.tsv").open() as handle:metadata = list(csv.DictReader(handle, delimiter="\t"))
-    ids = [r["observation_id"] for r in metadata]
-    if len(set(ids)) != len(ids):raise ValueError("Duplicate observation IDs in catalogue")
-    missing = [x for x in selected if x not in ids or x not in norm["factors"]]
-    if missing:raise ValueError(f"Observations missing from the catalogue or normalization: {missing}")
-    chosen = [metadata[ids.index(x)] for x in selected]
-    for field in ("project",) if stratified or independent else ("project", "library_id", "pool"):
-        if len({r.get(field, "") for r in chosen}) != 1 or not chosen[0].get(field):
-            raise ValueError(f"Controls and treatments must share one explicit {field}")
-    if stratified:
-        libraries = {r.get("library_id", "") for r in chosen}
-        for library in libraries:
-            members = [x for x, r in zip(selected, chosen) if r.get("library_id", "") == library]
-            if not library or not set(members) & set(controls) or not set(members) & set(treatments):
-                raise ValueError(f"Each library needs an explicit library_id with >=1 control and >=1 treatment: {library!r}")
-            if len({norm["groups"][x] for x in members}) != 1:
-                raise ValueError(f"Samples of library {library!r} must come from one normalization group")
-    elif len({norm["groups"][x] for x in selected}) != 1:
-        raise ValueError("Controls and treatments must come from one normalization group")
-    control_roles = {r.get("role", "") for r in chosen[:len(controls)]}
-    treatment_roles = {r.get("role", "") for r in chosen[len(controls):]}
-    if check_roles and (len(control_roles) != 1 or len(treatment_roles) != 1 or control_roles == treatment_roles):
-        raise ValueError("Controls must share one role, treatments another, and the roles must differ")
-    raw = sparse.load_npz(catalogue/"raw_counts.npz").tocsc(); raw.sum_duplicates()
-    if (raw.shape[1] != len(ids) or raw.shape[0] != source.get("universe_sites") or np.any(~np.isfinite(raw.data))
-            or np.any(raw.data < 0) or np.any(raw.data != np.floor(raw.data))):
-        raise ValueError("Raw integer matrix dimensions/counts disagree with catalogue")
-    with gzip.open(catalogue/"sites.tsv.gz", "rt") as handle:
-        sites = [(r["chromosome"], int(r["position_1based"])) for r in csv.DictReader(handle, delimiter="\t")]
-    if len(sites) != raw.shape[0] or len(set(sites)) != len(sites) or any(p < 1 for _, p in sites):
-        raise ValueError("Coordinate catalogue duplicates or dimensions invalid")
-    counts = raw[:, [ids.index(x) for x in selected]].toarray().astype(np.int64)
-    scaled = sparse.load_npz(norm["folder"]/"normalized_counts.npz").tocsc()
-    if scaled.shape[0] != raw.shape[0]:raise ValueError("Normalized matrix and catalogue universe disagree")
-    scaled = scaled[:, [norm["observations"].index(x) for x in selected]].toarray()
-    if norm["method"] in NONLINEAR_NORMALIZATIONS:
-        factors = None
-        for j in range(counts.shape[1]):
-            order = np.lexsort((scaled[:, j], counts[:, j]))
-            if (np.any((scaled[:, j] > 0) != (counts[:, j] > 0)) or np.any(~np.isfinite(scaled[:, j]))
-                    or np.any(np.diff(scaled[order, j]) < -1e-9*max(1., scaled[:, j].max()))):
-                raise ValueError("Normalized counts do not preserve the raw zeros and count order of this catalogue")
-    else:
-        factors = np.array([norm["factors"][x] for x in selected])
-        if np.any(~np.isfinite(factors)) or np.any(factors <= 0):
-            raise ValueError("Normalization factors must be finite and positive")
-        if not np.allclose(scaled, counts*factors, rtol=1e-9, atol=1e-9):
-            raise ValueError("Normalized counts are not raw catalogue counts times the reported factors; input is not a valid scalar normalization")
-    return dict(norm=norm, catalogue=catalogue, output=output, controls=controls, treatments=treatments, selected=selected,
-                libraries=[r.get("library_id", "") for r in chosen],
-                chosen=chosen, counts=counts, scaled=scaled, factors=factors, sites=sites)
-
-
 def run(normalized, gff, reference, output, controls, treatments, settings=None, normalization=None):
     """File-based runner on a YTAB scalar normalization output (ttr default, totreads or nzmean).
 
@@ -890,5 +687,5 @@ def run(normalized, gff, reference, output, controls, treatments, settings=None,
             "Discrete Gumbel is an approximation; inadequate fits give no significance, not evidence of no depletion",
             "Overlapping genes share sites; BH assumes valid p-values and tolerable dependence",
             "Fitness, classifier and UI are unchanged"])
-    (output/"run_manifest.json").write_text(json.dumps(_json_ready(manifest), indent=2, allow_nan=False)+"\n")
+    (output/"run_manifest.json").write_text(json.dumps(json_ready(manifest), indent=2, allow_nan=False)+"\n")
     return manifest

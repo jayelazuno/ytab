@@ -23,7 +23,9 @@ from pathlib import Path
 
 import numpy as np
 
-from ytab.essentiality.control_conditioned_gumbel import annotations, benjamini_hochberg, gene_sites, load_design, _json_ready
+from ytab.core.annotation import annotations, gene_sites
+from ytab.core.design import load_design
+from ytab.core.stats import benjamini_hochberg, json_ready
 from ytab.normalization.ttr import sha256, write_table
 
 MODEL = "site-restricted resampling"
@@ -316,5 +318,5 @@ def run(normalized, gff, reference, output, controls, treatments, settings=None,
             "Exchangeability across conditions is assumed; unequal replicate noise between conditions can violate it",
             "Scalar normalization assumes most sites are unaffected by treatment",
             "Overlapping genes share sites; BH assumes valid p-values"])
-    (output/"run_manifest.json").write_text(json.dumps(_json_ready(manifest), indent=2, allow_nan=False)+"\n")
+    (output/"run_manifest.json").write_text(json.dumps(json_ready(manifest), indent=2, allow_nan=False)+"\n")
     return manifest

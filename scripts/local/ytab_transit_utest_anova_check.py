@@ -25,8 +25,8 @@ from scipy import sparse, stats
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import resampling
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.fitness import resampling
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import write_table
 

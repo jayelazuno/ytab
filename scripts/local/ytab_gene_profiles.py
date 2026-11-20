@@ -35,7 +35,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
 sys.path.append(str(ROOT/"scripts/local"))
-from ytab.essentiality.control_conditioned_gumbel import annotations          # noqa: E402
+from ytab.core.annotation import annotations          # noqa: E402
 from ytab.qc.library_qc import HMM_SITES_PER_CODING_KB, HYBRID_SITES_PER_CODING_KB  # noqa: E402
 import ytab_cross_species as xs                                               # noqa: E402
 

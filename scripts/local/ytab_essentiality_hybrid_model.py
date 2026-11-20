@@ -2,11 +2,11 @@
 """Side-by-side essentiality model menu (HMM, hybrid, current RF) for one set of libraries.
 
 HMM only (no labels, e.g. a non-model organism):
-    ytab_essentiality_model_menu.py --hmm genes.tsv --out DIR
+    ytab_essentiality_hybrid_model.py --hmm genes.tsv --out DIR
 With gene features and curated labels (adds the hybrid):
-    ytab_essentiality_model_menu.py --hmm genes.tsv --features combined_feature_table.TAG.txt --labels labels.tsv --out DIR
---rf essentiality_predictions.csv adds the legacy classifier's score for comparison (and its gene features when
---features is not given).
+    ytab_essentiality_hybrid_model.py --hmm genes.tsv --features combined_feature_table.TAG.txt --labels labels.tsv --out DIR
+--rf essentiality_predictions.csv supplies gene features when --features is not given. Its own score is not
+carried into the menu: it is trained on labels from the same source as the curated labels shown here.
 --reproduce-gale: the recorded Gale 2020 Cg1-Cg3 inputs -> output/essentiality/model_menu/Gale_2020/.
 Writes genes.tsv, summary.json and MODELS.md.
 """
@@ -19,7 +19,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import model_menu as mm
+from ytab.essentiality import hybrid_model as mm
 from ytab.normalization.ttr import sha256
 
 DEFAULTS = dict(hmm=ROOT/"output/essentiality/hermes_hmm/benchmark_v2/gale_blinded/joint_run1/genes.tsv",
@@ -38,7 +38,6 @@ organism and the evidence available; the methods, validation and limitations are
 |---|---|---|---|---|
 | **HMM** (primary) | `hmm_score` (P_ES_run), `hmm_call` | no | always; the only option without essentiality labels | lower precision (accessibility cold spots, severe growth defects) |
 | **hybrid** | `hybrid_score`, `hybrid_essential` | yes | labels exist for the species or a close relative | inherits the bias of its labels |
-| **legacy RF** (comparison only) | `rf_existing_score`, `rf_existing_essential` | trained on *S. cerevisiae* | showing the limits of transferring a model-organism classifier | trained on another species' dense libraries; over-calls at low insertion density |
 
 **Columns:**
 - `hmm_call`: ES, GD, NE, GA (insertion-density classes; only ES means essential), or `uncertain`

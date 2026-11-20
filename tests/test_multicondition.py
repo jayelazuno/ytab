@@ -2,9 +2,9 @@ from itertools import product
 
 import numpy as np
 
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import multicondition as mc
-from ytab.essentiality import resampling
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.fitness import multicondition as mc
+from ytab.fitness import resampling
 
 
 def gene(i):

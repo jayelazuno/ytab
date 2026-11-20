@@ -56,8 +56,10 @@ from pathlib import Path
 import numpy as np
 from scipy import stats
 
-from ytab.essentiality import multicondition as mc
-from ytab.essentiality.control_conditioned_gumbel import _json_ready, annotations, benjamini_hochberg, gene_sites, load_design
+from ytab.fitness import multicondition as mc
+from ytab.core.annotation import annotations, gene_sites
+from ytab.core.design import load_design
+from ytab.core.stats import benjamini_hochberg, json_ready
 from ytab.normalization.ttr import sha256, write_table
 
 MODEL = "site-paired genetic interactions"
@@ -250,5 +252,5 @@ def run(normalized, gff, reference_fasta, output, samples, reference="A", query=
                                  "Control and treated of a pair must come from one pool (shared clones); otherwise power drops (see clone_sharing)",
                                  "Sites within a gene are averaged as units; the test's variance comes from replicate pairs",
                                  "Recentering assumes most genes do not respond to treatment in each strain"])
-    (output/"run_manifest.json").write_text(json.dumps(_json_ready(manifest), indent=2, allow_nan=False)+"\n")
+    (output/"run_manifest.json").write_text(json.dumps(json_ready(manifest), indent=2, allow_nan=False)+"\n")
     return manifest

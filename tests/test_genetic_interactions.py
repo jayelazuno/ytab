@@ -4,7 +4,7 @@ from scipy import sparse
 
 from ytab.normalization.methods import normalize
 
-from ytab.essentiality import genetic_interactions as gi
+from ytab.fitness import genetic_interactions as gi
 
 
 def design(rng, genes=400, sites=20, effect_a=None, effect_b=None, pools=False, phi=.2):

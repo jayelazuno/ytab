@@ -29,7 +29,7 @@ done
 COMMIT_GROUPS=(
 "Cite the published method behind each adapted statistic|docs/references.md src/ytab/benchmarks src/ytab/core src/ytab/essentiality src/ytab/fitness src/ytab/normalization src/ytab/qc|"
 "Gene Explorer: draw another project's tracks for the same gene|src/ytab/domain_explorer scripts/local/ytab_draw_gene_domain_insertions.py|"
-"Compare a project with other projects, tab by tab|app/shiny|ytab_smoke_qc_module.R ytab_smoke_app_ui_release.R ytab_smoke_normalization_ui.R"
+"Compare a project with other projects, tab by tab|app/shiny|ytab_smoke_qc_module.R ytab_smoke_normalization_ui.R"
 "Smoke tests for the comparison and the renamed Normalization tab|scripts/local/ytab_smoke_*.R|ytab_smoke_app_visualizations.R"
 )
 

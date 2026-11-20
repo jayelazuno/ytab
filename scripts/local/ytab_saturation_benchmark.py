@@ -20,7 +20,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src")); sys.path.append(str(ROOT/"scripts/local"))  # after src: scripts/local/ytab.py must not shadow the package
-from ytab.essentiality import model_menu as mm
+from ytab.essentiality import hybrid_model as mm
 from ytab.normalization.midlc import midlc
 from ytab.normalization.ttr import sha256
 from ytab.pipeline import summary_table_runner as st
@@ -91,7 +91,7 @@ def thin_fit(task):
         "--output-dir", out/"summary", "--feature-db", st.feature_db_kind(project_cfg, reference), *feature_args[2:], "--threads", "2", "--overwrite"], out/"summary.log")
     table = out/"summary/combined.feature_table.RDF_1.csv"
     f = pd.read_csv(table, skiprows=1); f = f[f.coding_length > 0]
-    sh([sys.executable, ROOT/"scripts/local/ytab_hermes_hmm.py", out/"hmm", "--fasta", fasta, "--gff", gff, *[x for p in files for x in ("--hits", p)],
+    sh([sys.executable, ROOT/"scripts/local/ytab_window_hmm.py", out/"hmm", "--fasta", fasta, "--gff", gff, *[x for p in files for x in ("--hits", p)],
         "--sequence-covariate", "learned"], out/"hmm.log")
     fit = json.loads((out/"hmm/joint/fit.json").read_text())
     genome_kb = sum(len(l.strip()) for l in open(fasta) if not l.startswith(">"))/1000

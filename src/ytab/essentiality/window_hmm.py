@@ -1,9 +1,13 @@
-"""Hermes window HMM for gene essentiality, adapted from TRANSIT's HMM (DeJesus & Ioerger 2013) and trained by Baum-Welch.
+"""Window HMM for gene essentiality, adapted from TRANSIT's HMM (DeJesus & Ioerger 2013) and trained by Baum-Welch.
+
+Transposon-agnostic: run on Hermes, Ac/Ds and piggyBac libraries in this repository. The name says what it
+observes, not which transposon it is for.
 
 TRANSIT's HMM (DeJesus & Ioerger 2013) walks TA sites with four states (ES, GD, NE, GA), geometric
 emissions whose means are fixed fractions of the sample's mean read count, and transitions set from
-the insertion density; nothing is fitted. Hermes has no fixed site universe (weak nTnnnnAn consensus,
-chromatin-biased), so this module:
+the insertion density; nothing is fitted. That works because Himar1 requires a TA dinucleotide. Transposons
+with no fixed site universe \u2014 Hermes among them (weak nTnnnnAn consensus, chromatin-biased) \u2014 have no such grid
+to walk, so this module drops the site grid entirely and instead:
 - observes fixed genomic windows (default 100 bp): y[w, l] = distinct insertion sites in window w of
   library l (several independent libraries are emitted jointly, conditionally independent given the state);
 - masks windows that reads cannot map to uniquely (k-mer uniqueness of the reference; missing emission);
@@ -33,6 +37,8 @@ from scipy.optimize import minimize
 from scipy.special import digamma, gammaln
 
 MODEL = "window HMM"
+# Algorithm identifiers written into every run manifest. They keep their original spelling on purpose: a revision
+# string is provenance, not a description, and changing it would make stored runs look like a different algorithm.
 REVISION = "hermes_hmm_v2"
 REVISION_LEARNED = "hermes_hmm_v3"        # v2 with the learned target-site covariate in place of the motif count
 TARGET_OFFSETS = (-10, 17)               # target-site model: offsets around the hit coordinate, read outward from the transposon

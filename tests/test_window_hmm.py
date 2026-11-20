@@ -3,7 +3,7 @@ from itertools import product
 import numpy as np
 from scipy.optimize import approx_fprime
 
-from ytab.essentiality import hermes_hmm as hh
+from ytab.essentiality import window_hmm as hh
 
 
 def brute_force(logB, A, pi):

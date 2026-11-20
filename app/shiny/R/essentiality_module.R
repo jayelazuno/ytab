@@ -1,4 +1,5 @@
-# Essentiality module: label-free Hermes window HMM (default), plus the hybrid model when curated labels exist
+# Essentiality module: label-free window HMM (default), plus the hybrid model when curated labels exist. The HMM is
+# transposon-agnostic: it observes genomic windows, not a fixed site grid, and has been run on Hermes and Ac/Ds libraries.
 # (`ytab essentiality`). Combine Parents, Combined Summary and the Classifier are kept as the hybrid's inputs.
 
 essentiality_state_labels <- c(ES = "Essential (ES)", GD = "Growth defect (GD)", NE = "Non-essential (NE)", GA = "Growth advantage (GA)")
@@ -360,11 +361,11 @@ essentiality_module_server <- function(input, output, session, repo_root, active
     g <- genes(); req(nrow(g) > 0)
     keep <- intersect(c("ORF", "Name", "chromosome", "hmm_call", "hmm_score", "hybrid_score", "agreement", "hmm_status", "mappable_fraction", "reference_label"), names(g))
     g <- g[, keep, drop = FALSE]
-    for (column in intersect(c("hmm_score", "hybrid_score", "rf_existing_score", "mappable_fraction"), names(g))) g[[column]] <- round(g[[column]], 3)
+    for (column in intersect(c("hmm_score", "hybrid_score", "mappable_fraction"), names(g))) g[[column]] <- round(g[[column]], 3)
     if ("chromosome" %in% names(g)) g$chromosome <- qc_plot_chromosome_display(g$chromosome, active())
     if ("agreement" %in% names(g)) g$agreement <- ifelse(g$agreement %in% names(essentiality_agreement_labels), essentiality_agreement_labels[g$agreement], g$agreement)
     labels <- c(ORF = "ORF", Name = "Name", chromosome = "Chromosome", hmm_call = "HMM call", hmm_score = "HMM score", hybrid_score = "Hybrid score",
-                agreement = "Agreement", rf_existing_score = "Current RF score", hmm_status = "HMM status", mappable_fraction = "Mappable fraction",
+                agreement = "Agreement", hmm_status = "HMM status", mappable_fraction = "Mappable fraction",
                 reference_label = "Curated label")
     names(g) <- labels[names(g)]
     ytab_datatable(g, page_length = 15L)

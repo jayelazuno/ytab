@@ -15,8 +15,8 @@ FILTERS = ("none", "winsorize", "drop-top")
 
 def gene_groups(genes: list[dict], sites: list[tuple]) -> list:
     """Site indices of each gene's coding sequence (whole CDS, last 3 bases excluded)."""
-    from ytab.essentiality.control_conditioned_gumbel import gene_sites
-    from ytab.essentiality.library_correlation import SITE_RULES
+    from ytab.core.annotation import gene_sites
+    from ytab.core.annotation import SITE_RULES
     return [idx for idx in gene_sites(genes, sites, SITE_RULES) if len(idx)]
 
 

@@ -22,9 +22,9 @@ from scipy.stats import beta
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import multicondition as mc
-from ytab.essentiality import resampling
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.fitness import multicondition as mc
+from ytab.fitness import resampling
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import sha256, write_table
 
@@ -219,7 +219,7 @@ def gale(workers):
                                                                    jaccard=len(flu & v3calls)/len(flu | v3calls)),
                    all_pairs_recenter_factors=pdiag["recenter_factors"],
                    pair_diagnostics={k:(pdiag[k] if isinstance(pdiag[k], str) else {x:pdiag[k][x] for x in ("replicate_noise", "family_size", "calls")}) for k in pairs})
-    (target/"summary.json").write_text(json.dumps(ccg._json_ready(summary), indent=2)+"\n"); print(json.dumps(ccg._json_ready(summary), indent=1))
+    (target/"summary.json").write_text(json.dumps(ccg.json_ready(summary), indent=2)+"\n"); print(json.dumps(ccg.json_ready(summary), indent=1))
 
 
 def main():

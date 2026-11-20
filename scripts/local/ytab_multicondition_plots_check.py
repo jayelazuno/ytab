@@ -18,8 +18,8 @@ from scipy import sparse
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import multicondition as mc
-from ytab.essentiality import multicondition_plots as mp
+from ytab.fitness import multicondition as mc
+from ytab.fitness import multicondition_plots as mp
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import write_table
 

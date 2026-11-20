@@ -17,10 +17,10 @@ from scipy.stats import spearmanr
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src")); sys.path.append(str(ROOT/"scripts/local"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import hermes_hmm as hh
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.essentiality import window_hmm as hh
 from ytab.normalization.ttr import write_table
-import ytab_hermes_hmm as runner
+import ytab_window_hmm as runner
 
 OUT = ROOT/"output/essentiality/hermes_hmm/multistart"
 STARTS, SEED = 7, 2718

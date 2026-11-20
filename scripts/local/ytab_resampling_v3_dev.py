@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
 from scipy import sparse
 
-from ytab.essentiality import resampling
+from ytab.fitness import resampling
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import write_table
 

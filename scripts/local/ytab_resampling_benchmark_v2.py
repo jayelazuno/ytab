@@ -18,8 +18,8 @@ from scipy.stats import beta
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import resampling
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.fitness import resampling
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import sha256, write_table
 
@@ -189,8 +189,8 @@ def blind(workers):
             oracle_failing_null_scenarios=[n for n in nulls if metrics["oracle"][n]["p05_ci"][0] > .05]),
         settings=SETTINGS.__dict__, blinding="no fitness, z-score, classifier, GO, Gale or Gumbel outputs were read",
         implementation_sha256=sha256(Path(resampling.__file__)), script_sha256=sha256(Path(__file__)))
-    (BENCH/"decision.json").write_text(json.dumps(ccg._json_ready(decision), indent=2)+"\n")
-    print(json.dumps(ccg._json_ready({k:decision[k] for k in ("passed", "gates", "failing_null_scenarios", "pooled_signal_fdr", "null_experiments_with_false_call",
+    (BENCH/"decision.json").write_text(json.dumps(ccg.json_ready(decision), indent=2)+"\n")
+    print(json.dumps(ccg.json_ready({k:decision[k] for k in ("passed", "gates", "failing_null_scenarios", "pooled_signal_fdr", "null_experiments_with_false_call",
                                                               "mean_signal_sensitivity", "seed_jaccard", "swap_null_calls", "swap_null_fraction", "reported_only")}), indent=1))
 
 

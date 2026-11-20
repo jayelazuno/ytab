@@ -8,7 +8,8 @@ import json
 from pathlib import Path
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/"src"))
-from ytab.essentiality.control_conditioned_gumbel import NORMALIZATIONS,Settings,run
+from ytab.core.design import NORMALIZATIONS
+from ytab.fitness.control_conditioned_gumbel import Settings, run
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)

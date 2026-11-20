@@ -54,6 +54,15 @@ def dataset_jobs(p):
                   "--normalized", str(p["norm"]), "--normalization", "betageom", "--gff", p["gff"]]),
                  ("gumbel", [PY, "scripts/local/ytab_treated_vs_control.py", "--project-config", str(p["config"]), "--method", "gumbel",
                   "--normalization-run", str(p["norm"]), "--normalization", "ttr", "--comparisons", ",".join(p["two"]), "--output", str(base/"gumbel")])]
+    # The same z-score with its noise curve fitted on every control of the background rather than the first two.
+    # A background with more than two controls is the only place this differs, which is why it is a separate arm.
+    if any(n > 2 for n in p["controls"].values()):
+        wide = [r for r in p["two"]]
+        jobs += [("zscore_allcontrols", [PY, "scripts/local/ytab_fitness_zscore.py", "--project-id", p["dataset"],
+                  "--analysis-id", "comparison_zscore_BGC_allcontrols", "--comparison-design", str(p["design"]),
+                  "--comparisons", ",".join(wide), "--output-dir", str(base/"zscore_allcontrols"),
+                  "--normalized", str(p["norm"]), "--normalization", "betageom", "--gff", p["gff"],
+                  "--noise-controls", "all"])]
     return [(p["dataset"], m, c, base/f"{m}.log") for m, c in jobs]
 
 
@@ -64,7 +73,7 @@ def main():
     plans = [p for p in (plan(x) for x in projects) if p]
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT/"plan.json").write_text(json.dumps([{k: str(v) if isinstance(v, Path) else v for k, v in p.items()} for p in plans], indent=1))
-    jobs = [j for p in plans for j in dataset_jobs(p) if not (OUT/j[0]/"runs"/j[1]/("zscore_manifest.json" if j[1] == "zscore" else "manifest.json")).exists()]
+    jobs = [j for p in plans for j in dataset_jobs(p) if not (OUT/j[0]/"runs"/j[1]/("zscore_manifest.json" if j[1].startswith("zscore") else "manifest.json")).exists()]
     jobs.sort(key=lambda j: (j[0] == "Nickels_2025_glabrata", j[1] == "gumbel"))   # small and fast first
     status = OUT/"runs_status.tsv"
     def go(j):

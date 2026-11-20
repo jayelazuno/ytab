@@ -20,8 +20,8 @@ from scipy import sparse
 from scipy.stats import beta
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
-from ytab.essentiality import resampling
+from ytab.fitness import control_conditioned_gumbel as ccg
+from ytab.fitness import resampling
 from ytab.normalization.methods import normalize
 from ytab.normalization.ttr import sha256, write_table
 
@@ -212,11 +212,11 @@ def blind(workers):
                              false_calls=m["false"], calls=m["calls"], experiments_with_false_call=m["experiments_with_false_call"],
                              sensitivity=m["sensitivity"], fdr=m["fdr"]))
     write_table(BENCH/"synthetic_candidates.tsv", list(rows[0]), rows)
-    (BENCH/"selection.json").write_text(json.dumps(ccg._json_ready(dict(status="success", phase="blind", preregistration=prereg,
+    (BENCH/"selection.json").write_text(json.dumps(ccg.json_ready(dict(status="success", phase="blind", preregistration=prereg,
         selected=selected, selected_settings=CANDIDATES.get(selected), passing=passing, candidates=summary,
         fixed_settings=asdict(resampling.Settings()), blinding="no publication labels or control-conditioned Gumbel outputs were read",
         implementation_sha256=sha256(Path(resampling.__file__)), script_sha256=sha256(Path(__file__)))), indent=2)+"\n")
-    print(json.dumps(ccg._json_ready(dict(selected=selected, passing=passing, **{c:dict(passed=summary[c]["passed"], gates=summary[c]["gates"],
+    print(json.dumps(ccg.json_ready(dict(selected=selected, passing=passing, **{c:dict(passed=summary[c]["passed"], gates=summary[c]["gates"],
           sensitivity=round(summary[c]["mean_signal_sensitivity"], 3), swap=summary[c]["swap_null_calls"], seed_j=summary[c]["seed_jaccard"]) for c in CANDIDATES})), indent=1))
 
 
@@ -260,8 +260,8 @@ def unblind(workers):
         spearman_log2fc_vs_published=float(table.log2FC.corr(table.published_log2fc, method="spearman")),
         spearman_neglogp_vs_published_z=float((-np.log10(table.p_value.clip(1e-300))).corr(-table.published_z, method="spearman")),
         swap_null=dict(resampling=selection["candidates"][sel]["swap_null_calls"], ccg=g_swap_diag["calls"]["depleted run"]))
-    (BENCH/"unblinded_report.json").write_text(json.dumps(ccg._json_ready(report), indent=2)+"\n")
-    print(json.dumps(ccg._json_ready(report), indent=1)); print(pd.DataFrame(rows).round(3).to_string(index=False))
+    (BENCH/"unblinded_report.json").write_text(json.dumps(ccg.json_ready(report), indent=2)+"\n")
+    print(json.dumps(ccg.json_ready(report), indent=1)); print(pd.DataFrame(rows).round(3).to_string(index=False))
 
 
 def main():

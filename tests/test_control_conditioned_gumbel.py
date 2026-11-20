@@ -9,9 +9,11 @@ import pytest
 from scipy import sparse
 from scipy.stats import gumbel_r
 
-from ytab.essentiality.control_conditioned_gumbel import (
-    Settings, analyze, benjamini_hochberg, combined_dispersion, depletion_thresholds, discrete_gumbel_cdf, discrete_gumbel_logpmf,
-    discrete_gumbel_sf, exact_run_tails, fit_background, fit_discrete_gumbel, gene_sites, gumbel_log_tail_se, longest_run,
+from ytab.core.annotation import gene_sites
+from ytab.core.stats import benjamini_hochberg
+from ytab.fitness.control_conditioned_gumbel import (
+    Settings, analyze, combined_dispersion, depletion_thresholds, discrete_gumbel_cdf, discrete_gumbel_logpmf,
+    discrete_gumbel_sf, exact_run_tails, fit_background, fit_discrete_gumbel, gumbel_log_tail_se, longest_run,
     longest_runs, predictive_cdf, run, selection_log_probability, simulate_runs, site_posterior,
     synthetic_experiment)
 from ytab.normalization.methods import run_choices
@@ -366,3 +368,23 @@ def test_monte_carlo_aware_gate_is_reproducible():
     assert calls[0] == calls[1] and {genes[4]["id"], genes[20]["id"]} <= calls[0]
     with pytest.raises(ValueError, match="inference"):
         Settings(inference="bootstrap").validate()
+
+
+def test_undetectable_genes_are_not_tested_and_leave_the_bh_family():
+    """A gene where no site could show a depletion is reported as not tested, not as not significant.
+
+    "no depletion-detectable sites" means the control support is too thin for any treated count to be improbable,
+    so the hypothesis was never testable; "no depleted site" means it was tested and nothing was flagged. Only the
+    second is evidence of no depletion, and only the second belongs in the Benjamini-Hochberg family.
+    """
+    C, T, genes, idx, pos = experiment(7, m=np.log(.4))
+    rows = analyze(C, T, EXPOSURES, genes, idx, pos, FAST)[0]
+    undetectable = [r for r in rows if r["status"] == "no depletion-detectable sites"]
+    assert undetectable, "fixture produced no undetectable genes"
+    for r in undetectable:
+        assert r["call"] == "not tested" and not r["in_family"]
+        assert r.get("q_bh") is None and r.get("p_family") is None
+    # a gene that was tested and found undepleted stays in the family, and is reported differently
+    tested_clean = [r for r in rows if r["status"] == "no depleted site"]
+    for r in tested_clean:
+        assert r["in_family"] and r["call"] == "not significant"

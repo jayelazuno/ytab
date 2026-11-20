@@ -17,8 +17,11 @@ qc_plot_menus <- list(
                 "Reads with 3' adaptor" = "metric:adapter_fraction"),
     "Mapping" = c("Total and mapped reads" = "read_counts", "Mapped (%)" = "metric:percent_mapped",
                   "Mapped with MAPQ above threshold (%)" = "metric:percent_mapq", "Mean MAPQ" = "metric:mean_mapq"),
-    "Transposon donor" = c("Reads from the transposon donor (%)" = "metric:percent_donor",
-                           "Donor reads placed on the genome (%)" = "metric:percent_donor_shared")),
+    # Donor carry-over is the "donor itself" figure; the total match includes reads the donor shares with the
+    # genome, so it is listed after the one a reader should judge a library by.
+    "Transposon donor" = c("Reads from the donor itself (%)" = "metric:percent_donor_only",
+                           "Reads matching the transposon donor (%)" = "metric:percent_donor",
+                           "Donor reads also placed on the genome (%)" = "metric:percent_donor_shared")),
   insertions = list(
     "Depth and complexity" = c("Reads at insertion sites" = "metric:total_cts", "Insertion sites" = "metric:unique_sites"),
     "Count distribution" = c("Count histogram" = "dist_histogram", "Counts against a geometric fit (QQ)" = "dist_qq", "Ranked counts" = "dist_ranked",

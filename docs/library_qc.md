@@ -31,7 +31,18 @@ Code: `src/ytab/qc/library_qc.py` (package module) and `scripts/local/ytab_qc.py
 - **Reads & Mapping:** reads sequenced, retained after read cleanup, with 3' adaptor (the cleanup record);
   mapped %, mapped with MAPQ above the threshold %, mean MAPQ (MapFastq); reads from the transposon donor % and
   donor reads placed on the genome % (`donor_reads`, see below).
-- **Reads from the transposon donor.** Induction leaves donor behind: plasmid that was never lost, or a donor locus
+- **Three donor figures, and which one to read.** The share of reads *matching* the donor splits in two, and the
+  split matters because a donor is not foreign sequence throughout: it carries a promoter, a marker, a CEN/ARS
+  fragment, sometimes the same parts as a deletion cassette in the strain. A read from the genome at one of those
+  loci matches the donor without coming from it.
+  **Reads from the donor itself (%)** are the donor-matching reads the genome cannot place, so this is the pool's
+  carry-over and the figure to compare libraries by. **Donor reads also placed on the genome (%)** are the
+  ambiguous remainder, most likely genomic. The total match is the sum, and on its own it can rank libraries the
+  wrong way round: in Kingma et al. 2025 the wild-type libraries are about 46% donor and nearly all of it is
+  carry-over, while the *nrp1Δ* libraries look like 30% but are only 6–7% carry-over, the rest being sequence the
+  deletion cassette shares with the donor. Judged on the total they look comparable; judged on carry-over the
+  deletion libraries are the cleanest in the dataset.
+- **How the reads are counted.** Induction leaves donor behind: plasmid that was never lost, or a donor locus
   that did not excise. Those reads carry the transposon end like any library read, so counting them needs the donor
   sequence itself. `donor_reads` aligns the reads locally to the donor with the transposon **masked out**, and counts
   only reads with at least 30 aligned bases, so a read that merely carries the transposon end is not counted. Two

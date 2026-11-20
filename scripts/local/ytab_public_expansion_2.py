@@ -103,7 +103,7 @@ def merged_hits(lib):
 
 def coding_genes(project):
     """The annotated genes on the chromosomes the reads were mapped to, with their CDS blocks."""
-    from ytab.essentiality import control_conditioned_gumbel as ccg
+    from ytab.fitness import control_conditioned_gumbel as ccg
     fasta, gff = reference(project)
     chroms = {l[1:].split()[0] for l in open(fasta) if l.startswith(">")}
     return [g for g in ccg.annotations(gff) if g["blocks"] and g["chrom"] in chroms]

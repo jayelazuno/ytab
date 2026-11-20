@@ -31,7 +31,7 @@ from scipy import sparse
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
 from ytab.benchmarks import treated_vs_control as tvc  # noqa: E402
-from ytab.essentiality import control_conditioned_gumbel as ccg, resampling  # noqa: E402
+from ytab.fitness import control_conditioned_gumbel as ccg, resampling  # noqa: E402
 from ytab.fitness import zscore  # noqa: E402
 from ytab.normalization.ttr import sha256  # noqa: E402
 
@@ -143,7 +143,7 @@ def main():
     p.add_argument("--output", required=True, type=Path); p.add_argument("--workers", type=int, default=6)
     a = p.parse_args(); out = a.output.resolve(); out.mkdir(parents=True, exist_ok=True)
     sources = {str(f.relative_to(ROOT)):sha256(f) for f in (ROOT/"src/ytab/benchmarks/treated_vs_control.py", ROOT/"src/ytab/fitness/zscore.py",
-                                                            ROOT/"src/ytab/essentiality/resampling.py", ROOT/"src/ytab/essentiality/control_conditioned_gumbel.py",
+                                                            ROOT/"src/ytab/fitness/resampling.py", ROOT/"src/ytab/fitness/control_conditioned_gumbel.py",
                                                             Path(__file__), PUBLICATION)}
     (out/"sources.json").write_text(json.dumps(dict(sources=sources, designs={k:dict(run=str(v[0]), samples=v[1]) for k, v in DESIGNS.items()}), indent=1))
     with ProcessPoolExecutor(a.workers) as pool:

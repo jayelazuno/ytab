@@ -23,8 +23,8 @@ import json
 from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]/"src"))
-from ytab.essentiality.control_conditioned_gumbel import NONLINEAR_NORMALIZATIONS, NORMALIZATIONS
-from ytab.essentiality.multicondition import Settings, run
+from ytab.core.design import NONLINEAR_NORMALIZATIONS, NORMALIZATIONS
+from ytab.fitness.multicondition import Settings, run
 
 
 def sample(text):

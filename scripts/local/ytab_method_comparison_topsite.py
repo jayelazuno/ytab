@@ -22,8 +22,8 @@ from scipy import sparse
 
 ROOT = Path(__file__).resolve().parents[2]; sys.path.insert(0, str(ROOT/"src"))
 from ytab.fitness import agreement, zscore  # noqa: E402
-from ytab.essentiality.control_conditioned_gumbel import annotations, gene_sites  # noqa: E402
-from ytab.essentiality.library_correlation import SITE_RULES, gene_key  # noqa: E402
+from ytab.core.annotation import annotations, gene_sites  # noqa: E402
+from ytab.core.annotation import SITE_RULES, gene_key  # noqa: E402
 
 OUT = ROOT/"output/comparison/topsite"; CMP = ROOT/"output/comparison"
 SCOPE = {"Gale_2020": None, "Nickels_2025_glabrata": {"BG2", "pdr1_KO"}}

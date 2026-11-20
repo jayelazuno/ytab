@@ -14,7 +14,7 @@ from scipy.stats import spearmanr
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
+from ytab.fitness import control_conditioned_gumbel as ccg
 from ytab.normalization.ttr import write_table
 
 spec = importlib.util.spec_from_file_location("v2", ROOT/"scripts/local/ytab_resampling_benchmark_v2.py")
@@ -119,8 +119,8 @@ def main():
                "site_spearman_shared", "gene_spearman", "gene_log2ratio_robust_sd")} | dict(pairs=len(v)) for k, v in summary.items()}
     result = dict(status="success", treatment_free_site_noise_fits=fits, comparison_means=summary,
                   blinding="normalization outputs only; no fitness, z-score, classifier, GO or call tables read")
-    (OUT/"diagnostics.json").write_text(json.dumps(ccg._json_ready(result), indent=2)+"\n")
-    print(json.dumps(ccg._json_ready(result), indent=1))
+    (OUT/"diagnostics.json").write_text(json.dumps(ccg.json_ready(result), indent=2)+"\n")
+    print(json.dumps(ccg.json_ready(result), indent=1))
 
 
 if __name__ == "__main__":main()

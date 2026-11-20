@@ -19,9 +19,9 @@ import scipy.stats
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/"src")); sys.path.append(str(ROOT/"scripts/local"))
-from ytab.essentiality import control_conditioned_gumbel as ccg
+from ytab.fitness import control_conditioned_gumbel as ccg
 from ytab.normalization.ttr import trim_mean, write_table
-import ytab_hermes_hmm as runner
+import ytab_window_hmm as runner
 
 LABELS = {0:"ES", 1:"GD", 2:"NE", 3:"GA"}
 

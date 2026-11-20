@@ -206,8 +206,8 @@ def _run_gene_sums(run_dir: Path, counts_path: Path, observations_path: Path, gf
     same N/C-terminal trimming as the other gene-level analyses)."""
     import gzip
     from scipy import sparse
-    from ytab.essentiality.control_conditioned_gumbel import annotations, gene_sites
-    from ytab.essentiality.library_correlation import SITE_RULES, gene_key
+    from ytab.core.annotation import annotations, gene_sites
+    from ytab.core.annotation import SITE_RULES, gene_key
     observations = pd.read_csv(observations_path, sep="\t", dtype=str)
     missing = [s for s in samples if s not in set(observations["sample"])]
     if missing:raise ValueError(f"Normalization run {Path(run_dir).name} does not include: {', '.join(missing)}")
@@ -236,8 +236,8 @@ def raw_gene_reads_from_run(run_dir: Path, gff: Path, samples: list[str]) -> pd.
 
 def gene_annotation_from_gff(gff: Path) -> pd.DataFrame:
     """feature_id, standard_name, common_name, chrom, start, stop, strand from the GFF (any species)."""
-    from ytab.essentiality.control_conditioned_gumbel import annotations
-    from ytab.essentiality.library_correlation import gene_key
+    from ytab.core.annotation import annotations
+    from ytab.core.annotation import gene_key
     rows = [dict(feature_id=gene_key(g["id"]), standard_name=g["id"], common_name=g.get("name") or g["id"], chrom=g["chrom"],
                  start=min(b[0] for b in g["blocks"]), stop=max(b[1] for b in g["blocks"]), strand=g["strand"]) for g in annotations(Path(gff))]
     return pd.DataFrame(rows).drop_duplicates("feature_id")

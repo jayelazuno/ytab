@@ -1,4 +1,7 @@
-"""Side-by-side essentiality model menu: one row per gene with every available model's score and call.
+"""The hybrid essentiality model, and the side-by-side menu that places it beside the other models.
+
+Builds the hybrid (a random forest on gene features plus window-HMM features, trained where curated labels exist)
+and writes one row per gene carrying every available model's score and call.
 
 Models (see output/essentiality/hermes_hmm/hermes_hmm_methods.md):
 - hmm          Window HMM v2 (P_ES_run, call). Unsupervised: needs no labels. Always present.
@@ -7,8 +10,11 @@ Models (see output/essentiality/hermes_hmm/hermes_hmm_methods.md):
                classifier's prediction table, which carries the same columns) are supplied. Labelled training genes get out-of-fold
                scores (folds grouped by chromosome), so no gene is scored by a model that saw its label;
                all other genes are scored by the model trained on every training gene.
-- rf_existing  the legacy classifier's score ("RF - G4", trained on S. cerevisiae), for comparison only.
-               Present when its prediction table is supplied.
+The legacy classifier's own score is NOT carried here. It is trained on S. cerevisiae viability labels drawn from
+the same source as the curated labels this menu shows, so placing its score beside the HMM and hybrid invites an
+in-sample number to be read as an out-of-fold one. The manuscript compares it properly, on genes outside its
+training set (Fig 6, S6 Fig); `ytab_essentiality_hybrid_benchmark.py` is that analysis. Its prediction table is
+still accepted with --rf, but only as a source of gene features when --features is not given.
 Agreement of the HMM and hybrid ES calls gives a consensus class; nothing here is tuned to labels beyond
 the hybrid's own training, whose settings are those of the pre-registered hybrid benchmark.
 """
@@ -81,11 +87,11 @@ def build(hmm, rf=None, labels=None, train_tiers=("silver",), seed=SEED, feature
     models = ["hmm"]
     if features is not None:
         d = d.merge(summary_features(features), on="ORF", how="left")
-    if rf is not None:
-        r = rf.rename(columns={"Standard name":"ORF", "RF - G4":"rf_existing_score"})
-        r = r[["ORF", "rf_existing_score"]+(RF_FEATURES if features is None else [])]
-        d = d.merge(r, on="ORF", how="left"); models.append("rf_existing")
-        d["rf_existing_essential"] = np.where(d.rf_existing_score.notna(), d.rf_existing_score >= THRESHOLD, np.nan)
+    if rf is not None and features is None:
+        # Features only: the legacy table is a convenient carrier of the same gene features SummaryTable writes.
+        # Its score is deliberately not merged (see the module docstring).
+        r = rf.rename(columns={"Standard name":"ORF"})[["ORF"]+RF_FEATURES]
+        d = d.merge(r, on="ORF", how="left")
     summary = dict(revision=REVISION, genes=len(d), models=models, threshold=THRESHOLD)
     if (features is not None or rf is not None) and labels is not None:
         lab = labels.rename(columns={"cglab_id":"ORF", "gene_id":"ORF"})[["ORF", "label", "tier"]]
@@ -93,6 +99,19 @@ def build(hmm, rf=None, labels=None, train_tiers=("silver",), seed=SEED, feature
         usable = (d.hmm_status == "called") & d[RF_FEATURES+HMM_FEATURES].notna().all(axis=1)
         # training genes in label-file order (the order the pre-registered benchmark used)
         train = lab[lab.tier.isin(train_tiers)].merge(d[usable], on="ORF").assign(essential=lambda t:t.label == "essential")
+        # `train_tiers` defaults to ("silver",), which is deliberate for C. glabrata: the hybrid trains on the
+        # orthology-transferred labels and the gold C. glabrata genes stay an independent test set. Other label files
+        # name their tiers differently (cerevisiae's are all "gold"), and the selection then comes back empty. Say so
+        # here, naming the tiers the file actually has, rather than failing later as "labels must include both
+        # classes" — which points at the labels when the problem is the tier choice.
+        if train.empty or train.essential.nunique() < 2:
+            have = sorted({t for t in lab.tier.dropna().unique() if str(t).strip()})
+            counts = {t: int((lab.tier == t).sum()) for t in have}
+            raise ValueError(
+                f"No usable training genes in tier(s) {sorted(train_tiers)}: "
+                f"{len(train)} gene(s) matched, {train.essential.nunique()} label class(es). "
+                f"This label file has {counts or 'no tiers'}. "
+                f"Pass --train-tiers with a tier it contains.")
         score = d[usable & ~d.ORF.isin(train.ORF)]
         oof, full = hybrid_scores(train, score, seed)
         d = d.merge(pd.concat([pd.DataFrame(dict(ORF=train.ORF, hybrid_score=oof, hybrid_source="out-of-fold (training gene)")),
@@ -107,6 +126,6 @@ def build(hmm, rf=None, labels=None, train_tiers=("silver",), seed=SEED, feature
                         agreement=d.agreement.value_counts().to_dict())
     summary |= dict(hmm_calls=d.hmm_call.value_counts().to_dict())
     lead = ["ORF", "Name", "chromosome", "hmm_score", "hmm_call"]
-    lead += [c for c in ("hybrid_score", "hybrid_essential", "agreement", "rf_existing_score", "rf_existing_essential") if c in d]
+    lead += [c for c in ("hybrid_score", "hybrid_essential", "agreement") if c in d]
     rest = [c for c in d.columns if c not in lead]
     return d[lead+rest], summary
