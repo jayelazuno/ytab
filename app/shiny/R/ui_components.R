@@ -86,26 +86,6 @@ ytab_plot_card <- function(title, plot_ui, description = NULL, controls = NULL, 
   )
 }
 
-ytab_static_image_card <- function(title, src, alt = title, caption = NULL,
-                                   max_height = "760px", download = NULL) {
-  tags$article(
-    class = "ytab-static-image-card ytab-release-card",
-    tags$div(
-      class = "ytab-plot-card-header",
-      tags$div(
-        tags$h4(title),
-        if (!is.null(caption)) tags$p(class = "text-muted", caption)
-      ),
-      download
-    ),
-    tags$div(
-      class = "ytab-static-image",
-      tags$img(src = src, alt = alt, loading = "lazy",
-               style = paste0("max-height:", max_height, ";"))
-    )
-  )
-}
-
 ytab_table_card <- function(title, table_ui, description = NULL, downloads = NULL) {
   tags$section(
     class = "ytab-table-card ytab-release-card",

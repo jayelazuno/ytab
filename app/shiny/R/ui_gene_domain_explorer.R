@@ -64,22 +64,23 @@ gene_domain_single_species_ui <- function() {
         uiOutput("gene_domain_status"),
         uiOutput("gene_domain_gene_summary"),
         uiOutput("gene_domain_domain_status"),
-        # The figure's own element is built once, here, and only shown or hidden. Rebuilding an imageOutput inside
-        # a renderUI races its own value: the server pushes the new image at the element being replaced, so the
+        # The figure's own element is built once, here, and only shown or hidden. Rebuilding a plotOutput inside
+        # a renderUI races its own value: the server pushes the new plot at the element being replaced, so the
         # fresh one stays empty and the figure appears to need a second search to change.
         uiOutput("gene_domain_figure_message"),
         conditionalPanel(
           condition = "output.gene_domain_has_figure === true",
           tags$article(
-            class = "ytab-static-image-card ytab-release-card",
+            class = "ytab-release-card",
             tags$div(class = "ytab-plot-card-header",
               tags$div(tags$h4("Gene/domain insertion figure"),
                        uiOutput("gene_domain_figure_caption")),
               tags$div(class = "ytab-actions",
                        downloadButton("gene_domain_download_png", "Download PNG"),
+                       downloadButton("gene_domain_download_pdf", "Download PDF"),
                        downloadButton("gene_domain_download_table", "Download table"))),
-            tags$div(class = "ytab-static-image ytab-static-image-output",
-                     imageOutput("gene_domain_figure", width = "100%", height = "auto")))),
+            tags$div(class = "ytab-plot-frame ytab-plot-frame-app-rendered",
+                     plotOutput("gene_domain_figure", width = "100%", height = "620px")))),
         tags$details(
           class = "ytab-more-options",
           tags$summary("Matching genes"),

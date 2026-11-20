@@ -25,7 +25,7 @@ must_contain("app/shiny/R/comparisons_module.R", "ytab_plot_customization_contro
 must_contain("app/shiny/R/comparisons_module.R", "ytab_plot_customization_controls\\(\"gi\"", "Genetic interactions display controls")
 must_contain("app/shiny/R/treated_vs_control.R", "s[$]point_size", "Treated vs Control point size binding")
 must_contain("app/shiny/R/ui_gene_domain_explorer.R", "gene_domain_display_height", "Gene Explorer image height control")
-must_contain("app/shiny/R/ui_gene_domain_explorer.R", "imageOutput\\(\"gene_domain_figure\"", "Gene Explorer image element lives in the static UI, not a renderUI")
+must_contain("app/shiny/R/ui_gene_domain_explorer.R", "plotOutput\\(\"gene_domain_figure\"", "Gene Explorer figure element lives in the static UI, not a renderUI, and is a rendered plot rather than a served image")
 must_contain("app/shiny/R/gene_domain_explorer_server.R", "gene_domain_has_figure", "Gene Explorer figure visibility flag")
 must_contain("app/shiny/www/ytab_release_ui.css", "\\.ytab-static-image img", "Static image sizing CSS")
 must_contain("app/shiny/www/ytab_release_ui.css", "object-fit: contain", "Static image aspect policy")

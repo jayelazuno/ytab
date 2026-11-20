@@ -286,18 +286,30 @@ gene_domain_explorer_server <- function(input, output, session, active,
            else "Shown at the chosen preview height; scroll the panel to see the whole figure.")
   })
 
-  output$gene_domain_figure <- renderImage({
+  # Drawn by the app from the manifest and its insertions table, not shown as the PNG the explorer also writes:
+  # a rendered plot carries the house style, hover, resizing and a PDF download, which an image cannot.
+  output$gene_domain_figure <- renderPlot({
     manifest <- plot_state()$manifest %||% NULL
     if (is.null(manifest)) return(NULL)
-    src <- as.character(manifest$figure_path %||% "")
-    if (!nzchar(src) || !file.exists(src)) return(NULL)
-    # A tall figure (one lane per track, plus any comparison datasets) overflows a fixed-height panel, so the
-    # default caps it against the viewport and the browser scales it down whole rather than making the user scroll.
-    choice <- input$gene_domain_display_height %||% "fit"
-    list(src = src, contentType = "image/png", alt = "Gene/domain insertion figure",
-         class = if (identical(choice, "fit")) "ytab-image-fit" else NULL,
-         style = if (identical(choice, "fit")) NULL else paste0("max-height:", ytab_plot_height_px(choice), ";"))
-  }, deleteFile = FALSE)
+    s <- ytab_plot_customization_values(input, "gene_domain")
+    base <- tvc_theme(s)
+    lanes <- gene_domain_figure_ggplot(manifest, s, base)
+    if (is.null(lanes)) {
+      qc_plot_empty("No insertions in this region for the chosen tracks.")
+      return()
+    }
+    model <- gene_domain_model_ggplot(manifest, s, base, plot_state()$gene %||% list())
+    lanes <- ytab_style_ggplot(lanes)
+    if (is.null(model)) { print(lanes); return() }
+    # The gene model sits under the lanes on the same coordinate axis, so a tick's position in the gene is read
+    # straight down. patchwork keeps the two panels aligned; without it they drift apart as labels change width.
+    if (requireNamespace("patchwork", quietly = TRUE)) {
+      print(patchwork::wrap_plots(lanes, ytab_style_ggplot(model), ncol = 1,
+                                  heights = c(max(3, length(gene_domain_track_levels(manifest))), 1.6)))
+    } else {
+      print(lanes)
+    }
+  })
 
   output$gene_domain_insertions <- DT::renderDT({
     manifest <- plot_state()$manifest %||% NULL
@@ -316,13 +328,31 @@ gene_domain_explorer_server <- function(input, output, session, active,
     paste(c(state$command %||% "", state$stdout %||% "", state$stderr %||% ""), collapse = "\n")
   })
 
-  output$gene_domain_download_png <- downloadHandler(
-    filename = function() basename(as.character(plot_state()$manifest$figure_path %||% "gene_domain_insertions.png")),
-    content = function(file) {
-      validate(need(gene_domain_valid_output(plot_state()), "No Gene Explorer PNG is available for download."))
-      file.copy(as.character(plot_state()$manifest$figure_path), file, overwrite = TRUE)
-    }
-  )
+  # The figure the user is looking at, re-rendered for the file, in the house style. Copying the explorer's own
+  # PNG instead would hand over a different drawing of the same data.
+  gene_domain_current_plot <- function() {
+    manifest <- plot_state()$manifest %||% NULL
+    if (is.null(manifest)) return(NULL)
+    s <- ytab_plot_customization_values(input, "gene_domain")
+    base <- tvc_theme(s)
+    lanes <- gene_domain_figure_ggplot(manifest, s, base)
+    if (is.null(lanes)) return(NULL)
+    model <- gene_domain_model_ggplot(manifest, s, base, plot_state()$gene %||% list())
+    if (is.null(model) || !requireNamespace("patchwork", quietly = TRUE)) return(lanes)
+    patchwork::wrap_plots(lanes, model, ncol = 1,
+                          heights = c(max(3, length(gene_domain_track_levels(manifest))), 1.6))
+  }
+  for (format in c("png", "pdf")) local({ ext <- format
+    output[[paste0("gene_domain_download_", ext)]] <- downloadHandler(
+      filename = function() sprintf("%s_gene_domain_insertions.%s",
+                                    as.character(plot_state()$manifest$resolved_gene_id %||% "gene"), ext),
+      content = function(file) {
+        plot <- gene_domain_current_plot()
+        validate(need(!is.null(plot), "No figure is available for download."))
+        ytab_save_ggplot(file, plot, width = 12,
+                         height = max(4, 0.45 * length(gene_domain_track_levels(plot_state()$manifest)) + 2))
+      })
+  })
 
   output$gene_domain_download_table <- downloadHandler(
     filename = function() basename(as.character(plot_state()$manifest$table_path %||% "gene_domain_insertions.csv")),
