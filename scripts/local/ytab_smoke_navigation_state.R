@@ -14,7 +14,10 @@ state<-record_navigation_selection(state,"workspace_tabs","fitness");state<-reco
 state<-record_navigation_selection(state,"workspace_tabs","go_analysis");state<-record_navigation_selection(state,"go_analysis_tabs","semantic_reduction");stopifnot(state$active_top_tab=="gene_explorer",state$active_go_analysis_subtab=="semantic_reduction")
 # GO and Across Species keep inner tabs inside Gene Explorer; old links open the inner tab.
 legacy<-navigation_target_from_hash("#tab=go_analysis&subtab=enrichment");stopifnot(legacy$top=="gene_explorer",legacy$nested_value=="go",legacy$inner_id=="go_analysis_tabs",legacy$inner_value=="enrichment")
-legacy<-navigation_state_from_url(list(top="comparative_species",nested_value="gene_group"));stopifnot(legacy$active_gene_explorer_subtab=="comparative",legacy$active_comparative_subtab=="gene_group")
+# A bookmarked pre-reorganisation URL must still land somewhere real. Across Species was folded into Gene &
+# Domain Insertions (same navset id, new parent subtab), so the old top-level name now resolves there and
+# the inner selection is carried through unchanged.
+legacy<-navigation_state_from_url(list(top="comparative_species",nested_value="gene_group"));stopifnot(legacy$active_gene_explorer_subtab=="gene_domain",legacy$active_comparative_subtab=="gene_group")
 legacy<-navigation_target_from_hash("#tab=genome_browser");stopifnot(legacy$top=="gene_explorer",legacy$nested_value=="browser")
 stopifnot(navigation_state_defaults()$active_gene_explorer_subtab=="browser","go_analysis_tabs"%in%names(navigation_nested_fields))
 app<-paste(readLines(file.path(root,"app/shiny/app.R"),warn=FALSE),collapse="\n")

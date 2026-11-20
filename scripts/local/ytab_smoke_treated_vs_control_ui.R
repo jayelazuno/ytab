@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
-# Treated vs Control: method choice in Run and Results, labels of the three methods, resampling/Gumbel result views.
+# Treated vs Control: method choice in Run and Results, labels of the two offered methods, result views.
+# The control-conditioned Gumbel is retired from the chooser (it returned calls on 2 of 14 datasets) but its label
+# and its allowed normalizations stay, so a run stored before the retirement still resolves and still displays.
 # Usage: Rscript scripts/local/ytab_smoke_treated_vs_control_ui.R REPO_ROOT [RESULT_DIR ...]
 # RESULT_DIR: optional `ytab treated-vs-control` outputs whose plots and tables are drawn.
 args <- commandArgs(trailingOnly = TRUE); root <- normalizePath(args[[1L]])
@@ -12,13 +14,17 @@ html <- htmltools::renderTags(comparisons_module_ui())$html
 stopifnot(grepl("Treated vs Control: Run", html, fixed = TRUE), grepl("Treated vs Control: Results", html, fixed = TRUE),
           !grepl("Fitness: Run", html, fixed = TRUE),
           grepl("Local-abundance z-score", html, fixed = TRUE), grepl(">Resampling<", html, fixed = TRUE),
-          grepl("Control-conditioned Gumbel (depletion only)", html, fixed = TRUE), !grepl("narrowly failed FDR benchmark)", html, fixed = TRUE),
+          !grepl("Control-conditioned Gumbel (depletion only)", html, fixed = TRUE),  # retired from the chooser
+          !grepl("narrowly failed FDR benchmark)", html, fixed = TRUE),
           grepl("passed its pre-registered calibration gates", html, fixed = TRUE),   # the validation status stays in Methods
           grepl("fitness_normalization_selector", html, fixed = TRUE), grepl("tvc_result_selector", html, fixed = TRUE),
           !grepl("inside the R analysis", html, fixed = TRUE))
 # TRANSIT is named only in Methods references.
 stopifnot(!grepl("transit", gsub('(?s)<p class="ytab-reference">.*?</p>', "", html, perl = TRUE), ignore.case = TRUE))
-stopifnot(identical(tvc_allowed_methods$gumbel, c("ttr", "totreads", "nzmean")), "betageom" %in% tvc_allowed_methods$resampling)
+# Retired from the chooser, but still resolvable: the label map and the allowed normalizations must stay, or a
+# stored Gumbel run would display with no method name and no normalization it accepts.
+stopifnot(identical(tvc_allowed_methods$gumbel, c("ttr", "totreads", "nzmean")), "betageom" %in% tvc_allowed_methods$resampling,
+          "gumbel" %in% tvc_method_labels, !("gumbel" %in% tvc_method_choices))
 # Every plot of every method from the shared layer, with the display options applied.
 s <- ytab_plot_customization_values(list(tvc_point_size = 2, tvc_point_opacity = .4, tvc_text_size = "large", tvc_grid = "show"), "tvc")
 stopifnot(identical(names(tvc_plot_choices("zscore"))[[1L]], "Volcano"), identical(names(tvc_plot_choices("gumbel"))[[1L]], "Volcano"),

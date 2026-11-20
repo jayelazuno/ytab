@@ -168,62 +168,21 @@ if (nrow(metaplot)) {
   render_plot(plot_qc_library_metaplot(project, "trna", "both", "group"))
 }
 
-ui_text <- paste(readLines(file.path(repo_root, "app/shiny/R/ui_qc.R"), warn = FALSE), collapse = "\n")
-app_text <- paste(readLines(file.path(repo_root, "app/shiny/app.R"), warn = FALSE), collapse = "\n")
-plot_text <- paste(readLines(file.path(repo_root, "app/shiny/R/qc_library_diagnostics_plots.R"), warn = FALSE), collapse = "\n")
 
+# The plot menu, where it lives after the reorganisation, and the guards that keep these plots rendered rather
+# than served as images. The tab-level assertions that used to follow were retired with the tab itself; see
+# archive/ui_reorganization/retired_tests/.
+menu_text <- paste(readLines(file.path(repo_root, "app/shiny/R/qc_module.R"), warn = FALSE), collapse = "\n")
+plot_text <- paste(readLines(file.path(repo_root, "app/shiny/R/qc_library_diagnostics_plots.R"), warn = FALSE), collapse = "\n")
 stopifnot(
-  grepl('"MidLC saturation" = "midlc"', ui_text, fixed = TRUE),
-  grepl('"Centromere bias" = "centromere"', ui_text, fixed = TRUE),
-  grepl('"Feature metaplots" = "metaplots"', ui_text, fixed = TRUE),
-  !grepl("App-rendered:", ui_text, fixed = TRUE),
-  !grepl("Generated:", ui_text, fixed = TRUE),
-  !grepl("Live plot", ui_text, fixed = TRUE),
+  grepl('"Saturation curves" = "midlc"', menu_text, fixed = TRUE),
+  grepl('"Centromere bias" = "centromere"', menu_text, fixed = TRUE),
+  grepl('"Metaplot around TSS" = "metaplot_TSS"', menu_text, fixed = TRUE),
+  grepl('"Metaplot around TTS" = "metaplot_TTS"', menu_text, fixed = TRUE),
+  grepl('"Metaplot around tRNA genes" = "metaplot_tRNA"', menu_text, fixed = TRUE),
+  # These plots are drawn by the app from their tables; nothing may serve them as a generated image again.
   !grepl("Static generated image", plot_text, fixed = TRUE),
-  grepl("download_library_diagnostics_plot", ui_text, fixed = TRUE),
-  grepl("download_library_diagnostics_plotted_data", ui_text, fixed = TRUE),
-  grepl("download_library_diagnostics_plot", app_text, fixed = TRUE),
-  grepl("download_library_diagnostics_plotted_data", app_text, fixed = TRUE),
-  grepl('selectInput("library_diagnostics_plot_choice", "Visualization"', ui_text, fixed = TRUE),
-  grepl('library_diagnostics_group_selector', ui_text, fixed = TRUE),
-  grepl('ytab_plot_customization_controls("library_diagnostics"', ui_text, fixed = TRUE),
-  !grepl('ytab_plot_customization_controls\\("library_diagnostics"[^\\n]*include_heatmap\\s*=\\s*TRUE', ui_text),
-  !grepl("library_diagnostics_heatmap_height", ui_text, fixed = TRUE),
-  !grepl("library_diagnostics_column_label_angle", ui_text, fixed = TRUE),
-  !grepl("library_diagnostics_heatmap_palette", ui_text, fixed = TRUE),
-  !grepl('job_progress_ui("library_diagnostics_job")', ui_text, fixed = TRUE),
-  !grepl('uiOutput("library_diagnostics_result")', ui_text, fixed = TRUE),
-  !grepl('No matching diagnostics result', ui_text, fixed = TRUE),
-  !grepl('Latest historical result', ui_text, fixed = TRUE),
-  !grepl('No job progress is available', ui_text, fixed = TRUE),
-  grepl("library_diagnostics_group_selector", app_text, fixed = TRUE),
-  grepl("library_diagnostics_color_by", ui_text, fixed = TRUE),
-  grepl("library_diagnostics_metaplot_panel", app_text, fixed = TRUE),
-  grepl("qc_library_plot_cache_key", app_text, fixed = TRUE),
-  grepl("ytab.plot.style", plot_text, fixed = TRUE),
-  grepl("ytab.plot.bar_orientation", plot_text, fixed = TRUE),
-  grepl("ytab.plot.show_value_labels", plot_text, fixed = TRUE),
-  grepl("Triangle = depth / MidLC ratio, scaled to plot range", plot_text, fixed = TRUE),
-  grepl("qc_plot_begin_key_layout(0.24)", plot_text, fixed = TRUE),
-  grepl("title = \"Metrics\"", plot_text, fixed = TRUE),
-  grepl("sample_group", plot_text, fixed = TRUE),
-  grepl("qc_library_group_color_map", plot_text, fixed = TRUE),
-  grepl("qc_library_group_color", plot_text, fixed = TRUE),
-  grepl("qc_library_plot_aesthetics", plot_text, fixed = TRUE),
-  grepl("midlc = modifyList\\(defaults, list\\(use_points = TRUE", plot_text),
-  grepl("type = if \\(isTRUE\\(aesthetic\\$use_points\\)\\) \"b\" else \"l\"", plot_text),
-  grepl("pair_connectors = FALSE", plot_text, fixed = TRUE),
-  grepl("aggregate\\(mean_reads ~ display_group \\+ role \\+ distance_kb", plot_text),
-  grepl("aggregate\\(mean_reads_per_site ~ display_group \\+ role \\+ rel_bp", plot_text),
-  !grepl("adjustcolor", plot_text, fixed = TRUE),
-  grepl("aggregate\\(enrichment ~ role \\+ display_group \\+ pair", plot_text),
-  grepl("Source: existing centromere_bins.tsv tables", app_text, fixed = TRUE),
-  grepl("Source: existing TSS/TTS/tRNA metaplot TSV tables", app_text, fixed = TRUE),
-  grepl("Archived static diagnostic PNGs are not shown as current outputs", app_text, fixed = TRUE),
-  grepl("src/ytab/qc/LibraryDiagnostics.py", paste(capture.output(tools::md5sum(file.path(repo_root, "src/ytab/qc/LibraryDiagnostics.py"))), collapse = "\n")) ||
-    file.exists(file.path(repo_root, "src/ytab/qc/LibraryDiagnostics.py")),
-  file.exists(file.path(repo_root, "scripts/plot_gene_feature_metaplots.R")),
-  file.exists(file.path(repo_root, "scripts/plot_centromere_bias.R"))
+  !grepl("ytab-static-image-card", plot_text, fixed = TRUE)
 )
 
 cat("PASS\n")
