@@ -1,13 +1,21 @@
-# Treated vs Control: three ways to call genes depleted or enriched in treated libraries relative to their controls.
-# The local-abundance z-score (default) uses the Fitness run and results views (ytab fitness); resampling and the
-# control-conditioned Gumbel run on a normalization run (ytab treated-vs-control) and have their own views here.
+# Treated vs Control: two ways to call genes depleted or enriched in treated libraries relative to their controls.
+# The local-abundance z-score (default) uses the Fitness run and results views (ytab fitness); resampling runs on a
+# normalization run (ytab treated-vs-control) and has its own views here.
+#
+# The control-conditioned Gumbel is no longer offered. It scores runs of depleted sites rather than the gene's change
+# in abundance, which made it the odd member of a chooser that reads as "three ways to do one thing", and the measured
+# case for it was thin: calls on 2 of 14 public datasets, depletion only, and on Gale not one published hit that the
+# z-score and resampling miss between them. It remains a CLI method (`ytab control-gumbel`) and a reported result; see
+# docs/methods. Its name and colour stay below so comparisons already made with it still display.
 
 tvc_method_choices <- c("Local-abundance z-score" = "zscore",
-                        "Resampling" = "resampling",
-                        "Control-conditioned Gumbel (depletion only)" = "gumbel")   # validation status: Methods drawer
+                        "Resampling" = "resampling")   # validation status: Methods drawer
 
-# Normalizations each method accepts: the Gumbel needs a scalar factor (its count model uses it as the exposure);
-# resampling takes the scalar methods and the beta-geometric corrections.
+# Labels for every method a stored run may name, including ones no longer offered.
+tvc_method_labels <- c(tvc_method_choices, "Control-conditioned Gumbel (depletion only)" = "gumbel")
+
+# Normalizations each method accepts: resampling takes the scalar methods and the beta-geometric corrections. The
+# Gumbel's entry is kept so a stored Gumbel run still resolves its normalization.
 tvc_allowed_methods <- list(resampling = c("betageom", "aBGC", "ttr", "totreads", "nzmean"), gumbel = c("ttr", "totreads", "nzmean"))
 
 # Normalization choices grouped by normalization run, latest first; values are "<run>|<method>". `allowed`: the
@@ -34,9 +42,9 @@ tvc_norm_default <- function(choices, preferred, current = NULL) {
 tvc_methods_text <- function() ytab_methods_drawer(
   tags$p(tags$b("Local-abundance z-score (default). "), "The replicate libraries of each condition are averaged; each gene's log2 fold change between the treated and control means is divided by the noise expected at the gene's abundance. The noise model is fitted to the two controls of each background (running SD of control–control log2 ratios against abundance, SD = m1 + m2·A^m3), and the call threshold is the 99th percentile of control–control |z|. Default input: BGC from the latest normalization run (gene totals of its normalized site counts, expressed per million of the mean library total so the 0.5 pseudocount means the same as with counts per million); total reads (counts per million) and any other normalization method can be chosen. Calls: depleted, enriched or none (one call per gene from the replicate means); the per-pool z-scores are kept as a diagnostic."),
   tags$p(tags$b("Resampling. "), "A permutation test on the gene's normalized site counts in controls versus treated libraries (permuted within each pool when there are several), two-sided, Benjamini–Hochberg FDR. With BGC the treated libraries are recentred (trimmed sum) so that typical genes show no change. ", tags$b("Validation: "), "passed its pre-registered calibration gates with BGC (false discovery rate 6% on simulated Gale-like screens; 4.5% of null genes at p ≤ 0.05). Use it for hit lists with error control; the z-score ranks genes better but its calls are not error-controlled."),
-  tags$p(tags$b("Control-conditioned Gumbel. "), "Finds runs of consecutive sites depleted in the treated libraries, compared with the longest runs expected from the controls' count model (exact tail probability; Gumbel fit reported as a diagnostic). Depletion only; needs at least two controls per background; scalar normalizations only (TTR, total reads, nonzero mean). ", tags$b("Validation: "), "passed its pre-registered calibration gates with TTR (false discovery rate 1%, no calls on null screens); depletion only."),
+  tags$p(tags$b("Why two methods and not three. "), "A control-conditioned Gumbel test, which scores runs of consecutive depleted sites rather than the gene's change in abundance, was offered here previously. It is calibrated (false discovery rate 1%, no calls on null screens) but narrow: it needs at least two controls in the same library as the treated samples, it calls depletion only, and it makes calls on two of the fourteen public datasets reprocessed here \u2014 on the rest it either declines the design or flags no site at all, because a treated library sparse enough that zero is an ordinary count leaves no count low enough to be improbable. On Gale, where published calls exist, it recovers no published hit that the z-score and resampling miss between them. It remains available as ", tags$code("ytab control-gumbel"), " and is reported in the method comparison; comparisons already made with it still display."),
   ytab_reference("The z-score follows Gale et al. 2020 (G3 10:3859–3870). The resampling test is adapted from TRANSIT's resampling (DeJesus et al. 2015, PLoS Comput Biol 11:e1004401); the Gumbel test is adapted from TRANSIT's Gumbel method (DeJesus et al. 2013, Bioinformatics 29:695–703)."),
-  tags$p("Commands: ", tags$code("ytab fitness"), " (z-score), ", tags$code("ytab treated-vs-control --method resampling|gumbel"), "."))
+  tags$p("Commands: ", tags$code("ytab fitness"), " (z-score), ", tags$code("ytab treated-vs-control --method resampling"), "."))
 
 tvc_run_ui <- function() ytab_two_column_layout(
   controls = ytab_control_panel(uiOutput("tvc_run_title", inline = TRUE),
@@ -55,11 +63,17 @@ tvc_results_ui <- function() ytab_two_column_layout(
     uiOutput("tvc_group_selector"),
     uiOutput("tvc_plot_selector"),
     uiOutput("tvc_gene_selector"),
-    conditionalPanel("input.tvc_plot == 'volcano' || input.tvc_plot == 'ma' || input.tvc_plot == 'scatter'",
+    conditionalPanel("input.tvc_plot == 'volcano' || input.tvc_plot == 'ma' || input.tvc_plot == 'scatter' || input.tvc_plot == 'comet'",
       conditionalPanel("input.tvc_results_method != 'gumbel'",
         selectInput("tvc_direction", "Calls shown", c("Depleted and enriched" = "both", "Depleted" = "depleted", "Enriched" = "enriched"))),
       numericInput("tvc_label_n", "Label top hits", 10, min = 0, max = 50, step = 1),
+      conditionalPanel("input.tvc_plot == 'comet'",
+        helpText("On the comet this is per gene set, so a large family cannot take every label.")),
       textAreaInput("tvc_label_genes", "Also label", "", rows = 2, placeholder = "Gene names or IDs, separated by commas or new lines")),
+  conditionalPanel("input.tvc_plot == 'comet'",
+    uiOutput("tvc_comet_source"), uiOutput("tvc_comet_sets_selector"),
+    textAreaInput("tvc_comet_genes", "Highlight my genes", "", rows = 2,
+                  placeholder = "Gene names or IDs, separated by commas or new lines")),
     ytab_plot_downloads_ui("tvc", c(genes = "Download genes (TSV)")),
     ytab_plot_customization_controls("tvc", include_points = TRUE, include_labels = FALSE, open = FALSE)),
   main = tagList(uiOutput("tvc_summary"),
@@ -77,9 +91,9 @@ tvc_results_tab_ui <- function() tagList(
   conditionalPanel("input.tvc_results_method == 'agreement'", tvc_agreement_ui()))
 
 tvc_plot_choices <- function(method) switch(method %||% "resampling",
-  zscore = c("Volcano" = "volcano", "MA plot" = "ma", "Condition vs control" = "scatter", "Control-control z (call threshold)" = "nullz", "Gene values" = "sites"),
+  zscore = c("Volcano" = "volcano", "MA plot" = "ma", "Condition vs control" = "scatter", "Comet (gene sets)" = "comet", "Control-control z (call threshold)" = "nullz", "Gene values" = "sites"),
   gumbel = c("Volcano" = "volcano", "Observed vs expected run" = "runs", "p-value histogram" = "pvalues", "Gene sites" = "sites"),
-  c("Volcano" = "volcano", "MA plot" = "ma", "Condition vs control" = "scatter", "p-value histogram" = "pvalues", "Gene sites" = "sites"))
+  c("Volcano" = "volcano", "MA plot" = "ma", "Condition vs control" = "scatter", "Comet (gene sets)" = "comet", "p-value histogram" = "pvalues", "Gene sites" = "sites"))
 
 # Tested genes (and Gumbel family members); the z-score table has no in_family column.
 tvc_tested <- function(genes) genes[genes$status %in% "tested" | (if ("in_family" %in% names(genes)) genes$in_family %in% c("True", TRUE) else FALSE), , drop = FALSE]
@@ -204,6 +218,15 @@ tvc_plot <- function(choice, genes, method, s, extra = list()) {
     d$x <- log10(d$mean_control + 1); d$y <- log10(d$mean_treatment + 1); d$hover <- hover(d)
     return(labelled(ggplot2::ggplot(d, ggplot2::aes(x, y, colour = call, text = hover)) + ggplot2::geom_abline(slope = 1, intercept = 0, colour = "grey40") +
       point + colours + ggplot2::labs(x = "Control (log10 value + 1)", y = "Treated (log10 value + 1)", colour = "Call") + theme, d, "x", "y"))
+  }
+  # The comet: the same two means as the scatter, coloured by gene set rather than by call. Built by
+  # comet_ggplot so that this tab, Multi-condition and any later one draw the identical plot.
+  if (identical(choice, "comet")) {
+    sets <- extra$comet
+    if (is.null(sets) || !nrow(sets))
+      return(empty("No gene sets selected.\nChoose one or more sets, or name genes to highlight."))
+    p <- comet_ggplot(d, sets, s, theme, hover, extra$interactive)
+    return(p %||% empty("No genes with both means in this comparison"))
   }
   if (identical(choice, "pvalues")) {
     d <- d[is.finite(d$p_value), , drop = FALSE]
@@ -331,7 +354,7 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
   })
   tvc_norm <- reactive({ parts <- strsplit(input$tvc_norm_choice %||% "", "|", fixed = TRUE)[[1L]]
     if (length(parts) == 2L) list(run = parts[[1L]], method = parts[[2L]]) else NULL })
-  output$tvc_run_title <- renderUI(names(tvc_method_choices)[tvc_method_choices == (input$tvc_method %||% "resampling")])
+  output$tvc_run_title <- renderUI(names(tvc_method_labels)[tvc_method_labels == (input$tvc_method %||% "resampling")])
   output$tvc_comparison_selector <- renderUI({
     d <- design()
     if (!nrow(d)) return(tags$p(class = "text-warning", "No comparison design yet. Create it in Design."))
@@ -347,7 +370,7 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
     args <- c("--project-config", active_project_path(), "--method", method, "--normalization-run", norm$run,
               "--normalization", norm$method, "--comparisons", paste(comparisons, collapse = ","),
               "--fdr", as.character(input$tvc_fdr %||% .05), "--output", out)
-    start("ytab_treated_vs_control.py", args, "treated_vs_control", sprintf("%s started.", names(tvc_method_choices)[tvc_method_choices == method]))
+    start("ytab_treated_vs_control.py", args, "treated_vs_control", sprintf("%s started.", names(tvc_method_labels)[tvc_method_labels == method]))
   }, ignoreInit = TRUE)
 
   # ---- Results -----------------------------------------------------------------------------------------------------
@@ -381,7 +404,7 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
     run <- selected(); method <- results_method()
     if (identical(method, "zscore")) {
       r <- Find(function(x) identical(x$output_dir, run), zscore_runs()); req(r)
-      manifest <- list(method = "zscore", method_label = names(tvc_method_choices)[tvc_method_choices == "zscore"], current = isTRUE(r$current),
+      manifest <- list(method = "zscore", method_label = names(tvc_method_labels)[tvc_method_labels == "zscore"], current = isTRUE(r$current),
                        normalization = r$normalization, value_unit = r$value_unit, pseudocount = r$settings$pseudocount %||% .5)
       genes <- tvc_zscore_genes(run)
     } else { manifest <- ytab_read_manifest(run); genes <- ytab_read_analysis_tsv(file.path(run, "genes.tsv")) }
@@ -456,6 +479,40 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
     x <- utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
     unique(x[x$background == group_genes()$background[[1L]], c("parent_sample", "treated_sample")])
   })
+  # Gene sets shipped with the project's species, and the sets the user chose to overlay. Assembled here so that
+  # choosing "Comet" draws a plot straight away: the axes are columns the results already carry, and the overlay is
+  # a lookup over the same GMT and orthology files `ytab comet` reads, which is why the two agree gene for gene
+  # (verified on Gale 2020: 5,234 of 5,234). No statistic is computed; this is colouring, like colouring by call.
+  comet_species <- reactive(list(root = active()$repo_root,
+                                 dir = (active()$reference %||% list())$species_dir %||% ""))
+  comet_files <- reactive(comet_set_files(comet_species()$root, comet_species()$dir))
+  comet_sets <- reactive({
+    files <- comet_files(); if (!length(files)) return(list())
+    chosen <- input$tvc_comet_file %||% unname(files)[[1L]]
+    comet_read_gmt(if (chosen %in% files) chosen else unname(files)[[1L]])
+  })
+  # Only offered when the species ships more than one collection; one collection needs no choice.
+  output$tvc_comet_source <- renderUI({ files <- comet_files()
+    if (length(files) < 2L) return(NULL)
+    selectInput("tvc_comet_file", "Gene set file", choices = files, selected = input$tvc_comet_file) })
+  # A searchable multi-select: the number of sets is data-length, so it must not be a fixed list of checkboxes.
+  output$tvc_comet_sets_selector <- renderUI({ sets <- comet_sets()
+    if (!length(sets)) return(helpText(sprintf("No gene sets for this species. Add a GMT file under %s/genesets/.",
+                                               comet_species()$dir)))
+    kept <- intersect(input$tvc_comet_sets %||% utils::head(names(sets), 4L), names(sets))
+    selectizeInput("tvc_comet_sets", "Overlay sets", choices = names(sets), selected = kept, multiple = TRUE,
+                   options = list(plugins = list("remove_button"), placeholder = "Search gene sets")) })
+
+  comet <- reactive({
+    req(identical(input$tvc_plot, "comet"))
+    g <- group_genes(); req(nrow(g) > 0)
+    sets <- comet_sets()
+    comet_overlay(g, sets, intersect(input$tvc_comet_sets %||% utils::head(names(sets), 4L), names(sets)),
+                  comet_orthologs(comet_species()$root, comet_species()$dir, g$ORF),
+                  input$tvc_comet_genes, input$tvc_label_n %||% 10L,
+                  direction = input$tvc_direction %||% "both")
+  })
+
   # The z-score's control-control z of the group's background: the null its call threshold is taken from.
   null_z <- reactive({
     req(identical(input$tvc_plot, "nullz")); path <- file.path(selected(), "tables", "control_control_z_scores.csv")
@@ -468,6 +525,7 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
       "Each point is a gene: mean normalized count per site (abundance) against log2 fold change; colours are calls at the chosen FDR.",
     scatter = sprintf("Each gene's mean in the treated libraries against its mean in the controls, as log10(value + 1) of %s; genes off the diagonal changed, colours are the calls.",
       if (zscore) sprintf("the gene value (%s)", data()$manifest$value_unit %||% "per million") else "the normalized count per site"),
+    comet = "Each gene's treated mean against its control mean, coloured by gene set: the dense body on the diagonal is the genes that did not respond, and genes spraying away from it did. Sets and labels come from the run's comet table (ytab comet); labelled names are the ortholog's where one exists.",
     pvalues = "p-values of the tested genes. With no effect they are uniform (dashed line: expected count per bin); a peak near 0 holds the affected genes.",
     nullz = "z-scores between the two control libraries, where no gene should differ: the null the call threshold comes from (dashed lines: ±threshold, the 99th percentile of |z|).",
     runs = "Each gene's longest run of depleted sites against the longest run expected by chance from the controls' count model; genes far above the line are depleted runs.",
@@ -494,6 +552,7 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
   build_plot <- function(interactive) { choice <- input$tvc_plot %||% "volcano"; d <- data()
     tvc_plot(choice, group_genes(), d$method, display(), list(
       sites = if (identical(choice, "sites")) gene_sites(), gene = input$tvc_gene, null_z = if (identical(choice, "nullz")) null_z(),
+      comet = if (identical(choice, "comet")) comet(),
       label_n = input$tvc_label_n %||% 10, label_genes = input$tvc_label_genes, unit = d$manifest$value_unit %||% "", pseudocount = d$manifest$pseudocount,
       pairs = if (identical(choice, "sites") && identical(d$method, "zscore")) zscore_pairs(),
       direction = if (identical(d$method, "gumbel")) "both" else input$tvc_direction %||% "both", library_labels = library_labels(),
@@ -537,7 +596,7 @@ tvc_agreement_ui <- function() ytab_two_column_layout(
                                          "Effect scatter" = "effect", "Significance scatter" = "score")),
     conditionalPanel("input.tvc_ag_plot == 'venn'", uiOutput("tvc_ag_venn_selector")),
     conditionalPanel("input.tvc_ag_plot == 'matrix' || input.tvc_ag_plot == 'sets' || input.tvc_ag_plot == 'venn'",
-      selectInput("tvc_ag_direction", "Calls", c("Depleted" = "depleted", "Enriched (the Gumbel is depletion only)" = "enriched"))),
+      uiOutput("tvc_ag_direction_selector")),
     conditionalPanel("input.tvc_ag_plot == 'effect' || input.tvc_ag_plot == 'score'", uiOutput("tvc_ag_pair_selector")),
     ytab_plot_downloads_ui("tvcag", c(genes = "Download per-gene table (TSV)", pairs = "Download agreement (TSV)")),
     ytab_plot_customization_controls("tvcag", include_points = TRUE, include_labels = FALSE, open = FALSE)),
@@ -547,53 +606,114 @@ tvc_agreement_ui <- function() ytab_two_column_layout(
     ytab_methods_drawer(
       tags$p("Each pair of methods is compared on the genes both tested, per background and treated condition. ",
              tags$b("Calls"), " are compared by recovery: of one method's calls in a direction, the share the other method also calls (with published calls as the first method, this is the recall of the published hits), shown with how many genes each calls. ",
-             tags$b("Effects"), " and ", tags$b("signed significance"), " (z for the z-score; sign(effect) × −log10 p for resampling; −(−log10 p) for the depletion-only Gumbel) are compared by Spearman rank correlation, since the methods' scales and tails differ. The Gumbel tests depletion only and is left out of enriched comparisons."),
-      tags$p("Command: ", tags$code("ytab tvc-agreement --zscore RUN --resampling RUN --gumbel RUN --output DIR"), "."))))
+             tags$b("Effects"), " and ", tags$b("signed significance"), " (z for the z-score; sign(effect) × −log10 p for resampling; −(−log10 p) for the depletion-only Gumbel) are compared by Spearman rank correlation, since the methods' scales and tails differ. A method that tests depletion only is left out of the enriched comparisons, and the directions on offer follow from the methods in the comparison."),
+      tags$p("Recovery between two methods is often well below 100%, and reading it needs the rank correlation beside it."),
+      tags$p(tags$b("The same quantity, a different threshold. "),
+             "The z-score and resampling both score a gene's overall change in abundance, so they rank genes nearly identically (Spearman of effect near 1) and still share a minority of their calls: recovery depends on where each one's cutoff falls in that shared ranking. ",
+             "A fixed z cutoff answers to effect size alone, so it keeps genes whose few insertion sites leave a permutation test short of significance; a permutation test turns many sites into power, so it keeps genes whose effect is modest. ",
+             "The two surpluses are not equally trustworthy: the z-score's calls are not error-controlled and it makes many calls on simulated null comparisons, where resampling makes almost none, so the genes only the z-score calls are the ones to treat with suspicion."),
+      tags$p(tags$b("A different quantity, in earlier comparisons. "),
+             "A comparison that includes a stored control-conditioned Gumbel result is not reading a threshold difference at all: that test scores the longest run of consecutive depleted sites rather than the gene's overall shift, so it finds a different shape of depletion \u2014 a gene with a contiguous dead stretch but only a mild average change is its kind, and a gene whose sites are all modestly down with no dead run is resampling's. ",
+             "A high Spearman of effect next to a low Spearman of signed significance is the sign of it: the pair agrees on how much each gene changed and disagrees on what counts as evidence. ",
+             "Low recovery there is complementary coverage rather than error, but it does not make the union a hit list: joining two error-controlled lists keeps neither one's error rate."),
+      tags$p("Command: ", tags$code("ytab tvc-agreement --zscore RUN --resampling RUN --output DIR"), "."))))
 
-# Recovery matrix: tile (row, column) = of the row method's calls in `direction`, the share the column method also calls
-# (the published row is the recall of the published hits); the diagonal gives each method's number of calls.
-tvc_agreement_matrix <- function(pairs, direction, s) {
-  n <- function(k) paste0(direction, "_", k)
-  both <- rbind(data.frame(row = pairs$method_a, col = pairs$method_b, calls = pairs[[n("n_a")]], other = pairs[[n("n_b")]], shared = pairs[[n("n_both")]],
-                           value = pairs[[n("a_recovered_by_b")]], rho = pairs$spearman_score),
-                data.frame(row = pairs$method_b, col = pairs$method_a, calls = pairs[[n("n_b")]], other = pairs[[n("n_a")]], shared = pairs[[n("n_both")]],
-                           value = pairs[[n("b_recovered_by_a")]], rho = pairs$spearman_score))
-  m <- unique(c(pairs$method_a, pairs$method_b)); lab <- tvc_agreement_methods[m]
-  both$r <- factor(tvc_agreement_methods[both$row], rev(lab)); both$c <- factor(tvc_agreement_methods[both$col], lab)
-  both$label <- ifelse(is.na(both$value), "depletion\nonly", sprintf("%.0f%%\n%s of %s", 100 * both$value, both$shared, both$calls))
-  both$tip <- sprintf("Of %s's %s %s calls, %s (%.0f%%) are also called by %s<br>Spearman of signed significance %.2f", tvc_agreement_methods[both$row], both$calls, direction,
-                      both$shared, 100 * both$value, tvc_agreement_methods[both$col], both$rho)
-  own <- do.call(rbind, lapply(m, function(k) { x <- both$calls[both$row == k]; x <- suppressWarnings(max(x, na.rm = TRUE))
-    data.frame(r = factor(tvc_agreement_methods[[k]], levels(both$r)), c = factor(tvc_agreement_methods[[k]], levels(both$c)),
-               label = if (is.finite(x)) sprintf("%s calls", format(x, big.mark = ",")) else "depletion\nonly", tip = tvc_agreement_methods[[k]]) }))
-  ggplot2::ggplot(both, ggplot2::aes(c, r, fill = value, text = tip)) + ggplot2::geom_tile(colour = "white", linewidth = 1) +
-    ggplot2::geom_tile(data = own, ggplot2::aes(c, r, text = tip), fill = "grey92", colour = "white", linewidth = 1, inherit.aes = FALSE) +
-    ggplot2::geom_text(data = rbind(both[, c("r", "c", "label")], own[, c("r", "c", "label")]), ggplot2::aes(c, r, label = label), size = s$text_size / 3.6,
-                       fontface = "bold", inherit.aes = FALSE) +
-    ggplot2::scale_fill_gradient(low = "white", high = YTAB_FOCAL, limits = c(0, 1), na.value = "grey92", labels = function(x) paste0(100 * x, "%"),
-                                 name = sprintf("Row's %s calls\nalso called by column", direction)) +
-    ggplot2::coord_equal() + ggplot2::labs(x = "Also called by", y = "Calls of") + tvc_theme(s) + ggplot2::theme(panel.grid = ggplot2::element_blank())
+# Chosen directions, in a fixed order, as panel titles.
+tvc_agreement_directions <- c(depleted = "Depleted calls", enriched = "Enriched calls")
+tvc_agreement_direction_order <- function(directions) intersect(names(tvc_agreement_directions), directions)
+# A light-to-dark ramp around the focal colour. White-to-one-colour leaves 30-60% — where recovery usually sits —
+# hard to tell apart, so the stops are spread over that range instead.
+TVC_RECOVERY_RAMP <- c("#f4fafa", "#d3e9ea", "#a5d4d6", "#6ab8bc", "#2f979d", "#087f85", "#055c61")
+
+# Recovery matrix: tile (row, column) = of the row method's calls in that direction, the share the column method also
+# calls (the published row is the recall of the published hits); the diagonal gives each method's own number of calls.
+# Both directions are drawn as side-by-side panels, and a depletion-only method's enriched cells are left empty.
+tvc_agreement_matrix <- function(pairs, directions, s) {
+  validate(need(nrow(pairs) > 0, "No method pairs to compare in this comparison."))
+  directions <- tvc_agreement_direction_order(directions)
+  m <- unique(c(pairs$method_a, pairs$method_b)); lab <- unname(tvc_agreement_methods[m])
+  side <- function(dir, a, b, suffix) { col <- function(k) pairs[[paste0(dir, "_", k)]] %||% rep(NA_real_, nrow(pairs))
+    data.frame(direction = dir, row = pairs[[a]], col = pairs[[b]], calls = col(paste0("n_", suffix[[1L]])), shared = col("n_both"),
+               value = col(paste0(suffix[[1L]], "_recovered_by_", suffix[[2L]])), rho = pairs$spearman_effect, rho_s = pairs$spearman_score) }
+  off <- do.call(rbind, lapply(directions, function(dir)
+    rbind(side(dir, "method_a", "method_b", c("a", "b")), side(dir, "method_b", "method_a", c("b", "a")))))
+  own <- do.call(rbind, lapply(directions, function(dir) do.call(rbind, lapply(m, function(k) {
+    x <- suppressWarnings(max(off$calls[off$direction == dir & off$row == k], na.rm = TRUE))
+    data.frame(direction = dir, row = k, col = k, calls = if (is.finite(x)) x else NA_real_) }))))
+  place <- function(d) { d$r <- factor(unname(tvc_agreement_methods[d$row]), rev(lab)); d$c <- factor(unname(tvc_agreement_methods[d$col]), lab)
+    d$panel <- factor(unname(tvc_agreement_directions[d$direction]), unname(tvc_agreement_directions[directions])); d }
+  off <- place(off); own <- place(own)
+  count <- function(x) formatC(x, format = "d", big.mark = ",")
+  # The percentage carries the cell; the counts behind it are in the tooltip, so three lines of text do not compete.
+  off$label <- ifelse(is.na(off$value), "–", sprintf("%.0f%%", 100 * off$value))
+  off$tip <- ifelse(is.na(off$value),
+    sprintf("%s does not call enrichment", unname(tvc_agreement_methods[off$row])),
+    sprintf("Of %s's %s %s calls, %s (%.0f%%) are also called by %s<br>Spearman: effect %.3f, signed significance %.2f",
+            unname(tvc_agreement_methods[off$row]), count(off$calls), off$direction, count(off$shared), 100 * off$value,
+            unname(tvc_agreement_methods[off$col]), off$rho, off$rho_s))
+  own$label <- ifelse(is.na(own$calls), "–", paste0(count(own$calls), "\ncalls"))
+  own$tip <- ifelse(is.na(own$calls), sprintf("%s does not call enrichment", unname(tvc_agreement_methods[own$row])),
+                    sprintf("%s calls %s genes in this direction", unname(tvc_agreement_methods[own$row]), count(own$calls)))
+  # Dark tiles need light text and light tiles dark text, or the percentage disappears at one end of the ramp.
+  off$ink <- ifelse(!is.na(off$value) & off$value > .72, "white", "#10292b")
+  ggplot2::ggplot(off, ggplot2::aes(c, r, fill = value, text = tip)) +
+    ggplot2::geom_tile(colour = "white", linewidth = 1.4) +
+    ggplot2::geom_tile(data = own, ggplot2::aes(c, r, text = tip), fill = "grey95", colour = "white", linewidth = 1.4, inherit.aes = FALSE) +
+    ggplot2::geom_text(data = own, ggplot2::aes(c, r, label = label), colour = "grey30", size = s$text_size / 3.8, fontface = "bold", lineheight = .95, inherit.aes = FALSE) +
+    ggplot2::geom_text(ggplot2::aes(label = label, colour = ink), size = s$text_size / 2.9, fontface = "bold", show.legend = FALSE) +
+    ggplot2::scale_colour_identity() +
+    ggplot2::scale_fill_gradientn(colours = TVC_RECOVERY_RAMP, limits = c(0, 1), na.value = "grey95", breaks = seq(0, 1, .25),
+                                  labels = function(x) paste0(100 * x, "%"), name = "Also called\nby the column") +
+    ggplot2::coord_equal() + ggplot2::labs(x = "Also called by", y = "Calls of") +
+    (if (length(directions) > 1L) ggplot2::facet_wrap(~panel) else ggplot2::facet_null()) +
+    # Bold black axis text and the blank ticks a tile plot wants come from ytab_style_ggplot.
+    tvc_theme(s) + ggplot2::theme(panel.grid = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(face = "bold", size = ggplot2::rel(1.05)), panel.spacing = grid::unit(1.4, "lines"),
+      legend.key.height = grid::unit(1.1, "lines"))
 }
 
 # Venn of the calls in one direction for two or three methods: region counts are the genes called by exactly that set of
 # the chosen methods (from sets.tsv, genes tested by every method of the comparison).
-tvc_agreement_venn <- function(sets, methods, s) {
+tvc_agreement_venn <- function(sets, methods, directions, s, depletion_only = character()) {
   validate(need(length(methods) %in% 2:3, "Choose two or three methods for the Venn diagram."))
-  member <- lapply(strsplit(sets$methods, "&", fixed = TRUE), function(x) intersect(x, methods))
-  key <- vapply(member, function(x) paste(sort(match(x, methods)), collapse = ""), "")
-  counts <- tapply(sets$genes, key, sum); get <- function(k) if (k %in% names(counts)) counts[[k]] else 0L
+  directions <- tvc_agreement_direction_order(directions)
+  # A depletion-only method keeps its circle in the enriched panel, because the geometry is shared between panels.
+  # Drawn faint and dashed with its regions dashed out, so it reads as "cannot call this" and not "called nothing".
+  inactive <- function(dir) if (identical(dir, "enriched")) intersect(methods, depletion_only) else character()
   circle <- function(x, y, r = 1.15, k) { t <- seq(0, 2 * pi, length.out = 120); data.frame(x = x + r * cos(t), y = y + r * sin(t), method = k) }
   centres <- if (length(methods) == 2L) list(c(-.6, 0), c(.6, 0)) else list(c(-.65, .45), c(.65, .45), c(0, -.6))
-  circles <- do.call(rbind, lapply(seq_along(methods), function(i) circle(centres[[i]][1], centres[[i]][2], k = methods[[i]])))
-  regions <- if (length(methods) == 2L) data.frame(k = c("1", "2", "12"), x = c(-1.15, 1.15, 0), y = 0) else
+  layout <- if (length(methods) == 2L) data.frame(k = c("1", "2", "12"), x = c(-1.15, 1.15, 0), y = 0) else
     data.frame(k = c("1", "2", "3", "12", "13", "23", "123"), x = c(-1.2, 1.2, 0, 0, -.75, .75, 0), y = c(.85, .85, -1.25, .95, -.25, -.25, .1))
-  regions$label <- format(vapply(regions$k, get, 0), big.mark = ",")
-  names_at <- do.call(rbind, lapply(seq_along(methods), function(i) data.frame(x = centres[[i]][1] * 1.9, y = centres[[i]][2] * 1.9 + if (centres[[i]][2] < 0) -.55 else .5,
-                                                                             label = tvc_agreement_methods[[methods[[i]]]])))
-  ggplot2::ggplot() + ggplot2::geom_polygon(data = circles, ggplot2::aes(x, y, group = method, fill = method), alpha = .25, colour = "black", linewidth = .6) +
-    ggplot2::geom_text(data = regions, ggplot2::aes(x, y, label = label), size = s$text_size / 2.6, fontface = "bold") +
-    ggplot2::geom_text(data = names_at, ggplot2::aes(x, y, label = label), size = s$text_size / 3, fontface = "bold") +
-    ggplot2::scale_fill_manual(values = tvc_agreement_colours, guide = "none") + ggplot2::coord_equal() + ggplot2::theme_void()
+  # The geometry is the same in every panel; only the region counts change with the direction.
+  panel <- function(d, dir) { d$panel <- factor(unname(tvc_agreement_directions[dir]), unname(tvc_agreement_directions[directions])); d }
+  per <- function(dir) { x <- sets[sets$direction == dir, , drop = FALSE]; dead <- match(inactive(dir), methods)
+    member <- lapply(strsplit(x$methods, "&", fixed = TRUE), function(k) intersect(k, methods))
+    key <- vapply(member, function(k) paste(sort(match(k, methods)), collapse = ""), "")
+    counts <- tapply(x$genes, key, sum); get <- function(k) if (k %in% names(counts)) counts[[k]] else 0L
+    r <- layout; involved <- vapply(r$k, function(k) any(as.integer(strsplit(k, "")[[1L]]) %in% dead), TRUE)
+    named <- vapply(r$k, function(k) paste(tvc_agreement_methods[methods[as.integer(strsplit(k, "")[[1L]])]], collapse = " and "), "")
+    r$label <- ifelse(involved, "–", formatC(vapply(r$k, get, 0), format = "d", big.mark = ","))
+    r$ink <- ifelse(involved, "grey55", "black")
+    r$tip <- ifelse(involved, sprintf("%s does not call enrichment", paste(tvc_agreement_methods[inactive(dir)], collapse = " and ")),
+                    sprintf("%s: %s genes called %s", named, r$label, dir))
+    panel(r, dir) }
+  regions <- do.call(rbind, lapply(directions, per))
+  circles <- do.call(rbind, lapply(directions, function(dir) { d <- panel(do.call(rbind, lapply(seq_along(methods), function(i)
+    circle(centres[[i]][1], centres[[i]][2], k = methods[[i]]))), dir); d$off <- d$method %in% inactive(dir); d }))
+  names_at <- do.call(rbind, lapply(directions, function(dir) panel(do.call(rbind, lapply(seq_along(methods), function(i)
+    data.frame(x = centres[[i]][1] * 1.9, y = centres[[i]][2] * 1.9 + if (centres[[i]][2] < 0) -.55 else .5,
+               label = tvc_agreement_methods[[methods[[i]]]],
+               ink = if (methods[[i]] %in% inactive(dir)) "grey55" else "black"))), dir)))
+  ggplot2::ggplot() +
+    ggplot2::geom_polygon(data = circles, ggplot2::aes(x, y, group = interaction(method, panel), fill = method, alpha = off, linetype = off),
+                          colour = "black", linewidth = .6) +
+    ggplot2::geom_text(data = regions, ggplot2::aes(x, y, label = label, colour = ink, text = tip), size = s$text_size / 2.6, fontface = "bold") +
+    ggplot2::geom_text(data = names_at, ggplot2::aes(x, y, label = label, colour = ink), size = s$text_size / 3, fontface = "bold") +
+    ggplot2::scale_fill_manual(values = tvc_agreement_colours, guide = "none") + ggplot2::scale_colour_identity() +
+    ggplot2::scale_alpha_manual(values = c(`FALSE` = .25, `TRUE` = .05), guide = "none") +
+    ggplot2::scale_linetype_manual(values = c(`FALSE` = "solid", `TRUE` = "22"), guide = "none") + ggplot2::coord_equal() +
+    (if (length(directions) > 1L) ggplot2::facet_wrap(~panel) else ggplot2::facet_null()) +
+    ggplot2::theme_void() + ggplot2::theme(strip.text = ggplot2::element_text(face = "bold", size = ggplot2::rel(1.05)))
 }
 
 # Effect or significance of one method against another, genes tested by both; colour: which of the two called the gene.
@@ -619,25 +739,37 @@ tvc_agreement_scatter <- function(genes, a, b, what, s) {
 }
 
 # UpSet of the calls in one direction: bars are genes in exactly the marked set of methods; dots mark the methods.
-tvc_agreement_upset <- function(sets, methods, s) {
-  validate(need(nrow(sets) > 0, "No calls to compare in this direction."))
-  d <- sets[order(-sets$genes), , drop = FALSE]; d$set <- factor(seq_len(nrow(d)))
+tvc_agreement_upset <- function(sets, methods, directions, s, depletion_only = character()) {
+  directions <- tvc_agreement_direction_order(directions)
+  d <- sets[sets$direction %in% directions, , drop = FALSE]
+  validate(need(nrow(d) > 0, "No calls to compare in this direction."))
+  d$panel <- factor(unname(tvc_agreement_directions[d$direction]), unname(tvc_agreement_directions[directions]))
+  d <- d[order(d$panel, -d$genes), , drop = FALSE]
+  d$set <- factor(seq_len(nrow(d)), levels = seq_len(nrow(d)))
   members <- strsplit(d$methods, "&", fixed = TRUE)
-  d$group <- ifelse(d$n_methods == length(methods), "all", ifelse(d$n_methods == 1, vapply(members, `[`, "", 1L), "some"))
+  # "Called by all" means every method that can call in that direction, so a depletion-only method is not counted
+  # against the enriched sets.
+  possible <- vapply(d$direction, function(dir) length(if (identical(dir, "enriched")) setdiff(methods, depletion_only) else methods), 0L)
+  d$group <- ifelse(d$n_methods == possible, "all", ifelse(d$n_methods == 1, vapply(members, `[`, "", 1L), "some"))
   fills <- c(all = YTAB_FOCAL, some = YTAB_COMPARATOR, tvc_agreement_colours[methods])
+  # One y scale across the panels, so the method rows line up and the bars stay comparable between directions.
   ymax <- max(d$genes); step <- ymax * .1; rows <- -step * seq_along(methods)
-  dots <- do.call(rbind, lapply(seq_along(methods), function(i) data.frame(set = d$set, y = rows[[i]], on = vapply(members, function(m) methods[[i]] %in% m, TRUE))))
-  links <- do.call(rbind, lapply(seq_len(nrow(d)), function(k) { on <- rows[methods %in% members[[k]]]; if (length(on) > 1) data.frame(set = d$set[[k]], ymin = min(on), ymax = max(on)) }))
-  d$tip <- sprintf("Called by: %s<br>%s genes", gsub("&", ", ", d$methods), format(d$genes, big.mark = ","))
+  dots <- do.call(rbind, lapply(seq_along(methods), function(i)
+    data.frame(set = d$set, panel = d$panel, y = rows[[i]], on = vapply(members, function(m) methods[[i]] %in% m, TRUE))))
+  links <- do.call(rbind, lapply(seq_len(nrow(d)), function(k) { on <- rows[methods %in% members[[k]]]
+    if (length(on) > 1) data.frame(set = d$set[[k]], panel = d$panel[[k]], ymin = min(on), ymax = max(on)) }))
+  d$tip <- sprintf("Called %s by: %s<br>%s genes", d$direction, gsub("&", ", ", d$methods), formatC(d$genes, format = "d", big.mark = ","))
   ticks <- pretty(c(0, ymax)); ticks <- ticks[ticks <= ymax * 1.05]
   p <- ggplot2::ggplot(d, ggplot2::aes(set, genes)) + ggplot2::geom_col(ggplot2::aes(fill = group, text = tip), width = .7) +
-    ggplot2::geom_text(ggplot2::aes(y = genes + ymax * .045, label = format(genes, big.mark = ",")), size = s$text_size / 3.8, fontface = "bold") +
+    ggplot2::geom_text(ggplot2::aes(y = genes + ymax * .045, label = formatC(genes, format = "d", big.mark = ",")), size = s$text_size / 3.8, fontface = "bold") +
     ggplot2::geom_point(data = dots, ggplot2::aes(set, y, colour = on), size = 3.2, inherit.aes = FALSE) +
     ggplot2::scale_colour_manual(values = c(`TRUE` = "black", `FALSE` = "grey85"), guide = "none") +
     ggplot2::scale_fill_manual(values = fills, guide = "none") +
-    ggplot2::scale_y_continuous(breaks = c(ticks, rows), labels = c(format(ticks, big.mark = ","), tvc_agreement_methods[methods]), expand = ggplot2::expansion(mult = c(.02, .1))) +
+    ggplot2::scale_y_continuous(breaks = c(ticks, rows), labels = c(formatC(ticks, format = "d", big.mark = ","), tvc_agreement_methods[methods]), expand = ggplot2::expansion(mult = c(.06, .1))) +
     ggplot2::scale_x_discrete(labels = NULL) + ggplot2::labs(x = "Methods that call the genes (exactly this set)", y = "Genes") +
-    tvc_theme(s) + ggplot2::theme(panel.grid.major.x = ggplot2::element_blank())
+    (if (length(directions) > 1L) ggplot2::facet_wrap(~panel, scales = "free_x") else ggplot2::facet_null()) +
+    tvc_theme(s) + ggplot2::theme(panel.grid.major.x = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(face = "bold", size = ggplot2::rel(1.05)), panel.spacing = grid::unit(1.2, "lines"))
   if (!is.null(links) && nrow(links)) p <- p + ggplot2::geom_segment(data = links, ggplot2::aes(x = set, xend = set, y = ymin, yend = ymax), linewidth = .8, inherit.aes = FALSE)
   p
 }
@@ -651,8 +783,11 @@ tvc_agreement_server <- function(input, output, session, repo_root, active, star
     none <- c("Do not include" = "")
     zc <- c(stats::setNames(vapply(z, `[[`, "", "output_dir"), vapply(z, fitness_result_display_name, "")), none)
     pick <- function(m) { y <- x[kind == m, , drop = FALSE]; c(ytab_run_choices(y), none) }
+    # A stored Gumbel result can still be compared, but only where one exists: the method is no longer offered, so the
+    # selector appears for projects that already have such a run and is absent everywhere else.
+    gumbel <- pick("gumbel")
     tagList(selectInput("tvc_ag_zscore", "z-score result", zc), selectInput("tvc_ag_resampling", "Resampling result", pick("resampling")),
-            selectInput("tvc_ag_gumbel", "Gumbel result", pick("gumbel")),
+            if (length(gumbel) > 1L) selectInput("tvc_ag_gumbel", "Gumbel result (earlier runs only)", gumbel),
             helpText("The latest result of each method is chosen; pick results made on the same comparisons."))
   })
   observeEvent(input$tvc_ag_run, {
@@ -678,33 +813,79 @@ tvc_agreement_server <- function(input, output, session, repo_root, active, star
     selectInput("tvc_ag_pair", "Methods", stats::setNames(vapply(pairs, paste, "", collapse = "|"), vapply(pairs, function(x) paste(tvc_agreement_methods[x], collapse = " vs "), ""))) })
   output$tvc_ag_venn_selector <- renderUI({ m <- unlist(data()$manifest$methods); req(length(m) >= 2)
     selectizeInput("tvc_ag_venn", "Methods (two or three)", stats::setNames(m, tvc_agreement_methods[m]), selected = utils::head(m, 3), multiple = TRUE, options = list(maxItems = 3)) })
+  # The directions on offer come from the comparison itself: a method that tests depletion only has no enriched calls,
+  # so unless two of the methods can call enrichment there is nothing to choose between.
+  all_methods <- reactive(unlist(data()$manifest$methods) %||% character())
+  depletion_only <- reactive(unlist(data()$manifest$depletion_only) %||% character())
+  enriched_methods <- reactive(setdiff(all_methods(), depletion_only()))
+  output$tvc_ag_direction_selector <- renderUI({ req(nrow(runs()) > 0)
+    if (length(enriched_methods()) < 2L) return(helpText(sprintf("Depleted calls only: %s tests depletion.",
+      if (length(depletion_only())) paste(tvc_agreement_methods[depletion_only()], collapse = " and ") else "this comparison")))
+    selectInput("tvc_ag_direction", "Calls", c("Both, side by side" = "both", "Depleted only" = "depleted", "Enriched only" = "enriched")) })
+  direction <- reactive(if (length(enriched_methods()) < 2L) "depleted" else input$tvc_ag_direction %||% "both")
+  directions <- reactive(if (identical(direction(), "both")) c("depleted", "enriched") else direction())
   output$tvc_ag_summary <- renderUI({
     if (!nrow(runs())) return(ytab_empty_state("No method comparison yet", "Choose a result of each method and click Compare; the Gumbel is optional."))
     p <- data()$pairs; p <- p[p$group == group(), , drop = FALSE]; req(nrow(p) > 0)
-    cards <- lapply(seq_len(nrow(p)), function(i) ytab_metric_card(paste(tvc_agreement_methods[[p$method_a[[i]]]], "vs", tvc_agreement_methods[[p$method_b[[i]]]]),
-      sprintf("%s shared", p$depleted_n_both[[i]]), sprintf("depleted: %s and %s calls; ρ %.2f (significance)", p$depleted_n_a[[i]], p$depleted_n_b[[i]], p$spearman_score[[i]])))
-    tags$div(class = "ytab-stat-grid", cards)
+    pct <- function(x) ifelse(is.na(x), "–", sprintf("%.0f%%", 100 * x))
+    count <- function(x) formatC(as.numeric(x), format = "d", big.mark = ",")
+    # Recovery and the effect-rank correlation sit on the same card: a pair can rank the genes almost identically and
+    # still share a minority of its calls, and only the two numbers together say which is happening.
+    cards <- lapply(seq_len(nrow(p)), function(i) { q <- p[i, , drop = FALSE]
+      a <- tvc_agreement_methods[[q$method_a]]; b <- tvc_agreement_methods[[q$method_b]]
+      ytab_metric_card(paste(a, "vs", b), sprintf("%s / %s", pct(q$depleted_a_recovered_by_b), pct(q$depleted_b_recovered_by_a)),
+        sprintf("of %s's %s and %s's %s depleted calls, %s shared · effect ranks ρ %.3f · signed significance ρ %.2f · %s genes tested by both",
+                a, count(q$depleted_n_a), b, count(q$depleted_n_b), count(q$depleted_n_both), q$spearman_effect, q$spearman_score,
+                count(q$genes_tested_by_both))) })
+    # Low recovery has two causes worth telling apart, and the two rank correlations tell them apart: a pair that
+    # agrees on the effect and on significance differs only in where its cutoff falls, while a pair that agrees on the
+    # effect but not on significance is scoring different evidence altogether.
+    worst <- suppressWarnings(pmin(p$depleted_a_recovered_by_b, p$depleted_b_recovered_by_a, na.rm = TRUE))
+    low <- !is.na(p$spearman_effect) & p$spearman_effect >= .9 & !is.na(worst) & worst < .8
+    named <- function(i) paste(sprintf("%s and %s", tvc_agreement_methods[p$method_a[i]], tvc_agreement_methods[p$method_b[i]]), collapse = "; ")
+    threshold <- low & !is.na(p$spearman_score) & p$spearman_score >= .8
+    evidence <- low & (is.na(p$spearman_score) | p$spearman_score < .8)
+    tags$div(tags$div(class = "ytab-stat-grid", cards),
+      if (any(threshold)) tags$p(class = "text-muted", style = "margin-top:.75em",
+        tags$b(named(threshold)), " rank these genes almost identically and agree on significance, yet share fewer of their calls: they differ on where the cutoff falls, not on which genes respond."),
+      if (any(evidence)) tags$p(class = "text-muted", style = "margin-top:.4em",
+        tags$b(named(evidence)), " agree on how much each gene changed (effect ρ ≥ 0.9) but not on what counts as evidence (signed significance ρ < 0.8): they score different things, so their calls overlap only in part, by design."),
+      if (any(low)) tags$p(class = "text-muted", style = "margin-top:.4em",
+        "The methods note below says what drives each, and which surplus calls carry error control."))
   })
   display <- reactive(ytab_plot_customization_values(input, "tvcag"))
   plot_obj <- reactive({
-    d <- data(); s <- display(); g <- group(); choice <- input$tvc_ag_plot %||% "matrix"; dir <- input$tvc_ag_direction %||% "depleted"
-    if (choice == "matrix") return(tvc_agreement_matrix(d$pairs[d$pairs$group == g, , drop = FALSE], dir, s))
-    if (choice == "venn") { m <- input$tvc_ag_venn %||% utils::head(unlist(d$manifest$methods), 3); if (dir == "enriched") m <- setdiff(m, unlist(d$manifest$depletion_only))
-      return(tvc_agreement_venn(d$sets[d$sets$group == g & d$sets$direction == dir, , drop = FALSE], m, s)) }
-    if (choice == "sets") { m <- unlist(d$manifest$methods); if (dir == "enriched") m <- setdiff(m, unlist(d$manifest$depletion_only))
-      return(tvc_agreement_upset(d$sets[d$sets$group == g & d$sets$direction == dir, , drop = FALSE], m, s)) }
+    d <- data(); s <- display(); g <- group(); choice <- input$tvc_ag_plot %||% "matrix"; dirs <- directions()
+    if (choice == "matrix") return(tvc_agreement_matrix(d$pairs[d$pairs$group == g, , drop = FALSE], dirs, s))
+    sets <- d$sets[d$sets$group == g, , drop = FALSE]
+    # On the enriched panel alone a depletion-only method would be an empty circle, so it is dropped; with both
+    # directions the geometry is shared between the panels, so it stays and simply calls nothing enriched.
+    if (choice == "venn") { m <- input$tvc_ag_venn %||% utils::head(all_methods(), 3)
+      if (identical(dirs, "enriched")) m <- setdiff(m, depletion_only())
+      return(tvc_agreement_venn(sets, m, dirs, s, depletion_only())) }
+    if (choice == "sets") { m <- all_methods(); if (identical(dirs, "enriched")) m <- setdiff(m, depletion_only())
+      return(tvc_agreement_upset(sets, m, dirs, s, depletion_only())) }
     pair <- strsplit(input$tvc_ag_pair %||% paste(unlist(d$manifest$methods)[1:2], collapse = "|"), "|", fixed = TRUE)[[1L]]
     tvc_agreement_scatter(d$genes[d$genes$group == g, , drop = FALSE], pair[[1L]], pair[[2L]], choice, s)
   })
   output$tvc_ag_plot_frame <- renderUI({ req(nrow(runs()) > 0); s <- display(); ytab_plot_frame(plotly::plotlyOutput("tvc_ag_plotly", height = s$height), s$width) })
-  output$tvc_ag_plotly <- plotly::renderPlotly({ built <- ytab_ggplotly(plot_obj())   # a Venn has no axes
-    if (identical(input$tvc_ag_plot, "venn")) built <- plotly::layout(built, xaxis = list(visible = FALSE), yaxis = list(visible = FALSE)); built })
-  output$tvc_ag_caption <- renderUI(switch(input$tvc_ag_plot %||% "matrix",
-    matrix = "Of the row method's calls in the chosen direction, the share the column method also calls (with the count); the published row is the recall of the published hits. The diagonal gives each method's number of calls.",
-    venn = "Genes called in the chosen direction by each combination of the chosen methods; only genes tested by every method of the comparison. The Gumbel is depletion only.",
+  output$tvc_ag_plotly <- plotly::renderPlotly({ built <- ytab_ggplotly(plot_obj())
+    # A Venn has no axes, and faceting it gives a second pair (xaxis2/yaxis2), so every axis present is hidden.
+    if (identical(input$tvc_ag_plot, "venn")) { built <- plotly::plotly_build(built)
+      for (ax in grep("^[xy]axis[0-9]*$", names(built$x$layout), value = TRUE))
+        built$x$layout[[ax]] <- utils::modifyList(built$x$layout[[ax]], list(visible = FALSE)) }
+    built })
+  output$tvc_ag_caption <- renderUI({ both <- length(directions()) > 1L
+    panels <- if (both) " Depleted and enriched calls are drawn as side-by-side panels." else ""
+    switch(input$tvc_ag_plot %||% "matrix",
+    matrix = paste0("Of the row method's calls, the share the column method also calls; the published row is the recall of the published hits. The diagonal gives each method's own number of calls, and the counts behind each percentage are in the tooltip, with the pair's rank correlations.",
+                    panels, " A method that tests depletion only has no enriched cells, shown as a dash."),
+    venn = paste0("Genes called by each combination of the chosen methods; only genes tested by every method of the comparison.",
+                  panels, if (both) " A method that tests depletion only keeps its circle in the enriched panel, where it calls nothing." else ""),
     effect = "Each gene's effect in one method against the other, over genes both tested; colours show which method called it (either direction; depleted only when the Gumbel is one of the pair).",
     score = "Each gene's signed significance in one method against the other (z; sign(effect) × −log10 p; the Gumbel's depletion as −(−log10 p)).",
-    sets = "Genes called in the chosen direction by exactly the marked set of methods, largest sets first; only genes tested by every method shown."))
+    sets = paste0("Genes called by exactly the marked set of methods, largest sets first; only genes tested by every method shown.",
+                  panels, if (both) " The panels share one count axis, so the bars are comparable between directions." else "")) })
   output$tvc_ag_table <- DT::renderDT({ p <- data()$pairs; p <- p[p$group == group(), , drop = FALSE]; req(nrow(p) > 0)
     out <- data.frame(Methods = paste(tvc_agreement_methods[p$method_a], "vs", tvc_agreement_methods[p$method_b]), `Genes tested by both` = p$genes_tested_by_both,
       `Spearman (effect)` = round(p$spearman_effect, 3), `Spearman (significance)` = round(p$spearman_score, 3),

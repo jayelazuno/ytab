@@ -94,6 +94,89 @@ python scripts/local/ytab.py treated-vs-control --project-config P/config/projec
   --normalization-run P/normalization/RUN --normalization betageom --output P/treated_vs_control/RUN
 ```
 
+## Comet plots
+
+A comet plot shows every gene's reads under treatment against its reads in the control, on log axes, one panel per
+comparison. Genes that do not respond lie on the diagonal; because read totals span orders of magnitude the bulk of
+them forms a dense elongated body along it, and the genes that do respond spray away from that body. The figure
+therefore shows in one panel both how much evidence a gene carries, by how far along the diagonal it sits, and how
+much it moved, by how far off the diagonal — which a volcano plot separates and a hit list discards.
+
+It computes no statistic of its own. Both axes are columns the results table already carries, so **the app draws
+it the moment it is selected** -- in Treated vs Control, and in Multi-condition for the chosen pair. There is
+nothing to run first.
+
+The gene-set overlay is assembled in the app from the GMT and orthology files that ship with the species, which are
+the same files the command line reads; the two agree gene for gene (verified on Gale 2020: 5,234 of 5,234). In the
+app you choose which sets to overlay from a searchable list, and you can paste your own gene names into
+**Highlight my genes** to get an overlay of exactly those, which outranks the declared sets so a gene asked for by
+name is never hidden inside a family.
+
+`ytab comet` remains for publication figures and for stacking several runs in one panel set. It writes the table
+first and draws from it, so that figure cannot disagree with the numbers behind it either.
+
+**Where the overlay appears.** Treated vs Control and Multi-condition both have a *Comet (gene sets)* plot, the
+latter for the pair chosen in **Pair**. Genetic interactions does not: its *Strain responses* plot is already the
+same geometry with the two strains' responses on the axes rather than a control and a treated mean, so the diagonal
+there reads "responds the same in both backgrounds" and distance from it **is** the interaction. The overlay is
+therefore offered on that plot through **Colour by -> Gene set**, instead of as a second plot that would duplicate it.
+
+```bash
+python scripts/local/ytab.py comet RUN_DIR [RUN_DIR ...] \
+  --gene-sets resources/species/<species>/genesets/core_families.gmt \
+  --orthologs resources/species/<species>/orthologs/<table>.txt \
+  --set-order ERG PDR_CDR_efflux mito_ribosome ribosome_40S \
+  --label-sets ERG PDR_CDR_efflux --label-count 10 \
+  -o OUT_DIR
+```
+
+One run directory gives one panel; several give a stacked figure with shared axes, which is how a set of strains or
+conditions is compared. Panels are named after the run's `background`, or by `--labels`. With no `-o`, the output
+lands in `<run>/comet`.
+
+**Gene sets** are declared in GMT files under `resources/species/<species>/genesets/` (the MSigDB interchange format: set name, description, then members), so a
+lab can supply or correct its own without touching code. A gene joins a set if the set names its identifier, its own
+gene name, **or its ortholog's gene name in a reference species**. That last route is what makes the overlays usable
+on a non-model organism: in *C. glabrata* 4,812 of 5,234 genes reach an *S. cerevisiae* ortholog while only about 746
+carry a name in the reference annotation, so sets declared on ortholog names cover the genome and sets declared on
+native names cover a seventh of it. A gene in several sets is drawn once, in the first set of `--set-order`.
+
+`scripts/local/ytab_build_genesets.py` writes the GMT from **GO annotations**: it takes a GAF, the ontology, and
+a TSV naming each set and its GO term. Annotations are propagated up the ontology through `is_a` and `part_of`
+before a set is written, because a GAF records only the term a curator chose -- on *S. cerevisiae* that turns 9
+genes annotated to "mitochondrial ribosome" itself into the 91 that belong to it, and 12 for "cell wall
+organization" into 199. `regulates` edges are deliberately not followed: a gene that regulates a process is not
+in it, and following them sweeps every regulator into the set.
+
+The annotations are *S. cerevisiae*'s (`resources/species/cerevisiae/annotation/go/`), and reach other species
+through the ortholog-name match above. That indirection is what makes the sets usable: *C. glabrata*'s own GO
+from CGD is 45% root "unknown" terms and contains one mitochondrial-ribosome gene, against S. cerevisiae's 2.5%
+and 91.
+
+**Labels** are chosen by distance from the diagonal, never by a threshold on the statistic: the plot is read for
+where genes sit, so a label rule tied to a call would hide a gene that moved a long way without reaching
+significance. Three rules shape which genes are named.
+
+*Per set, not per plot.* The count applies to each overlaid set separately. Pooling them lets a large family take
+every label: a 90-gene ribosome set beside a 29-gene ergosterol set leaves the smaller one unnamed, which is
+usually the one being asked about.
+
+*Direction.* **Calls shown** in the app (`--direction` on the command line) restricts which hits may be named to
+the depleted side, the enriched side, or both, as it does on the volcano and the MA plot. Every member of a set
+stays **coloured** whichever direction is chosen: the overlay exists to show where a whole family sits, and hiding
+half of it would make a family that moved look like one that did not.
+
+*Support.* A gene must reach `--label-min-reads` (default 10) in one condition. A gene at one or two reads in both
+has a large ratio for no reason but counting noise, and those pile up at the origin where their labels overlap.
+
+Specific genes are always named whatever the rules above: **Highlight my genes** in the app, `--label-genes` on
+the command line.
+
+**How much of the plot a set covers.** A functional family is a small fraction and does not obscure the comet's
+body: on *C. glabrata* (5,234 genes) efflux is 0.3%, ergosterol 0.5%, the mitochondrial ribosome 1.6%, DNA repair
+6.1%. A compartment-level term does: mitochondrion (GO:0005739) reaches 1,070 genes, a fifth of the plot, which is
+why it is not one of the default sets. There is no fixed limit; the distinction is a response versus a location.
+
 ## References
 
 - DeJesus MA, Ioerger TR (2013). A hidden Markov model for identifying essential and growth-defect regions in bacterial

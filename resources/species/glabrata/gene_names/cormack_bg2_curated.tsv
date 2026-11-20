@@ -1,0 +1,926 @@
+# Cormack Lab BG2 curated gene names, supplied by the Cunningham lab 2026-11-19.
+# Source file: bg2_Annotation_forIGV.gff (CormackLab BG2 annotation, Assign=<CAGL id>/<name>).
+# status: curated-name = a usable gene name. ambiguous-* = curators declined a 1:1 assignment.
+#         bg2-frameshift / bg2-nonsense = BG2 sequence status, NOT a gene name.
+# Only rows with status=curated-name may be used as display names.
+cagl_id	gene_name	status	raw_value	cormack_bg2_locus	assignment_method	ytab_current_name	in_ytab_reference
+CAGL0A00099g	EPA19	curated-name	EPA19	A00099g	ReciprocalBest	EPA19	yes
+CAGL0A00143g	EPA24	curated-name	EPA24	A00143g	Manual	EPA24	yes
+CAGL0A00407g	SCL1	curated-name	SCL1	A00407g	ReciprocalBest	SCL1	yes
+CAGL0A00429g	ERG4	curated-name	ERG4	A00429g	ReciprocalBest	ERG4	yes
+CAGL0A00451g	PDR1	curated-name	PDR1	A00451g	ReciprocalBest	PDR1	yes
+CAGL0A00495g	PMA1	curated-name	PMA1	A00495g	ReciprocalBest	PMA1	yes
+CAGL0A00869g	EST2	curated-name	EST2	A00869g	ReciprocalBest	EST2	yes
+CAGL0A00957g	PEX23B	curated-name	PEX23B	A00957g	ReciprocalBest	PEX23B	yes
+CAGL0A01199g	DIP5	curated-name	DIP5	A01199g	ReciprocalBest	DIP5	yes
+CAGL0A01243g	GIT1	curated-name	GIT1	A01243g	ReciprocalBest	GIT1	yes
+CAGL0A01284g	EPA10	curated-name	EPA10	A01284g	ReciprocalBest	EPA10	yes
+CAGL0A01325g	PGD1	curated-name	PGD1	A01325g	Synteny	PGD1	yes
+CAGL0A01366g	EPA9	curated-name	EPA9	A01366g	ReciprocalBest	EPA9	yes
+CAGL0A01430g	TRP5	curated-name	TRP5	A01430g	ReciprocalBest	TRP5	yes
+CAGL0A01452g	CWH41	curated-name	CWH41	A01452g	ReciprocalBest	CWH41	yes
+CAGL0A01540g		ambiguous-multi	Multi	A01540g	Blast	GWK60_A01353	yes
+CAGL0A01606g		ambiguous-multi	Multi	A01606g	Blast	GWK60_A01419	yes
+CAGL0A01628g	MIG1	curated-name	MIG1	A01628g	ReciprocalBest	MIG1	yes
+CAGL0A01782g	HXT4	curated-name	HXT4	A01782g	ReciprocalBest	HXT4	yes
+CAGL0A01804g	HXT1	curated-name	HXT1	A01804g	ReciprocalBest	HXT1	yes
+CAGL0A01826g	HXT5	curated-name	HXT5	A01826g	ReciprocalBest	HXT5	yes
+CAGL0A02211g	HXT6	curated-name	HXT6	A02211g	ReciprocalBest	HXT6/7	yes
+CAGL0A02233g	HXT4	curated-name	HXT4	A02233g	ReciprocalBest	HXT4/6/7	yes
+CAGL0A02321g	HXT3	curated-name	HXT3	A02321g	ReciprocalBest	HXT3	yes
+CAGL0A02431g	YPS7	curated-name	YPS7	A02431g	ReciprocalBest	YPS7	yes
+CAGL0A02794g		ambiguous-multi	Multi	A02794g	Blast	GWK60_A02629	yes
+CAGL0A03051g		ambiguous-multi	Multi	A03051g	Blast	GWK60_A02915	yes
+CAGL0A03102g	ARO10	curated-name	ARO10	A03102g	ReciprocalBest	ARO10	yes
+CAGL0A03117g		ambiguous-multi	Multi	A03117g	Blast	GWK60_A03003	yes
+CAGL0A03234g	EFT2	curated-name	EFT2	A03234g	ReciprocalBest	EFT2	yes
+CAGL0A03278g		ambiguous-multi	Multi	A03278g	Blast	GWK60_A03157	yes
+CAGL0A03476g	SMF3	curated-name	SMF3	A03476g	ReciprocalBest	SMF3	yes
+CAGL0A03542g	COX12	curated-name	COX12	A03542g	ReciprocalBest	COX12	yes
+CAGL0A03696g	GAL83	curated-name	GAL83	A03696g	ReciprocalBest	GAL83	yes
+CAGL0A03905g	HMX1	curated-name	HMX1	A03905g	ReciprocalBest	HMX1	yes
+CAGL0A03993g		ambiguous-multi	Multi	A03993g	Blast	GWK60_A03883	yes
+CAGL0A04059g	NMT1	curated-name	NMT1	A04059g	ReciprocalBest	NMT1	yes
+CAGL0A04147g	PEX13	curated-name	PEX13	A04147g	ReciprocalBest	PEX13	yes
+CAGL0A04389g		ambiguous-multi	Multi	A04389g	Blast	GWK60_A04257	yes
+CAGL0A04411g	SKT5	curated-name	SKT5	A04411g	ReciprocalBest	SKT5	yes
+CAGL0A04455g	SEF1	curated-name	SEF1	A04455g	ReciprocalBest	SEF1	yes
+CAGL0A04565g	SWI4	curated-name	SWI4	A04565g	ReciprocalBest	SWI4	yes
+CAGL0A04785g	RTG2	curated-name	RTG2	A04785g	ReciprocalBest	RTG2	yes
+CAGL0B00264g	MTLalpha2	curated-name	MTLalpha2	B00264g	ReciprocalBest	MTLalpha2	yes
+CAGL0B00704g	PDI1	curated-name	PDI1	B00704g	ReciprocalBest	PDI1	yes
+CAGL0B00770g	AUT4	curated-name	AUT4	B00770g	ReciprocalBest	AUT4	yes
+CAGL0B00858g	STE50	curated-name	STE50	B00858g	ReciprocalBest	STE50	yes
+CAGL0B00902g	HIS4	curated-name	HIS4	B00902g	ReciprocalBest	HIS4	yes
+CAGL0B00990g	HBN1	curated-name	HBN1	B00990g	ReciprocalBest	HBN1	yes
+CAGL0B01122g	SAM1	curated-name	SAM1	B01122g	ReciprocalBest	SAM1	yes
+CAGL0B01166g	SWI6	curated-name	SWI6	B01166g	ReciprocalBest	SWI6	yes
+CAGL0B01203g		ambiguous-multi	Multi	B01203g	Blast	GWK60_B01023	yes
+CAGL0B01232g	EMG1	curated-name	EMG1	B01232g	ReciprocalBest	EMG1	yes
+CAGL0B01254g	MLTa1	curated-name	MLTa1	B01254g	Blast	GWK60_B01067	yes
+CAGL0B01287g	BUD5	curated-name	BUD5	B01287g	ReciprocalBest	BUD5	yes
+CAGL0B01353g	SPT20	curated-name	SPT20	B01353g	ReciprocalBest	SPT20	yes
+CAGL0B01397g	NOP8	curated-name	NOP8	B01397g	ReciprocalBest	NOP8	yes
+CAGL0B01419g	RIB4	curated-name	RIB4	B01419g	ReciprocalBest	RIB4	yes
+CAGL0B01441g	RPD3	curated-name	RPD3	B01441g	ReciprocalBest	RPD3	yes
+CAGL0B01507g	ARG8	curated-name	ARG8	B01507g	ReciprocalBest	ARG8	yes
+CAGL0B01529g	PEX7	curated-name	PEX7	B01529g	ReciprocalBest	PEX7	yes
+CAGL0B01573g	MTQ2	curated-name	MTQ2	B01573g	ReciprocalBest	MTQ2	yes
+CAGL0B01589g		ambiguous-multi	Multi	B01589g	Blast	GWK60_B01397	yes
+CAGL0B01683g	TMN2	curated-name	TMN2	B01683g	ReciprocalBest	TMN2	yes
+CAGL0B01947g	INO2	curated-name	INO2	B01947g	ReciprocalBest	INO2	yes
+CAGL0B02211g	CCH1	curated-name	CCH1	B02211g	Manual	CCH1	yes
+CAGL0B02475g	PHO84	curated-name	PHO84	B02475g	ReciprocalBest	PHO84	yes
+CAGL0B02563g	GIN3	curated-name	GIN3	B02563g	ReciprocalBest	GIN3	yes
+CAGL0B02607g	HEM1	curated-name	HEM1	B02607g	ReciprocalBest	HEM1	yes
+CAGL0B02739g	STE11	curated-name	STE11	B02739g	ReciprocalBest	STE11	yes
+CAGL0B02772g	VPS38	curated-name	VPS38	B02772g	ReciprocalBest	VPS38	yes
+CAGL0B02838g	MUP1	curated-name	MUP1	B02838g	Manual	MUP1	yes
+CAGL0B02882g	BMT2	curated-name	BMT2	B02882g	ReciprocalBest	BMT2	yes
+CAGL0B02904g	BMT6	curated-name	BMT6	B02904g	ReciprocalBest	BMT6	yes
+CAGL0B02926g	BMT3	curated-name	BMT3	B02926g	ReciprocalBest	BMT3	yes
+CAGL0B02948g	BMT4	curated-name	BMT4	B02948g	ReciprocalBest	BMT4	yes
+CAGL0B02970g	BMT5	curated-name	BMT5	B02970g	ReciprocalBest	BMT5	yes
+CAGL0B03047g	ILV5	curated-name	ILV5	B03047g	ReciprocalBest	ILV5	yes
+CAGL0B03069g	TAL1	curated-name	TAL1	B03069g	ReciprocalBest	TAL1	yes
+CAGL0B03399g	RIF1	curated-name	RIF1	B03399g	ReciprocalBest	RIF1	yes
+CAGL0B03487g	TEF3	curated-name	TEF3	B03487g	ReciprocalBest	TEF3	yes
+CAGL0B03839g	MET3	curated-name	MET3	B03839g	ReciprocalBest	MET3	yes
+CAGL0B04235g	SCP120	curated-name	SCP120	B04235g	ReciprocalBest	SCP120	yes
+CAGL0B04389g	CHS3	curated-name	CHS3	B04389g	ReciprocalBest	CHS3	yes
+CAGL0B04521g	RAS1	curated-name	RAS1	B04521g	ReciprocalBest	RAS1	yes
+CAGL0B04631g	INP53	curated-name	INP53	B04631g	ReciprocalBest	INP53	yes
+CAGL0B04719g		ambiguous-multi	Multi	B04719g	Blast	GWK60_B04565	yes
+CAGL0B04741g	PGS1	curated-name	PGS1	B04741g	ReciprocalBest	PGS1	yes
+CAGL0B04829g		ambiguous-multi	Multi	B04829g	Blast	GWK60_B04675	yes
+CAGL0C00110g	EPA6	curated-name	EPA6	C00110g	Manual	EPA6	yes
+CAGL0C00209g	AWP7	curated-name	AWP7	C00209g	ReciprocalBest	AWP7	yes
+CAGL0C00275g	HSP31	curated-name	HSP31	C00275g	ReciprocalBest	HSP31	yes
+CAGL0C00363g	KRE9	curated-name	KRE9	C00363g	ReciprocalBest	KRE9	yes
+CAGL0C00539g		ambiguous-multi	Multi	C00539g	Blast	GWK60_C00363	yes
+CAGL0C00627g	ATG14	curated-name	ATG14	C00627g	ReciprocalBest	ATG14	yes
+CAGL0C00649g	VMA2	curated-name	VMA2	C00649g	ReciprocalBest	VMA2	yes
+CAGL0C00693g	CCC1	curated-name	CCC1	C00693g	ReciprocalBest	CCC1	yes
+CAGL0C00847g	EPA8	curated-name	EPA8	C00847g	ReciprocalBest	EPA8	yes
+CAGL0C01199g	UPC2A	curated-name	UPC2A	C01199g	ReciprocalBest	UPC2A	yes
+CAGL0C01265g	GLM4	curated-name	GLM4	C01265g	ReciprocalBest	GLM4	yes
+CAGL0C01705g	GPX2	curated-name	GPX2	C01705g	ReciprocalBest	GPX2	yes
+CAGL0C01919g	MFA2	curated-name	MFA2	C01919g	ReciprocalBest	MFA2	yes
+CAGL0C02189g	SAH1	curated-name	SAH1	C02189g	ReciprocalBest	SAH1	yes
+CAGL0C02211g	UTR2	curated-name	UTR2	C02211g	ReciprocalBest	UTR2	yes
+CAGL0C02277g	GLN3	curated-name	GLN3	C02277g	ReciprocalBest	GLN3	yes
+CAGL0C02299g	KRE29	curated-name	KRE29	C02299g	ReciprocalBest	KRE29	yes
+CAGL0C02321g	PHM8	curated-name	PHM8	C02321g	ReciprocalBest	PHM8	yes
+CAGL0C02343g	ARB1	curated-name	ARB1	C02343g	Blast	ARB1	yes
+CAGL0C03267g	FPS1	curated-name	FPS1	C03267g	ReciprocalBest	FPS1	yes
+CAGL0C03289g	YBT1	curated-name	YBT1	C03289g	ReciprocalBest	YBT1	yes
+CAGL0C03369g		ambiguous-multi	Multi	C03369g	Blast	GWK60_C02981	yes
+CAGL0C03399g	POP2	curated-name	POP2	C03399g	ReciprocalBest	POP2	yes
+CAGL0C03443g	LYS9	curated-name	LYS9	C03443g	ReciprocalBest	LYS9	yes
+CAGL0C03597g	ABP1	curated-name	ABP1	C03597g	ReciprocalBest	ABP1	yes
+CAGL0C03608g	TUP1	curated-name	TUP1	C03608g	ReciprocalBest	TUP1	yes
+CAGL0C03828g		ambiguous-multi	Multi	C03828g	Blast		no
+CAGL0C03872g	TIR3	curated-name	TIR3	C03872g	ReciprocalBest	TIR3	yes
+CAGL0C04092g	TRP1	curated-name	TRP1	C04092g	ReciprocalBest	TRP1	yes
+CAGL0C04114g	HHT2	curated-name	HHT2	C04114g	ReciprocalBest	HHT2	yes
+CAGL0C04455g	ATP16	curated-name	ATP16	C04455g	ReciprocalBest	ATP16	yes
+CAGL0C04477g	MED2	curated-name	MED2	C04477g	ReciprocalBest	MED2	yes
+CAGL0C04741g	SOD1	curated-name	SOD1	C04741g	ReciprocalBest	SOD1	yes
+CAGL0C04983g	ADO1	curated-name	ADO1	C04983g	ReciprocalBest	ADO1	yes
+CAGL0C05115g	ARG1	curated-name	ARG1	C05115g	ReciprocalBest	ARG1	yes
+CAGL0C05137g	GPD2	curated-name	GPD2	C05137g	ReciprocalBest	GPD2	yes
+CAGL0C05159g	HLP	curated-name	HLP	C05159g	ReciprocalBest	HLP	yes
+CAGL0C05247g	MET22	curated-name	MET22	C05247g	ReciprocalBest	MET22	yes
+CAGL0C05335g	RTG1	curated-name	RTG1	C05335g	ReciprocalBest	RTG1	yes
+CAGL0C05357g	HST1	curated-name	HST1	C05357g	ReciprocalBest	HST1	yes
+CAGL0C05379g	SSB1	curated-name	SSB1	C05379g	ReciprocalBest	SSB1	yes
+CAGL0C05467g		ambiguous-multi	Multi	C05467g	Blast	GWK60_C04983	yes
+CAGL0C05643g	EPA7	curated-name	EPA7	C05643g	ReciprocalBest	EPA7	yes
+CAGL0C05687g	EPA25	curated-name	EPA25	C05687g	Manual	EPA25	yes
+CAGL0C05702g	EPA26	curated-name	EPA26	C05702g	Manual	EPA26	yes
+CAGL0D00154g	AQY1	curated-name	AQY1	D00154g	ReciprocalBest	AQY1	yes
+CAGL0D00264g	NUD1	curated-name	NUD1	D00264g	ReciprocalBest	NUD1	yes
+CAGL0D00286g	BMT1	curated-name	BMT1	D00286g	ReciprocalBest	BMT1	yes
+CAGL0D00330g	HYM1	curated-name	HYM1	D00330g	ReciprocalBest	HYM1	yes
+CAGL0D00616g		ambiguous-multi	Multi	D00616g	Blast	GWK60_D00715	yes
+CAGL0D00770g	IDP1	curated-name	IDP1	D00770g	ReciprocalBest	IDP1	yes
+CAGL0D00792g	PEX19	curated-name	PEX19	D00792g	ReciprocalBest	PEX19	yes
+CAGL0D00869g		ambiguous-multi	Multi	D00869g	Blast	GWK60_D00957	yes
+CAGL0D01034g	VIG9	curated-name	VIG9	D01034g	ReciprocalBest	VIG9	yes
+CAGL0D01188g	TEF1	curated-name	TEF1	D01188g	ReciprocalBest	TEF1	yes
+CAGL0D01265g	MT-I	curated-name	MT-I	D01265g	ReciprocalBest	MT-I	yes
+CAGL0D01298g	TKL1	curated-name	TKL1	D01298g	ReciprocalBest	TKL1	yes
+CAGL0D01364g	CYC8	curated-name	CYC8	D01364g	ReciprocalBest	CYC8	yes
+CAGL0D01386g	MED1	curated-name	MED1	D01386g	ReciprocalBest	MED1	yes
+CAGL0D01408g	SPE3	curated-name	SPE3	D01408g	ReciprocalBest	SPE3	yes
+CAGL0D01562g	FCY1	curated-name	FCY1	D01562g	ReciprocalBest	FCY1	yes
+CAGL0D01936g	SNF7	curated-name	SNF7	D01936g	ReciprocalBest	SNF7	yes
+CAGL0D02090g	ASC1	curated-name	ASC1	D02090g	Blast	ASC1	yes
+CAGL0D02442g	LEM3	curated-name	LEM3	D02442g	ReciprocalBest	LEM3	yes
+CAGL0D02530g	EGT2	curated-name	EGT2	D02530g	ReciprocalBest	EGT2	yes
+CAGL0D02574g	PEX6	curated-name	PEX6	D02574g	ReciprocalBest	PEX6	yes
+CAGL0D02618g	PEX11	curated-name	PEX11	D02618g	ReciprocalBest	PEX11	yes
+CAGL0D02761g		ambiguous-multi	Multi	D02761g	Blast	GWK60_D02915	yes
+CAGL0D02948g	KAR2	curated-name	KAR2	D02948g	ReciprocalBest	KAR2	yes
+CAGL0D03014g	CCT8	curated-name	CCT8	D03014g	ReciprocalBest	CCT8	yes
+CAGL0D03190g	MEU1	curated-name	MEU1	D03190g	ReciprocalBest	MEU1	yes
+CAGL0D03586g	ACP1	curated-name	ACP1	D03586g	ReciprocalBest	ACP1	yes
+CAGL0D03718g	TIF5	curated-name	TIF5	D03718g	ReciprocalBest	TIF5	yes
+CAGL0D03894g	PRO1	curated-name	PRO1	D03894g	ReciprocalBest	PRO1	yes
+CAGL0D04092g	DOG2	curated-name	DOG2	D04092g	ReciprocalBest	DOG2	yes
+CAGL0D04114g	NCP1	curated-name	NCP1	D04114g	ReciprocalBest	NCP1	yes
+CAGL0D04136g		ambiguous-multi	Multi	D04136g	Blast	GWK60_D04301	yes
+CAGL0D04290g	SEC14	curated-name	SEC14	D04290g	ReciprocalBest	SEC14	yes
+CAGL0D04576g	MRI1	curated-name	MRI1	D04576g	ReciprocalBest	MRI1	yes
+CAGL0D04994g	KAR3	curated-name	KAR3	D04994g	ReciprocalBest	KAR3	yes
+CAGL0D05170g	PHO4	curated-name	PHO4	D05170g	ReciprocalBest	PHO4	yes
+CAGL0D05318g		ambiguous-multi	Multi	D05318g	Blast	GWK60_D05511	yes
+CAGL0D05434g	ROX1	curated-name	ROX1	D05434g	ReciprocalBest	ROX1	yes
+CAGL0D05918g	ATF2	curated-name	ATF2	D05918g	ReciprocalBest	ATF2	yes
+CAGL0D05940g	ERG1	curated-name	ERG1	D05940g	ReciprocalBest	ERG1	yes
+CAGL0D06138g	HEM2	curated-name	HEM2	D06138g	ReciprocalBest	HEM2	yes
+CAGL0D06402g	MET15	curated-name	MET15	D06402g	ReciprocalBest	MET15	yes
+CAGL0D06424g	ACO1	curated-name	ACO1	D06424g	ReciprocalBest	ACO1	yes
+CAGL0D06446g	STT4	curated-name	STT4	D06446g	ReciprocalBest	STT4	yes
+CAGL0D06688g	ALD4	curated-name	ALD4	D06688g	ReciprocalBest	ALD4	yes
+CAGL0D06743g	EPA21	curated-name	EPA21	D06743g	Synteny	EPA21	yes
+CAGL0E00165g		bg2-frameshift	Frame	E00165g	Manual		no
+CAGL0E00231g		bg2-frameshift	Frame	E00231g	Manual		no
+CAGL0E00275g	EPA20	curated-name	EPA20	E00275g	ReciprocalBest	EPA20	yes
+CAGL0E00341g	MTL1a	curated-name	MTL1a	E00341g	Blast	MTL1a	yes
+CAGL0E00627g	SRB8	curated-name	SRB8	E00627g	ReciprocalBest	SRB8	yes
+CAGL0E01133g	HOM2	curated-name	HOM2	E01133g	ReciprocalBest	HOM2	yes
+CAGL0E01177g	CPR1	curated-name	CPR1	E01177g	ReciprocalBest	CPR1	yes
+CAGL0E01243g	CTH2	curated-name	CTH2	E01243g	ReciprocalBest	CTH2	yes
+CAGL0E01309g		ambiguous-multi	Multi	E01309g	Blast	GWK60_E01089	yes
+CAGL0E01331g	SWI5	curated-name	SWI5	E01331g	ReciprocalBest	SWI5	yes
+CAGL0E01419g	YPS2	curated-name	YPS2	E01419g	ReciprocalBest	YPS2	yes
+CAGL0E01463g	CDC33	curated-name	CDC33	E01463g	ReciprocalBest	CDC33	yes
+CAGL0E01567g	RBX1	curated-name	RBX1	E01567g	ReciprocalBest	RBX1	yes
+CAGL0E01661g		bg2-frameshift	Frame	E01661g	Synteny		no
+CAGL0E01683g	YGK3	curated-name	YGK3	E01683g	ReciprocalBest	YGK3	yes
+CAGL0E01727g	YPS3	curated-name	YPS3	E01727g	ReciprocalBest	YPS3	yes
+CAGL0E01749g	YPS4	curated-name	YPS4	E01749g	ReciprocalBest	YPS4	yes
+CAGL0E01771g	YPS5	curated-name	YPS5	E01771g	ReciprocalBest	YPS5	yes
+CAGL0E01793g	YPS6	curated-name	YPS6	E01793g	ReciprocalBest	YPS6	yes
+CAGL0E01815g	YPS8	curated-name	YPS8	E01815g	ReciprocalBest	YPS8	yes
+CAGL0E01837g	YPS9	curated-name	YPS9	E01837g	ReciprocalBest	YPS9	yes
+CAGL0E01859g	YPS10	curated-name	YPS10	E01859g	ReciprocalBest	YPS10	yes
+CAGL0E01881g	YPS11	curated-name	YPS11	E01881g	ReciprocalBest	YPS11	yes
+CAGL0E01991g		ambiguous-multi	Multi	E01991g	Blast	GWK60_E01771	yes
+CAGL0E02013g		ambiguous-multi	Multi	E02013g	Blast	GWK60_E01793	yes
+CAGL0E02475g	SIN3	curated-name	SIN3	E02475g	ReciprocalBest	SIN3	yes
+CAGL0E02541g	PHO80	curated-name	PHO80	E02541g	ReciprocalBest	PHO80	yes
+CAGL0E02695g	LIG4	curated-name	LIG4	E02695g	ReciprocalBest	LIG4	yes
+CAGL0E03069g		ambiguous-multi	Multi	E03069g	Blast	GWK60_E02827	yes
+CAGL0E03157g	CYS4	curated-name	CYS4	E03157g	ReciprocalBest	CYS4	yes
+CAGL0E03454g	IMH1	curated-name	IMH1	E03454g	ReciprocalBest	IMH1	yes
+CAGL0E03652g	ISA1	curated-name	ISA1	E03652g	ReciprocalBest	ISA1	yes
+CAGL0E03674g	TPO1_2	curated-name	TPO1_2	E03674g	ReciprocalBest	TPO1_2	yes
+CAGL0E03718g	SNF6	curated-name	SNF6	E03718g	ReciprocalBest	SNF6	yes
+CAGL0E03894g	FPS2	curated-name	FPS2	E03894g	ReciprocalBest	FPS2	yes
+CAGL0E04048g	COF1	curated-name	COF1	E04048g	Blast	COF1	yes
+CAGL0E04092g	SIT1	curated-name	SIT1	E04092g	ReciprocalBest	SIT1	yes
+CAGL0E04334g	ERG11	curated-name	ERG11	E04334g	ReciprocalBest	ERG11	yes
+CAGL0E04598g	CDC34	curated-name	CDC34	E04598g	ReciprocalBest	CDC34	yes
+CAGL0E04620g	PST1	curated-name	PST1	E04620g	ReciprocalBest	PST1	yes
+CAGL0E05060g	NUT1	curated-name	NUT1	E05060g	ReciprocalBest	NUT1	yes
+CAGL0E05082g	PEX14	curated-name	PEX14	E05082g	ReciprocalBest	PEX14	yes
+CAGL0E05170g	GRE2(A)	curated-name	GRE2(A)	E05170g	ReciprocalBest	GRE2(A)	yes
+CAGL0E05280g	GRE2(B)	curated-name	GRE2(B)	E05280g	ReciprocalBest	GRE2(B)	yes
+CAGL0E05390g	ALA1	curated-name	ALA1	E05390g	ReciprocalBest	ALA1	yes
+CAGL0E05808g	THI6	curated-name	THI6	E05808g	ReciprocalBest	THI6	yes
+CAGL0E05896g		ambiguous-multi	Multi	E05896g	Blast	GWK60_E05533	yes
+CAGL0E06028g	ALG5	curated-name	ALG5	E06028g	ReciprocalBest	ALG5	yes
+CAGL0E06226g		ambiguous-multi	Multi	E06226g	Blast	GWK60_E05863	yes
+CAGL0E06248g	RCN1	curated-name	RCN1	E06248g	ReciprocalBest	RCN1	yes
+CAGL0E06358g	GPM1	curated-name	GPM1	E06358g	ReciprocalBest	GPM1	yes
+CAGL0E06644g	EPA1	curated-name	EPA1	E06644g	ReciprocalBest	EPA1	yes
+CAGL0E06666g	EPA2	curated-name	EPA2	E06666g	Synteny	EPA2	yes
+CAGL0E06688g	EPA3	curated-name	EPA3	E06688g	Synteny	EPA3	yes
+CAGL0F00077g	EPA16	curated-name	EPA16	F00077g	Synteny	EPA16	yes
+CAGL0F00187g	FET4	curated-name	FET4	F00187g	ReciprocalBest	FET4	yes
+CAGL0F00363g	OPI3	curated-name	OPI3	F00363g	ReciprocalBest	OPI3	yes
+CAGL0F00605g	GLK1	curated-name	GLK1	F00605g	ReciprocalBest	GLK1	yes
+CAGL0F00693g	PRO2	curated-name	PRO2	F00693g	ReciprocalBest	PRO2	yes
+CAGL0F00803g	GAL11B	curated-name	GAL11B	F00803g	ReciprocalBest	GAL11B	yes
+CAGL0F00825g	GSH2	curated-name	GSH2	F00825g	ReciprocalBest	GSH2	yes
+CAGL0F00869g		ambiguous-multi	Multi	F00869g	Blast	GWK60_F00693	yes
+CAGL0F00935g	PEX15	curated-name	PEX15	F00935g	ReciprocalBest	PEX15	yes
+CAGL0F00957g	TPD3	curated-name	TPD3	F00957g	ReciprocalBest	TPD3	yes
+CAGL0F01265g	YAP7	curated-name	YAP7	F01265g	ReciprocalBest	YAP7	yes
+CAGL0F01287g	GAS5	curated-name	GAS5	F01287g	ReciprocalBest	GAS5	yes
+CAGL0F01419g	AUS1	curated-name	AUS1	F01419g	ReciprocalBest	AUS1	yes
+CAGL0F01463g	TIR1	curated-name	TIR1	F01463g	ReciprocalBest	TIR1	yes
+CAGL0F01485g	TIR2	curated-name	TIR2	F01485g	ReciprocalBest	TIR2	yes
+CAGL0F01507g	SLG1	curated-name	SLG1	F01507g	ReciprocalBest	SLG1	yes
+CAGL0F01683g		ambiguous-multi	Multi	F01683g	Blast	GWK60_F01441	yes
+CAGL0F01705g	FRS1	curated-name	FRS1	F01705g	ReciprocalBest	FRS1	yes
+CAGL0F01793g	ERG3	curated-name	ERG3	F01793g	ReciprocalBest	ERG3	yes
+CAGL0F01837g	SPT8	curated-name	SPT8	F01837g	ReciprocalBest	SPT8	yes
+CAGL0F01947g	IRC15	curated-name	IRC15	F01947g	ReciprocalBest	IRC15	yes
+CAGL0F02035g	CTF19	curated-name	CTF19	F02035g	ReciprocalBest	CTF19	yes
+CAGL0F02145g	PHM1	curated-name	PHM1	F02145g	ReciprocalBest	PHM1	yes
+CAGL0F02387g	PHO87	curated-name	PHO87	F02387g	ReciprocalBest	PHO87	yes
+CAGL0F02431g	ACO2	curated-name	ACO2	F02431g	ReciprocalBest	ACO2	yes
+CAGL0F02513g		ambiguous-multi	Multi	F02513g	Blast	GWK60_F02233	yes
+CAGL0F02563g	HPT1	curated-name	HPT1	F02563g	ReciprocalBest	HPT1	yes
+CAGL0F02717g	PDH1	curated-name	PDH1	F02717g	ReciprocalBest	PDH1	yes
+CAGL0F03069g	CAD1	curated-name	CAD1	F03069g	ReciprocalBest	CAD1	yes
+CAGL0F03091g		ambiguous-multi	Multi	F03091g	Blast	GWK60_F02805	yes
+CAGL0F03245g	IRE1	curated-name	IRE1	F03245g	ReciprocalBest	IRE1	yes
+CAGL0F03261g		ambiguous-multi	Multi	F03261g	Blast	GWK60_F02981	yes
+CAGL0F03399g	SCS7	curated-name	SCS7	F03399g	ReciprocalBest	SCS7	yes
+CAGL0F03553g	DAP1	curated-name	DAP1	F03553g	ReciprocalBest	DAP1	yes
+CAGL0F03597g		ambiguous-multi	Multi	F03597g	Blast	GWK60_F03289	yes
+CAGL0F03883g	GAS4	curated-name	GAS4	F03883g	ReciprocalBest	GAS4	yes
+CAGL0F03993g	ERG8	curated-name	ERG8	F03993g	ReciprocalBest	ERG8	yes
+CAGL0F04433g	URA7	curated-name	URA7	F04433g	ReciprocalBest	URA7	yes
+CAGL0F04961g	SMD2	curated-name	SMD2	F04961g	Blast	SMD2	yes
+CAGL0F05203g	RIB7	curated-name	RIB7	F05203g	ReciprocalBest	RIB7	yes
+CAGL0F05995g	MSN2	curated-name	MSN2	F05995g	ReciprocalBest	MSN2	yes
+CAGL0F06017g	LYS7	curated-name	LYS7	F06017g	ReciprocalBest	LYS7	yes
+CAGL0F06171g	nup116	curated-name	nup116	F06171g	ReciprocalBest	nup116	yes
+CAGL0F06347g	STV1	curated-name	STV1	F06347g	ReciprocalBest	STV1	yes
+CAGL0F06413g	FET3	curated-name	FET3	F06413g	ReciprocalBest	FET3	yes
+CAGL0F06677g	GPA1	curated-name	GPA1	F06677g	ReciprocalBest	GPA1	yes
+CAGL0F06941g	PYC1	curated-name	PYC1	F06941g	ReciprocalBest	PYC1	yes
+CAGL0F07029g	MET13	curated-name	MET13	F07029g	ReciprocalBest	MET13	yes
+CAGL0F07172g		ambiguous-multi	Multi	F07172g	Blast	GWK60_F06743	yes
+CAGL0F07579g	CWP1.2	curated-name	CWP1.2	F07579g	ReciprocalBest	CWP1.2	yes
+CAGL0F07601g	CWP1.1	curated-name	CWP1.1	F07601g	ReciprocalBest	CWP1.1	yes
+CAGL0F07667g	MSS11	curated-name	MSS11	F07667g	ReciprocalBest	MSS11	yes
+CAGL0F07755g	CEP3	curated-name	CEP3	F07755g	ReciprocalBest	CEP3	yes
+CAGL0F07865g	UPC2B	curated-name	UPC2B	F07865g	ReciprocalBest	UPC2B	yes
+CAGL0F08019g	PEX21	curated-name	PEX21	F08019g	ReciprocalBest	PEX21	yes
+CAGL0F08041g	PFK1	curated-name	PFK1	F08041g	ReciprocalBest	PFK1	yes
+CAGL0F08107g	LSC2	curated-name	LSC2	F08107g	ReciprocalBest	LSC2	yes
+CAGL0F08129g	SDA1	curated-name	SDA1	F08129g	ReciprocalBest	SDA1	yes
+CAGL0F08283g	GCN5	curated-name	GCN5	F08283g	ReciprocalBest	GCN5	yes
+CAGL0F08371g	TNA1	curated-name	TNA1	F08371g	ReciprocalBest	TNA1	yes
+CAGL0F08525g		ambiguous-multi	Multi	F08525g	Blast	GWK60_F08063	yes
+CAGL0F08547g	EFB1	curated-name	EFB1	F08547g	Blast	EFB1	yes
+CAGL0F08657g	PEX23	curated-name	PEX23	F08657g	ReciprocalBest	PEX23	yes
+CAGL0F08987g		ambiguous-multi	Multi	F08987g	Blast	GWK60_F08481	yes
+CAGL0F09031g		ambiguous-multi	Multi	F09031g	Blast	GWK60_F08525	yes
+CAGL0F09097g	SKN7	curated-name	SKN7	F09097g	ReciprocalBest	SKN7	yes
+CAGL0F09207g	BAT1	curated-name	BAT1	F09207g	ReciprocalBest	BAT1	yes
+CAGL0G00176g	ERV29	curated-name	ERV29	G00176g	ReciprocalBest	ERV29	yes
+CAGL0G00242g	YOR1	curated-name	YOR1	G00242g	ReciprocalBest	YOR1	yes
+CAGL0G00286g	GAS1	curated-name	GAS1	G00286g	ReciprocalBest	GAS1	yes
+CAGL0G00308g	SCW4	curated-name	SCW4	G00308g	ReciprocalBest	SCW4	yes
+CAGL0G00726g	RFA1	curated-name	RFA1	G00726g	ReciprocalBest	RFA1	yes
+CAGL0G00814g	CHS5	curated-name	CHS5	G00814g	ReciprocalBest	CHS5	yes
+CAGL0G00924g	GLM5	curated-name	GLM5	G00924g	ReciprocalBest	GLM5	yes
+CAGL0G00946g		ambiguous-multi	Multi	G00946g	Blast	GWK60_G00803	yes
+CAGL0G00990g	RPP0	curated-name	RPP0	G00990g	ReciprocalBest	RPP0	yes
+CAGL0G01034g	FKS1	curated-name	FKS1	G01034g	ReciprocalBest	FKS1	yes
+CAGL0G01056g	GAS3	curated-name	GAS3	G01056g	ReciprocalBest	GAS3	yes
+CAGL0G01078g		ambiguous-multi	Multi	G01078g	Blast	GWK60_G00935	yes
+CAGL0G01210g	NIT3	curated-name	NIT3	G01210g	ReciprocalBest	NIT3	yes
+CAGL0G01254g	ARO8	curated-name	ARO8	G01254g	ReciprocalBest	ARO8	yes
+CAGL0G01276g		ambiguous-multi	Multi	G01276g	Blast	GWK60_G01133	yes
+CAGL0G01452g		ambiguous-multi	Multi	G01452g	Blast	GWK60_G01309	yes
+CAGL0G01496g	COG6	curated-name	COG6	G01496g	ReciprocalBest	COG6	yes
+CAGL0G01540g	NCE103	curated-name	NCE103	G01540g	ReciprocalBest	NCE103	yes
+CAGL0G01903g	MET1	curated-name	MET1	G01903g	ReciprocalBest	MET1	yes
+CAGL0G02035g	CKA2	curated-name	CKA2	G02035g	ReciprocalBest	CKA2	yes
+CAGL0G02101g	ECM4	curated-name	ECM4	G02101g	ReciprocalBest	ECM4	yes
+CAGL0G02189g	MTD1	curated-name	MTD1	G02189g	ReciprocalBest	MTD1	yes
+CAGL0G02409g	SRP40	curated-name	SRP40	G02409g	ReciprocalBest	SRP40	yes
+CAGL0G02475g		ambiguous-multi	Multi	G02475g	Blast	GWK60_G02321	yes
+CAGL0G02535g		ambiguous-multi	Multi	G02535g	Blast	GWK60_G02387	yes
+CAGL0G02585g	LYS12	curated-name	LYS12	G02585g	ReciprocalBest	LYS12	yes
+CAGL0G02673g	IDH1	curated-name	IDH1	G02673g	ReciprocalBest	IDH1	yes
+CAGL0G02915g	PIL1	curated-name	PIL1	G02915g	ReciprocalBest	PIL1	yes
+CAGL0G03179g	ASK10	curated-name	ASK10	G03179g	ReciprocalBest	ASK10	yes
+CAGL0G03289g	SSA3	curated-name	SSA3	G03289g	ReciprocalBest	SSA3	yes
+CAGL0G03421g	FLO8	curated-name	FLO8	G03421g	ReciprocalBest	FLO8	yes
+CAGL0G03575g		ambiguous-multi	Multi	G03575g	Blast	GWK60_G03443	yes
+CAGL0G03597g	SHO1	curated-name	SHO1	G03597g	ReciprocalBest	SHO1	yes
+CAGL0G03795g	SSA1	curated-name	SSA1	G03795g	ReciprocalBest	SSA1	yes
+CAGL0G03927g	TPO1_1	curated-name	TPO1_1	G03927g	ReciprocalBest	TPO1_1	yes
+CAGL0G04609g	PKH2	curated-name	PKH2	G04609g	ReciprocalBest	PKH2	yes
+CAGL0G04851g	SUR4	curated-name	SUR4	G04851g	ReciprocalBest	SUR4	yes
+CAGL0G04873g	ROM2	curated-name	ROM2	G04873g	ReciprocalBest	ROM2	yes
+CAGL0G05027g		ambiguous-multi	Multi	G05027g	Blast	GWK60_G04807	yes
+CAGL0G05115g		ambiguous-multi	Multi	G05115g	Blast	GWK60_G04895	yes
+CAGL0G05225g	DOS1	curated-name	DOS1	G05225g	ReciprocalBest	DOS1	yes
+CAGL0G05335g	TPS2	curated-name	TPS2	G05335g	ReciprocalBest	TPS2	yes
+CAGL0G05423g	HO	curated-name	HO	G05423g	ReciprocalBest	HO	yes
+CAGL0G05698g	GDH2	curated-name	GDH2	G05698g	ReciprocalBest	GDH2	yes
+CAGL0G05940g		ambiguous-multi	Multi	G05940g	Blast	GWK60_G05753	yes
+CAGL0G06028g	ARO9	curated-name	ARO9	G06028g	ReciprocalBest	ARO9	yes
+CAGL0G06490g		ambiguous-multi	Multi	G06490g	Blast	GWK60_G06259	yes
+CAGL0G06556g	PHO23	curated-name	PHO23	G06556g	ReciprocalBest	PHO23	yes
+CAGL0G06688g	MET4	curated-name	MET4	G06688g	ReciprocalBest	MET4	yes
+CAGL0G06952g	PHM3	curated-name	PHM3	G06952g	ReciprocalBest	PHM3	yes
+CAGL0G07106g	APT1	curated-name	APT1	G07106g	ReciprocalBest	APT1	yes
+CAGL0G07205g		ambiguous-multi	Multi	G07205g	Blast	GWK60_G06897	yes
+CAGL0G07227g		ambiguous-multi	Multi	G07227g	Blast	GWK60_G06919	yes
+CAGL0G07403g		ambiguous-multi	Multi	G07403g	Blast	GWK60_G07095	yes
+CAGL0G07491g	MNN11	curated-name	MNN11	G07491g	ReciprocalBest	MNN11	yes
+CAGL0G08316g	ARV1	curated-name	ARV1	G08316g	ReciprocalBest	ARV1	yes
+CAGL0G08360g	VPS34	curated-name	VPS34	G08360g	ReciprocalBest	VPS34	yes
+CAGL0G08448g	THI7	curated-name	THI7	G08448g	ReciprocalBest	THI7	yes
+CAGL0G08624g	QDR2	curated-name	QDR2	G08624g	ReciprocalBest	QDR2	yes
+CAGL0G09119g		ambiguous-multi	Multi	G09119g	Blast	GWK60_G08833	yes
+CAGL0G09130g		ambiguous-multi	Multi	G09130g	Blast	GWK60_G08811	yes
+CAGL0G09383g	TDH3	curated-name	TDH3	G09383g	ReciprocalBest	TDH3	yes
+CAGL0G09449g	CRH1	curated-name	CRH1	G09449g	ReciprocalBest	CRH1	yes
+CAGL0G09713g		ambiguous-multi	Multi	G09713g	Blast	GWK60_G09427	yes
+CAGL0G09977g	GDB1	curated-name	GDB1	G09977g	ReciprocalBest	GDB1	yes
+CAGL0G10043g		ambiguous-multi	Multi	G10043g	Blast	GWK60_G09757	yes
+CAGL0G10175g	AWP6	curated-name	AWP6	G10175g	ReciprocalBest	AWP6	yes
+CAGL0G10219g	AWP12	curated-name	AWP12	G10219g	Synteny	AWP12	yes
+CAGL0H00374g	SST2	curated-name	SST2	H00374g	ReciprocalBest	SST2	yes
+CAGL0H00506g	ATP2	curated-name	ATP2	H00506g	ReciprocalBest	ATP2	yes
+CAGL0H00638g	VIK1	curated-name	VIK1	H00638g	ReciprocalBest	VIK1	yes
+CAGL0H01144g		ambiguous-multi	Multi	H01144g	Blast	GWK60_H00935	yes
+CAGL0H01287g	SSD1	curated-name	SSD1	H01287g	ReciprocalBest	SSD1	yes
+CAGL0H01375g	SUR2	curated-name	SUR2	H01375g	ReciprocalBest	SUR2	yes
+CAGL0H01529g	CPR5	curated-name	CPR5	H01529g	ReciprocalBest	CPR5	yes
+CAGL0H01727g	EUG1	curated-name	EUG1	H01727g	ReciprocalBest	EUG1	yes
+CAGL0H01815g	CBF1	curated-name	CBF1	H01815g	ReciprocalBest	CBF1	yes
+CAGL0H02607g	SPE2	curated-name	SPE2	H02607g	ReciprocalBest	SPE2	yes
+CAGL0H02739g	MAS1	curated-name	MAS1	H02739g	ReciprocalBest	MAS1	yes
+CAGL0H02959g	TOS8	curated-name	TOS8	H02959g	ReciprocalBest	TOS8	yes
+CAGL0H03135g	MFalpha	curated-name	MFalpha	H03135g	ReciprocalBest	MFalpha	yes
+CAGL0H03157g		ambiguous-multi	Multi	H03157g	Blast	GWK60_H02959	yes
+CAGL0H03377g	DBP3	curated-name	DBP3	H03377g	ReciprocalBest	DBP3	yes
+CAGL0H03487g	AFT1	curated-name	AFT1	H03487g	ReciprocalBest	AFT1	yes
+CAGL0H03531g	MNP1	curated-name	MNP1	H03531g	ReciprocalBest	MNP1	yes
+CAGL0H03795g	LEU2	curated-name	LEU2	H03795g	ReciprocalBest	LEU2	yes
+CAGL0H03938g		ambiguous-multi	Multi	H03938g	Blast	GWK60_H03729	yes
+CAGL0H04081g	ERG13	curated-name	ERG13	H04081g	ReciprocalBest	ERG13	yes
+CAGL0H04257g	MT-II	curated-name	MT-II	H04257g	ReciprocalBest	MT-II	yes
+CAGL0H04279g	MT-IIB	curated-name	MT-IIB	H04279g	Synteny	MT-IIB	yes
+CAGL0H04367g	WAR1	curated-name	WAR1	H04367g	ReciprocalBest	WAR1	yes
+CAGL0H04631g	AP1	curated-name	AP1	H04631g	ReciprocalBest	AP1	yes
+CAGL0H04653g	ERG6	curated-name	ERG6	H04653g	ReciprocalBest	ERG6	yes
+CAGL0H04983g	PSA1	curated-name	PSA1	H04983g	ReciprocalBest	PSA1	yes
+CAGL0H05291g	MUK1	curated-name	MUK1	H05291g	ReciprocalBest	MUK1	yes
+CAGL0H05445g	PGI1	curated-name	PGI1	H05445g	ReciprocalBest	PGI1	yes
+CAGL0H05511g		ambiguous-multi	Multi	H05511g	Blast	GWK60_H05423	yes
+CAGL0H05621g	RLM1	curated-name	RLM1	H05621g	ReciprocalBest	RLM1	yes
+CAGL0H05643g		ambiguous-multi	Multi	H05643g	Blast	GWK60_H05555	yes
+CAGL0H05665g	GLR1	curated-name	GLR1	H05665g	ReciprocalBest	GLR1	yes
+CAGL0H06017g	FLR1	curated-name	FLR1	H06017g	ReciprocalBest	FLR1	yes
+CAGL0H06039g	FLR2	curated-name	FLR2	H06039g	ReciprocalBest	FLR2	yes
+CAGL0H06215g	GAL11A	curated-name	GAL11A	H06215g	ReciprocalBest	GAL11A	yes
+CAGL0H06347g	DEP1	curated-name	DEP1	H06347g	ReciprocalBest	DEP1	yes
+CAGL0H06369g	CYS3	curated-name	CYS3	H06369g	ReciprocalBest	CYS3	yes
+CAGL0H06413g	SSR1	curated-name	SSR1	H06413g	ReciprocalBest	SSR1	yes
+CAGL0H06479g	REH1	curated-name	REH1	H06479g	ReciprocalBest	REH1	yes
+CAGL0H06732g		ambiguous-multi	Multi	H06732g	Blast	GWK60_H06677	yes
+CAGL0H06765g	BNR1	curated-name	BNR1	H06765g	ReciprocalBest	BNR1	yes
+CAGL0H06853g	ADH6	curated-name	ADH6	H06853g	ReciprocalBest	ADH6	yes
+CAGL0H06875g	ARG81	curated-name	ARG81	H06875g	ReciprocalBest	ARG81	yes
+CAGL0H07249g	DYS1	curated-name	DYS1	H07249g	ReciprocalBest	DYS1	yes
+CAGL0H07359g	PHO8	curated-name	PHO8	H07359g	ReciprocalBest	PHO8	yes
+CAGL0H07403g	KRE2	curated-name	KRE2	H07403g	ReciprocalBest	KRE2	yes
+CAGL0H07513g	IFA38	curated-name	IFA38	H07513g	ReciprocalBest	IFA38	yes
+CAGL0H07579g	HXK2	curated-name	HXK2	H07579g	ReciprocalBest	HXK2	yes
+CAGL0H07601g		ambiguous-multi	Multi	H07601g	Blast	GWK60_H07579	yes
+CAGL0H07711g	RTF1	curated-name	RTF1	H07711g	ReciprocalBest	RTF1	yes
+CAGL0H07843g	HAP2	curated-name	HAP2	H07843g	ReciprocalBest	HAP2	yes
+CAGL0H07997g	KNH1	curated-name	KNH1	H07997g	ReciprocalBest	KNH1	yes
+CAGL0H08283g	HSP10	curated-name	HSP10	H08283g	ReciprocalBest	HSP10	yes
+CAGL0H08327g	TPI1	curated-name	TPI1	H08327g	ReciprocalBest	TPI1	yes
+CAGL0H08437g	VPS15	curated-name	VPS15	H08437g	ReciprocalBest	VPS15	yes
+CAGL0H08558g	ATG11	curated-name	ATG11	H08558g	ReciprocalBest	ATG11	yes
+CAGL0H08624g	MCM16	curated-name	MCM16	H08624g	ReciprocalBest	MCM16	yes
+CAGL0H08734g		ambiguous-multi	Multi	H08734g	Blast	GWK60_H08701	yes
+CAGL0H08822g	MMT2	curated-name	MMT2	H08822g	ReciprocalBest	MMT2	yes
+CAGL0H08932g		ambiguous-multi	Multi	H08932g	Blast	GWK60_H08899	yes
+CAGL0H09064g	FUR1	curated-name	FUR1	H09064g	ReciprocalBest	FUR1	yes
+CAGL0H09174g	PEX1	curated-name	PEX1	H09174g	ReciprocalBest	PEX1	yes
+CAGL0H09196g	VRG4	curated-name	VRG4	H09196g	ReciprocalBest	VRG4	yes
+CAGL0H09218g	SDT1	curated-name	SDT1	H09218g	ReciprocalBest	SDT1	yes
+CAGL0H09878g	IPP1	curated-name	IPP1	H09878g	ReciprocalBest	IPP1	yes
+CAGL0H10032g	PST2	curated-name	PST2	H10032g	ReciprocalBest	PST2	yes
+CAGL0H10142g	ARO3	curated-name	ARO3	H10142g	ReciprocalBest	ARO3	yes
+CAGL0H10274g		ambiguous-multi	Multi	H10274g	Blast	GWK60_H10241	yes
+CAGL0H10604g	PUB1	curated-name	PUB1	H10604g	ReciprocalBest	PUB1	yes
+CAGL0H10648g	EPA17	curated-name	EPA17	H10648g	Manual	EPA17	yes
+CAGL0I00220g	EPA23	curated-name	EPA23	I00220g	ReciprocalBest	EPA23	yes
+CAGL0I00792g		ambiguous-multi	Multi	I00792g	Blast	GWK60_L00605	yes
+CAGL0I00946g	CKB2	curated-name	CKB2	I00946g	ReciprocalBest	CKB2	yes
+CAGL0I01012g	PEP12	curated-name	PEP12	I01012g	ReciprocalBest	PEP12	yes
+CAGL0I01078g	PFY1	curated-name	PFY1	I01078g	Blast	PFY1	yes
+CAGL0I01100g	GCY1	curated-name	GCY1	I01100g	ReciprocalBest	GCY1	yes
+CAGL0I01122g	GRE3	curated-name	GRE3	I01122g	ReciprocalBest	GRE3	yes
+CAGL0I01166g	TRR1	curated-name	TRR1	I01166g	ReciprocalBest	TRR1	yes
+CAGL0I01408g	CYC1	curated-name	CYC1	I01408g	ReciprocalBest	CYC1	yes
+CAGL0I01870g	PEX24	curated-name	PEX24	I01870g	ReciprocalBest	PEX24	yes
+CAGL0I02024g	OYE2	curated-name	OYE2	I02024g	ReciprocalBest	OYE2	yes
+CAGL0I02134g	PEX21B	curated-name	PEX21B	I02134g	ReciprocalBest	PEX21B	yes
+CAGL0I02200g	SOL3	curated-name	SOL3	I02200g	ReciprocalBest	SOL3	yes
+CAGL0I02442g	PUP2	curated-name	PUP2	I02442g	ReciprocalBest	PUP2	yes
+CAGL0I02486g	ENO1	curated-name	ENO1	I02486g	ReciprocalBest	ENO1	yes
+CAGL0I02552g	STB5	curated-name	STB5	I02552g	ReciprocalBest	STB5	yes
+CAGL0I02662g	YKU70	curated-name	YKU70	I02662g	ReciprocalBest	YKU70	yes
+CAGL0I02794g		bg2-nonsense	Nonsense	I02794g	Manual		no
+CAGL0I03080g	URA3	curated-name	URA3	I03080g	ReciprocalBest	URA3	yes
+CAGL0I03190g	RIP1	curated-name	RIP1	I03190g	ReciprocalBest	RIP1	yes
+CAGL0I03696g	LDB17	curated-name	LDB17	I03696g	ReciprocalBest	LDB17	yes
+CAGL0I03828g	RPB1	curated-name	RPB1	I03828g	ReciprocalBest	RPB1	yes
+CAGL0I03938g	PPH21	curated-name	PPH21	I03938g	ReciprocalBest	PPH21	yes
+CAGL0I03960g	VMA1	curated-name	VMA1	I03960g	ReciprocalBest	VMA1	yes
+CAGL0I04125g		ambiguous-multi	Multi	I04125g	Blast	GWK60_L03839	yes
+CAGL0I04180g	AMT1	curated-name	AMT1	I04180g	ReciprocalBest	AMT1	yes
+CAGL0I04356g	TIF1	curated-name	TIF1	I04356g	ReciprocalBest	TIF1	yes
+CAGL0I04510g		ambiguous-multi	Multi	I04510g	Blast	GWK60_L04257	yes
+CAGL0I04532g	MNN2	curated-name	MNN2	I04532g	ReciprocalBest	MNN2	yes
+CAGL0I04554g	GRX7	curated-name	GRX7	I04554g	ReciprocalBest	GRX7	yes
+CAGL0I04708g	PDX3	curated-name	PDX3	I04708g	ReciprocalBest	PDX3	yes
+CAGL0I04730g	HMT1	curated-name	HMT1	I04730g	ReciprocalBest	HMT1	yes
+CAGL0I04840g	CHS3B	curated-name	CHS3B	I04840g	ReciprocalBest	CHS3B	yes
+CAGL0I04862g	SNQ2	curated-name	SNQ2	I04862g	ReciprocalBest	SNQ2	yes
+CAGL0I04928g		ambiguous-multi	Multi	I04928g	Blast	GWK60_L04675	yes
+CAGL0I04994g	MET6	curated-name	MET6	I04994g	ReciprocalBest	MET6	yes
+CAGL0I05016g	TRP2	curated-name	TRP2	I05016g	ReciprocalBest	TRP2	yes
+CAGL0I05148g	DLD1	curated-name	DLD1	I05148g	ReciprocalBest	DLD1	yes
+CAGL0I05170g	CST6	curated-name	CST6	I05170g	ReciprocalBest	CST6	yes
+CAGL0I05214g	CAP2	curated-name	CAP2	I05214g	ReciprocalBest	CAP2	yes
+CAGL0I05236g	BCY1	curated-name	BCY1	I05236g	ReciprocalBest	BCY1	yes
+CAGL0I05632g	PHO91	curated-name	PHO91	I05632g	ReciprocalBest	PHO91	yes
+CAGL0I05830g	VPS27	curated-name	VPS27	I05830g	ReciprocalBest	VPS27	yes
+CAGL0I05896g	YAK1	curated-name	YAK1	I05896g	ReciprocalBest	YAK1	yes
+CAGL0I06050g	INO1	curated-name	INO1	I06050g	ReciprocalBest	INO1	yes
+CAGL0I06094g	FBP26	curated-name	FBP26	I06094g	ReciprocalBest	FBP26	yes
+CAGL0I06160g	PIR4	curated-name	PIR4	I06160g	ReciprocalBest	PIR4	yes
+CAGL0I06182g	PIR2	curated-name	PIR2	I06182g	Synteny	PIR2	yes
+CAGL0I06204g	PIR1	curated-name	PIR1	I06204g	ReciprocalBest	PIR1	yes
+CAGL0I06292g	PEX2	curated-name	PEX2	I06292g	ReciprocalBest	PEX2	yes
+CAGL0I06336g	NUC1	curated-name	NUC1	I06336g	ReciprocalBest	NUC1	yes
+CAGL0I06380g	RPM2	curated-name	RPM2	I06380g	ReciprocalBest	RPM2	yes
+CAGL0I06457g		ambiguous-multi	Multi	I06457g	Blast	GWK60_I01925	yes
+CAGL0I06512g	BEM2	curated-name	BEM2	I06512g	ReciprocalBest	BEM2	yes
+CAGL0I06578g	YEY2	curated-name	YEY2	I06578g	ReciprocalBest	YEY2	yes
+CAGL0I06743g	FTR1	curated-name	FTR1	I06743g	ReciprocalBest	FTR1	yes
+CAGL0I07227g	IDH2	curated-name	IDH2	I07227g	ReciprocalBest	IDH2	yes
+CAGL0I07359g	INO4	curated-name	INO4	I07359g	ReciprocalBest	INO4	yes
+CAGL0I07755g	HAL9	curated-name	HAL9	I07755g	ReciprocalBest	HAL9	yes
+CAGL0I07843g	ADH1	curated-name	ADH1	I07843g	ReciprocalBest	ADH1	yes
+CAGL0I08283g	PRO3	curated-name	PRO3	I08283g	ReciprocalBest	PRO3	yes
+CAGL0I08393g	TIF3	curated-name	TIF3	I08393g	ReciprocalBest	TIF3	yes
+CAGL0I08459g	RHO1	curated-name	RHO1	I08459g	ReciprocalBest	RHO1	yes
+CAGL0I08613g	DUR3	curated-name	DUR3	I08613g	ReciprocalBest	DUR3	yes
+CAGL0I10098g	PWP7	curated-name	PWP7	I10098g	ReciprocalBest	PWP7	yes
+CAGL0I10147g	PWP1	curated-name	PWP1	I10147g	Manual		no
+CAGL0I10200g	PWP3	curated-name	PWP3	I10200g	Manual		no
+CAGL0I10246g	PWP2	curated-name	PWP2	I10246g	ReciprocalBest	PWP2	yes
+CAGL0I10318g	NDC10	curated-name	NDC10	I10318g	ReciprocalBest	NDC10	yes
+CAGL0I10340g	PWP5	curated-name	PWP5	I10340g	Manual		no
+CAGL0I10362g	PWP4	curated-name	PWP4	I10362g	ReciprocalBest	PWP4	yes
+CAGL0I10384g	TPO3	curated-name	TPO3	I10384g	ReciprocalBest	TPO3	yes
+CAGL0I10450g	PEX4	curated-name	PEX4	I10450g	ReciprocalBest	PEX4	yes
+CAGL0I10648g	ASN2	curated-name	ASN2	I10648g	ReciprocalBest	ASN2	yes
+CAGL0I10769g	MCM1	curated-name	MCM1	I10769g	ReciprocalBest	MCM1	yes
+CAGL0I10879g	PEX25	curated-name	PEX25	I10879g	ReciprocalBest	PEX25	yes
+CAGL0I10945g	YCA1	curated-name	YCA1	I10945g	ReciprocalBest	YCA1	yes
+CAGL0I11033g	EPA4	curated-name	EPA4	I11033g	Manual	EPA4	yes
+CAGL0I11055g	EPA5	curated-name	EPA5	I11055g	Manual	EPA5	yes
+CAGL0J00429g	COX6	curated-name	COX6	J00429g	ReciprocalBest	COX6	yes
+CAGL0J00539g	SLT2	curated-name	SLT2	J00539g	ReciprocalBest	SLT2	yes
+CAGL0J00737g		ambiguous-multi	Multi	J00737g	Blast	GWK60_J00627	yes
+CAGL0J01067g		ambiguous-multi	Multi	J01067g	Blast	GWK60_J00979	yes
+CAGL0J01243g	CTF13	curated-name	CTF13	J01243g	ReciprocalBest	CTF13	yes
+CAGL0J01287g	AIP1	curated-name	AIP1	J01287g	ReciprocalBest	AIP1	yes
+CAGL0J01595g	GLM6	curated-name	GLM6	J01595g	ReciprocalBest	GLM6	yes
+CAGL0J01892g	PAN1	curated-name	PAN1	J01892g	ReciprocalBest	PAN1	yes
+CAGL0J02266g		ambiguous-multi	Multi	J02266g	Blast	GWK60_J02101	yes
+CAGL0J02288g	BAR1	curated-name	BAR1	J02288g	ReciprocalBest	BAR1	yes
+CAGL0J02354g		ambiguous-multi	Multi	J02354g	Blast	GWK60_J02167	yes
+CAGL0J02508g	AWP1	curated-name	AWP1	J02508g	ReciprocalBest	AWP1	yes
+CAGL0J02662g	IRC5	curated-name	IRC5	J02662g	ReciprocalBest	IRC5	yes
+CAGL0J02882g	HOM3	curated-name	HOM3	J02882g	ReciprocalBest	HOM3	yes
+CAGL0J02926g	PET117	curated-name	PET117	J02926g	ReciprocalBest	PET117	yes
+CAGL0J02948g	FCY2	curated-name	FCY2	J02948g	ReciprocalBest	FCY2	yes
+CAGL0J03212g	ALD5	curated-name	ALD5	J03212g	ReciprocalBest	ALD5	yes
+CAGL0J03234g		ambiguous-multi	Multi	J03234g	Blast	GWK60_J03025	yes
+CAGL0J03245g		ambiguous-multi	Multi	J03245g	Blast	GWK60_J03047	yes
+CAGL0J03322g	FMP29	curated-name	FMP29	J03322g	ReciprocalBest	FMP29	yes
+CAGL0J03366g	GET2	curated-name	GET2	J03366g	ReciprocalBest	GET2	yes
+CAGL0J03454g	HDA1	curated-name	HDA1	J03454g	ReciprocalBest	HDA1	yes
+CAGL0J03762g	MET7	curated-name	MET7	J03762g	ReciprocalBest	MET7	yes
+CAGL0J03780g		ambiguous-multi	Multi	J03780g	Blast		no
+CAGL0J03828g	MKK1	curated-name	MKK1	J03828g	ReciprocalBest	MKK1	yes
+CAGL0J03850g	MGE1	curated-name	MGE1	J03850g	ReciprocalBest	MGE1	yes
+CAGL0J04158g	RCN2	curated-name	RCN2	J04158g	ReciprocalBest	RCN2	yes
+CAGL0J04202g	HSP12	curated-name	HSP12	J04202g	ReciprocalBest	HSP12	yes
+CAGL0J04686g	ATG17	curated-name	ATG17	J04686g	ReciprocalBest	ATG17	yes
+CAGL0J04774g		ambiguous-multi	Multi	J04774g	Blast	GWK60_J04587	yes
+CAGL0J04818g	CRN1	curated-name	CRN1	J04818g	ReciprocalBest	CRN1	yes
+CAGL0J05016g	TIM54	curated-name	TIM54	J05016g	ReciprocalBest	TIM54	yes
+CAGL0J05060g	ZAP1	curated-name	ZAP1	J05060g	ReciprocalBest	ZAP1	yes
+CAGL0J05126g	BNA3	curated-name	BNA3	J05126g	ReciprocalBest	BNA3	yes
+CAGL0J05159g		bg2-frameshift	Frame	J05159g	Manual		no
+CAGL0J05236g	LAS21	curated-name	LAS21	J05236g	ReciprocalBest	LAS21	yes
+CAGL0J05610g	TOP2	curated-name	TOP2	J05610g	ReciprocalBest	TOP2	yes
+CAGL0J05676g	INN1	curated-name	INN1	J05676g	ReciprocalBest	INN1	yes
+CAGL0J05764g		ambiguous-multi	Multi	J05764g	Blast	GWK60_J05555	yes
+CAGL0J06028g	MEP2	curated-name	MEP2	J06028g	ReciprocalBest	MEP2	yes
+CAGL0J06072g	CBK1	curated-name	CBK1	J06072g	ReciprocalBest	CBK1	yes
+CAGL0J06182g	SKO1	curated-name	SKO1	J06182g	ReciprocalBest	SKO1	yes
+CAGL0J06374g		ambiguous-multi	Multi	J06374g	Blast	GWK60_J06193	yes
+CAGL0J06600g	URA5	curated-name	URA5	J06600g	ReciprocalBest	URA5	yes
+CAGL0J06886g	VPS30	curated-name	VPS30	J06886g	ReciprocalBest	VPS30	yes
+CAGL0J07018g		ambiguous-multi	Multi	J07018g	Blast	GWK60_J06853	yes
+CAGL0J07194g	PEX22	curated-name	PEX22	J07194g	ReciprocalBest	PEX22	yes
+CAGL0J07238g	RPS12	curated-name	RPS12	J07238g	ReciprocalBest	RPS12	yes
+CAGL0J07392g	URE2	curated-name	URE2	J07392g	ReciprocalBest	URE2	yes
+CAGL0J07436g	PDR16	curated-name	PDR16	J07436g	ReciprocalBest	PDR16	yes
+CAGL0J07546g	KEX2	curated-name	KEX2	J07546g	ReciprocalBest	KEX2	yes
+CAGL0J07612g	ZWF1	curated-name	ZWF1	J07612g	ReciprocalBest	ZWF1	yes
+CAGL0J07634g	SPO72	curated-name	SPO72	J07634g	ReciprocalBest	SPO72	yes
+CAGL0J07656g	SLA2	curated-name	SLA2	J07656g	ReciprocalBest	SLA2	yes
+CAGL0J08096g	UFD1	curated-name	UFD1	J08096g	ReciprocalBest	UFD1	yes
+CAGL0J08118g		ambiguous-multi	Multi	J08118g	Blast	GWK60_J07975	yes
+CAGL0J08415g	SAM2	curated-name	SAM2	J08415g	ReciprocalBest	SAM2	yes
+CAGL0J08734g	PMT2	curated-name	PMT2	J08734g	ReciprocalBest	PMT2	yes
+CAGL0J08954g	CPR6	curated-name	CPR6	J08954g	ReciprocalBest	CPR6	yes
+CAGL0J09020g	SNF3	curated-name	SNF3	J09020g	ReciprocalBest	SNF3	yes
+CAGL0J09086g		ambiguous-multi	Multi	J09086g	Blast	GWK60_J08899	yes
+CAGL0J09218g	CDC53	curated-name	CDC53	J09218g	ReciprocalBest	CDC53	yes
+CAGL0J09240g	LYS21	curated-name	LYS21	J09240g	ReciprocalBest	LYS21	yes
+CAGL0J09350g	CDC48	curated-name	CDC48	J09350g	ReciprocalBest	CDC48	yes
+CAGL0J09372g		ambiguous-multi	Multi	J09372g	Blast	GWK60_J09185	yes
+CAGL0J09504g	MET12	curated-name	MET12	J09504g	ReciprocalBest	MET12	yes
+CAGL0J09570g	PEX5B	curated-name	PEX5B	J09570g	ReciprocalBest	PEX5B	yes
+CAGL0J09812g	TPS1	curated-name	TPS1	J09812g	ReciprocalBest	TPS1	yes
+CAGL0J09944g	AQR1	curated-name	AQR1	J09944g	ReciprocalBest	AQR1	yes
+CAGL0J09966g	YDJ1	curated-name	YDJ1	J09966g	ReciprocalBest	YDJ1	yes
+CAGL0J10164g	RPL16A	curated-name	RPL16A	J10164g	Blast	RPL16A	yes
+CAGL0J10384g		ambiguous-multi	Multi	J10384g	Blast	GWK60_J10197	yes
+CAGL0J10670g		ambiguous-multi	Multi	J10670g	Blast	GWK60_J10461	yes
+CAGL0J10956g	SUM1	curated-name	SUM1	J10956g	ReciprocalBest	SUM1	yes
+CAGL0J11484g	DUG3	curated-name	DUG3	J11484g	ReciprocalBest	DUG3	yes
+CAGL0J11572g	NUF2	curated-name	NUF2	J11572g	ReciprocalBest	NUF2	yes
+CAGL0J11748g	PLB2	curated-name	PLB2	J11748g	ReciprocalBest	PLB2	yes
+CAGL0J11770g	PLB1	curated-name	PLB1	J11770g	ReciprocalBest	PLB1	yes
+CAGL0J11858g	RML2	curated-name	RML2	J11858g	ReciprocalBest	RML2	yes
+CAGL0J11902g	AWP3a	curated-name	AWP3a	J11902g	ReciprocalBest	AWP3a	yes
+CAGL0J11935g	AWP3b	curated-name	AWP3b	J11935g	ReciprocalBest	AWP3b	yes
+CAGL0J11968g	EPA15	curated-name	EPA15	J11968g	ReciprocalBest	EPA15	yes
+CAGL0K00110g	AWP2	curated-name	AWP2	K00110g	Synteny	AWP2	yes
+CAGL0K00170g	EPA22	curated-name	EPA22	K00170g	Synteny	EPA22	yes
+CAGL0K00671g		ambiguous-multi	Multi	K00671g	Blast	GWK60_K00517	yes
+CAGL0K00715g	RTA1	curated-name	RTA1	K00715g	ReciprocalBest	RTA1	yes
+CAGL0K00759g	ZPR1	curated-name	ZPR1	K00759g	ReciprocalBest	ZPR1	yes
+CAGL0K00803g	TRX2	curated-name	TRX2	K00803g	ReciprocalBest	TRX2	yes
+CAGL0K00847g	CIR1	curated-name	CIR1	K00847g	ReciprocalBest	CIR1	yes
+CAGL0K01221g	PEX8	curated-name	PEX8	K01221g	ReciprocalBest	PEX8	yes
+CAGL0K01375g	MRP10	curated-name	MRP10	K01375g	ReciprocalBest	MRP10	yes
+CAGL0K01397g	FMNAT	curated-name	FMNAT	K01397g	ReciprocalBest	FMNAT	yes
+CAGL0K01463g	SIR2	curated-name	SIR2	K01463g	ReciprocalBest	SIR2	yes
+CAGL0K01595g		ambiguous-multi	Multi	K01595g	Blast	GWK60_K01441	yes
+CAGL0K01683g	GPD1	curated-name	GPD1	K01683g	ReciprocalBest	GPD1	yes
+CAGL0K01727g	RPN4	curated-name	RPN4	K01727g	ReciprocalBest	RPN4	yes
+CAGL0K01925g	GDI1	curated-name	GDI1	K01925g	ReciprocalBest	GDI1	yes
+CAGL0K01969g		ambiguous-multi	Multi	K01969g	Blast	GWK60_K01815	yes
+CAGL0K02079g	GLC7	curated-name	GLC7	K02079g	ReciprocalBest	GLC7	yes
+CAGL0K02475g	DSS4	curated-name	DSS4	K02475g	ReciprocalBest	DSS4	yes
+CAGL0K02497g	TIF6	curated-name	TIF6	K02497g	ReciprocalBest	TIF6	yes
+CAGL0K02585g	YAP3	curated-name	YAP3	K02585g	ReciprocalBest	YAP3	yes
+CAGL0K02673g	STE20	curated-name	STE20	K02673g	ReciprocalBest	STE20	yes
+CAGL0K02805g	IPC1	curated-name	IPC1	K02805g	ReciprocalBest	IPC1	yes
+CAGL0K02827g	DID4	curated-name	DID4	K02827g	Blast	DID4	yes
+CAGL0K02893g		ambiguous-multi	Multi	K02893g	Blast	GWK60_K02739	yes
+CAGL0K03157g	DUR31	curated-name	DUR31	K03157g	ReciprocalBest	DUR31	yes
+CAGL0K03267g	OPI1	curated-name	OPI1	K03267g	ReciprocalBest	OPI1	yes
+CAGL0K03355g		ambiguous-single	Single	K03355g	Manual	GWK60_K03201	yes
+CAGL0K03399g	YPK2	curated-name	YPK2	K03399g	ReciprocalBest	YPK2	yes
+CAGL0K03443g	YKU80	curated-name	YKU80	K03443g	ReciprocalBest	YKU80	yes
+CAGL0K03509g	HFD1	curated-name	HFD1	K03509g	ReciprocalBest	HFD1	yes
+CAGL0K03553g	FOL3	curated-name	FOL3	K03553g	ReciprocalBest	FOL3	yes
+CAGL0K03729g		ambiguous-multi	Multi	K03729g	Blast	GWK60_K03597	yes
+CAGL0K03817g	POM152	curated-name	POM152	K03817g	ReciprocalBest	POM152	yes
+CAGL0K04037g	FKS2	curated-name	FKS2	K04037g	ReciprocalBest	FKS2	yes
+CAGL0K04257g	RME1	curated-name	RME1	K04257g	ReciprocalBest	RME1	yes
+CAGL0K04279g	SCM4	curated-name	SCM4	K04279g	ReciprocalBest	SCM4	yes
+CAGL0K04587g		ambiguous-multi	Multi	K04587g	Blast	GWK60_K04455	yes
+CAGL0K04741g	SSB2	curated-name	SSB2	K04741g	ReciprocalBest	SSB2	yes
+CAGL0K04851g	PEX17	curated-name	PEX17	K04851g	ReciprocalBest	PEX17	yes
+CAGL0K04917g	RAP1	curated-name	RAP1	K04917g	ReciprocalBest	RAP1	yes
+CAGL0K05291g	SRO7	curated-name	SRO7	K05291g	ReciprocalBest	SRO7	yes
+CAGL0K05357g	GLN1	curated-name	GLN1	K05357g	ReciprocalBest	GLN1	yes
+CAGL0K05379g	VMA13	curated-name	VMA13	K05379g	ReciprocalBest	VMA13	yes
+CAGL0K05467g	CDC21	curated-name	CDC21	K05467g	ReciprocalBest	CDC21	yes
+CAGL0K05797g	EMI1	curated-name	EMI1	K05797g	ReciprocalBest	EMI1	yes
+CAGL0K05841g	HAP1	curated-name	HAP1	K05841g	ReciprocalBest	HAP1	yes
+CAGL0K05973g	HSP60	curated-name	HSP60	K05973g	ReciprocalBest	HSP60	yes
+CAGL0K06149g		ambiguous-multi	Multi	K06149g	Blast	GWK60_K05973	yes
+CAGL0K06259g	TSA1	curated-name	TSA1	K06259g	ReciprocalBest	TSA1	yes
+CAGL0K06677g	MET8	curated-name	MET8	K06677g	ReciprocalBest	MET8	yes
+CAGL0K06743g	YBP1	curated-name	YBP1	K06743g	ReciprocalBest	YBP1	yes
+CAGL0K06919g	MCX1	curated-name	MCX1	K06919g	ReciprocalBest	MCX1	yes
+CAGL0K06963g	ROT2	curated-name	ROT2	K06963g	ReciprocalBest	ROT2	yes
+CAGL0K07480g	PGM1	curated-name	PGM1	K07480g	ReciprocalBest	PGM1	yes
+CAGL0K07524g	PMU1	curated-name	PMU1	K07524g	ReciprocalBest	PMU1	yes
+CAGL0K07546g	PMU2	curated-name	PMU2	K07546g	ReciprocalBest	PMU2	yes
+CAGL0K07568g	PMU3	curated-name	PMU3	K07568g	ReciprocalBest	PMU3	yes
+CAGL0K07590g	MYO3	curated-name	MYO3	K07590g	ReciprocalBest	MYO3	yes
+CAGL0K07634g	GAT1	curated-name	GAT1	K07634g	ReciprocalBest	GAT1	yes
+CAGL0K07656g	FRS2	curated-name	FRS2	K07656g	ReciprocalBest	FRS2	yes
+CAGL0K07755g		ambiguous-multi	Multi	K07755g	Blast	GWK60_K07579	yes
+CAGL0K08184g	CCP1	curated-name	CCP1	K08184g	ReciprocalBest	CCP1	yes
+CAGL0K08316g	RHO4	curated-name	RHO4	K08316g	ReciprocalBest	RHO4	yes
+CAGL0K08382g		ambiguous-multi	Multi	K08382g	Blast	GWK60_K08195	yes
+CAGL0K08536g	APE1	curated-name	APE1	K08536g	ReciprocalBest	APE1	yes
+CAGL0K08624g	HAP4	curated-name	HAP4	K08624g	ReciprocalBest	HAP4	yes
+CAGL0K08668g	MET28	curated-name	MET28	K08668g	ReciprocalBest	MET28	yes
+CAGL0K08756g	AP5	curated-name	AP5	K08756g	ReciprocalBest	AP5	yes
+CAGL0K08800g	ADI1	curated-name	ADI1	K08800g	ReciprocalBest	ADI1	yes
+CAGL0K09328g	THR4	curated-name	THR4	K09328g	ReciprocalBest	THR4	yes
+CAGL0K09724g	FPR1	curated-name	FPR1	K09724g	ReciprocalBest	FPR1	yes
+CAGL0K09900g	HAP5	curated-name	HAP5	K09900g	ReciprocalBest	HAP5	yes
+CAGL0K09944g	PDE2	curated-name	PDE2	K09944g	ReciprocalBest	PDE2	yes
+CAGL0K09966g	PRT1	curated-name	PRT1	K09966g	ReciprocalBest	PRT1	yes
+CAGL0K10340g	ADE2	curated-name	ADE2	K10340g	ReciprocalBest	ADE2	yes
+CAGL0K10736g	CYB2	curated-name	CYB2	K10736g	ReciprocalBest	CYB2	yes
+CAGL0K10780g		ambiguous-multi	Multi	K10780g	Blast	GWK60_K10549	yes
+CAGL0K10868g	CTA1	curated-name	CTA1	K10868g	ReciprocalBest	CTA1	yes
+CAGL0K10906g		ambiguous-multi	Multi	K10906g	Blast	GWK60_K10681	yes
+CAGL0K11209g	PEX5	curated-name	PEX5	K11209g	ReciprocalBest	PEX5	yes
+CAGL0K11231g	MNN10	curated-name	MNN10	K11231g	ReciprocalBest	MNN10	yes
+CAGL0K11396g	SIR4	curated-name	SIR4	K11396g	ReciprocalBest	SIR4	yes
+CAGL0K11418g	ADK1	curated-name	ADK1	K11418g	ReciprocalBest	ADK1	yes
+CAGL0K11748g	RPS11B	curated-name	RPS11B	K11748g	Blast	RPS11B	yes
+CAGL0K12012g	KRS1	curated-name	KRS1	K12012g	ReciprocalBest	KRS1	yes
+CAGL0K12034g	ENA1	curated-name	ENA1	K12034g	ReciprocalBest	ENA1	yes
+CAGL0K12144g	FES1	curated-name	FES1	K12144g	ReciprocalBest	FES1	yes
+CAGL0K12276g	PHO88	curated-name	PHO88	K12276g	ReciprocalBest	PHO88	yes
+CAGL0K12430g	STE2	curated-name	STE2	K12430g	ReciprocalBest	STE2	yes
+CAGL0K12540g	HAC1	curated-name	HAC1	K12540g	ReciprocalBest	HAC1	yes
+CAGL0K12562g	RIM15	curated-name	RIM15	K12562g	ReciprocalBest	RIM15	yes
+CAGL0K12650g	TUB2	curated-name	TUB2	K12650g	ReciprocalBest	TUB2	yes
+CAGL0K12694g	ACT1	curated-name	ACT1	K12694g	Blast	ACT1	yes
+CAGL0K12848g	SEC53	curated-name	SEC53	K12848g	ReciprocalBest	SEC53	yes
+CAGL0K12980g	BMT7	curated-name	BMT7	K12980g	ReciprocalBest	BMT7	yes
+CAGL0K13002g	AED2	curated-name	AED2	K13002g	ReciprocalBest	AED2	yes
+CAGL0K13024g	AED1	curated-name	AED1	K13024g	Synteny	AED1	yes
+CAGL0L00319g	ERG20	curated-name	ERG20	L00319g	ReciprocalBest	ERG20	yes
+CAGL0L00385g		ambiguous-multi	Multi	L00385g	Blast	GWK60_D00165	yes
+CAGL0L00495g	HSC82	curated-name	HSC82	L00495g	ReciprocalBest	HSC82	yes
+CAGL0L00605g	CNB1	curated-name	CNB1	L00605g	ReciprocalBest	CNB1	yes
+CAGL0L00671g	FCY21	curated-name	FCY21	L00671g	ReciprocalBest	FCY21	yes
+CAGL0L00759g	HIS1	curated-name	HIS1	L00759g	ReciprocalBest	HIS1	yes
+CAGL0L00781g	MET30	curated-name	MET30	L00781g	ReciprocalBest	MET30	yes
+CAGL0L00891g	GVP36	curated-name	GVP36	L00891g	ReciprocalBest	GVP36	yes
+CAGL0L00935g	APQ12	curated-name	APQ12	L00935g	ReciprocalBest	APQ12	yes
+CAGL0L01089g	GLT1	curated-name	GLT1	L01089g	ReciprocalBest	GLT1	yes
+CAGL0L01177g	FRDS1	curated-name	FRDS1	L01177g	ReciprocalBest	FRDS1	yes
+CAGL0L01287g	UTR4	curated-name	UTR4	L01287g	ReciprocalBest	UTR4	yes
+CAGL0L01331g	ANP1	curated-name	ANP1	L01331g	ReciprocalBest	ANP1	yes
+CAGL0L01837g	VPS24	curated-name	VPS24	L01837g	ReciprocalBest	VPS24	yes
+CAGL0L01859g	NFU1	curated-name	NFU1	L01859g	ReciprocalBest	NFU1	yes
+CAGL0L01903g	RGT1	curated-name	RGT1	L01903g	ReciprocalBest	RGT1	yes
+CAGL0L01925g	UGP1	curated-name	UGP1	L01925g	ReciprocalBest	UGP1	yes
+CAGL0L01969g		ambiguous-multi	Multi	L01969g	Blast	GWK60_L05863	yes
+CAGL0L02123g	SNF5	curated-name	SNF5	L02123g	ReciprocalBest	SNF5	yes
+CAGL0L02255g		ambiguous-multi	Multi	L02255g	Blast	GWK60_L06149	yes
+CAGL0L02299g	VPS1	curated-name	VPS1	L02299g	ReciprocalBest	VPS1	yes
+CAGL0L02475g	GCN4	curated-name	GCN4	L02475g	ReciprocalBest	GCN4	yes
+CAGL0L02497g	FBA1	curated-name	FBA1	L02497g	ReciprocalBest	FBA1	yes
+CAGL0L02937g	HIS3	curated-name	HIS3	L02937g	ReciprocalBest	HIS3	yes
+CAGL0L03003g	GCN3	curated-name	GCN3	L03003g	ReciprocalBest	GCN3	yes
+CAGL0L03267g	GAP1	curated-name	GAP1	L03267g	ReciprocalBest	GAP1	yes
+CAGL0L03520g	BCK1	curated-name	BCK1	L03520g	ReciprocalBest	BCK1	yes
+CAGL0L03630g	GSH1	curated-name	GSH1	L03630g	ReciprocalBest	GSH1	yes
+CAGL0L03846g		ambiguous-multi	Multi	L03846g	Blast	GWK60_L11385	yes
+CAGL0L04246g	RPB2	curated-name	RPB2	L04246g	ReciprocalBest	RPB2	yes
+CAGL0L04664g	HEM15	curated-name	HEM15	L04664g	ReciprocalBest	HEM15	yes
+CAGL0L04840g		ambiguous-multi	Multi	L04840g	Blast	GWK60_L10351	yes
+CAGL0L05236g	MDH1	curated-name	MDH1	L05236g	ReciprocalBest	MDH1	yes
+CAGL0L05434g	SUN4	curated-name	SUN4	L05434g	ReciprocalBest	SUN4	yes
+CAGL0L05456g	PHO86	curated-name	PHO86	L05456g	ReciprocalBest	PHO86	yes
+CAGL0L05632g	PBS2	curated-name	PBS2	L05632g	ReciprocalBest	PBS2	yes
+CAGL0L05654g	TRK1	curated-name	TRK1	L05654g	ReciprocalBest	TRK1	yes
+CAGL0L06050g		ambiguous-multi	Multi	L06050g	Blast	GWK60_L09185	yes
+CAGL0L06094g	STR3	curated-name	STR3	L06094g	ReciprocalBest	STR3	yes
+CAGL0L06138g	TPN1	curated-name	TPN1	L06138g	ReciprocalBest	TPN1	yes
+CAGL0L06270g	BMH1(B)	curated-name	BMH1(B)	L06270g	ReciprocalBest	BMH1(B)	yes
+CAGL0L06402g	YCF1	curated-name	YCF1	L06402g	ReciprocalBest	YCF1	yes
+CAGL0L06578g		ambiguous-multi	Multi	L06578g	Blast	GWK60_L08635	yes
+CAGL0L06600g	NAS6	curated-name	NAS6	L06600g	ReciprocalBest	NAS6	yes
+CAGL0L06622g	PHO81	curated-name	PHO81	L06622g	ReciprocalBest	PHO81	yes
+CAGL0L06666g	YHB1	curated-name	YHB1	L06666g	ReciprocalBest	YHB1	yes
+CAGL0L06842g	THI3	curated-name	THI3	L06842g	ReciprocalBest	THI3	yes
+CAGL0L06886g		ambiguous-multi	Multi	L06886g	Blast	GWK60_L08327	yes
+CAGL0L06952g	TIF34	curated-name	TIF34	L06952g	ReciprocalBest	TIF34	yes
+CAGL0L07304g	GET3	curated-name	GET3	L07304g	ReciprocalBest	GET3	yes
+CAGL0L07326g	DUN1	curated-name	DUN1	L07326g	ReciprocalBest	DUN1	yes
+CAGL0L07436g	PHO2	curated-name	PHO2	L07436g	ReciprocalBest	PHO2	yes
+CAGL0L07656g	GLO1	curated-name	GLO1	L07656g	ReciprocalBest	GLO1	yes
+CAGL0L07722g	PGK1	curated-name	PGK1	L07722g	ReciprocalBest	PGK1	yes
+CAGL0L07854g	CWH43	curated-name	CWH43	L07854g	ReciprocalBest	CWH43	yes
+CAGL0L08068g		ambiguous-multi	Multi	L08068g	Blast	GWK60_L07139	yes
+CAGL0L08110g		ambiguous-multi	Multi	L08110g	Blast	GWK60_L07073	yes
+CAGL0L08184g	FEN1	curated-name	FEN1	L08184g	ReciprocalBest	FEN1	yes
+CAGL0L08426g	SUE1	curated-name	SUE1	L08426g	ReciprocalBest	SUE1	yes
+CAGL0L08580g	RPN10	curated-name	RPN10	L08580g	ReciprocalBest	RPN10	yes
+CAGL0L08668g	HST2	curated-name	HST2	L08668g	ReciprocalBest	HST2	yes
+CAGL0L08932g	LSP1	curated-name	LSP1	L08932g	ReciprocalBest	LSP1	yes
+CAGL0L09339g	HAA1	curated-name	HAA1	L09339g	ReciprocalBest	HAA1	yes
+CAGL0L09713g	ATP7	curated-name	ATP7	L09713g	ReciprocalBest	ATP7	yes
+CAGL0L09801g	RAM2	curated-name	RAM2	L09801g	ReciprocalBest	RAM2	yes
+CAGL0L09911g		bg2-frameshift	Frame	L09911g	Manual		no
+CAGL0L10142g	RSB1	curated-name	RSB1	L10142g	ReciprocalBest	RSB1	yes
+CAGL0L10406g	CYT1	curated-name	CYT1	L10406g	ReciprocalBest	CYT1	yes
+CAGL0L10560g	PDR13	curated-name	PDR13	L10560g	ReciprocalBest	PDR13	yes
+CAGL0L10714g	ERG2	curated-name	ERG2	L10714g	ReciprocalBest	ERG2	yes
+CAGL0L10758g	PFK2	curated-name	PFK2	L10758g	ReciprocalBest	PFK2	yes
+CAGL0L11022g	RFM1	curated-name	RFM1	L11022g	ReciprocalBest	RFM1	yes
+CAGL0L11110g	CNA1	curated-name	CNA1	L11110g	ReciprocalBest	CNA1	yes
+CAGL0L11242g	TEM1	curated-name	TEM1	L11242g	ReciprocalBest	TEM1	yes
+CAGL0L11462g		ambiguous-multi	Multi	L11462g	Blast	GWK60_L15433	yes
+CAGL0L11528g	BIG1	curated-name	BIG1	L11528g	ReciprocalBest	BIG1	yes
+CAGL0L11858g	CCA1	curated-name	CCA1	L11858g	ReciprocalBest	CCA1	yes
+CAGL0L12056g	BMH1(A)	curated-name	BMH1(A)	L12056g	ReciprocalBest	BMH1(A)	yes
+CAGL0L12386g	SUV3	curated-name	SUV3	L12386g	ReciprocalBest	SUV3	yes
+CAGL0L12474g	PHO85	curated-name	PHO85	L12474g	ReciprocalBest	PHO85	yes
+CAGL0L12782g	DIG1	curated-name	DIG1	L12782g	ReciprocalBest	DIG1	yes
+CAGL0L13090g	NDT80	curated-name	NDT80	L13090g	ReciprocalBest	NDT80	yes
+CAGL0L13112g	RGR1	curated-name	RGR1	L13112g	ReciprocalBest	RGR1	yes
+CAGL0L13299g	EPA11	curated-name	EPA11	L13299g	Synteny	EPA11	yes
+CAGL0L13332g	EPA13	curated-name	EPA13	L13332g	ReciprocalBest	EPA13	yes
+CAGL0L13354g	TNR1	curated-name	TNR1	L13354g	ReciprocalBest	TNR1	yes
+CAGL0L13365r	RDN25-1	curated-name	RDN25-1	L13365r	Blast	GWK60_L17303	yes
+CAGL0L13387r	RDN58-1	curated-name	RDN58-1	L13387r	Blast	GWK60_L17325	yes
+CAGL0L13398r	RDN18-1	curated-name	RDN18-1	L13398r	Blast	GWK60_L17347	yes
+CAGL0L13409r	RDN5-1	curated-name	RDN5-1	L13409r	Blast	GWK60_L17369	yes
+CAGL0L13412r	RDN25-1.2	curated-name	RDN25-1.2	L13412r	Blast	GWK60_L17391	yes
+CAGL0L13415r	RDN58-1.2	curated-name	RDN58-1.2	L13415r	Blast	GWK60_L17413	yes
+CAGL0L13418r	RDN18-1.2	curated-name	RDN18-1.2	L13418r	Blast	GWK60_L17435	yes
+CAGL0L13421r	RDN5-1.2	curated-name	RDN5-1.2	L13421r	Blast	GWK60_L17457	yes
+CAGL0L13424r	RDN25-1.3	curated-name	RDN25-1.3	L13424r	Blast	GWK60_L17479	yes
+CAGL0L13427r	RDN58-1.3	curated-name	RDN58-1.3	L13427r	Blast	GWK60_L17501	yes
+CAGL0L13430r	RDN18-1.3	curated-name	RDN18-1.3	L13430r	Blast	GWK60_L17523	yes
+CAGL0L13433r	RDN5-1.3	curated-name	RDN5-1.3	L13433r	Blast	GWK60_L17545	yes
+CAGL0L13436r	RDN25-1.4	curated-name	RDN25-1.4	L13436r	Blast	GWK60_L17567	yes
+CAGL0L13439r	RDN58-1.4	curated-name	RDN58-1.4	L13439r	Blast	GWK60_L17589	yes
+CAGL0L13443r	RDN18-1.4	curated-name	RDN18-1.4	L13443r	Blast	GWK60_L17611	yes
+CAGL0L13446r	RDN5-1.4	curated-name	RDN5-1.4	L13446r	Blast	GWK60_L17633	yes
+CAGL0L13552g	EPA14a	curated-name	EPA14a	L13552g	Manual	EPA14a	yes
+CAGL0M00132g	EPA12	curated-name	EPA12	M00132g	Manual	EPA12	yes
+CAGL0M00154g	CYN1	curated-name	CYN1	M00154g	ReciprocalBest	CYN1	yes
+CAGL0M00176g	BAT2	curated-name	BAT2	M00176g	ReciprocalBest	BAT2	yes
+CAGL0M00286g	HIR3	curated-name	HIR3	M00286g	ReciprocalBest	HIR3	yes
+CAGL0M00330g	HOM6	curated-name	HOM6	M00330g	ReciprocalBest	HOM6	yes
+CAGL0M00726g		ambiguous-multi	Multi	M00726g	Blast	GWK60_M00627	yes
+CAGL0M00748g	ECM7	curated-name	ECM7	M00748g	ReciprocalBest	ECM7	yes
+CAGL0M00770g	SIR3	curated-name	SIR3	M00770g	ReciprocalBest	SIR3	yes
+CAGL0M00858g	MRPL4	curated-name	MRPL4	M00858g	ReciprocalBest	MRPL4	yes
+CAGL0M00880g	CAR2	curated-name	CAR2	M00880g	ReciprocalBest	CAR2	yes
+CAGL0M01144g	MSN5	curated-name	MSN5	M01144g	ReciprocalBest	MSN5	yes
+CAGL0M01254g	STE12	curated-name	STE12	M01254g	ReciprocalBest	STE12	yes
+CAGL0M01342g	PEX3	curated-name	PEX3	M01342g	ReciprocalBest	PEX3	yes
+CAGL0M01364g	CBF3D	curated-name	CBF3D	M01364g	ReciprocalBest	CBF3D	yes
+CAGL0M01518g	SHE9	curated-name	SHE9	M01518g	ReciprocalBest	SHE9	yes
+CAGL0M01540g	SPT3	curated-name	SPT3	M01540g	ReciprocalBest	SPT3	yes
+CAGL0M01628g	SAC7	curated-name	SAC7	M01628g	ReciprocalBest	SAC7	yes
+CAGL0M01760g	CDR1	curated-name	CDR1	M01760g	ReciprocalBest	CDR1	yes
+CAGL0M01826g	ECM33	curated-name	ECM33	M01826g	ReciprocalBest	ECM33	yes
+CAGL0M02211g	PEP4	curated-name	PEP4	M02211g	ReciprocalBest	PEP4	yes
+CAGL0M02431g	KES1	curated-name	KES1	M02431g	ReciprocalBest	KES1	yes
+CAGL0M02497g		ambiguous-multi	Multi	M02497g	Blast	GWK60_M02387	yes
+CAGL0M02739g	ANC1	curated-name	ANC1	M02739g	Blast	ANC1	yes
+CAGL0M02761g	TBF1	curated-name	TBF1	M02761g	ReciprocalBest	TBF1	yes
+CAGL0M02849g		ambiguous-multi	Multi	M02849g	Blast	GWK60_M02717	yes
+CAGL0M03597g	MID1	curated-name	MID1	M03597g	ReciprocalBest	MID1	yes
+CAGL0M03861g		ambiguous-multi	Multi	M03861g	Blast	GWK60_M03773	yes
+CAGL0M04103g	HXT14	curated-name	HXT14	M04103g	ReciprocalBest	HXT14	yes
+CAGL0M04169g	KRE1	curated-name	KRE1	M04169g	ReciprocalBest	KRE1	yes
+CAGL0M04191g	YPS1	curated-name	YPS1	M04191g	ReciprocalBest	YPS1	yes
+CAGL0M04323g	ACE2	curated-name	ACE2	M04323g	ReciprocalBest	ACE2	yes
+CAGL0M04433g	CNH1	curated-name	CNH1	M04433g	ReciprocalBest	CNH1	yes
+CAGL0M04609g	SPE4	curated-name	SPE4	M04609g	ReciprocalBest	SPE4	yes
+CAGL0M04807g	SNF2	curated-name	SNF2	M04807g	ReciprocalBest	SNF2	yes
+CAGL0M05203g		ambiguous-multi	Multi	M05203g	Blast	GWK60_M05137	yes
+CAGL0M05511g	FTH1	curated-name	FTH1	M05511g	ReciprocalBest	FTH1	yes
+CAGL0M05533g	DUR1,2	curated-name	DUR1,2	M05533g	ReciprocalBest	DUR1,2	yes
+CAGL0M05643g	YFH1	curated-name	YFH1	M05643g	ReciprocalBest	YFH1	yes
+CAGL0M06061g	PEX32	curated-name	PEX32	M06061g	ReciprocalBest	PEX32	yes
+CAGL0M06083g	SSE1	curated-name	SSE1	M06083g	ReciprocalBest	SSE1	yes
+CAGL0M06303g		ambiguous-multi	Multi	M06303g	Blast	GWK60_M06259	yes
+CAGL0M06501g		ambiguous-multi	Multi	M06501g	Blast	GWK60_M06457	yes
+CAGL0M06523g		ambiguous-multi	Multi	M06523g	Blast	GWK60_M06479	yes
+CAGL0M06831g	CRZ1	curated-name	CRZ1	M06831g	ReciprocalBest	CRZ1	yes
+CAGL0M07095g	ERG9	curated-name	ERG9	M07095g	ReciprocalBest	ERG9	yes
+CAGL0M07161g	EGD2	curated-name	EGD2	M07161g	ReciprocalBest	EGD2	yes
+CAGL0M07403g	OAZ1	curated-name	OAZ1	M07403g	ReciprocalBest	OAZ1	yes
+CAGL0M07469g	PEX12	curated-name	PEX12	M07469g	ReciprocalBest	PEX12	yes
+CAGL0M07656g	ERG5	curated-name	ERG5	M07656g	ReciprocalBest	ERG5	yes
+CAGL0M07744g		bg2-nonsense	Nonsense	M07744g	Manual		no
+CAGL0M07832g		ambiguous-multi	Multi	M07832g	Blast	GWK60_M07799	yes
+CAGL0M07876g	MDE1	curated-name	MDE1	M07876g	ReciprocalBest	MDE1	yes
+CAGL0M07920g	PDC	curated-name	PDC	M07920g	ReciprocalBest	PDC	yes
+CAGL0M08052g	GEA2	curated-name	GEA2	M08052g	ReciprocalBest	GEA2	yes
+CAGL0M08118g		ambiguous-multi	Multi	M08118g	Blast	GWK60_M08085	yes
+CAGL0M08184g	STE3	curated-name	STE3	M08184g	ReciprocalBest	STE3	yes
+CAGL0M08492g	PIR3	curated-name	PIR3	M08492g	ReciprocalBest	PIR3	yes
+CAGL0M08514g	PIR5	curated-name	PIR5	M08514g	ReciprocalBest	PIR5	yes
+CAGL0M08690g	PEX10	curated-name	PEX10	M08690g	ReciprocalBest	PEX10	yes
+CAGL0M08778g	SWM1	curated-name	SWM1	M08778g	ReciprocalBest	SWM1	yes
+CAGL0M08800g	YAP6	curated-name	YAP6	M08800g	ReciprocalBest	YAP6	yes
+CAGL0M08822g	HSP78	curated-name	HSP78	M08822g	ReciprocalBest	HSP78	yes
+CAGL0M08866g	PEX29	curated-name	PEX29	M08866g	ReciprocalBest	PEX29	yes
+CAGL0M08910g	SNF1	curated-name	SNF1	M08910g	ReciprocalBest	SNF1	yes
+CAGL0M09405g	RTG3	curated-name	RTG3	M09405g	ReciprocalBest	RTG3	yes
+CAGL0M09581g	ATP1	curated-name	ATP1	M09581g	ReciprocalBest	ATP1	yes
+CAGL0M09735g	MEC3	curated-name	MEC3	M09735g	ReciprocalBest	MEC3	yes
+CAGL0M09779g	CTS1	curated-name	CTS1	M09779g	ReciprocalBest	CTS1	yes
+CAGL0M09823g	VIP1	curated-name	VIP1	M09823g	ReciprocalBest	VIP1	yes
+CAGL0M10087g	YAP3b	curated-name	YAP3b	M10087g	ReciprocalBest	YAP3b	yes
+CAGL0M10131g	MIF2	curated-name	MIF2	M10131g	ReciprocalBest	MIF2	yes
+CAGL0M10829g	SSK2	curated-name	SSK2	M10829g	ReciprocalBest	SSK2	yes
+CAGL0M11236g		ambiguous-multi	Multi	M11236g	Blast	GWK60_M11143	yes
+CAGL0M11473g		ambiguous-multi	Multi	M11473g	Blast	GWK60_M11407	yes
+CAGL0M11704g	AHP1	curated-name	AHP1	M11704g	ReciprocalBest	AHP1	yes
+CAGL0M11748g	HOG1	curated-name	HOG1	M11748g	ReciprocalBest	HOG1	yes
+CAGL0M12001g		ambiguous-multi	Multi	M12001g	Blast	GWK60_M11957	yes
+CAGL0M12034g	PYK1	curated-name	PYK1	M12034g	ReciprocalBest	PYK1	yes
+CAGL0M12408g		ambiguous-multi	Multi	M12408g	Blast	GWK60_M12353	yes
+CAGL0M12430g	RHR2	curated-name	RHR2	M12430g	ReciprocalBest	RHR2	yes
+CAGL0M12661g	FIS1	curated-name	FIS1	M12661g	ReciprocalBest	FIS1	yes
+CAGL0M12705g	PHM4	curated-name	PHM4	M12705g	ReciprocalBest	PHM4	yes
+CAGL0M12903g	SEC28	curated-name	SEC28	M12903g	ReciprocalBest	SEC28	yes
+CAGL0M12947g	PUP1	curated-name	PUP1	M12947g	ReciprocalBest	PUP1	yes
+CAGL0M13145g	CSE4	curated-name	CSE4	M13145g	ReciprocalBest	CSE4	yes
+CAGL0M13189g	MSN4	curated-name	MSN4	M13189g	ReciprocalBest	MSN4	yes
+CAGL0M13343g	GND1	curated-name	GND1	M13343g	ReciprocalBest	GND1	yes
+CAGL0M13563g		ambiguous-multi	Multi	M13563g	Blast	GWK60_M13497	yes
+CAGL0M13739g	ATM1	curated-name	ATM1	M13739g	ReciprocalBest	ATM1	yes
+CAGL0M13805g	MP65	curated-name	MP65	M13805g	ReciprocalBest	MP65	yes
+CAGL0M13827g	FKS3	curated-name	FKS3	M13827g	ReciprocalBest	FKS3	yes
+CAGL0M13849g	GAS2	curated-name	GAS2	M13849g	ReciprocalBest	GAS2	yes
+CAGL0M13871g	PSE1	curated-name	PSE1	M13871g	ReciprocalBest	PSE1	yes
+CAGL0M14069g	PWP6	curated-name	PWP6	M14069g	ReciprocalBest	PWP6	yes
+CAGL0M14113g	TNR2	curated-name	TNR2	M14113g	Manual	TNR2	yes
+CAGL0M14124r	RDN25-1.5	curated-name	RDN25-1.5	M14124r	Blast	GWK60_M14069	yes
+CAGL0M14135r	RDN58-1.5	curated-name	RDN58-1.5	M14135r	Blast	GWK60_M14091	yes
+CAGL0M14146r	RDN18-1.5	curated-name	RDN18-1.5	M14146r	Blast	GWK60_M14113	yes
+CAGL0M14157r	RDN5-1.5	curated-name	RDN5-1.5	M14157r	Blast	GWK60_M14135	yes
+CAGL0M14160r	RDN25-1.6	curated-name	RDN25-1.6	M14160r	Blast	GWK60_M14157	yes
+CAGL0M14163r	RDN58-1.6	curated-name	RDN58-1.6	M14163r	Blast	GWK60_M14179	yes
+CAGL0M14166r	RDN18-1.6	curated-name	RDN18-1.6	M14166r	Blast	GWK60_M14201	yes
+CAGL0M14169r	RDN5-1.6	curated-name	RDN5-1.6	M14169r	Blast	GWK60_M14223	yes
+CAGL0M14172r	RDN25-1.7	curated-name	RDN25-1.7	M14172r	Blast	GWK60_M14245	yes
+CAGL0M14175r	RDN58-1.7	curated-name	RDN58-1.7	M14175r	Blast	GWK60_M14267	yes
+CAGL0M14178r	RDN18-1.7	curated-name	RDN18-1.7	M14178r	Blast	GWK60_M14289	yes
+CAGL0M14181r	RDN5-1.7	curated-name	RDN5-1.7	M14181r	Blast	GWK60_M14311	yes
+CAGL0M14184r	RDN25-1.8	curated-name	RDN25-1.8	M14184r	Blast	GWK60_M14333	yes
+CAGL0M14187r	RDN58-1.8	curated-name	RDN58-1.8	M14187r	Blast	GWK60_M14355	yes
+CAGL0M14190r	RDN18-1.8	curated-name	RDN18-1.8	M14190r	Blast	GWK60_M14377	yes
+CAGL0M14193r	RDN5-1.8	curated-name	RDN5-1.8	M14193r	Blast	GWK60_M14399	yes
+CAGL0M14196r	RDN25-1.9	curated-name	RDN25-1.9	M14196r	Blast	GWK60_M14421	yes
+CAGL0M14199r	RDN58-1.9	curated-name	RDN58-1.9	M14199r	Blast	GWK60_M14443	yes
+CAGL0M14202r	RDN18-1.9	curated-name	RDN18-1.9	M14202r	Blast	GWK60_M14465	yes
+CAGL0M14205r	RDN5-1.9	curated-name	RDN5-1.9	M14205r	Blast	GWK60_M14487	yes
+CAGL0M14208r	RDN25-1.10	curated-name	RDN25-1.10	M14208r	Blast	GWK60_M14509	yes
+CAGL0M14211r	RDN58-1.10	curated-name	RDN58-1.10	M14211r	Blast	GWK60_M14531	yes
+CAGL0M14214r	RDN18-1.10	curated-name	RDN18-1.10	M14214r	Blast	GWK60_M14553	yes
+CAGL0M14217r	RDN5-1.10	curated-name	RDN5-1.10	M14217r	Blast	GWK60_M14575	yes
+CAGL0M14300g	EPA14b	curated-name	EPA14b	M14300g	Manual	EPA14b	yes

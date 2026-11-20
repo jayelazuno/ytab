@@ -61,9 +61,13 @@ comparisons_mc_ui <- function() ytab_two_column_layout(
     actionButton("mc_run", "Run multi-condition tests", class = "btn-primary"),
     tags$hr(),
     uiOutput("mc_result_selector"),
-    radioButtons("mc_plot", "Plot", c("Volcano" = "volcano", "Response correlation" = "correlation", "Response heatmap" = "heatmap")),
+    radioButtons("mc_plot", "Plot", c("Volcano" = "volcano", "Comet (gene sets)" = "comet", "Response correlation" = "correlation", "Response heatmap" = "heatmap")),
     uiOutput("mc_pair_selector"),
-    conditionalPanel("input.mc_plot == 'volcano'",
+    conditionalPanel("input.mc_plot == 'comet'",
+      uiOutput("mc_comet_sets_selector"),
+      textAreaInput("mc_comet_genes", "Highlight my genes", "", rows = 2,
+                    placeholder = "Gene names or IDs, separated by commas or new lines")),
+    conditionalPanel("input.mc_plot == 'volcano' || input.mc_plot == 'comet'",
       selectInput("mc_direction", "Calls shown", c("Depleted and enriched" = "both", "Depleted" = "depleted", "Enriched" = "enriched")),
       numericInput("mc_label_n", "Label top hits", 10, min = 0, max = 50, step = 1),
       textAreaInput("mc_label_genes", "Also label", "", rows = 2, placeholder = "Gene names or IDs, separated by commas or new lines")),
@@ -86,6 +90,12 @@ comparisons_gi_ui <- function() ytab_two_column_layout(
     tags$hr(),
     uiOutput("gi_result_selector"),
     radioButtons("gi_plot", "Plot", c("Strain responses" = "scatter", "Interaction effects" = "forest", "Volcano" = "volcano")),
+    conditionalPanel("input.gi_plot == 'scatter'",
+      radioButtons("gi_colour_by", "Colour by", c("Interaction call" = "call", "Gene set" = "sets"), inline = TRUE),
+      conditionalPanel("input.gi_colour_by == 'sets'",
+        uiOutput("gi_comet_sets_selector"),
+        textAreaInput("gi_comet_genes", "Highlight my genes", "", rows = 2,
+                      placeholder = "Gene names or IDs, separated by commas or new lines"))),
     conditionalPanel("input.gi_plot != 'forest'",
       selectInput("gi_direction", "Calls shown", c("All interactions" = "all", "Aggravating" = "Aggravating", "Alleviating" = "Alleviating", "Suppressive" = "Suppressive")),
       numericInput("gi_label_n", "Label top hits", 10, min = 0, max = 50, step = 1),
@@ -136,6 +146,21 @@ mc_ggplot <- function(choice, data, pair = NULL, s = cmp_default_display(), extr
       ggplot2::geom_tile(colour = "white", linewidth = .2) + ggplot2::scale_fill_gradient2(low = YTAB_DIRECTION_COLOURS[["depleted"]], mid = "white", high = YTAB_DIRECTION_COLOURS[["enriched"]], limits = c(-limit, limit)) +
       ggplot2::labs(x = NULL, y = NULL, fill = "log2FC vs reference") + base + ggplot2::theme(axis.text.y = ggplot2::element_blank()))
   }
+  if (identical(choice, "comet")) {
+    d <- data$pairs[data$pairs$pair == pair & data$pairs$status == "tested", , drop = FALSE]
+    validate(need(nrow(d) > 0, "No tested genes in this pair."))
+    validate(need(all(c("mean_control", "mean_treatment") %in% names(d)),
+                  "This run has no per-gene condition means, so it has no comet."))
+    overlay <- extra$comet
+    if (is.null(overlay) || !nrow(overlay))
+      return(ggplot2::ggplot() + ggplot2::annotate("text", x = 0, y = 0,
+        label = "No gene sets selected.\nChoose one or more sets, or name genes to highlight.") + ggplot2::theme_void())
+    hover <- function(x) sprintf("%s %s<br>log2FC %.2f; q %.3g", x$ORF, ifelse(is.na(x$Name), "", x$Name),
+                                 x$log2FC, x$q_all_pairs)
+    p <- comet_ggplot(d, overlay, s, base, hover, extra$interactive)
+    return(p %||% (ggplot2::ggplot() + ggplot2::annotate("text", x = 0, y = 0,
+      label = "No genes with both means in this pair") + ggplot2::theme_void()))
+  }
   d <- data$pairs[data$pairs$pair == pair & data$pairs$status == "tested", , drop = FALSE]
   direction <- extra$direction %||% "both"
   if (direction %in% c("depleted", "enriched")) d$call_all_pairs[d$call_all_pairs %in% setdiff(c("depleted", "enriched"), direction)] <- "other direction"
@@ -176,6 +201,31 @@ gi_ggplot <- function(choice, genes, reference, query, s = cmp_default_display()
     return(labelled(ggplot2::ggplot(d, ggplot2::aes(delta_log2FC, sig, colour = call, text = hover(d))) + ggplot2::geom_point(alpha = s$point_opacity, size = s$point_size) +
       ggplot2::scale_colour_manual(values = colours, drop = FALSE) + ggplot2::labs(x = sprintf("Delta log2FC (%s - %s)", query, reference), y = "-log10 p", colour = "Call") + base,
       "delta_log2FC", "sig"))
+  # Strain responses is already the comet's geometry, with the two strains' responses on the axes instead of a
+  # control and a treated mean: the diagonal is "responds the same in both backgrounds", and distance from it IS
+  # the interaction. So the gene-set overlay belongs here as a colouring of this plot, not as a second plot.
+  if (identical(extra$colour_by, "sets") && !is.null(extra$comet) && nrow(extra$comet)) {
+    o <- extra$comet
+    d$gene_set <- o$gene_set[match(as.character(d$ORF), o$feature_id)]
+    d$gene_set[is.na(d$gene_set)] <- COMET_UNASSIGNED
+    d$label_name <- o$label_name[match(as.character(d$ORF), o$feature_id)]
+    named <- setdiff(sort(unique(d$gene_set)), COMET_UNASSIGNED)
+    d$gene_set <- factor(d$gene_set, levels = c(COMET_UNASSIGNED, named))
+    d <- d[order(d$gene_set), , drop = FALSE]
+    palette <- stats::setNames(c("#1a1a1a", grDevices::hcl.colors(max(length(named), 1L), "Dark 3")),
+                               c(COMET_UNASSIGNED, named))
+    if ("my genes" %in% named) palette[["my genes"]] <- "#c8553d"
+    p <- ggplot2::ggplot(d, ggplot2::aes(log2FC_reference, log2FC_query, colour = gene_set, text = hover(d))) +
+      ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey40") +
+      ggplot2::geom_point(alpha = s$point_opacity, size = s$point_size) +
+      ggplot2::scale_colour_manual(values = palette, drop = FALSE) +
+      ggplot2::labs(x = sprintf("Treatment response in %s (log2FC)", reference),
+                    y = sprintf("Treatment response in %s (log2FC)", query), colour = "Gene set") + base
+    rows <- which(!is.na(d$label_name) & nzchar(d$label_name))
+    if (!length(rows)) return(p)
+    d$Name[rows] <- d$label_name[rows]
+    return(cmp_label_plot(p, d, rows, "log2FC_reference", "log2FC_query", s, extra$interactive))
+  }
   labelled(ggplot2::ggplot(d, ggplot2::aes(log2FC_reference, log2FC_query, colour = call, text = hover(d))) +
     ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey40") + ggplot2::geom_point(alpha = s$point_opacity, size = s$point_size) +
     ggplot2::scale_colour_manual(values = colours, drop = FALSE) +
@@ -257,7 +307,7 @@ comparisons_server <- function(input, output, session, repo_root, active, active
          pairs = named(ytab_read_analysis_tsv(file.path(run, "tests", "pairs_genes.tsv"))), correlation = ytab_read_analysis_tsv(file.path(run, "plots", "response_correlation.tsv")),
          heatmap = named(ytab_read_analysis_tsv(file.path(run, "plots", "heatmap_matrix.tsv")))) })
   output$mc_result_selector <- renderUI({ x <- mc_runs(); if (!nrow(x)) return(tags$p(class = "text-muted", "No multi-condition result yet.")); selectInput("mc_result", "Result", ytab_run_choices(x)) })
-  output$mc_pair_selector <- renderUI({ req(identical(input$mc_plot, "volcano")); p <- mc_data()$pairs; req(nrow(p) > 0); selectInput("mc_pair", "Pair", unique(p$pair)) })
+  output$mc_pair_selector <- renderUI({ req(input$mc_plot %in% c("volcano", "comet")); p <- mc_data()$pairs; req(nrow(p) > 0); selectInput("mc_pair", "Pair", unique(p$pair)) })
   output$mc_summary <- renderUI({
     gate <- ytab_design_gate(design_support(), "Multi-condition", "Multi-condition tests are not available for this dataset")
     if (!is.null(gate)) return(gate)
@@ -275,6 +325,7 @@ comparisons_server <- function(input, output, session, repo_root, active, active
   output$mc_plot_caption <- renderUI(switch(input$mc_plot %||% "volcano",
     volcano = "Each point is a gene; colours are calls with one FDR family over all pairs.",
     correlation = "Spearman correlation between conditions' responses (log2FC versus the reference) over all tested genes. Needs at least two non-reference conditions.",
+    comet = "Each gene's treated mean against its control mean for the chosen pair, coloured by gene set: the dense body on the diagonal is the genes that did not respond, and genes spraying away from it did.",
     heatmap = "log2FC versus the reference for responsive genes, clustered on their profiles."))
   output$mc_plot_frame <- renderUI({
     req(nrow(mc_runs()) > 0); d <- mc_data(); choice <- input$mc_plot %||% "volcano"
@@ -282,9 +333,32 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     if (identical(choice, "heatmap") && !nrow(d$heatmap)) return(tags$p(class = "text-muted", "No responsive genes to show."))
     s <- cmp_display(input, "mc", identical(choice, "heatmap")); ytab_plot_frame(plotly::plotlyOutput("mc_plotly", height = s$height), s$width)
   })
+  # Gene sets for the multi-condition comet, from the same species files Treated vs Control uses.
+  mc_comet_species <- reactive(list(root = active()$repo_root,
+                                    dir = (active()$reference %||% list())$species_dir %||% ""))
+  mc_comet_sets <- reactive({ files <- comet_set_files(mc_comet_species()$root, mc_comet_species()$dir)
+    if (!length(files)) list() else comet_read_gmt(unname(files)[[1L]]) })
+  output$mc_comet_sets_selector <- renderUI({ sets <- mc_comet_sets()
+    if (!length(sets)) return(helpText(sprintf("No gene sets for this species. Add a GMT file under %s/genesets/.",
+                                               mc_comet_species()$dir)))
+    kept <- intersect(input$mc_comet_sets %||% utils::head(names(sets), 4L), names(sets))
+    selectizeInput("mc_comet_sets", "Overlay sets", choices = names(sets), selected = kept, multiple = TRUE,
+                   options = list(plugins = list("remove_button"), placeholder = "Search gene sets")) })
+  mc_comet <- reactive({
+    req(identical(input$mc_plot, "comet")); d <- mc_data()
+    pair <- input$mc_pair %||% unique(d$pairs$pair)[[1L]]
+    g <- d$pairs[d$pairs$pair == pair & d$pairs$status == "tested", , drop = FALSE]
+    req(nrow(g) > 0)
+    sets <- mc_comet_sets()
+    comet_overlay(g, sets, intersect(input$mc_comet_sets %||% utils::head(names(sets), 4L), names(sets)),
+                  comet_orthologs(mc_comet_species()$root, mc_comet_species()$dir, g$ORF),
+                  input$mc_comet_genes, input$mc_label_n %||% 10L,
+                  direction = input$mc_direction %||% "both")
+  })
   mc_current_plot <- function(interactive = TRUE) { choice <- input$mc_plot %||% "volcano"
     mc_ggplot(choice, mc_data(), input$mc_pair %||% unique(mc_data()$pairs$pair)[[1L]], cmp_display(input, "mc", identical(choice, "heatmap")),
-              list(direction = input$mc_direction, label_n = input$mc_label_n %||% 10, label_genes = input$mc_label_genes, interactive = interactive)) }
+              list(direction = input$mc_direction, label_n = input$mc_label_n %||% 10, label_genes = input$mc_label_genes,
+                   comet = if (identical(choice, "comet")) mc_comet(), interactive = interactive)) }
   output$mc_plotly <- plotly::renderPlotly(tvc_plotly(mc_current_plot()))
   output$mc_table <- DT::renderDT({
     d <- mc_data(); p <- d$pairs; req(nrow(p) > 0); pair <- input$mc_pair %||% unique(p$pair)[[1L]]
@@ -355,9 +429,37 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     volcano = "Δ against the p-value; coloured genes are called interactions."))
   output$gi_plot_frame <- renderUI({ req(nrow(gi_runs()) > 0); s <- cmp_display(input, "gi", identical(input$gi_plot, "forest"))
     ytab_plot_frame(plotly::plotlyOutput("gi_plotly", height = s$height), s$width) })
+  # Gene sets for the strain-responses overlay, from the same species files the other tabs use.
+  gi_comet_sets <- reactive({ files <- comet_set_files(mc_comet_species()$root, mc_comet_species()$dir)
+    if (!length(files)) list() else comet_read_gmt(unname(files)[[1L]]) })
+  output$gi_comet_sets_selector <- renderUI({ sets <- gi_comet_sets()
+    if (!length(sets)) return(helpText(sprintf("No gene sets for this species. Add a GMT file under %s/genesets/.",
+                                               mc_comet_species()$dir)))
+    kept <- intersect(input$gi_comet_sets %||% utils::head(names(sets), 4L), names(sets))
+    selectizeInput("gi_comet_sets", "Overlay sets", choices = names(sets), selected = kept, multiple = TRUE,
+                   options = list(plugins = list("remove_button"), placeholder = "Search gene sets")) })
+  gi_comet <- reactive({
+    req(identical(input$gi_plot, "scatter"), identical(input$gi_colour_by, "sets"))
+    g <- gi_data()$genes; g <- g[g$status == "tested", , drop = FALSE]; req(nrow(g) > 0)
+    # The axes here are two log2 responses, so "distance from the diagonal" for labelling is the interaction
+    # itself. comet_overlay ranks on treated-vs-control means, which this table does not have, so the ranking
+    # columns are supplied from the responses instead.
+    g$mean_control <- 2 ^ pmax(g$log2FC_reference, -20)
+    g$mean_treatment <- 2 ^ pmax(g$log2FC_query, -20)
+    sets <- gi_comet_sets()
+    comet_overlay(g, sets, intersect(input$gi_comet_sets %||% utils::head(names(sets), 4L), names(sets)),
+                  comet_orthologs(mc_comet_species()$root, mc_comet_species()$dir, g$ORF),
+                  input$gi_comet_genes, input$gi_label_n %||% 10L,
+                  # Both axes are log2 responses here, so "depleted/enriched" has no single meaning: a gene can
+                  # fall in one strain and rise in the other. Labels are ranked by the interaction itself.
+                  direction = "both", label_min_reads = 0)
+  })
   gi_current_plot <- function(interactive = TRUE) { d <- gi_data(); gi_ggplot(input$gi_plot %||% "scatter", d$genes, d$manifest$diagnostics$reference_strain, d$manifest$diagnostics$query_strain,
     cmp_display(input, "gi", identical(input$gi_plot, "forest")),
-    list(direction = input$gi_direction, label_n = input$gi_label_n %||% 10, label_genes = input$gi_label_genes, interactive = interactive)) }
+    list(direction = input$gi_direction, label_n = input$gi_label_n %||% 10, label_genes = input$gi_label_genes,
+                   colour_by = input$gi_colour_by %||% "call",
+                   comet = if (identical(input$gi_plot, "scatter") && identical(input$gi_colour_by, "sets")) gi_comet(),
+                   interactive = interactive)) }
   output$gi_plotly <- plotly::renderPlotly(tvc_plotly(gi_current_plot()))
   output$gi_table <- DT::renderDT({
     g <- gi_data()$genes; req(nrow(g) > 0); g <- g[g$status == "tested", , drop = FALSE]
