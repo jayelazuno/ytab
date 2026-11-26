@@ -64,7 +64,7 @@ comparative_comparison_ui <- function() {
         helpText("About 36 for the label-free HMM, about 18 where curated labels are available ",
                  "(docs/methods/00_recommendations.md).")),
       ytab_plot_downloads_ui("comparative", c(profiles = "Download profiles (TSV)",
-                                              representatives = "Download representatives (TSV)"))
+                                              representatives = "Download representatives (TSV)"), capture = TRUE)
     ),
     comparative_result_card(
       "Comparative View",
@@ -86,7 +86,7 @@ comparative_comparison_ui <- function() {
                           "The query is matched against every represented species' own gene identifiers, names ",
                           "and recorded aliases at once, rather than resolved in one species and carried to the ",
                           "others through the ortholog tables. A gene that is present in a species and named as ",
-                          "asked for is then found there even when no table connects it to S. cerevisiae, which ",
+                          HTML("asked for is then found there even when no table connects it to <em>S. cerevisiae</em>, which "),
                           "is the usual situation for a family that expanded in that lineage. Each panel says ",
                           "which of the three routes reached it: a curated ortholog table (strongest, and the ",
                           "best coverage for the distant species), a shared OrthoFinder gene family (relatedness ",
@@ -94,7 +94,7 @@ comparative_comparison_ui <- function() {
                           "one-to-one table cannot express), or the gene's name alone (weakest). The routes are ",
                           "unioned, so a gap in any one source costs an edge rather than a wrong answer."),
                    tags$p(tags$b("Orthologs. "),
-                          "Through the S. cerevisiae hub, from each dataset's own ortholog table (reference: ",
+                          HTML("Through the <em>S. cerevisiae</em> hub, from each dataset's own ortholog table (reference: "),
                           "orthology_file), as whole families rather than one-to-one pairs. Where a family has ",
                           "expanded in a species, every member gets its own panel, numbered within the family: the ",
                           "expansion is usually the point of the comparison, and keeping only unambiguous pairs ",
@@ -134,7 +134,7 @@ comparative_gene_group_ui <- function() {
         numericInput("comparative_group_min_density", "Insertion sites per coding kb a species must reach",
                      value = 18, min = 1, max = 200, step = 1)),
       ytab_plot_downloads_ui("comparative_group", c(calls = "Download calls (TSV)",
-                                                    profiles = "Download profiles (TSV)"))
+                                                    profiles = "Download profiles (TSV)"), capture = TRUE)
     ),
     comparative_result_card(
       "Gene Group Analysis",
@@ -470,6 +470,8 @@ comparative_server <- function(input, output, session, repo_root, active = funct
 
   comparative_download_name <- function(suffix)
     paste0("gene_profiles_", gsub("[^A-Za-z0-9_.-]", "_", comparative_run()$query %||% "gene"), suffix)
+  ytab_plot_capture_server(input, output, session, "comparative", "comparative_plot",
+                           function() sub("[.]$", "", comparative_download_name("")))
   for (format in c("png", "pdf")) local({
     ext <- format
     output[[paste0("comparative_download_", ext)]] <- downloadHandler(
@@ -764,6 +766,7 @@ comparative_server <- function(input, output, session, repo_root, active = funct
     group_heatmap(frame, html = FALSE)
   })
 
+  ytab_plot_capture_server(input, output, session, "comparative_group", "comparative_group_plot", function() "gene_group_calls")
   output$comparative_group_download_png <- downloadHandler(
     filename = function() "gene_group_calls.png",
     content = function(file) ytab_save_ggplot(file, group_ggplot(), width = 9, height = 7))

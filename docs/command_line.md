@@ -261,7 +261,29 @@ nTnnnnAn motif (`motif`, the default). Use it for Ac/Ds and other transposons; o
 `ytab essentiality` also writes plot summaries for the app: `plots/target_model.tsv` (the target preference the fit
 used, or, for a motif fit, one learned from the same libraries as a diagnostic) and, with `--labels`, `plots/roc.tsv`
 (each model against the curated labels per tier; the hybrid's training genes out-of-fold).
-`ytab essentiality --project-config P --refresh-plots RUN` adds both to an earlier run.
+`ytab essentiality --project-config P --refresh-plots RUN` adds both to an earlier run, and fills in the gene
+table's `start` and `end` if it predates them.
+
+## Figures
+
+`ytab figure` writes a PNG or SVG of any analysis run's plot, built by the same code the app draws with and
+rendered through a headless browser, so a figure for a paper is the figure the app shows rather than a second
+drawing of it.
+
+```sh
+ytab figure essentiality RUN_DIR P/config/project.yaml --chromosome "Chr B" --output track.svg
+ytab figure treated-vs-control RUN_DIR P/config/project.yaml --plot volcano --output volcano.png --scale 4
+ytab figure multi-condition --list
+```
+
+The tabs are `essentiality`, `treated-vs-control`, `multi-condition`, `genetic-interactions`, `normalization`
+and `cross-species`; `TAB --list` names a tab's plots. The extension of `--output` picks the format: SVG is
+vector, PNG is rasterised at `--scale` (3 by default, roughly 300 dpi for a 12-inch figure). For essentiality,
+`--view hmm|hybrid|compare` chooses the model and `--chromosome` is repeatable — none for the genome overview,
+one for the detailed track, several to compare them.
+
+This needs the `chromote` R package and a Chrome or Chromium installation. Without them the command says so
+and writes nothing.
 
 ## Essentiality across species
 

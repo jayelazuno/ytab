@@ -165,7 +165,7 @@ gene_domain_explorer_server <- function(input, output, session, active,
       class = "ytab-meta",
       tags$dt("Gene ID"), tags$dd(row$cagl_display_id[[1]]),
       tags$dt("Gene name"), tags$dd(tags$b(row$gene_display_name[[1]])),
-      tags$dt("S. cerevisiae orthology"), tags$dd(row$cg_to_sc_relationship_display[[1]] %||% ""),
+      tags$dt(HTML("<em>S. cerevisiae</em> orthology")), tags$dd(row$cg_to_sc_relationship_display[[1]] %||% ""),
       tags$dt("Location"), tags$dd(sprintf("%s:%s-%s (%s)", chromosome_display, row$start[[1]], row$end[[1]], row$strand[[1]])),
       tags$dt("Product"), tags$dd(row$product[[1]] %||% "")
     )

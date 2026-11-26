@@ -58,7 +58,11 @@ testServer(function(input,output,session)qc<-qc_table_server(input,output,sessio
   # Display options change the plot; downloads work for the plot shown.
   session$setInputs(qcp_insertions_plot="metric:skewness",qcp_insertions_bar_orientation="horizontal",qcp_insertions_show_value_labels=TRUE,qcp_insertions_text_size="large")
   b<-qc$built$insertions();stopifnot(rlang::quo_text(b$plot$mapping$y)==".key",any(vapply(b$plot$layers,function(l)inherits(l$geom,"GeomText"),TRUE)))
-  for(id in c("qcp_insertions_download_png","qcp_insertions_download_pdf","qcp_insertions_download_data","qc_table_download_xlsx","qc_table_download_tsv","qc_table_download_flags"))stopifnot(file.size(output[[id]])>100)
+  qc_ui <- as.character(htmltools::renderTags(qc_theme_ui("insertions"))$html)
+  stopifnot(grepl("qcp_insertions_capture_png", qc_ui, fixed = TRUE),
+            grepl("qcp_insertions_capture_svg", qc_ui, fixed = TRUE),
+            !grepl("qcp_insertions_download_png", qc_ui, fixed = TRUE))
+  for(id in c("qcp_insertions_download_data","qc_table_download_xlsx","qc_table_download_tsv","qc_table_download_flags"))stopifnot(file.size(output[[id]])>100)
   session$setInputs(qcp_insertions_plot="metric:unique_sites");b<-qc$built$insertions()
   stopifnot(any(grepl("Insertions per kb of genome",b$plot$data$tip,fixed=TRUE)),any(grepl("Catalogue density",b$plot$data$tip,fixed=TRUE)))
   session$setInputs(qcp_insertions_plot="gene_hit_bins");stopifnot(identical(levels(qc$built$insertions()$plot$data$bin),c("0","1\u20133","4\u20137","8\u20139","10\u201319","\u226520")))

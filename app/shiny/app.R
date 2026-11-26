@@ -8,7 +8,7 @@ options(scipen = 999)
 app_file <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL) %||% file.path(getwd(), "app.R")
 app_dir <- normalizePath(dirname(app_file), winslash = "/", mustWork = TRUE)
 repo_root <- normalizePath(file.path(app_dir, "../.."), winslash = "/", mustWork = TRUE)
-for (helper in c("datasets_center.R", "help_center.R", "project_discovery.R", "project_state.R", "process_helpers.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "analysis_runs.R", "design_support.R", "reference_projects.R", "qc_library_correlation.R", "ui_qc.R", "qc_module.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_plot_utils.R", "ui_fitness.R", "comet.R", "treated_vs_control.R", "essentiality_state.R", "classifier_predictions.R", "normalization_module.R", "essentiality_module.R", "comparisons_module.R", "gene_domain_explorer_state.R", "gene_domain_figure.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "cross_species.R", "go_analysis.R", "ui_workspace.R"))
+for (helper in c("datasets_center.R", "help_center.R", "project_discovery.R", "project_state.R", "process_helpers.R", "plot_capture.R", "preprocessing_status.R", "sample_selector.R", "job_manager.R", "job_progress.R", "navigation.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R", "table_display_helpers.R", "glabrata_annotation_lookup.R", "ui_landing.R", "ui_preprocessing.R", "qc_result_state.R", "qc_plot_utils.R", "qc_mapping_stats_plot.R", "qc_summary_library_plots.R", "qc_library_diagnostics_plots.R", "analysis_runs.R", "design_support.R", "reference_projects.R", "qc_library_correlation.R", "ui_qc.R", "qc_module.R", "fitness_design_state.R", "fitness_result_state.R", "fitness_plot_utils.R", "ui_fitness.R", "comet.R", "treated_vs_control.R", "essentiality_state.R", "classifier_predictions.R", "normalization_module.R", "essentiality_module.R", "comparisons_module.R", "gene_domain_explorer_state.R", "gene_domain_figure.R", "ui_gene_domain_explorer.R", "gene_domain_explorer_server.R", "genome_browser_state.R", "ui_genome_browser.R", "comparative_resources.R", "comparative_project_data.R", "ui_comparative.R", "cross_species.R", "go_analysis.R", "ui_workspace.R"))
   source(file.path(app_dir, "R", helper), local = TRUE)
 source(file.path(app_dir, "R", "screen_planning.R"), local = TRUE)
 source(file.path(app_dir, "R", "mutant_screen.R"), local = TRUE)
@@ -26,11 +26,12 @@ ui <- tagList(
   # Bootstrap's CSS and JS, which fluidPage() used to supply. Without it Shiny's showModal() and the
   # shinyFiles directory chooser render their markup inline and unstyled instead of as a dialog.
   tags$head(shiny::bootstrapLib(), tags$title("YTAB — Yeast Transposon Analysis Browser"), tags$link(rel="stylesheet", href="ytab.css?v=20261109_1"),
-    tags$link(rel="stylesheet", href="ytab-landing.css?v=20261023_1"), tags$link(rel="stylesheet", href="ytab-qc.css"), tags$link(rel="stylesheet", href="ytab_help.css?v=20261109_8"), tags$link(rel="stylesheet",href="job-progress.css"), tags$link(rel="stylesheet",href="ytab_release_ui.css?v=20261101_1"),
+    tags$link(rel="stylesheet", href=ytab_css_href("ytab-landing.css")), tags$link(rel="stylesheet", href=ytab_css_href("ytab-qc.css")), tags$link(rel="stylesheet", href=ytab_css_href("ytab_help.css")), tags$link(rel="stylesheet",href=ytab_css_href("job-progress.css")), tags$link(rel="stylesheet",href=ytab_css_href("ytab_release_ui.css")),
     tags$script(src="https://cdn.jsdelivr.net/npm/igv@3/dist/igv.min.js"),
     tags$script(src="ytab_igv_browser.js?v=20261022_1"),
     tags$script(src="ytab_page_styles.js?v=20261109_2"),
-    tags$script(src="ytab_nav_menus.js?v=20261022_2&screen_coverage=4")),
+    tags$script(src="ytab_nav_menus.js?v=20261022_2&screen_coverage=4"),
+    tags$script(src = ytab_css_href("ytab_plot_capture.js"))),
   uiOutput("app_shell")
 )
 
@@ -312,12 +313,17 @@ server <- function(input, output, session) {
   observeEvent(input$return_from_new_project,new_project_open(FALSE),ignoreInit=TRUE)
   observeEvent(input$return_from_import_project,import_project_open(FALSE),ignoreInit=TRUE)
 
-  output$documentation_guidance <- renderUI({
-    req((input$show_launch_command %||% 0) + (input$view_setup_guide %||% 0) > 0)
-    if ((input$view_setup_guide %||% 0) > (input$show_launch_command %||% 0))
-      tags$p("See ", tags$code("docs/setup_local.md"), " for local setup and preprocessing guidance.")
-    else tags$pre("mamba activate ytab-local\n./scripts/local/ytab_launch_app.sh")
-  })
+  # These two sat in a Documentation card that only repeated the header's own links. They are now header
+  # links themselves, so each opens a dialog rather than writing into a panel that no longer exists.
+  observeEvent(input$view_setup_guide, showModal(modalDialog(
+    title = "Setup guide", easyClose = TRUE, footer = modalButton("Close"),
+    tags$p("See ", tags$code("docs/setup_local.md"), " for local setup and preprocessing guidance."))),
+    ignoreInit = TRUE)
+  observeEvent(input$show_launch_command, showModal(modalDialog(
+    title = "Launch command", easyClose = TRUE, footer = modalButton("Close"),
+    tags$p("From the repository folder:"),
+    tags$pre("mamba activate ytab-local\n./scripts/local/ytab_launch_app.sh"))),
+    ignoreInit = TRUE)
 
   if (shinyfiles_available) {
     roots <- c(Home = normalizePath("~", mustWork=TRUE), `Repository parent` = dirname(repo_root))
@@ -509,6 +515,7 @@ server <- function(input, output, session) {
   job_progress_server("mapping_job",jobs,active,compact=FALSE)
   job_progress_server("library_diagnostics_job",jobs,active,compact=FALSE)
   job_progress_server("fitness_job",jobs,active,compact=FALSE)
+  job_progress_server("tvc_job",jobs,active,compact=FALSE)   # resampling and the Gumbel report here
   included_samples <- reactive({d<-active()$samples;inc<-if("include"%in%names(d))tolower(as.character(d$include))%in%c("true","1","yes")else rep(TRUE,nrow(d));as.character(d$sample[inc])})
   output$active_project_badge <- renderUI({p<-active();tagList(tags$b(project_display_label(p)),tags$span(p$species))})
   output$project_metadata_ui <- renderUI({p<-active();tags$dl(class="ytab-meta",tags$dt("Dataset"),tags$dd(project_display_label(p)),tags$dt("Folder"),tags$dd(tags$code(p$project_id)),tags$dt("Dataset config"),tags$dd(tags$code(p$project_config)),tags$dt("FASTQ directory"),tags$dd(tags$code(p$fastq_directory)),tags$dt("Sample sheet"),tags$dd(tags$code(p$sample_sheet)),tags$dt("Threads"),tags$dd(p$threads),tags$dt("Reference"),tags$dd(p$reference$fasta %||% "Not resolved"))})
@@ -628,33 +635,74 @@ server <- function(input, output, session) {
   observe({design<-fitness_design();contract<-normalize_fitness_design_columns(design);if(!contract$valid)return();valid<-unname(as.character(contract$data$comparison_id[contract$data$valid%||%FALSE]));updateSelectizeInput(session,"fitness_comparisons",choices=as.list(setNames(valid,valid)),selected=unname(intersect(fitness_selected_comparisons(),valid)),server=TRUE)})
   observeEvent(input$fitness_comparisons,fitness_selected_comparisons(unname(as.character(input$fitness_comparisons%||%character()))),ignoreInit=TRUE)
   output$fitness_design_state<-renderUI({design<-fitness_design();error<-attr(design,"design_error")%||%"";if(nzchar(error))return(tags$div(class="alert alert-danger",error));if(!nrow(design))tags$p(class="text-muted","No comparison design has been generated for this dataset.")else tags$p(sprintf("%d valid parent-treated comparisons were detected.",sum(design$valid)))})
-  output$fitness_design_cards<-renderUI({x<-fitness_design_summary(fitness_design(),fitness_issues());tags$div(class="ytab-stat-grid",tags$div(tags$b(x$valid),"Valid comparisons"),tags$div(tags$b(x$included),"Included comparisons"),tags$div(tags$b(x$incomplete),"Incomplete comparisons"),tags$div(tags$b(x$issues),"Design issues"))})
+  # Built with the shared metric card, as every other tab's summary is: a small label over a large value, and a
+  # status stripe. Zero incomplete comparisons and zero design issues are good news and are coloured as such;
+  # rendered as plain counts they read the same as any other number.
+  output$fitness_design_cards<-renderUI({
+    x<-fitness_design_summary(fitness_design(),fitness_issues())
+    detected<-x$valid+x$incomplete
+    tags$div(class="ytab-stat-grid",
+      ytab_metric_card("Valid comparisons",format(x$valid,big.mark=","),
+                       if(detected>x$valid) sprintf("of %s detected",format(detected,big.mark=",")) else NULL,
+                       if(x$valid>0) "success" else "warning",layout="inline"),
+      ytab_metric_card("Included comparisons",format(x$included,big.mark=","),
+                       if(x$valid&&x$included<x$valid) sprintf("of %s valid",format(x$valid,big.mark=",")) else NULL,
+                       if(x$included>0) "success" else "neutral",layout="inline"),
+      # A caption only where it says something the number does not. "0" and "none" together is the same fact
+      # twice, in text small enough to be a nuisance to read.
+      ytab_metric_card("Incomplete comparisons",format(x$incomplete,big.mark=","),
+                       if(x$incomplete) "missing a parent or treated summary" else NULL,
+                       if(x$incomplete>0) "warning" else "success",layout="inline"),
+      ytab_metric_card("Design issues",format(x$issues,big.mark=","),
+                       if(x$issues) "listed below" else NULL,
+                       if(x$issues>0) "danger" else "success",layout="inline"))})
   output$fitness_design_generate_action<-renderUI(if(!file.exists(fitness_design_path(active())))actionButton("fitness_generate_design","Generate design",class="btn-primary"))
-  output$fitness_design_presets<-renderUI({design<-fitness_design();if(!nrow(design))return(NULL);backgrounds<-sort(unique(design$background[design$valid]));tags$div(class="ytab-actions",actionButton("fitness_design_all","Select all valid",class="btn-secondary"),actionButton("fitness_design_none","Select none",class="btn-secondary"),lapply(backgrounds,function(bg)actionButton(paste0("fitness_background_",make.names(bg)),paste("Select",bg,"background"),class="btn-secondary")))})
+  # One button per background does not scale: the row grows with the data, and a project with several strains or
+  # mutants becomes a wall of near-identical buttons. A searchable multi-select holds any number of them, and the
+  # two whole-design actions stay as buttons because there are always exactly two.
+  output$fitness_design_presets<-renderUI({
+    design<-fitness_design();if(!nrow(design))return(NULL)
+    backgrounds<-sort(unique(design$background[design$valid]))
+    # One row: the two whole-design actions and the background chooser read as the selection controls they are,
+    # rather than as two stacked rows of unrelated things. The chooser's own label is dropped -- its placeholder
+    # says what it does, and a label here would push it onto a second line.
+    tags$div(class="ytab-actions ytab-selection-row",
+      actionButton("fitness_design_all","Select all valid",class="btn-secondary"),
+      actionButton("fitness_design_none","Select none",class="btn-secondary"),
+      if(length(backgrounds))
+        tags$div(class="ytab-selection-grow",
+          selectizeInput("fitness_design_backgrounds",NULL,choices=backgrounds,multiple=TRUE,width="100%",
+                         options=list(plugins=list("remove_button"),
+                                      placeholder="Select by background\u2026"))))})
   observeEvent(input$fitness_design_all,fitness_selected_comparisons(fitness_default_selection(fitness_design())),ignoreInit=TRUE);observeEvent(input$fitness_design_none,fitness_selected_comparisons(character()),ignoreInit=TRUE)
-  observe({backgrounds<-sort(unique(fitness_design()$background[fitness_design()$valid]));lapply(backgrounds,function(bg)local({value<-bg;observeEvent(input[[paste0("fitness_background_",make.names(value))]],fitness_selected_comparisons(as.character(fitness_design()$comparison_id[fitness_design()$valid&fitness_design()$background==value])),ignoreInit=TRUE)}))})
+  observeEvent(input$fitness_design_backgrounds,{
+    chosen<-input$fitness_design_backgrounds;design<-fitness_design()
+    if(!length(chosen)||!nrow(design))return()
+    fitness_selected_comparisons(as.character(design$comparison_id[design$valid&design$background%in%chosen]))
+  },ignoreInit=TRUE)
   output$fitness_design_table<-DT::renderDT({x<-fitness_design_table(fitness_design(),active()$project_root);if(!nrow(x))return(NULL);compact_qc_table(x)})
   output$fitness_design_issues_table<-DT::renderDT({x<-fitness_issues();if(!nrow(x))return(DT::datatable(data.frame(Message="No design issues were detected."),rownames=FALSE,options=list(dom="t")));compact_qc_table(x)})
   output$fitness_design_input_details<-DT::renderDT({x<-fitness_design();if(!nrow(x))return(NULL);details<-data.frame(Comparison=x$comparison_id,`Parent summary`=vapply(x$parent_summary_path,relative_project_path,"",project_root=active()$project_root),`Treated summary`=vapply(x$treated_summary_path,relative_project_path,"",project_root=active()$project_root),check.names=FALSE);compact_qc_table(details)})
   output$fitness_selection_summary<-renderUI({design<-fitness_design();selected<-fitness_selected_comparisons();tags$p(sprintf("%d of %d valid comparisons selected",length(selected),sum(design$valid)))})
   observeEvent(input$fitness_select_all,fitness_selected_comparisons(fitness_default_selection(fitness_design())),ignoreInit=TRUE);observeEvent(input$fitness_clear_selection,fitness_selected_comparisons(character()),ignoreInit=TRUE)
   output$fitness_selected_preview<-DT::renderDT({resolved<-resolve_selected_fitness_comparisons(fitness_design(),fitness_selected_comparisons());if(!resolved$valid||!nrow(resolved$rows))return(NULL);x<-resolved$rows;optional<-function(name)if(name%in%names(x))x[[name]]else rep("",nrow(x));compact_qc_table(data.frame(Comparison=x$comparison_id,Parent=x$parent_sample,Treated=x$treated_sample,Background=optional("background"),Pool=optional("pool"),`Input status`=optional("status"),check.names=FALSE))})
-  output$fitness_classifier_controls<-renderUI({if(!isTRUE(input$fitness_annotate_classifier))return(NULL);tags<-vapply(discover_classifier_results(active()$project_root),`[[`,"","tag");# Classifier runs are named after the normalization run that produced them. They used to be filtered here by essentiality_valid_tag, which only accepts the retired T<number> target tags, so this control reported "No classifier result is available" even when results existed.
-    if(!length(tags))return(tags$div(class="alert alert-warning","No classifier result is available. Disable annotation to run fitness analysis without it."));choices<-c(list("Recommended"="recommended"),as.list(setNames(unname(tags),unname(tags))));tagList(selectInput("fitness_classifier_target","Classifier result",choices=choices),helpText("Classifier annotation adds parent essentiality labels to the fitness result. It does not change CPM normalization, effect sizes, z-scores, or fitness calls."))})
+  # Classifier annotation is gone from this tab: it ran off the classifier chain, which begins at the legacy
+  # MidLC thinning (ytab_run_sample_normalization.py) that normalize-project superseded. The classifier
+  # pipeline itself still runs from the command line.
   fitness_results<-reactive({status_tick();discover_fitness_results(active())})
   # Chosen z-score input: total reads (CPM) or "<Site Normalization run>|<method>"; the analysis ID follows it.
   fitness_norm<-reactive({value<-input$fitness_normalization%||%"cpm";if(identical(value,"cpm"))return(list(method="CPM",run="",label="Total reads (CPM), from the SummaryTable gene reads",args=character()))
     parts<-strsplit(value,"|",fixed=TRUE)[[1L]];m<-ytab_read_manifest(parts[[1L]])%||%list()
     list(method=parts[[2L]],run=parts[[1L]],label=sprintf("%s, Site Normalization run of %s",normalization_method_labels[[parts[[2L]]]]%||%parts[[2L]],format(file.mtime(file.path(parts[[1L]],"manifest.json")),"%d %b %Y %H:%M")),args=c("--normalization",parts[[2L]],"--normalization-run",parts[[1L]]))})
   fitness_effective_aid<-reactive({aid<-input$fitness_analysis_id%||%fitness_default_analysis_id(fitness_design());n<-fitness_norm();if(identical(aid,"treated_vs_parent_raw_cpm")&&!identical(n$method,"CPM"))fitness_normalized_analysis_id(n$method,file.mtime(file.path(n$run,"manifest.json")))else aid})
-  fitness_cache_signature<-reactive(fitness_current_cache_signature(fitness_results(),fitness_selected_comparisons(),active(),fitness_effective_aid(),isTRUE(input$fitness_annotate_classifier),input$fitness_classifier_target%||%"",fitness_norm()$method,fitness_norm()$run));fitness_result_state<-reactive(resolve_fitness_result_state(fitness_selected_comparisons(),fitness_cache_signature(),fitness_results(),nrow(fitness_design())>0L));fitness_matching<-reactive(fitness_result_state()$matching_result)
+  fitness_cache_signature<-reactive(fitness_current_cache_signature(fitness_results(),fitness_selected_comparisons(),active(),fitness_effective_aid(),FALSE,"",fitness_norm()$method,fitness_norm()$run));fitness_result_state<-reactive(resolve_fitness_result_state(fitness_selected_comparisons(),fitness_cache_signature(),fitness_results(),nrow(fitness_design())>0L));fitness_matching<-reactive(fitness_result_state()$matching_result)
   output$fitness_run_summary<-renderUI({selected<-fitness_selected_comparisons();aid<-fitness_effective_aid();match<-fitness_matching()
     tags$dl(class="ytab-execution-summary",tags$dt("Analysis"),tags$dd(gsub("_"," ",aid)),tags$dt("Comparisons"),tags$dd(sprintf("%d (%s)",length(selected),if(length(selected)==sum(fitness_design()$valid))"all valid comparisons"else"selected subset")),
-      tags$dt("Normalization"),tags$dd(fitness_norm()$label),if(isTRUE(input$fitness_annotate_classifier))tagList(tags$dt("Classifier annotation"),tags$dd("Yes")),
+      tags$dt("Normalization"),tags$dd(fitness_norm()$label),
       if(!is.null(match))tagList(tags$dt("Existing result"),tags$dd(fitness_result_display_name(match)," ",actionLink("fitness_open_match_summary","Open it"))),
       tags$dt("Output"),tags$dd(tags$code(file.path("treated_vs_parent",aid))))})
   output$fitness_run_action<-renderUI({mode<-input$fitness_execution_mode%||%"preview";force<-FALSE;error<-validate_fitness_analysis_id(input$fitness_analysis_id%||%"");actionButton("fitness_run",fitness_action_label(mode,!is.null(fitness_matching()),force),class="btn-primary",disabled=!length(fitness_selected_comparisons())||nzchar(error)||jobs$job_is_running())})
-  observeEvent(input$fitness_continue_analysis,go_to("fitness","fitness_tabs","fitness_run"),ignoreInit=TRUE);observeEvent(input$fitness_change_design,go_to("fitness","fitness_tabs","fitness_design"),ignoreInit=TRUE)
+  observeEvent(input$fitness_continue_analysis,go_to("fitness","fitness_tabs","fitness_run"),ignoreInit=TRUE);
   output$essentiality_readiness<-renderUI({s<-sample_pipeline_status();if(!any(s$hit_file%in%c("success","skipped")))blocked_card("Essentiality preprocessing blocked","Raw hit files are unavailable.","Create hit files")})
   output$fitness_readiness<-renderUI({s<-sample_pipeline_status();if(!all(s$summary[s$included]%in%c("success","skipped")))blocked_card("Fitness analysis blocked","Fitness analysis requires raw SummaryTable outputs.","Complete raw SummaryTable")else if(!file.exists(file.path(active()$project_root,"config","comparison_design.csv")))blocked_card("Comparison design required","Raw summaries are ready.","Generate comparison design")})
 
@@ -868,12 +916,12 @@ server <- function(input, output, session) {
   refresh_fitness_design<-function(overwrite=TRUE){result<-run_cli("ytab_init_comparison_design.py",c(if(overwrite)"--overwrite","--print-design"));fitness_design_tick(fitness_design_tick()+1L);design<-fitness_design();fitness_selected_comparisons(fitness_default_selection(design));updateTextInput(session,"fitness_analysis_id",value=fitness_default_analysis_id(design));result}
   observeEvent(input$fitness_generate_design,refresh_fitness_design(FALSE),ignoreInit=TRUE);observeEvent(input$fitness_refresh_design,refresh_fitness_design(TRUE),ignoreInit=TRUE)
   observeEvent(input$fitness_review_issues,{x<-fitness_issues();showModal(modalDialog(title="Comparison design issues",if(nrow(x))DT::dataTableOutput("fitness_issues_modal")else"No design issues were detected.",easyClose=TRUE));if(nrow(x))output$fitness_issues_modal<-DT::renderDataTable(compact_qc_table(x))},ignoreInit=TRUE)
-  start_fitness_job<-function(force=FALSE){if(jobs$job_is_running()){showNotification("Wait for the current job to finish.",type="warning");return(FALSE)};resolved<-resolve_selected_fitness_comparisons(isolate(fitness_design()),isolate(fitness_selected_comparisons()));aid<-isolate(input$fitness_analysis_id%||%"");if(!resolved$valid||!nrow(resolved$rows)){showNotification(resolved$message%||%"Select at least one valid comparison.",type="error");return(FALSE)};id_error<-validate_fitness_analysis_id(aid);if(nzchar(id_error)){showNotification(id_error,type="error");return(FALSE)};missing_inputs<-resolved$rows$status%in%"Missing input";if(any(missing_inputs)){showNotification("Selected comparisons are missing required raw SummaryTable inputs.",type="error");return(FALSE)};selected<-unname(as.character(resolved$rows$comparison_id));mode<-isolate(input$fitness_execution_mode%||%"preview");annotate<-isTRUE(isolate(input$fitness_annotate_classifier));all_valid<-setequal(selected,as.character(fitness_design()$comparison_id[fitness_design()$valid]));keep<-resolve_keep_going("fitness_analysis",length(selected),all_valid,TRUE);norm<-isolate(input$fitness_normalization%||%"cpm");norm_args<-isolate(fitness_norm()$args);aid<-isolate(fitness_effective_aid());args<-c(file.path(repo_root,"scripts/local/ytab_run_treated_vs_parent.py"),"--project-config",active_project_path(),"--analysis-id",aid,"--input-mode","raw-summary","--comparisons",paste(selected,collapse=","),norm_args,if(annotate)c("--annotate-classifier","--classifier-target",isolate(input$fitness_classifier_target)),if(mode=="preview")"--dry-run",if(force)"--force",if(keep)"--keep-going");metadata<-list(normalization=norm,selected_comparisons=selected,selected_comparison_count=length(selected),comparison_set_label=if(all_valid)"All valid comparisons"else"Selected subset",execution_mode=mode,classifier_annotation=annotate,force=force,keep_going=keep);jobs$start_job(python_bin(),args,active_project_path(),"fitness_analysis",wd=repo_root,selected_items=selected,metadata=metadata);TRUE}
+  start_fitness_job<-function(force=FALSE){if(jobs$job_is_running()){showNotification("Wait for the current job to finish.",type="warning");return(FALSE)};resolved<-resolve_selected_fitness_comparisons(isolate(fitness_design()),isolate(fitness_selected_comparisons()));aid<-isolate(input$fitness_analysis_id%||%"");if(!resolved$valid||!nrow(resolved$rows)){showNotification(resolved$message%||%"Select at least one valid comparison.",type="error");return(FALSE)};id_error<-validate_fitness_analysis_id(aid);if(nzchar(id_error)){showNotification(id_error,type="error");return(FALSE)};missing_inputs<-resolved$rows$status%in%"Missing input";if(any(missing_inputs)){showNotification("Selected comparisons are missing required raw SummaryTable inputs.",type="error");return(FALSE)};selected<-unname(as.character(resolved$rows$comparison_id));mode<-isolate(input$fitness_execution_mode%||%"preview");all_valid<-setequal(selected,as.character(fitness_design()$comparison_id[fitness_design()$valid]));keep<-resolve_keep_going("fitness_analysis",length(selected),all_valid,TRUE);norm<-isolate(input$fitness_normalization%||%"cpm");norm_args<-isolate(fitness_norm()$args);aid<-isolate(fitness_effective_aid());args<-c(file.path(repo_root,"scripts/local/ytab_run_treated_vs_parent.py"),"--project-config",active_project_path(),"--analysis-id",aid,"--input-mode","raw-summary","--comparisons",paste(selected,collapse=","),norm_args,if(mode=="preview")"--dry-run",if(force)"--force",if(keep)"--keep-going");metadata<-list(normalization=norm,selected_comparisons=selected,selected_comparison_count=length(selected),comparison_set_label=if(all_valid)"All valid comparisons"else"Selected subset",execution_mode=mode,force=force,keep_going=keep);jobs$start_job(python_bin(),args,active_project_path(),"fitness_analysis",wd=repo_root,selected_items=selected,metadata=metadata);TRUE}
   # Run: a confirmation that either offers the existing result with the same settings (open it or run again), or lists
   # earlier results for the same comparisons that can be opened instead of running.
   observeEvent(input$fitness_run,{mode<-input$fitness_execution_mode%||%"preview";selected<-fitness_selected_comparisons();req(length(selected));if(mode=="preview"){start_fitness_job();return()}
     match<-fitness_matching();summary<-tags$dl(class="ytab-meta",tags$dt("Analysis"),tags$dd(gsub("_"," ",fitness_effective_aid())),tags$dt("Comparisons"),tags$dd(length(selected)),tags$dt("Normalization"),tags$dd(fitness_norm()$label),
-      if(isTRUE(input$fitness_annotate_classifier))tagList(tags$dt("Classifier annotation"),tags$dd("Yes")))
+      NULL)
     if(!is.null(match)){showModal(modalDialog(title="A result with these settings exists",summary,tags$p(sprintf("%s finished on these comparisons with the same inputs and settings.",fitness_result_display_name(match))),
       footer=tagList(modalButton("Cancel"),actionButton("fitness_open_match","Open existing result",class="btn-primary"),actionButton("confirm_fitness_rerun","Run again"))));return()}
     earlier<-Filter(function(x)setequal(x$selected_comparisons,selected),fitness_results())

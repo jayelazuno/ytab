@@ -19,13 +19,49 @@ if not exist "%REPO%\app\shiny\run_app.R" (
 )
 
 where docker >nul 2>&1
-if errorlevel 1 (
+if not errorlevel 1 goto :haveruntime
+  REM Colima, which the macOS launcher offers to install, is macOS and Linux only: it is built on Lima, which
+  REM has no Windows build. On Windows a runtime means Podman or Docker Desktop, and both sit on WSL2.
+  REM
+  REM WSL2 cannot be installed quietly: "wsl --install" needs an administrator prompt and usually a restart.
+  REM So this checks for it, offers to run the one command, and says plainly what will happen; it never
+  REM installs Docker Desktop by default, whose licence needs a subscription in larger organizations.
   echo.
-  echo ERROR: Docker is not installed.
-  echo Install Docker Desktop from https://docs.docker.com/get-started/get-docker/ , start it,
-  echo then double-click this again.
+  echo YTAB runs inside a container, and this computer has no container runtime yet.
+  echo.
+  REM cmd expands %VAR% when it parses a parenthesised block, not when it runs it, so a variable set and read
+  REM inside one block is always empty. The WSL2 question therefore lives outside any block.
+  wsl --status >nul 2>&1
+  if errorlevel 1 goto :needwsl
+  echo   WSL2 is present. Install one of these, then double-click this again:
+  echo.
+  goto :runtimelist
+
+:needwsl
+  echo   Windows needs WSL2 first. Installing it opens an administrator prompt and usually
+  echo   needs a restart, so it is not done without asking.
+  echo.
+  set "WSLANS="
+  set /p WSLANS="Run 'wsl --install' now? [y/N] "
+  if /i "%WSLANS%"=="y" goto :dowsl
+  echo   Install WSL2 yourself with:  wsl --install
+  echo.
+  goto :runtimelist
+
+:dowsl
+  echo Installing WSL2. Restart Windows when it finishes, then double-click this again.
+  wsl --install
   goto :halt
-)
+
+:runtimelist
+  echo   Podman Desktop  https://podman-desktop.io
+  echo                   open source, no subscription
+  echo   Docker Desktop  https://docs.docker.com/get-started/get-docker/
+  echo                   free for personal, educational and small-business use;
+  echo                   larger organizations need a subscription
+  goto :halt
+
+:haveruntime
 
 docker info >nul 2>&1
 if errorlevel 1 (

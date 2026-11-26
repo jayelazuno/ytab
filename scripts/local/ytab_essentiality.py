@@ -129,6 +129,34 @@ def write_rows(path, rows):
         w = csv.DictWriter(handle, fieldnames=list(rows[0]), delimiter="\t", lineterminator="\n"); w.writeheader(); w.writerows(rows)
 
 
+def backfill_gene_coordinates(genes_tsv, project_config):
+    """Add start/end to a gene table written before the pipeline recorded them.
+
+    The coordinates come from the project's own GFF, keyed on the gene id, so this is the same source the run
+    used; it rewrites nothing else. Runs made before this existed can gain the columns without being refitted,
+    which is what lets the app repair them on request instead of asking for a re-run."""
+    if not genes_tsv.exists():return False
+    with open(genes_tsv, newline="") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t")); fields = list(rows[0]) if rows else []
+    if not rows or ("start" in fields and any(r.get("start") for r in rows)):return False
+    from ytab.fitness import control_conditioned_gumbel as ccg
+    _, gff, _ = project_files(project_config, [])
+    spans = {}
+    for gene in ccg.annotations(Path(gff).resolve()):
+        blocks = gene.get("blocks") or []
+        if blocks:spans[gene["id"]] = (min(a for a, _ in blocks), max(b for _, b in blocks))
+    if not spans:return False
+    for row in rows:
+        row["start"], row["end"] = spans.get(row.get("ORF"), ("", ""))
+    at = fields.index("chromosome")+1 if "chromosome" in fields else len(fields)
+    fields = [f for f in fields if f not in ("start", "end")]
+    fields[at:at] = ["start", "end"]
+    with open(genes_tsv, "w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, delimiter="\t", extrasaction="ignore")
+        writer.writeheader(); writer.writerows(rows)
+    return True
+
+
 def plot_summaries(out, hmm_dir, project_config, min_reads, species=None):
     fit = json.loads((hmm_dir/"fit.json").read_text())
     labels = ROOT/"resources/species"/species/"essentiality_labels/labels.tsv" if species else None
@@ -170,7 +198,8 @@ def main():
         cfg = yaml.safe_load(a.project_config.read_text())
         extra = plot_summaries(run, Path(m["hmm_run"]), a.project_config, int(m.get("hmm", {}).get("settings", {}).get("min_reads", 1)),
                                cfg.get("species") or cfg.get("reference", {}).get("species"))
-        print(json.dumps(dict(status="success", refreshed=str(run), **extra), default=str)); return
+        coordinates = backfill_gene_coordinates(run/"models/genes.tsv", a.project_config)
+        print(json.dumps(dict(status="success", refreshed=str(run), coordinates_added=coordinates, **extra), default=str)); return
     if not a.output:p.error("--output is required")
     out = a.output.resolve()
     try:
@@ -203,6 +232,9 @@ def main():
         step([SCRIPTS/"ytab_essentiality_hybrid_model.py", "--hmm", hmm_dir/"genes.tsv", "--out", out/"models", "--train-tiers", a.train_tiers,
               *(["--features", a.features] if a.features else []), *(["--rf", a.rf] if a.rf else []),
               *(["--labels", a.labels] if a.labels else [])])
+        # A reused HMM fit may predate the gene table carrying coordinates. The GFF is to hand either way, so
+        # the run always leaves a complete table and nothing downstream has to allow for their absence.
+        backfill_gene_coordinates(out/"models/genes.tsv", a.project_config)
         print("3/3 Writing plot summaries", file=sys.stderr, flush=True)
         (out/"plots").mkdir(); chromosomes = export_windows(hmm_dir, out/"plots/windows.tsv.gz")
         extra = plot_summaries(out, hmm_dir, a.project_config, a.min_reads, cfg.get("species") or cfg.get("reference", {}).get("species"))

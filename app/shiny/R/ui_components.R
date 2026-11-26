@@ -35,9 +35,13 @@ ytab_result_card <- function(title, ..., status = NULL) {
   )
 }
 
-ytab_metric_card <- function(label, value, caption = NULL, status = "neutral") {
+# layout = "inline" puts the label and value on one line ("Valid comparisons: 2"). Use it where the cards are
+# wide and carry a short value: stacked, the content sits in the top-left of a half-empty box.
+ytab_metric_card <- function(label, value, caption = NULL, status = "neutral", layout = c("stacked", "inline")) {
+  layout <- match.arg(layout)
   tags$article(
-    class = paste("ytab-metric-card", paste0("ytab-metric-", status)),
+    class = paste("ytab-metric-card", paste0("ytab-metric-", status),
+                  if (identical(layout, "inline")) "ytab-metric-row"),
     tags$span(class = "ytab-metric-label", label),
     tags$strong(class = "ytab-metric-value", value),
     if (!is.null(caption) && nzchar(as.character(caption)))

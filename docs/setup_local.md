@@ -11,6 +11,12 @@ bash scripts/setup_ytab_local.sh
 mamba activate ytab-local
 ```
 
+Where `envs/ytab-local.<platform>.lock` exists for your platform, the script installs from it: every package is
+pinned to an exact build, so the environment is downloaded rather than solved, and is the same one on every
+machine. Without a lock it solves `environment.local.yml`, which is slower and can give a different result on a
+different day. `YTAB_SOLVE=1 bash scripts/setup_ytab_local.sh` forces a solve, which is what to do when adding
+a package; `envs/README.md` says how to record a new lock afterwards.
+
 The setup script prefers `mamba` and falls back to `conda`. It creates the `ytab-local` environment on the first run and updates it on later runs.
 
 ## Validate the installation

@@ -30,7 +30,7 @@ mutant_screen_ui <- function(){
     tags$ol(tags$li("PCR1: genomic DNA or cell lysate is amplified with Hermes-specific HR-1 and degenerate ARB6. Low-stringency priming establishes a genomic flank."),
       tags$li("PCR2: HR-2 and ARB2 enrich the junction-containing product from PCR1 using OneTaq conditions."),
       tags$li("Assess PCR2 products on an agarose gel, purify suitable products, and sequence with HR-2.")),
-    tags$figure(tags$img(src="ytab-mutant-method/gel_image.png",alt="Supplied PCR product gel: 100 bp ladder, M1–M9 and NC",style="max-width:100%;width:760px;height:auto;"),
+    tags$figure(tags$img(src="ytab-mutant-method/gel_image.png",alt="Supplied PCR product gel: 100 bp ladder, M1–M9 and NC",style="max-width:100%;max-height:60vh;width:auto;height:auto;"),
       tags$figcaption("Supplied gel: 100 bp ladder, M1–M9 and negative control (NC). Gel lanes are not automatically matched to sequencing filenames.")),
     tags$details(class="ytab-technical-details",tags$summary("Primer sequences and full protocol"),
       tags$table(class="table table-condensed",tags$thead(tags$tr(tags$th("Primer"),tags$th("Sequence (5′–3′)"))),tags$tbody(

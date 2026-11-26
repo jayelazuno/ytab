@@ -658,7 +658,11 @@ details.ytab-release-details {
 }
 
 /* QC table flags */
-.ytab-metric-danger{border-left:4px solid #C5221F}.ytab-metric-warning{border-left:4px solid #B06000}.ytab-metric-success{border-left:4px solid #188038}
+/* Status on a metric card is carried by the number, not by a thick left border: a 4px edge against the
+   card's 1px grey border and 12px radius reads as a bar detached from the card. */
+.ytab-metric-danger .ytab-metric-value{color:#C5221F}
+.ytab-metric-warning .ytab-metric-value{color:#B06000}
+.ytab-metric-success .ytab-metric-value{color:#188038}
 .ytab-qc-cell{white-space:nowrap;cursor:help}
 
 .ytab-reference{font-size:.92em;color:#5f6368;border-top:1px solid #e3e8ec;padding-top:.4rem;margin-top:.6rem}
@@ -801,4 +805,169 @@ details.ytab-release-details {
   border-bottom: 0;
   font-weight: 600;
   color: #11557f;
+}
+
+/* Selection controls on one line: the buttons keep their size, the chooser takes the rest of the width. Its
+   Shiny form-group carries a bottom margin that would misalign it against the buttons, so that is removed. */
+.ytab-selection-row { align-items: center; }
+.ytab-selection-grow { flex: 1 1 18rem; min-width: 12rem; }
+.ytab-selection-grow .form-group { margin-bottom: 0; }
+
+/* The caption is a secondary line, not fine print: at 0.86rem in #64748b it was hard to read against the card's
+   tinted background, which is what makes small grey text feel like noise rather than information. */
+.ytab-metric-caption { font-size: 0.8rem; color: #5a6675; margin-top: 0.15rem; }
+.ytab-metric-label { font-weight: 500; }
+
+/* Inline metric card: label and value on one line, for wide cards with a short value. The caption, when there
+   is one, drops to its own line under both. */
+.ytab-metric-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.5rem; }
+.ytab-metric-row .ytab-metric-label { display: inline; font-size: 1.35rem; font-weight: 400; color: #334155; }
+.ytab-metric-row .ytab-metric-label::after { content: ":"; }
+.ytab-metric-row .ytab-metric-value { display: inline; font-size: 1.35rem; font-weight: 700; line-height: 1.3; }
+.ytab-metric-row .ytab-metric-caption { flex-basis: 100%; }
+
+/* A card's own heading had no size of its own, so it inherited one smaller than the sentence beneath it and the
+   hierarchy read upside down. The lead sentence under a heading is the card's summary, not fine print. */
+/* The sentence under the heading is the card's summary -- what the tab is telling you before any control. It
+   carried Bootstrap's body size and a muted grey, which put it below the table labels in the hierarchy. */
+.ytab-card > h3 + p,
+.ytab-card > .shiny-html-output > p:first-child {
+  font-size: 1.15rem !important; font-weight: 600; color: #1f2937; margin-bottom: 0.9rem;
+}
+
+/* The method chooser above a method's card: one row, on its own surface, so it reads as the switch between the
+   cards below rather than as a control that lost its panel. */
+.ytab-method-switch {
+  padding: 0.6rem 0.9rem; margin-bottom: 0.75rem;
+  background: #ffffff; border: 1px solid #e4eaf0; border-radius: 12px;
+}
+/* This chooser decides which analysis the whole tab is about, so it carries the weight of a heading rather
+   than of an ordinary form label, and its options are read as often as the label itself. */
+.ytab-method-switch .control-label {
+  font-size: 1.5rem !important; font-weight: 700 !important; color: #0f172a; margin-right: 1.1rem;
+}
+.ytab-method-switch .shiny-options-group { display: inline-flex; flex-wrap: wrap; gap: 0 1.5rem; }
+/* !important because Bootstrap sizes labels and the spans inside them separately, and whichever of those two
+   wins is not worth discovering again: this chooser decides what the whole tab is about. */
+.ytab-method-switch .radio label,
+.ytab-method-switch .radio-inline,
+.ytab-method-switch .radio-inline span,
+.ytab-method-switch label span {
+  font-size: 1.35rem !important; font-weight: 600 !important; color: #1f2937;
+}
+.ytab-method-switch input[type="radio"] { width: 1.05rem; height: 1.05rem; margin-right: 0.3rem; }
+.ytab-method-switch .form-group { margin-bottom: 0; }
+
+/* Method notes as points: the right column is wide, so each fact gets its own line and its own lead-in rather
+   than being buried mid-sentence. */
+.ytab-method-points { margin: 0.2rem 0 0.8rem; padding-left: 1.15rem; }
+.ytab-method-points li { margin-bottom: 0.5rem; line-height: 1.55; }
+.ytab-method-points li b { color: #0f172a; }
+
+/* The Methods drawer's own summary: it is the heading of the right-hand column, so it is sized like one rather
+   than like the disclosure caret it shares markup with. */
+.ytab-technical-details > summary { font-size: 1.3rem !important; font-weight: 700 !important; color: #0f172a; }
+
+/* ---------------------------------------------------------------------------------------------------------
+   Card and panel headings, in one place.
+
+   These are set by hand because Bootstrap gives h3-h6 sizes that descend below the body text around h5, so a
+   panel heading ended up smaller than the sentence underneath it. Each card type is named explicitly rather
+   than styling h3-h6 globally, so a heading inside a card's content keeps its own scale.
+   --------------------------------------------------------------------------------------------------------- */
+.ytab-card > h3,
+.ytab-release-card > .ytab-plot-card-header h4,
+.ytab-release-card > .ytab-table-card-header h4,
+.ytab-plot-card-header h4,
+.ytab-table-card-header h4 {
+  font-size: 1.6rem !important; font-weight: 700 !important; color: #0f172a; margin: 0 0 0.45rem;
+}
+.ytab-control-panel > h4 {
+  font-size: 1.6rem !important; font-weight: 700 !important; color: #0f172a; margin: 0 0 0.6rem;
+}
+
+/* Stacked metric cards -- the summary strip at the top of Multi-condition and the other results views. The
+   label and caption were 0.86rem, small enough that the figure they describe was unreadable at a glance. */
+.ytab-metric-card .ytab-metric-label { font-size: 1rem; font-weight: 600; color: #334155; }
+.ytab-metric-card .ytab-metric-value { font-size: 1.75rem; font-weight: 700; }
+.ytab-metric-card .ytab-metric-caption { font-size: 0.95rem; color: #5a6675; }
+/* The inline variant keeps its own one-line sizing. */
+.ytab-metric-row .ytab-metric-label,
+.ytab-metric-row .ytab-metric-value { font-size: 1.35rem; }
+
+/* The laboratory's mark. Sized by its height so the aspect ratio is the image's own, and given a little
+   opacity in rest so it reads as provenance rather than as a control competing with the project switcher. */
+.ytab-lab-logo { display: inline-flex; align-items: center; margin-left: 0.9rem; line-height: 0; }
+.ytab-lab-logo img { height: 30px; width: auto; display: block; opacity: 0.92; transition: opacity 120ms ease; }
+.ytab-lab-logo:hover img, .ytab-lab-logo:focus-visible img { opacity: 1; }
+.ytab-lab-logo:focus-visible { outline: 2px solid var(--blue, #55a7ff); outline-offset: 3px; border-radius: 4px; }
+/* In the hero the mark is the only thing on the right, so it takes that space: sized against the viewport,
+   sitting above the wave motif, and nudged off the text column. The disc behind it keeps the white arrows
+   legible wherever the gradient happens to be light. */
+.ytab-hero-mark {
+  position: relative; z-index: 2; margin-left: auto; margin-right: clamp(1rem, 6vw, 6rem);
+  flex: 0 0 auto; padding: 1.15rem; border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, rgba(10, 32, 52, .62), rgba(10, 32, 52, 0) 72%);
+}
+.ytab-hero-mark { display: flex; flex-direction: column; align-items: center; gap: .55rem; text-decoration: none; }
+.ytab-hero-mark img { height: clamp(104px, 15vw, 188px); opacity: .95; }
+/* The laboratory's name under the mark: small, letter-spaced and quiet, so it labels the logo without
+   competing with the wordmark across the hero. */
+.ytab-lab-logo-caption {
+  font-size: .78rem; font-weight: 600; letter-spacing: .09em; text-transform: uppercase;
+  color: #a9c6da; text-align: center; line-height: 1.25; max-width: 13em;
+}
+.ytab-hero-mark:hover .ytab-lab-logo-caption, .ytab-hero-mark:focus-visible .ytab-lab-logo-caption { color: #d7e7f3; }
+.ytab-hero-mark:hover img, .ytab-hero-mark:focus-visible img { opacity: 1; }
+/* Below the breakpoint the hero stacks and the copy needs the width, so the mark steps aside. */
+@media (max-width: 900px) { .ytab-hero-mark { display: none; } }
+@media (max-width: 720px) { .ytab-lab-logo img { height: 24px; } }
+
+/* ---------------------------------------------------------------------------------------------------------
+   The landing page fits the window.
+   At 1440x900 it stood 1185px against a 900px viewport, so the last two cards were below the fold on a
+   laptop -- the first thing a new user sees was the part they had to go looking for. The hero and the card
+   grid are sized against the viewport height instead of fixed rems.
+
+   Guarded by a min-height query: on a genuinely short window there is nothing to be gained by squeezing, and
+   scrolling is the right answer, so the compaction only applies where it can succeed.
+   --------------------------------------------------------------------------------------------------------- */
+@media (min-height: 620px) {
+  .ytab-landing { min-height: 100vh; display: flex; flex-direction: column; padding-bottom: clamp(1rem, 2.5vh, 2rem); }
+  .ytab-hero { min-height: 0; padding-top: clamp(1.25rem, 4vh, 3rem); padding-bottom: clamp(1.75rem, 5vh, 4rem); }
+  .ytab-hero h1 { font-size: clamp(3rem, 7.5vh, 6rem); margin: clamp(.4rem, 1.4vh, 1.2rem) 0 clamp(.3rem, .8vh, .7rem); }
+  .ytab-hero h2 { font-size: clamp(1.15rem, 2.6vh, 1.9rem); }
+  .ytab-hero p { font-size: clamp(.95rem, 1.7vh, 1.1rem); margin: clamp(.3rem, .9vh, .8rem) 0; }
+  .ytab-hero-pills { margin-top: clamp(.5rem, 1.4vh, 1.35rem); gap: .45rem; }
+  .ytab-hero-pills span { padding: .3rem .7rem; font-size: .86rem; }
+  .ytab-hero-help { margin-top: clamp(.5rem, 1.4vh, 1.1rem); }
+  .ytab-entry-grid { margin-bottom: 0; gap: clamp(.7rem, 1.6vh, 1.2rem); }
+  .ytab-entry-grid .ytab-card { padding: clamp(.9rem, 2vh, 1.4rem); }
+  .ytab-entry-grid .ytab-card h3 { font-size: clamp(1.05rem, 2.1vh, 1.35rem); }
+  .ytab-entry-grid .ytab-card p { margin: .35rem 0; font-size: clamp(.88rem, 1.55vh, 1rem); line-height: 1.4; }
+  .ytab-entry-grid .ytab-card .ytab-card-eyebrow { font-size: .7rem; }
+  .ytab-entry-grid .ytab-actions { margin-top: clamp(.45rem, 1.2vh, .9rem); }
+  .ytab-entry-grid .btn { padding: .4rem .85rem; }
+  .ytab-entry-grid .form-group, .ytab-entry-grid .shiny-input-container { margin-bottom: clamp(.35rem, 1vh, .75rem); }
+  .ytab-hero-mark img { height: clamp(88px, 13vh, 170px); }
+}
+
+/* Shorter laptops (around 1280x800 once the browser chrome is taken off) need a little more than the vh
+   clamps give on their own, so the hero gives up some of its padding and the wordmark some of its size. */
+@media (min-height: 620px) and (max-height: 870px) {
+  .ytab-hero { padding-top: 1rem; padding-bottom: 1.4rem; }
+  .ytab-hero h1 { font-size: clamp(2.6rem, 6.5vh, 4rem); }
+  .ytab-hero-pills { margin-top: .5rem; }
+  .ytab-hero-pills span { padding: .25rem .6rem; font-size: .8rem; }
+  .ytab-entry-grid { gap: .7rem; }
+  .ytab-entry-grid .ytab-card { padding: .85rem 1rem; }
+}
+
+/* Very short windows (a 1366x768 laptop leaves about 720px). The feature pills are the one thing on the
+   hero that is purely decorative -- they name the tabs the navigation already carries -- so they go first,
+   rather than shrinking the text everything else depends on. */
+@media (min-height: 620px) and (max-height: 760px) {
+  .ytab-hero-pills { display: none; }
+  .ytab-hero { padding-top: .85rem; padding-bottom: 1.1rem; }
+  .ytab-hero h2 { font-size: 1.15rem; }
 }

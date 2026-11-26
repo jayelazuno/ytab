@@ -18,7 +18,13 @@ landing_ui <- function(species_choices, detected_cpu, shinyfiles_available) {
           tags$span("Screen planning")),
         tags$div(class = "ytab-hero-help",
           actionLink("open_help_methods", "Methods"), actionLink("open_datasets", "Datasets"), actionLink("open_help_tutorial", "Tutorial"),
-          actionLink("open_help_release", "Release notes"), actionLink("open_search", "Search")))),
+          actionLink("open_help_release", "Release notes"), actionLink("open_search", "Search"),
+          # The Documentation card used to carry these two. Methods, Tutorial and the rest were already
+          # here, so the card only repeated them -- but these were nowhere else.
+          actionLink("view_setup_guide", "Setup guide"), actionLink("show_launch_command", "Launch command"))),
+      # The mark sits in the hero's own space on the right, over the wave, rather than as a small image
+      # among the text links. It is the only thing out there, so it can carry some size.
+      ytab_lab_logo("ytab-lab-logo ytab-hero-mark", caption = "Gene Regulatory Evolution")),
     uiOutput("landing_warning"),
     tags$section(class = "ytab-entry-grid",
       panel_card(tagList(tags$span(class = "ytab-card-eyebrow", "Build"), "Start a dataset from FASTQ files"),
@@ -68,10 +74,5 @@ landing_ui <- function(species_choices, detected_cpu, shinyfiles_available) {
         tags$div(class="ytab-actions", actionButton("refresh_projects", "Refresh datasets", class="btn-secondary ytab-button"),
           uiOutput("open_project_action")),
         uiOutput("selected_project_preview")),
-      uiOutput("demo_project_card"),
-      panel_card(tagList(tags$span(class = "ytab-card-eyebrow", "Reference"), "Documentation"), tags$p("The methods, tutorial and setup guide are included with YTAB and work offline."),
-        tags$div(class="ytab-actions", actionButton("view_setup_guide", "View setup guide", class="btn-secondary ytab-button"),
-          actionButton("show_launch_command", "Show launch command", class="btn-secondary ytab-button")),
-        uiOutput("documentation_guidance"))),
-    tags$section(class="ytab-low-memory", low_memory_note()))
+      uiOutput("demo_project_card")))
 }

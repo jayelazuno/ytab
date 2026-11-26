@@ -1,5 +1,28 @@
 # Release notes
 
+## v2 (2026-11-25)
+
+**Saving a plot gives you the plot on screen.** Downloads capture the figure in the browser instead of
+redrawing it on the server, so what is saved is what is being looked at. PNG comes out at about 300 dpi, and
+**SVG replaces PDF** — vector, and what a journal wants. Table downloads carry the columns and rows on
+screen, for the comparison, pair or model currently selected.
+
+**Figures from the command line.** `ytab figure TAB RUN_DIR PROJECT_CONFIG` writes the app's own figure for
+essentiality, treated vs control, multi-condition, genetic interactions, normalization or cross-species.
+`ytab figure TAB --list` names a tab's plots. Needs `chromote` and a Chrome or Chromium.
+
+**Essentiality reports one model at a time.** A *View* chooser — HMM, Hybrid, Compare models — decides what
+the cards count, what the plots draw and which columns the gene table carries. Results open on the HMM, which
+needs no labels and is the only model available for most species. The chromosome box now takes any number of
+chromosomes: none for a genome overview, one for the detailed track, several to compare their insertion
+landscapes.
+
+**Gene coordinates are written by the pipeline**, so a gene can be placed on a chromosome without re-reading
+the annotation. Results made before this can gain them from the Results tab without being refitted.
+
+**Faster.** The genome overview draws one band per run of windows in the same state rather than one per
+window: 8.3 s to 1.6 s on a 13-chromosome genome, with the same picture.
+
 ## 2026-11-10: one dataset ships, and a launcher to start it
 
 **Downloading and starting YTAB**

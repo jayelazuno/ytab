@@ -183,11 +183,38 @@ ytab_save_ggplot <- function(file, plot, width = 9, height = 7) {
 }
 ytab_pdf_device <- function() if (isTRUE(capabilities("cairo"))) grDevices::cairo_pdf else grDevices::pdf
 
-ytab_plot_downloads_ui <- function(id, tables = c(table = "Download table")) {
-  tags$div(class = "ytab-actions",
-    downloadButton(paste0(id, "_download_png"), "Download plot (PNG)"),
-    downloadButton(paste0(id, "_download_pdf"), "Download plot (PDF)"),
+# `capture = TRUE` saves the plotly figure on screen rather than a server-side rebuild of it: the buttons are
+# ordinary action buttons, and the browser writes the file. PDF is unavailable that way -- plotly.js emits SVG,
+# which is vector and the better input to a manuscript anyway.
+ytab_plot_downloads_ui <- function(id, tables = c(table = "Download table"), capture = FALSE) {
+  plot_buttons <- if (isTRUE(capture))
+    list(actionButton(paste0(id, "_capture_png"), "Download plot (PNG)", icon = icon("download"), class = "btn-default"),
+         actionButton(paste0(id, "_capture_svg"), "Download plot (SVG)", icon = icon("download"), class = "btn-default"))
+  else
+    list(downloadButton(paste0(id, "_download_png"), "Download plot (PNG)"),
+         downloadButton(paste0(id, "_download_pdf"), "Download plot (PDF)"))
+  tags$div(class = "ytab-actions", plot_buttons,
     lapply(names(tables), function(name) downloadButton(paste0(id, "_download_", name), tables[[name]])))
+}
+
+# Wires those two buttons to the figure in `output_id`. `name` supplies the file name, without extension, and
+# is a function so it can follow whatever the user currently has selected.
+ytab_plot_capture_server <- function(input, output, session, id, output_id, name) {
+  for (format in c("png", "svg")) local({
+    extension <- format
+    observeEvent(input[[paste0(id, "_capture_", extension)]], {
+      session$sendCustomMessage("ytab-capture-plot", list(
+        target = session$ns(output_id), format = extension,
+        filename = paste0(name(), ".", extension),
+        status = session$ns(paste0(id, "_capture_status"))))
+    }, ignoreInit = TRUE)
+  })
+  observeEvent(input[[paste0(id, "_capture_status")]], {
+    if (identical(input[[paste0(id, "_capture_status")]], "missing"))
+      showNotification("The plot is not on screen yet.", type = "warning")
+    if (identical(input[[paste0(id, "_capture_status")]], "failed"))
+      showNotification("The browser could not save this plot.", type = "error")
+  }, ignoreInit = TRUE)
 }
 
 # Methodology reference for a method adapted from another tool; the only place such tools are named in the app.

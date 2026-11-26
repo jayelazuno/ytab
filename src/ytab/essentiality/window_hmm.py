@@ -361,7 +361,12 @@ def gene_table(genes, chrom_index, gamma_by_chrom, keep_by_chrom, settings, chai
     rows = []
     for gene in genes:
         ws = gene_windows(gene, settings.window, settings) if gene["chrom"] in chrom_index else []
-        row = dict(ORF=gene["id"], Name=gene["name"], chromosome=gene["chrom"], strand=gene["strand"], windows=len(ws))
+        # The span comes from the CDS blocks the windows are already derived from. Without it nothing downstream
+        # can draw a gene against position, which is what a per-gene chromosome track needs.
+        blocks = gene.get("blocks") or []
+        span = (min(a for a, _ in blocks), max(b for _, b in blocks)) if blocks else (None, None)
+        row = dict(ORF=gene["id"], Name=gene["name"], chromosome=gene["chrom"], start=span[0], end=span[1],
+                   strand=gene["strand"], windows=len(ws))
         if not ws:rows.append(row | dict(call="N/A", status="no windows")); continue
         idx = np.array([w for w, _ in ws]); ov = np.array([o for _, o in ws], dtype=float)
         kp = keep_by_chrom[gene["chrom"]][idx]; mappable = float(ov[kp].sum()/ov.sum())

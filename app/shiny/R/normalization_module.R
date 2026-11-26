@@ -31,7 +31,7 @@ normalization_site_ui <- function() ytab_two_column_layout(
       conditionalPanel("input.norm_pair_plot == 'pca'",
         selectInput("norm_pca_colour", "Colour by", c("Role" = "role", "Pool" = "pool", "Library" = "display_name"), "role"),
         checkboxInput("norm_pca_labels", "Name the libraries", FALSE)),
-      ytab_plot_downloads_ui("norm", c(pairs = "Download pair diagnostics (TSV)", gene_agreement = "Download gene-level agreement (TSV)"))),
+      ytab_plot_downloads_ui("norm", c(pairs = "Download pair diagnostics (TSV)", gene_agreement = "Download gene-level agreement (TSV)"), capture = TRUE)),
     downloadButton("norm_download_stats", "Download per-sample statistics (TSV)")),
   main = tagList(
     # The window height sizes the panels so that all chosen methods fit on screen.
@@ -440,14 +440,16 @@ normalization_server <- function(input, output, session, repo_root, active, acti
     })
   })
 
-  output$norm_stats_table <- DT::renderDT({
+  # The screen shows the selected subset under display names; the download used to copy the whole run.
+  norm_stats_display <- reactive({
     d <- shown()$stats; req(nrow(d) > 0)
     d$method <- as.character(norm_method_short_label(d$method))
     for (k in c("density", "mean", "nzmean", "nzmedian", "max", "total", "skew", "kurtosis")) d[[k]] <- signif(d[[k]], 4)
     d <- d[, c("display_name", "role", "method", "density", "mean", "nzmean", "nzmedian", "max", "total", "skew", "kurtosis")]
     names(d) <- c("Sample", "Role", "Method", "Density", "Mean", "Nonzero mean", "Nonzero median", "Max", "Total", "Skew", "Kurtosis")
-    ytab_datatable(d, page_length = 10L)
+    d
   })
+  output$norm_stats_table <- DT::renderDT(ytab_datatable(norm_stats_display(), page_length = 10L))
   output$norm_method_guide <- renderUI({
     catalogue <- tryCatch(jsonlite::fromJSON(paste(system2(python_bin(), c(file.path(repo_root, "scripts", "local", "ytab_normalize.py"), "--list-methods"),
                                                            stdout = TRUE, stderr = FALSE), collapse = "\n")), error = function(e) NULL)
@@ -459,11 +461,12 @@ normalization_server <- function(input, output, session, repo_root, active, acti
 
   for (format in c("png", "pdf")) local({
     ext <- format
+    ytab_plot_capture_server(input, output, session, "norm", "norm_plotly", function() paste0(project_display_label(active()), "_normalization_", basename(selected_run())))
     output[[paste0("norm_download_", ext)]] <- downloadHandler(filename = function() paste0(project_display_label(active()), "_normalization_agreement_", basename(selected_run()), ".", ext),
       content = function(file) ytab_save_ggplot(file, pair_plot(), width = 11, height = 7))
   })
   output$norm_download_stats <- downloadHandler(filename = function() paste0(project_display_label(active()), "_normalization_statistics_", basename(selected_run()), ".tsv"),
-    content = function(file) file.copy(file.path(selected_run(), "plots", "native_stats.tsv"), file))
+    content = function(file) utils::write.table(norm_stats_display(), file, sep = "\t", quote = FALSE, row.names = FALSE, na = ""))
   output$norm_download_pairs <- downloadHandler(filename = function() paste0(project_display_label(active()), "_normalization_pairs_", basename(selected_run()), ".tsv"),
     content = function(file) file.copy(file.path(selected_run(), "experiment", "comparison_diagnostics.tsv"), file))
   output$norm_download_gene_agreement <- downloadHandler(filename = function() paste0(project_display_label(active()), "_normalization_gene_agreement_", basename(selected_run()), ".tsv"),

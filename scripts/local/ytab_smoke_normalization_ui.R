@@ -34,7 +34,8 @@ stopifnot(grepl('value="betageom" selected', ui_html, fixed = TRUE), grepl("sele
 stopifnot(grepl('data-value="site"', ui_html, fixed = TRUE), !grepl("Site Normalization", ui_html, fixed = TRUE),
           !grepl("Site normalization", ui_html, fixed = TRUE))
 stopifnot(grepl("normalization_tabs", ui_html, fixed = TRUE), !grepl('data-value="midlc"', ui_html, fixed = TRUE), grepl("MidLC common saturation", ui_html, fixed = TRUE), !grepl("Classifier)", ui_html, fixed = TRUE),
-          grepl("norm_download_pdf", ui_html, fixed = TRUE), grepl("12.4%", ui_html, fixed = TRUE))
+          grepl("norm_capture_png", ui_html, fixed = TRUE), grepl("norm_capture_svg", ui_html, fixed = TRUE),
+          !grepl("norm_download_pdf", ui_html, fixed = TRUE), grepl("12.4%", ui_html, fixed = TRUE))
 
 started <- NULL
 fake_jobs <- list(job_is_running = function() FALSE, start_job = function(command, args, project_config, stage, ...) started <<- list(args = args, stage = stage))
@@ -62,7 +63,7 @@ testServer(function(input, output, session)
   session$setInputs(norm_methods = c("betageom", "ttr"), norm_plot = "pairs")
   plot_json <- output$norm_plotly; stopifnot(grepl("BGC", plot_json, fixed = TRUE), grepl("Unnormalized", plot_json, fixed = TRUE))   # kept as the reference
   stopifnot(grepl("Nonzero median", output$norm_stats_table, fixed = TRUE), grepl("Skew", output$norm_stats_table, fixed = TRUE))
-  for (id in c("norm_download_png", "norm_download_pdf", "norm_download_stats", "norm_download_pairs", "norm_native_png_betageom", "norm_native_pdf_ttr")) {
+  for (id in c("norm_download_stats", "norm_download_pairs", "norm_native_png_betageom", "norm_native_pdf_ttr")) {
     path <- output[[id]]; stopifnot(file.size(path) > 100) }
   session$setInputs(norm_trim = .05, norm_target = 100, norm_run = 1)   # a run normalizes with every method
   stopifnot(identical(started$stage, "site_normalization"), !("--method" %in% started$args), grepl("ytab_normalize_project.py$", started$args[[1L]]))

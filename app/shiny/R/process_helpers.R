@@ -64,3 +64,21 @@ normalize_local_directory <- function(path) {
   if (!nzchar(path) || !dir.exists(path)) stop("FASTQ directory does not exist: ", path, call. = FALSE)
   normalizePath(path, winslash = "/", mustWork = TRUE)
 }
+
+# A command-line flag and its value travel together.
+#
+# Argument vectors are assembled with c(), and c() silently drops NULL and character(0). So
+# c("--hmm-run", value) with an empty value yields a bare "--hmm-run", which then swallows whatever flag
+# comes next as its value -- the job starts with arguments nobody wrote, instead of failing. Optional flags
+# are therefore omitted whole when the user left the field empty; required ones stop with a message naming
+# the flag.
+ytab_flag <- function(flag, value, required = FALSE) {
+  value <- value %||% character(0)
+  value <- as.character(value)
+  value <- value[!is.na(value) & nzchar(trimws(value))]
+  if (!length(value)) {
+    if (isTRUE(required)) stop(sprintf("No value for %s.", flag), call. = FALSE)
+    return(character(0))
+  }
+  c(flag, value)
+}

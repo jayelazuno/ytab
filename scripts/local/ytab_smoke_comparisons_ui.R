@@ -7,7 +7,7 @@ self <- normalizePath(sub("^--file=", "", grep("^--file=", args, value = TRUE)[[
 root <- normalizePath(file.path(dirname(self), "../.."), winslash = "/")
 suppressPackageStartupMessages({library(shiny); library(bslib)})
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
-for (name in c("job_manager.R", "project_discovery.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R",
+for (name in c("job_manager.R", "job_progress.R", "process_helpers.R", "glabrata_annotation_lookup.R", "project_discovery.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R",
                "table_display_helpers.R", "analysis_runs.R", "design_support.R", "reference_projects.R", "glabrata_annotation_lookup.R", "normalization_module.R", "ui_fitness.R", "treated_vs_control.R", "comparisons_module.R"))
   source(file.path(root, "app/shiny/R", name))
 python <- unname(Sys.which("python")); config <- file.path(root, "output/projects/Zn_toxicity_screen/config/project.yaml")
@@ -51,7 +51,20 @@ testServer(function(input, output, session)
   session$setInputs(mc_plot = "volcano", mc_pair = "Zn vs mock"); stopifnot(grepl("plotly", output$mc_plotly, fixed = TRUE), grepl("q_all_pairs", output$mc_table, fixed = TRUE))
   session$setInputs(mc_plot = "correlation"); stopifnot(grepl("two non-reference conditions", output$mc_plot_frame$html, fixed = TRUE))
   session$setInputs(mc_plot = "volcano")
+  # A download is a copy of the table on screen, not of the run's file. file.size() only proves something was
+  # written; these compare the columns the user would receive against the ones the table is rendering, and
+  # the row count against the chosen pair. The pairs download used to hand back every pair in the run.
+  shown_columns <- function(id) {
+    html <- jsonlite::fromJSON(output[[id]])$x$container
+    regmatches(html, gregexpr("(?<=<th>)[^<]+", html, perl = TRUE))[[1]]
+  }
+  written_table <- function(id) utils::read.delim(output[[id]], check.names = FALSE, colClasses = "character")
   for (id in c("mc_download_png", "mc_download_pdf", "mc_download_anova", "mc_download_pairs")) stopifnot(file.size(output[[id]]) > 100)
+  mc_shown <- shown_columns("mc_table"); mc_written <- written_table("mc_download_pairs")
+  stopifnot(length(mc_shown) > 0, identical(names(mc_written), mc_shown))
+  stopifnot(all(mc_written$ORF %in% utils::read.delim(output$mc_download_anova, colClasses = "character")$ORF))
+  cat(sprintf("  multi-condition download matches the table: %d columns, %d rows for the chosen pair\n",
+              ncol(mc_written), nrow(mc_written)))
   # Genetic interactions: strains from the sample sheet, run command
   session$setInputs(gi_norm_run = norm, gi_method = "betageom", gi_strain_column = "background", gi_reference = "yH298", gi_query = "yH299",
                     gi_fdr = .05, gi_rope = .5, gi_correction = "bh", gi_confidence = .95, gi_run = 1)
@@ -62,5 +75,8 @@ testServer(function(input, output, session)
   for (choice in c("scatter", "forest", "volcano")) { session$setInputs(gi_plot = choice); stopifnot(grepl("plotly", output$gi_plotly, fixed = TRUE)) }
   stopifnot(grepl("delta_lower", output$gi_table, fixed = TRUE))
   for (id in c("gi_download_png", "gi_download_pdf", "gi_download_genes")) stopifnot(file.size(output[[id]]) > 100)
+  gi_shown <- shown_columns("gi_table"); gi_written <- written_table("gi_download_genes")
+  stopifnot(length(gi_shown) > 0, identical(names(gi_written), gi_shown))
+  cat(sprintf("  genetic-interaction download matches the table: %d columns, %d rows\n", ncol(gi_written), nrow(gi_written)))
 })
 cat("PASS\n")

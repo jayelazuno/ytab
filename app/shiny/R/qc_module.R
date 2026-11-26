@@ -79,7 +79,7 @@ qc_theme_ui <- function(id, extra = NULL, lead = NULL) ytab_two_column_layout(
       uiOutput(paste0("qcp_", id, "_choice")),
       uiOutput(paste0("qcp_", id, "_options")),
       lead,
-      ytab_plot_downloads_ui(paste0("qcp_", id), c(data = "Download plotted data (TSV)")),
+      ytab_plot_downloads_ui(paste0("qcp_", id), c(data = "Download plotted data (TSV)"), capture = TRUE),
       qc_display_controls(paste0("qcp_", id), heatmap = id %in% c("saturation_bias", "agreement"))),
     extra),
   main = tagList(uiOutput(paste0("qcp_", id, "_card"))))
@@ -460,13 +460,11 @@ qc_table_server <- function(input, output, session, repo_root, active, active_pr
     output[[paste0(prefix, "_plotly")]] <- plotly::renderPlotly({
       b <- plot_reactive(); tvc_plotly(b$plot) |> plotly::layout(legend = list(orientation = "h", y = -0.32, yanchor = "top"), margin = list(b = 90))
     })
-    for (format in c("png", "pdf")) local({
-      ext <- format
-      output[[paste0(prefix, "_download_", ext)]] <- downloadHandler(
-        filename = function() paste0(project_display_label(active()), "_qc_", gsub("[^A-Za-z0-9]+", "_", input[[paste0(prefix, "_plot")]] %||% id), ".", ext),
-        content = function(file) { s <- ytab_plot_customization_values(input, prefix, plot_reactive())
-          ytab_save_ggplot(file, ytab_static_labels(plot_reactive()$plot, s), width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) })
-    })
+    # The figure on screen is the plotly one, so the buttons capture it rather than redrawing it server-side:
+    # a second drawing is what let the essentiality downloads drift from their displays.
+    ytab_plot_capture_server(input, output, session, prefix, paste0(prefix, "_plotly"),
+                             function() paste0(project_display_label(active()), "_qc_",
+                                               gsub("[^A-Za-z0-9]+", "_", input[[paste0(prefix, "_plot")]] %||% id)))
     output[[paste0(prefix, "_download_data")]] <- downloadHandler(
       filename = function() paste0(project_display_label(active()), "_qc_", gsub("[^A-Za-z0-9]+", "_", input[[paste0(prefix, "_plot")]] %||% id), ".tsv"),
       content = function(file) { b <- plot_reactive(); d <- b$data[, !startsWith(names(b$data), "."), drop = FALSE]

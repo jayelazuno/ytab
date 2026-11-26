@@ -52,6 +52,11 @@ MODULES = {m.name: m for m in (
     Module("genetic-interactions", "ytab_genetic_interactions.py", "Hermes genetic interactions: strain x treatment response differences", project_option=None, force_option=None),
     Module("essentiality", "ytab_essentiality.py", "Essentiality for a project in one step: window HMM (label-free), current RF scores and the hybrid when labels are given", project_option=None, force_option=None),
     Module("cross-species", "ytab_cross_species.py", "Essentiality across species: HMM calls of one-to-one orthologs (S. cerevisiae hub) in two or more projects", project_option=None, force_option=None),
+    # Renders the app's own plotly figure through a headless browser, so a figure for a paper is the figure the
+    # app shows rather than a second drawing of it. Takes the tab, then the run directory, then the config.
+    Module("figure", "ytab_figure.R",
+           "A PNG or SVG of any analysis run's plot, as the app draws it (needs chromote and Chrome); `figure TAB --list` names a tab's plots",
+           project_option=None, force_option=None, workflow=False, interpreter="Rscript"),
     Module("window-hmm", "ytab_window_hmm.py", "Label-free window HMM essentiality for any yeast (haploid reference FASTA + GFF + hit files)", project_option=None, force_option=None),
     Module("resource-bundle", "ytab_resource_bundle.py", "Bundle reprocessed projects (results, no FASTQ/BAM) with a checksum manifest, to open them in the app elsewhere", project_option=None, force_option=None),
     Module("datasets", "ytab_datasets.py", "Catalogue of the reprocessed public datasets (study, strain, transposon, accession, QC, results in the app) for the Datasets page", project_option=None, force_option=None),

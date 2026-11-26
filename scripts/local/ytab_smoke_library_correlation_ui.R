@@ -20,7 +20,7 @@ dir.create(file.path(project_root, "config")); config <- file.path(project_root,
 fixture_names <- utils::read.delim(file.path(fixture, "samples.tsv"))$name; fixture_samples <- sub("^.*::", "", fixture_names)
 
 ui_html <- as.character(tagList(qc_agreement_run_ui(), qc_theme_ui("agreement")))
-stopifnot(grepl("libcor_run", ui_html, fixed = TRUE), grepl("libcor_scope", ui_html, fixed = TRUE), grepl("qcp_agreement_download_png", ui_html, fixed = TRUE),
+stopifnot(grepl("libcor_run", ui_html, fixed = TRUE), grepl("libcor_scope", ui_html, fixed = TRUE), grepl("qcp_agreement_capture_png", ui_html, fixed = TRUE),
           grepl("libcor_download_pairs", ui_html, fixed = TRUE))
 stopifnot(grepl("Same pool (shared clones)", as.character(quality_control_ui_agreement_methods <- tags$div(tags$p("x"))), fixed = TRUE) || TRUE)
 

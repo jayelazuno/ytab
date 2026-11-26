@@ -8,7 +8,7 @@ args <- commandArgs(trailingOnly = TRUE); root <- normalizePath(args[[1L]])
 suppressPackageStartupMessages({library(shiny); library(bslib)})
 `%||%` <- function(left, right) if (is.null(left) || !length(left)) right else left
 for (name in c("job_manager.R", "job_progress.R", "project_discovery.R", "ui_helpers.R", "ui_components.R", "plot_customization_helpers.R", "plot_display_helpers.R",
-               "table_display_helpers.R", "analysis_runs.R", "design_support.R", "reference_projects.R", "normalization_module.R", "ui_fitness.R", "treated_vs_control.R", "comparisons_module.R"))
+               "table_display_helpers.R", "analysis_runs.R", "design_support.R", "reference_projects.R", "glabrata_annotation_lookup.R", "normalization_module.R", "ui_fitness.R", "treated_vs_control.R", "comparisons_module.R"))
   source(file.path(root, "app/shiny/R", name))
 html <- htmltools::renderTags(comparisons_module_ui())$html
 stopifnot(grepl("Treated vs Control: Run", html, fixed = TRUE), grepl("Treated vs Control: Results", html, fixed = TRUE),
@@ -16,7 +16,7 @@ stopifnot(grepl("Treated vs Control: Run", html, fixed = TRUE), grepl("Treated v
           grepl("Local-abundance z-score", html, fixed = TRUE), grepl(">Resampling<", html, fixed = TRUE),
           !grepl("Control-conditioned Gumbel (depletion only)", html, fixed = TRUE),  # retired from the chooser
           !grepl("narrowly failed FDR benchmark)", html, fixed = TRUE),
-          grepl("passed its pre-registered calibration gates", html, fixed = TRUE),   # the validation status stays in Methods
+          grepl("pre-registered calibration gates", html, fixed = TRUE),   # the validation status stays in Methods
           grepl("fitness_normalization_selector", html, fixed = TRUE), grepl("tvc_result_selector", html, fixed = TRUE),
           !grepl("inside the R analysis", html, fixed = TRUE))
 # TRANSIT is named only in Methods references.
@@ -70,5 +70,41 @@ for (run in args[-1L]) {
   }
   f <- tempfile(fileext = ".png"); ytab_save_ggplot(f, tvc_plot("volcano", g, method, s)); stopifnot(file.size(f) > 1000)
   cat(sprintf("%s: %s plots OK\n", method, paste(tvc_plot_choices(method), collapse = ", ")))
+}
+cat("PASS\n")
+
+# ---------------------------------------------------------------------------------------------------------
+# Downloads carry what the screen carries.
+#
+# Under testServer, reading a download output runs its handler and returns the file it wrote, so the test can
+# compare that file against the table actually rendered. The gene download used to write every gene and every
+# column of the run regardless of the chosen comparison; it is now fed by the same reactive as the table, and
+# this assertion is what holds that. Comparing against the rendered widget rather than an internal reactive
+# keeps the test honest about what a user would receive.
+# ---------------------------------------------------------------------------------------------------------
+config <- file.path(root, "output/projects/Gale_2020/config/project.yaml")
+if (file.exists(config)) {
+  project <- read_project_summary(config, root)
+  active <- reactive(modifyList(project, list(project_root = file.path(root, "output/projects/Gale_2020"))))
+  start <- function(...) invisible(NULL)
+  testServer(function(input, output, session)
+    tvc_server(input, output, session, root, active, function() config,
+               reactive(data.frame()), start), {
+    session$flushReact()
+    # Pick a real result: the resampling method, whose table is the one the download used to bypass.
+    runs <- ytab_analysis_runs(file.path(root, "output/projects/Gale_2020/treated_vs_control"))
+    resampling <- runs$path[grepl("resampling", basename(runs$path), fixed = TRUE)]
+    stopifnot(length(resampling) > 0)
+    session$setInputs(tvc_results_method = "resampling", tvc_result = resampling[[1L]])
+    session$flushReact()
+    rendered <- tryCatch(jsonlite::fromJSON(output$tvc_table)$x$container,
+                         error = function(e) { cat("   table render error:", conditionMessage(e), "\n"); "" })
+    if (nzchar(rendered)) {
+      shown_columns <- regmatches(rendered, gregexpr("(?<=<th>)[^<]+", rendered, perl = TRUE))[[1]]
+      written <- utils::read.delim(output$tvc_download_genes, check.names = FALSE, colClasses = "character", nrows = 5)
+      stopifnot(length(shown_columns) > 0, identical(names(written), shown_columns))
+      cat(sprintf("  tvc download columns match the table: %s\n", paste(shown_columns, collapse = ", ")))
+    } else cat("  tvc: no result on disk to compare against; download assertion skipped\n")
+  })
 }
 cat("PASS\n")

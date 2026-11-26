@@ -55,6 +55,8 @@ def main():
     p.add_argument("--normalization-run", required=True, type=Path); p.add_argument("--normalization")
     p.add_argument("--comparisons", help="Comma-separated comparison IDs (default: all included)")
     p.add_argument("--fdr", type=float, default=.05); p.add_argument("--output", required=True, type=Path)
+    p.add_argument("--dry-run", action="store_true",
+                   help="validate the inputs and report what would be written, then stop")
     a = p.parse_args()
     out = a.output.resolve()
     if out.exists() and any(out.iterdir()):p.exit(1, "ERROR: Output directory is nonempty; choose a new one\n")
@@ -74,6 +76,16 @@ def main():
     except (ValueError, KeyError, OSError) as error:p.exit(1, f"ERROR: {error}\n")
     missing = sorted({s for g in selected.values() for s in g["controls"]+g["treatments"] if s not in obs})
     if missing:p.exit(1, f"ERROR: Not in normalization run {a.normalization_run.name}: {', '.join(missing)}; rerun Site Normalization\n")
+    # Everything above validates; everything below computes. A dry run stops on this line, so what it reports is
+    # exactly what the real run has already checked -- the normalization exists and carries counts, the
+    # comparisons resolve, and every library they name is in the run.
+    if a.dry_run:
+        print(f"Dry run: {a.method} on {len(selected)} comparison(s), normalization {normalization}, FDR {a.fdr}")
+        for key, g in selected.items():
+            print(f"  {key}: {g['background']}, {g['condition']} "
+                  f"({len(g['controls'])} control(s), {len(g['treatments'])} treated)")
+        print(f"Would write: {out}")
+        return 0
     script = SCRIPTS/("ytab_resampling.py" if a.method == "resampling" else "ytab_control_conditioned_gumbel.py")
     results, combined = {}, []
     for i, (key, g) in enumerate(selected.items(), 1):

@@ -14,7 +14,7 @@ STATES = ("ES", "GD", "NE", "GA")
 
 MANIFEST_FIELDS = ("status", "contract", "project", "species", "libraries", "hmm_run", "models", "hybrid", "hmm", "calls",
                    "agreement", "chromosomes", "files")
-GENES = ("ORF", "Name", "chromosome", "hmm_score", "hmm_call")
+GENES = ("ORF", "Name", "chromosome", "start", "end", "hmm_score", "hmm_call")
 HYBRID_GENES = ("hybrid_score", "hybrid_essential", "agreement")
 # one row per window: the HMM posteriors, the most probable state ("unmappable" for masked windows) and the insertions
 WINDOWS = ("chromosome", "start", *(f"P_{s}" for s in STATES), "state", "insertions", "mappable")

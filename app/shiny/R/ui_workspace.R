@@ -12,7 +12,7 @@ workspace_ui <- function(detected_cpu) {
   tags$div(class="ytab-workspace",
     tags$header(class="ytab-workspace-header",
       actionLink("ytab_home",tagList(tags$b("YTAB"),tags$span("Yeast Transposon Analysis Browser")),class="ytab-workspace-brand",title="Home: choose or start a dataset"),
-      tags$div(class="ytab-workspace-project",project_badge(),project_switcher())),
+      tags$div(class="ytab-workspace-project",project_badge(),project_switcher(),ytab_lab_logo())),
     navbarPage(id="workspace_tabs", title=NULL, collapsible=TRUE, inverse=TRUE,
       header=job_progress_ui("global_job",compact=TRUE),
       tabPanel("Dataset",value="project",project_module_ui()),

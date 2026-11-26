@@ -10,16 +10,16 @@ cross_species_ui <- function() ytab_two_column_layout(
     tags$hr(),
     uiOutput("xs_result_selector"),
     radioButtons("xs_plot", "Plot", c("Shared and species-specific essential genes" = "sets", "Agreement between species" = "agreement")),
-    ytab_plot_downloads_ui("xs", c(orthologs = "Download ortholog calls (TSV)", sets = "Download gene sets (TSV)", pairwise = "Download pairwise agreement (TSV)"))),
+    ytab_plot_downloads_ui("xs", c(orthologs = "Download ortholog calls (TSV)", sets = "Download gene sets (TSV)", pairwise = "Download pairwise agreement (TSV)"), capture = TRUE)),
   main = tagList(
     uiOutput("xs_status"),
     ytab_plot_card("Essentiality across species", uiOutput("xs_plot_frame"), description = uiOutput("xs_plot_caption")),
     # The plot is the answer; the per-gene table folds away, as on the other tabs of this module.
     tags$details(class = "ytab-more-options", tags$summary("One-to-one orthologs, gene by gene"),
-                 tags$p(class = "text-muted", "Search a gene (any species' ID or name, or the S. cerevisiae ID) to see its essentiality score and call in every species."),
+                 tags$p(class = "text-muted", HTML("Search a gene (any species' ID or name, or the <em>S. cerevisiae</em> ID) to see its essentiality score and call in every species.")),
                  DT::DTOutput("xs_table")),
     ytab_methods_drawer(
-      tags$p(tags$b("Orthologs. "), "Each dataset's genes are mapped to S. cerevisiae systematic names with the ortholog table named in its dataset configuration (reference: orthology_file); an S. cerevisiae dataset is the hub itself. Only one-to-one orthologs are kept, and only genes scored by the HMM in every chosen species, so all species are compared on the same genes."),
+      tags$p(tags$b("Orthologs. "), HTML("Each dataset's genes are mapped to <em>S. cerevisiae</em> systematic names with the ortholog table named in its dataset configuration (reference: orthology_file); an <em>S. cerevisiae</em> dataset is the hub itself. Only one-to-one orthologs are kept, and only genes scored by the HMM in every chosen species, so all species are compared on the same genes.")),
       tags$p(tags$b("Calls. "), "Each species' label-free HMM score (P_ES_run, the posterior probability of a run of essential windows in the coding sequence) and call (essential when P_ES_run ≥ 0.5) from the dataset's newest essentiality run."),
       tags$p(tags$b("Agreement. "), "For each pair of species: Cohen's κ of the essential calls (agreement beyond chance; 1 = identical calls, 0 = chance) and the Spearman correlation of the scores. Differences combine biology (species-specific essentiality) with differences in library density and transposon; compare with the libraries' QC before reading a species-specific set as biology."),
       ytab_reference("Cohen J (1960). A coefficient of agreement for nominal scales. Educ Psychol Meas 20:37–46."),
@@ -150,6 +150,7 @@ cross_species_server <- function(input, output, session, repo_root, active, acti
     ytab_datatable(o, page_length = 10L)
   })
   name <- function(suffix) paste0(project_display_label(active()), "_cross_species_", basename(selected_run()), suffix)
+  ytab_plot_capture_server(input, output, session, "xs", "xs_plotly", function() paste0(sub("[.]$", "", name("")), "_", input$xs_plot %||% "sets"))
   for (format in c("png", "pdf")) local({
     ext <- format
     output[[paste0("xs_download_", ext)]] <- downloadHandler(filename = function() name(paste0("_", input$xs_plot %||% "sets", ".", ext)),

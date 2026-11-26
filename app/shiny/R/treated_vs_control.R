@@ -39,20 +39,51 @@ tvc_norm_default <- function(choices, preferred, current = NULL) {
   if (length(hit)) hit[[1L]] else values[[1L]]
 }
 
-tvc_methods_text <- function() ytab_methods_drawer(
-  tags$p(tags$b("Local-abundance z-score (default). "), "The replicate libraries of each condition are averaged; each gene's log2 fold change between the treated and control means is divided by the noise expected at the gene's abundance. The noise model is fitted to the two controls of each background (running SD of control–control log2 ratios against abundance, SD = m1 + m2·A^m3), and the call threshold is the 99th percentile of control–control |z|. Default input: BGC from the latest normalization run (gene totals of its normalized site counts, expressed per million of the mean library total so the 0.5 pseudocount means the same as with counts per million); total reads (counts per million) and any other normalization method can be chosen. Calls: depleted, enriched or none (one call per gene from the replicate means); the per-pool z-scores are kept as a diagnostic."),
-  tags$p(tags$b("Resampling. "), "A permutation test on the gene's normalized site counts in controls versus treated libraries (permuted within each pool when there are several), two-sided, Benjamini–Hochberg FDR. With BGC the treated libraries are recentred (trimmed sum) so that typical genes show no change. ", tags$b("Validation: "), "passed its pre-registered calibration gates with BGC (false discovery rate 6% on simulated Gale-like screens; 4.5% of null genes at p ≤ 0.05). Use it for hit lists with error control; the z-score ranks genes better but its calls are not error-controlled."),
-  tags$p(tags$b("Why two methods and not three. "), "A control-conditioned Gumbel test, which scores runs of consecutive depleted sites rather than the gene's change in abundance, was offered here previously. It is calibrated (false discovery rate 1%, no calls on null screens) but narrow: it needs at least two controls in the same library as the treated samples, it calls depletion only, and it makes calls on two of the fourteen public datasets reprocessed here \u2014 on the rest it either declines the design or flags no site at all, because a treated library sparse enough that zero is an ordinary count leaves no count low enough to be improbable. On Gale, where published calls exist, it recovers no published hit that the z-score and resampling miss between them. It remains available as ", tags$code("ytab control-gumbel"), " and is reported in the method comparison; comparisons already made with it still display."),
-  ytab_reference("The z-score follows Gale et al. 2020 (G3 10:3859–3870). The resampling test is adapted from TRANSIT's resampling (DeJesus et al. 2015, PLoS Comput Biol 11:e1004401); the Gumbel test is adapted from TRANSIT's Gumbel method (DeJesus et al. 2013, Bioinformatics 29:695–703)."),
-  tags$p("Commands: ", tags$code("ytab fitness"), " (z-score), ", tags$code("ytab treated-vs-control --method resampling"), "."))
+# One drawer per method, beside that method's own controls. A single drawer describing both meant the page
+# always carried the method you were not using, and its references and command line with it.
+# One drawer per method, written as a list rather than a paragraph: these are four separate facts -- what the
+# statistic is, what the noise model is, what goes in, what comes out -- and a reader wants whichever one they
+# came for, not a sentence to parse to find it.
+tvc_zscore_methods_text <- function() ytab_methods_drawer(
+  tags$ul(class = "ytab-method-points",
+    tags$li(tags$b("Statistic. "), "Replicate libraries of each condition are averaged; a gene's log2 fold change between the treated and control means is divided by the noise expected at that gene's abundance."),
+    tags$li(tags$b("Noise model. "), "Fitted to the controls of each background: running SD of control\u2013control log2 ratios against abundance, SD = m1 + m2\u00b7A^m3."),
+    tags$li(tags$b("Call threshold. "), "The 99th percentile of control\u2013control |z|."),
+    tags$li(tags$b("Input. "), "BGC from the latest normalization run by default; gene totals of its normalized site counts, per million of the mean library total, so the 0.5 pseudocount means the same as with CPM. Any other normalization can be chosen."),
+    tags$li(tags$b("Output. "), "One call per gene \u2014 depleted, enriched or none \u2014 from the replicate means. Per-pool z-scores are kept as a diagnostic."),
+    tags$li(tags$b("Where it is weak. "), "The threshold is how much two controls disagree, not an error rate, and the treated libraries are noisier than the controls it was fitted on. On the benchmark it made 64 false calls per null experiment with BGC, and its false discovery rate with planted effects was 15\u201355%. It is kept because it ", tags$b("ranks"), " better than anything else tested (precision at K +0.086 over resampling): use it to prioritise genes, and resampling for a list with an error rate.")),
+  ytab_reference("Follows Gale et al. 2020 (G3 10:3859\u20133870)."),
+  tags$p("Command: ", tags$code("ytab fitness"), "."))
 
+tvc_resampling_methods_text <- function() ytab_methods_drawer(
+  tags$ul(class = "ytab-method-points",
+    tags$li(tags$b("Statistic. "), "A permutation test on a gene's normalized site counts in control versus treated libraries, permuted within each pool when there are several. Two-sided, Benjamini\u2013Hochberg FDR."),
+    tags$li(tags$b("Null. "), "Enumerated exactly by grid convolution; Monte Carlo is the fallback."),
+    tags$li(tags$b("Input. "), "BGC by default. With BGC the treated libraries are recentred (trimmed sum) so that typical genes show no change."),
+    tags$li(tags$b("Validation. "), "Passed its pre-registered calibration gates with BGC: 0.05\u20130.075 false calls per null experiment, false discovery rate 6.3% against a 5% target. Across the other normalizations it ranged 6\u201312%."),
+    tags$li(tags$b("Where it is weak. "), "Power comes from the number of sites, so a gene with few sites cannot reach significance however far it moved.")),
+  ytab_reference("Adapted from TRANSIT's resampling (DeJesus et al. 2015, PLoS Comput Biol 11:e1004401)."),
+  tags$p("Command: ", tags$code("ytab treated-vs-control --method resampling"), "."))
+
+# The same stages the z-score's Run tab has: choose the inputs, see what will be written, preview it, run it,
+# watch it. Resampling had only a Run button, which on the costlier method is the wrong way round -- its default
+# is exact enumeration over every gene, so knowing what a run will do before it starts is worth more here.
 tvc_run_ui <- function() ytab_two_column_layout(
   controls = ytab_control_panel(uiOutput("tvc_run_title", inline = TRUE),
     uiOutput("tvc_inputs"),
+    uiOutput("tvc_normalization_note"),
     uiOutput("tvc_comparison_selector"),
+    uiOutput("tvc_selection_summary"),
+    tags$div(class = "ytab-actions",
+      actionButton("tvc_select_all", "Select all", class = "btn-secondary"),
+      actionButton("tvc_clear_selection", "Clear selection", class = "btn-secondary")),
     numericInput("tvc_fdr", "FDR", .05, min = .001, max = .25, step = .01),
-    actionButton("tvc_run", "Run", class = "btn-primary")),
-  main = tvc_methods_text())
+    radioButtons("tvc_execution_mode", "Execution mode",
+                 c("Preview analysis" = "preview", "Run analysis" = "run"), "preview", inline = TRUE),
+    uiOutput("tvc_run_summary"),
+    uiOutput("tvc_run_action"),
+    job_progress_ui("tvc_job")),
+  main = tvc_resampling_methods_text())
 
 # One results view for the three methods: the same controls, display options, plots and gene table, whichever method
 # made the result. Only the plots that test something method-specific differ (the z-score's control-control null, the
@@ -74,19 +105,24 @@ tvc_results_ui <- function() ytab_two_column_layout(
     uiOutput("tvc_comet_source"), uiOutput("tvc_comet_sets_selector"),
     textAreaInput("tvc_comet_genes", "Highlight my genes", "", rows = 2,
                   placeholder = "Gene names or IDs, separated by commas or new lines")),
-    ytab_plot_downloads_ui("tvc", c(genes = "Download genes (TSV)")),
+    ytab_plot_downloads_ui("tvc", c(genes = "Download genes (TSV)"), capture = TRUE),
     ytab_plot_customization_controls("tvc", include_points = TRUE, include_labels = FALSE, open = FALSE)),
   main = tagList(uiOutput("tvc_summary"),
     ytab_plot_card("Treated vs control", uiOutput("tvc_plot_frame"), description = uiOutput("tvc_plot_caption")),
-    ytab_table_card("Genes", DT::DTOutput("tvc_table")), tvc_methods_text()))
+    ytab_table_card("Genes", DT::DTOutput("tvc_table")), uiOutput("tvc_results_methods_text")))
 
+# The method chooser sits above the method's own card, so it needs the surrounding chrome a card gives: left
+# alone it reads as a stray control floating on the page background.
 tvc_run_tab_ui <- function() tagList(
-  radioButtons("tvc_method", "Method", tvc_method_choices, "zscore"),
+  tags$div(class = "ytab-method-switch",
+    radioButtons("tvc_method", "Method", tvc_method_choices, "zscore", inline = TRUE)),
   conditionalPanel("input.tvc_method == 'zscore'", fitness_run_ui()),
   conditionalPanel("input.tvc_method != 'zscore'", tvc_run_ui()))
 
 tvc_results_tab_ui <- function() tagList(
-  radioButtons("tvc_results_method", "Method", c(tvc_method_choices, "Compare methods" = "agreement"), "zscore"),
+  tags$div(class = "ytab-method-switch",
+    radioButtons("tvc_results_method", "Method", c(tvc_method_choices, "Compare methods" = "agreement"), "zscore",
+                 inline = TRUE)),
   conditionalPanel("input.tvc_results_method != 'agreement'", tvc_results_ui()),
   conditionalPanel("input.tvc_results_method == 'agreement'", tvc_agreement_ui()))
 
@@ -354,7 +390,52 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
   })
   tvc_norm <- reactive({ parts <- strsplit(input$tvc_norm_choice %||% "", "|", fixed = TRUE)[[1L]]
     if (length(parts) == 2L) list(run = parts[[1L]], method = parts[[2L]]) else NULL })
+  # The drawer follows the method whose result is on screen, so the page never carries the one you are not reading.
+  output$tvc_results_methods_text <- renderUI(
+    if (identical(input$tvc_results_method %||% "zscore", "resampling")) tvc_resampling_methods_text()
+    else tvc_zscore_methods_text())
   output$tvc_run_title <- renderUI(names(tvc_method_labels)[tvc_method_labels == (input$tvc_method %||% "resampling")])
+
+  # What this method will accept, said before the Run button rather than in a red toast after it.
+  output$tvc_normalization_note <- renderUI({
+    method <- input$tvc_method %||% "resampling"
+    allowed <- tvc_allowed_methods[[method]] %||% character()
+    if (!length(allowed)) return(NULL)
+    # The short names only: Site Normalization is where these are chosen and explained.
+    helpText(sprintf("%s accepts %s; BGC is the default. A normalization that reshapes counts rather than scaling them is not offered, because the test needs the counts it was given.",
+                     if (identical(method, "gumbel")) "The Gumbel" else "Resampling",
+                     paste(c(betageom = "BGC", aBGC = "aBGC", ttr = "TTR", totreads = "CPM",
+                             nzmean = "non-zero mean", midlc = "MidLC", quantile = "quantile",
+                             zinfnb = "ZINB")[allowed], collapse = ", ")))
+  })
+  output$tvc_selection_summary <- renderUI({
+    d <- design(); chosen <- input$tvc_comparisons
+    if (!nrow(d)) return(NULL)
+    tags$p(class = "text-muted", sprintf("%d of %d comparisons selected.", length(chosen), nrow(d)))
+  })
+  observeEvent(input$tvc_select_all, {
+    d <- design(); req(nrow(d) > 0)
+    updateSelectizeInput(session, "tvc_comparisons", selected = d$comparison_id)
+  }, ignoreInit = TRUE)
+  observeEvent(input$tvc_clear_selection,
+               updateSelectizeInput(session, "tvc_comparisons", selected = character()), ignoreInit = TRUE)
+
+  # The run that is about to happen, including where it will be written. A run directory is generated, so this is
+  # the only place the path can be seen before it exists.
+  output$tvc_run_summary <- renderUI({
+    method <- input$tvc_method %||% "resampling"; norm <- tvc_norm(); chosen <- input$tvc_comparisons
+    if (!length(chosen) || is.null(norm)) return(NULL)
+    tags$dl(class = "ytab-run-summary",
+      tags$dt("Method"), tags$dd(names(tvc_method_labels)[tvc_method_labels == method]),
+      tags$dt("Comparisons"), tags$dd(sprintf("%d selected", length(chosen))),
+      tags$dt("Normalization"), tags$dd(as.character(norm_method_label(norm$method))),
+      tags$dt("FDR"), tags$dd(format(input$tvc_fdr %||% .05)),
+      tags$dt("Output"), tags$dd(tags$code(file.path("treated_vs_control", paste0(method, "_<timestamp>")))))
+  })
+  output$tvc_run_action <- renderUI({
+    preview <- identical(input$tvc_execution_mode %||% "preview", "preview")
+    actionButton("tvc_run", if (preview) "Preview analysis" else "Run analysis", class = "btn-primary")
+  })
   output$tvc_comparison_selector <- renderUI({
     d <- design()
     if (!nrow(d)) return(tags$p(class = "text-warning", "No comparison design yet. Create it in Design."))
@@ -367,10 +448,14 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
     norm <- tvc_norm()
     if (is.null(norm) || !norm$method %in% tvc_allowed_methods[[method]]) { showNotification("Choose a normalization this method accepts.", type = "error"); return() }
     out <- ytab_new_run_dir(file.path(active()$project_root, "treated_vs_control"), method)
-    args <- c("--project-config", active_project_path(), "--method", method, "--normalization-run", norm$run,
-              "--normalization", norm$method, "--comparisons", paste(comparisons, collapse = ","),
+    args <- c("--project-config", active_project_path(), "--method", method, ytab_flag("--normalization-run", norm$run, required = TRUE),
+              ytab_flag("--normalization", norm$method, required = TRUE), "--comparisons", paste(comparisons, collapse = ","),
               "--fdr", as.character(input$tvc_fdr %||% .05), "--output", out)
-    start("ytab_treated_vs_control.py", args, "treated_vs_control", sprintf("%s started.", names(tvc_method_labels)[tvc_method_labels == method]))
+    # Preview is the pipeline's own --dry-run: it validates the inputs and reports what it would write.
+    if (identical(input$tvc_execution_mode %||% "preview", "preview")) args <- c(args, "--dry-run")
+    start("ytab_treated_vs_control.py", args, "treated_vs_control",
+          sprintf("%s %s.", names(tvc_method_labels)[tvc_method_labels == method],
+                  if (identical(input$tvc_execution_mode %||% "preview", "preview")) "preview started" else "started"))
   }, ignoreInit = TRUE)
 
   # ---- Results -----------------------------------------------------------------------------------------------------
@@ -559,22 +644,25 @@ tvc_server <- function(input, output, session, repo_root, active, active_project
       interactive = interactive)) }
   current_plot <- reactive(build_plot(TRUE))
   output$tvc_plotly <- plotly::renderPlotly(tvc_plotly(current_plot()))
-  output$tvc_table <- DT::renderDT({
+  # Shaped once, for the screen and the download alike. The download used to write every gene and every column
+  # of the run, ignoring the chosen comparison -- a different table from the one being looked at.
+  tvc_genes_display <- reactive({
     g <- tvc_tested(group_genes()); g <- g[order(-tvc_significance(g, data()$method)), , drop = FALSE]
     keep <- intersect(c("ORF", "Name", "n_sites", "n_eligible", "n_depleted", "run_span_bp", "mean_control", "mean_treatment",
                         "log2FC", "log2_scaled_ratio", "z", "p_value", "q_bh", "call"), names(g))
     g <- g[, keep, drop = FALSE]
     for (column in intersect(c("mean_control", "mean_treatment", "log2FC", "log2_scaled_ratio", "z"), names(g))) g[[column]] <- signif(g[[column]], 3)
     for (column in intersect(c("p_value", "q_bh"), names(g))) g[[column]] <- formatC(g[[column]], format = "g", digits = 3)
-    ytab_datatable(g, page_length = 15L)
+    g
   })
+  output$tvc_table <- DT::renderDT(ytab_datatable(tvc_genes_display(), page_length = 15L))
   name <- function(ext) paste0(project_display_label(active()), "_treated_vs_control_", basename(selected()), ext)
   for (format in c("png", "pdf")) local({ ext <- format
     output[[paste0("tvc_download_", ext)]] <- downloadHandler(filename = function() name(paste0(".", ext)), content = function(file) { s <- display()
       ytab_save_ggplot(file, build_plot(FALSE), width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) }) })
-  output$tvc_download_genes <- downloadHandler(filename = function() name("_genes.tsv"), content = function(file) {
-    if (identical(data()$method, "zscore")) utils::write.table(data()$genes, file, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
-    else file.copy(file.path(selected(), "genes.tsv"), file) })
+    ytab_plot_capture_server(input, output, session, "tvc", "tvc_plotly", function() sub("[.]$", "", name("")))
+  output$tvc_download_genes <- downloadHandler(filename = function() name("_genes.tsv"),
+    content = function(file) utils::write.table(tvc_genes_display(), file, sep = "\t", quote = FALSE, row.names = FALSE, na = ""))
   tvc_agreement_server(input, output, session, repo_root, active, start, zscore_runs, tvc_runs)
 }
 
@@ -598,7 +686,7 @@ tvc_agreement_ui <- function() ytab_two_column_layout(
     conditionalPanel("input.tvc_ag_plot == 'matrix' || input.tvc_ag_plot == 'sets' || input.tvc_ag_plot == 'venn'",
       uiOutput("tvc_ag_direction_selector")),
     conditionalPanel("input.tvc_ag_plot == 'effect' || input.tvc_ag_plot == 'score'", uiOutput("tvc_ag_pair_selector")),
-    ytab_plot_downloads_ui("tvcag", c(genes = "Download per-gene table (TSV)", pairs = "Download agreement (TSV)")),
+    ytab_plot_downloads_ui("tvcag", c(genes = "Download per-gene table (TSV)", pairs = "Download agreement (TSV)"), capture = TRUE),
     ytab_plot_customization_controls("tvcag", include_points = TRUE, include_labels = FALSE, open = FALSE)),
   main = tagList(uiOutput("tvc_ag_summary"),
     ytab_plot_card("Method agreement", uiOutput("tvc_ag_plot_frame"), description = uiOutput("tvc_ag_caption")),
@@ -886,17 +974,25 @@ tvc_agreement_server <- function(input, output, session, repo_root, active, star
     score = "Each gene's signed significance in one method against the other (z; sign(effect) × −log10 p; the Gumbel's depletion as −(−log10 p)).",
     sets = paste0("Genes called by exactly the marked set of methods, largest sets first; only genes tested by every method shown.",
                   panels, if (both) " The panels share one count axis, so the bars are comparable between directions." else "")) })
-  output$tvc_ag_table <- DT::renderDT({ p <- data()$pairs; p <- p[p$group == group(), , drop = FALSE]; req(nrow(p) > 0)
+  # The screen shows the chosen group's pairs under readable headings; the download copied every group raw.
+  tvc_ag_display <- reactive({ p <- data()$pairs; p <- p[p$group == group(), , drop = FALSE]; req(nrow(p) > 0)
     out <- data.frame(Methods = paste(tvc_agreement_methods[p$method_a], "vs", tvc_agreement_methods[p$method_b]), `Genes tested by both` = p$genes_tested_by_both,
       `Spearman (effect)` = round(p$spearman_effect, 3), `Spearman (significance)` = round(p$spearman_score, 3),
       `Depleted: A / B / shared` = sprintf("%s / %s / %s", p$depleted_n_a, p$depleted_n_b, p$depleted_n_both),
       `Depleted: A recovered by B` = sprintf("%.0f%%", 100 * p$depleted_a_recovered_by_b), `Depleted: B recovered by A` = sprintf("%.0f%%", 100 * p$depleted_b_recovered_by_a),
       `Enriched: A / B / shared` = ifelse(is.na(p$enriched_n_a), "depletion only", sprintf("%s / %s / %s", p$enriched_n_a, p$enriched_n_b, p$enriched_n_both)), check.names = FALSE)
-    ytab_datatable(out, page_length = 10L) })
+    out })
+  output$tvc_ag_table <- DT::renderDT(ytab_datatable(tvc_ag_display(), page_length = 10L))
   name <- function(ext) paste0(project_display_label(active()), "_method_agreement_", basename(selected()), ext)
   for (format in c("png", "pdf")) local({ ext <- format
     output[[paste0("tvcag_download_", ext)]] <- downloadHandler(filename = function() name(paste0(".", ext)), content = function(file) { s <- display()
       ytab_save_ggplot(file, plot_obj(), width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) }) })
-  for (t in c("genes", "pairs")) local({ tab <- t
-    output[[paste0("tvcag_download_", tab)]] <- downloadHandler(filename = function() name(paste0("_", tab, ".tsv")), content = function(file) file.copy(file.path(selected(), paste0(tab, ".tsv")), file)) })
+  # "pairs" is the table on screen, so it is written as shown; "genes" has no table of its own here and stays
+  # the run's own export.
+  ytab_plot_capture_server(input, output, session, "tvcag", "tvc_ag_plotly",
+                           function() sub("[.]$", "", name("")))
+  output$tvcag_download_pairs <- downloadHandler(filename = function() name("_pairs.tsv"),
+    content = function(file) utils::write.table(tvc_ag_display(), file, sep = "\t", quote = FALSE, row.names = FALSE, na = ""))
+  output$tvcag_download_genes <- downloadHandler(filename = function() name("_genes.tsv"),
+    content = function(file) file.copy(file.path(selected(), "genes.tsv"), file))
 }

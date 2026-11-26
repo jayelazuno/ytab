@@ -104,7 +104,7 @@ qc_library_correlation_server <- function(input, output, session, repo_root, act
     output_dir <- ytab_new_run_dir(runs_dir(), "libcor")
     args <- c(file.path(repo_root, "scripts", "local", "ytab_library_correlation.py"), as.vector(rbind("--project", selected)),
               "--metric", input$libcor_metric %||% "density", "--min-reads", as.character(max(1L, as.integer(input$libcor_min_reads %||% 1L))),
-              if (nzchar(input$libcor_orthologs %||% "")) c("--orthologs", input$libcor_orthologs), "--output", output_dir)
+              if (nzchar(input$libcor_orthologs %||% "")) c(ytab_flag("--orthologs", input$libcor_orthologs)), "--output", output_dir)
     tryCatch({
       jobs$start_job(python_bin(), args, active_project_path(), "library_correlation", wd = repo_root, selected_items = selected)
       showNotification("Library correlation started. The result appears here when it finishes.", type = "message")
@@ -124,7 +124,8 @@ qc_library_correlation_server <- function(input, output, session, repo_root, act
     if (length(flags)) ytab_warning_banner(sprintf("%d library pairs disagree with their pool labels", length(flags)),
       "Their read correlation at shared sites does not match the pools given in the sample sheet. See the flag column in the pair table.")
   })
-  output$libcor_pairs_table <- DT::renderDT({
+  # Display names and rounded statistics on screen; the download used to copy the raw pairs file.
+  libcor_pairs_display <- reactive({
     p <- pairs(); req(nrow(p) > 0)
     keep <- intersect(c("sample_a", "sample_b", "pair_type", "genes", "rho", "ci_low", "ci_high", "site_jaccard", "shared_site_read_rho", "clone_evidence", "flag"), names(p))
     p <- p[, keep, drop = FALSE]
@@ -134,13 +135,14 @@ qc_library_correlation_server <- function(input, output, session, repo_root, act
     names(p) <- c(sample_a = "Library A", sample_b = "Library B", pair_type = "Pair type", genes = "Genes", rho = "Spearman rho", ci_low = "CI low",
                   ci_high = "CI high", site_jaccard = "Shared sites (Jaccard)", shared_site_read_rho = "Read rho at shared sites",
                   clone_evidence = "Clone evidence", flag = "Flag")[names(p)]
-    ytab_datatable(p, page_length = 10L)
+    p
   })
+  output$libcor_pairs_table <- DT::renderDT(ytab_datatable(libcor_pairs_display(), page_length = 10L))
 
   download_name <- function(ext) paste0(project_display_label(active()), "_library_correlation_", basename(selected_run()), ext)
   output$libcor_download_matrix <- downloadHandler(filename = function() download_name("_matrix.tsv"),
     content = function(file) file.copy(file.path(selected_run(), "correlation_matrix.tsv"), file))
   output$libcor_download_pairs <- downloadHandler(filename = function() download_name("_pairs.tsv"),
-    content = function(file) file.copy(file.path(selected_run(), "pairs.tsv"), file))
+    content = function(file) utils::write.table(libcor_pairs_display(), file, sep = "\t", quote = FALSE, row.names = FALSE, na = ""))
   invisible(list(runs = runs, selected_run = selected_run, matrix_values = matrix_values, pairs = pairs))
 }

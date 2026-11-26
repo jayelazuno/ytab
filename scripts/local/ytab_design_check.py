@@ -7,7 +7,7 @@ and applies each analysis's own minimum design (docs/design_guide.md):
   essentiality (HMM)        >= 1 unselected parent library of a strain; denser = better (pool independent inductions)
   treated vs control:
     resampling              >= 1 control and >= 1 treated library of a strain and condition, from the same pool
-    z-score (Gale 2020)     as resampling, and >= 2 controls in the strain (its noise model compares two controls)
+    z-score (Gale 2020)     as resampling, and >= 2 controls in the strain (its noise model compares controls with each other)
     control-cond. Gumbel    >= 2 controls (depletion only)
   multi-condition           >= 2 conditions (one the reference) in a pool, or strains made as separate libraries
   genetic interactions      2 strains x (control, treated) in the same condition, >= 2 control/treated pairs per strain

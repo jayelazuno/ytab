@@ -23,7 +23,10 @@ check(grepl("Select a dataset…", html, fixed = TRUE), "selector placeholder")
 check(grepl("Open dataset", app_text, fixed = TRUE), "open-project action")
 check(grepl("ytab-project-preview", app_text, fixed = TRUE), "compact metadata preview")
 check(!is.null(demo) && !demo$project_type[[1]] %in% c("test", "temporary"), "demo is not internal test")
-check(grepl("View setup guide", html, fixed = TRUE) && grepl("Show launch command", html, fixed = TRUE), "documentation actions")
+# The Documentation card repeated the header's own Methods/Tutorial/Release notes links, so it went; the two
+# actions only it carried are header links now.
+check(grepl("view_setup_guide", html, fixed = TRUE) && grepl("show_launch_command", html, fixed = TRUE), "documentation actions in the header")
+check(!grepl("ytab-card-eyebrow\">Reference", html, fixed = TRUE), "no duplicate Documentation card")
 check(grepl("btn-primary ytab-button", html, fixed = TRUE) && grepl("btn-secondary ytab-button", html, fixed = TRUE), "consistent button classes")
 check(!grepl(repo_root, html, fixed = TRUE), "no repository paths in visible landing text")
 

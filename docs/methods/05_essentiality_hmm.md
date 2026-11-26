@@ -405,6 +405,23 @@ v3 is therefore used for libraries of any transposon, including the Ac/Ds librar
 - **Hybrid:** better precision and calibration, but its learned rule reproduces the biases of its
   labels. Orthology labels from *S. cerevisiae* penalize species-specific essential genes.
 
+## 9.1 Reading a result in the app
+
+The Results tab reports **one model at a time**. A *View* chooser — HMM, Hybrid, Compare models — decides what
+the summary cards count, what every plot draws, which columns the gene table carries and what the captions
+describe. Hybrid and Compare appear only for a run that produced a hybrid.
+
+The default is the HMM, for the reason in the table above: it needs no labels, and for most species it is the
+only model available. Compare is a view to ask for, not the default reading, because the hybrid's advantage
+over a label-free forest was small and not significant (+0.003 AUC, 95% CI −0.0004 to 0.006).
+
+The chromosome chooser takes any number of chromosomes. None selected draws the genome at a glance, one row
+per chromosome coloured by the view's own measure — the HMM's state, the hybrid's call, or whether the two
+agree. One chromosome draws the detailed track: insertions per window, the called state, and the posteriors.
+Several draw their insertion landscapes together, which is how coverage is compared across chromosomes.
+
+Figures are saved as the figures on screen, in the app or with `ytab figure essentiality RUN CONFIG`.
+
 # 10. Assumptions
 
 1. **Absence means essentiality.** Absence of insertions in a mappable, accessible region reflects
@@ -466,12 +483,12 @@ On this basis:
 # Reproducibility
 
 **Code:**
-- `src/ytab/essentiality/hermes_hmm.py` (`hermes_hmm_v2`);
-- `scripts/local/ytab_hermes_hmm.py`, `ytab_hermes_hmm_benchmark_v2.py`,
+- `src/ytab/essentiality/window_hmm.py` (`hermes_hmm_v2`);
+- `scripts/local/ytab_window_hmm.py`, `ytab_hermes_hmm_benchmark_v2.py`,
   `ytab_hermes_hmm_multistart.py`, `ytab_transit_hmm_port.py`;
 - `scripts/local/ytab_curate_essentiality_labels.py`, `ytab_essentiality_hybrid_benchmark.py`.
 
-**Tests:** `tests/test_hermes_hmm.py` (8 tests):
+**Tests:** `tests/test_window_hmm.py` (8 tests):
 - forward–backward vs enumeration;
 - long-sequence stability;
 - analytic gradient;
@@ -480,6 +497,11 @@ On this basis:
 - 3′ trimming;
 - negative multinomial vs negative binomial and numerical integration;
 - run probability vs enumeration.
+
+**Gene table.** `models/genes.tsv` carries, per gene, the HMM score (`P_ES_run`), the call, the four state
+posteriors, the mappable fraction and the gene's `chromosome`, `start` and `end`. The coordinates come from
+the CDS blocks the windows are derived from, so anything downstream can place a gene on a chromosome without
+reading the annotation again. A hybrid run adds `hybrid_score`, `hybrid_essential` and `agreement`.
 
 **Outputs:**
 - `output/essentiality/hermes_hmm/`: `benchmark/` (v1, failed; hash 7d2f5ecd…), `benchmark_v2/` (hash

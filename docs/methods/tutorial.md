@@ -83,11 +83,21 @@ In the fluconazole comparison:
 
 ## 6. Essentiality
 
-**Essentiality › Run** fits the Hermes window HMM to the parent libraries. It needs no training labels. Optionally it
-also adds the hybrid model, where a species has curated labels. **Results** shows:
-- the calls per state (essential, growth defect, non-essential, growth advantage);
-- the agreement between the HMM and the hybrid;
-- a chromosome track of insertions and state posteriors.
+**Essentiality › Run** begins with the **Model**: the window HMM, which needs no training labels, or HMM +
+hybrid where the species has curated labels. Choose the untreated libraries — one per independent pool — and
+run. If an earlier fit exists, *Reuse an earlier HMM fit* skips the slow step.
+
+**Results** reports one model at a time, chosen with **View**: HMM, Hybrid, or Compare models. It opens on the
+HMM. The cards, the plots and the gene table all follow the view, so what is counted is always the model named
+above it.
+
+The **Chromosome** box takes any number of chromosomes:
+- leave it empty for the genome at a glance, one row per chromosome;
+- choose one for the detailed track — insertions per window, the called state, and the posteriors;
+- choose several to compare their insertion landscapes.
+
+Under *Compare models* the cards count genes both models call essential and those only one does, and the
+genome view colours each gene by whether they agree.
 
 ![Essentiality chromosome track](img/05_essentiality_track.png)
 
@@ -112,6 +122,23 @@ also adds the hybrid model, where a species has curated labels. **Results** show
 site and gene.
 
 ![Mutant identification](img/08_mutant_identification.png)
+
+## Saving what you see
+
+Every plot has **Download plot (PNG)** and **Download plot (SVG)**, and they save the figure on screen — the
+same capture the mode bar's camera makes, so what is saved is what is being looked at. SVG is vector: it
+scales to any figure size without going soft.
+
+Table downloads carry the table as shown, with the columns and rows the current view has selected, not every
+column the pipeline wrote.
+
+The same figures come from the command line:
+
+    ytab figure essentiality RUN_DIR PROJECT_CONFIG --chromosome "Chr B" --output track.svg
+    ytab figure treated-vs-control --list
+
+This needs the `chromote` package and a Chrome or Chromium installation, which it drives without opening a
+window.
 
 ## Where to go next
 

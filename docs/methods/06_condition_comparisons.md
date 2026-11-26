@@ -94,6 +94,14 @@ python scripts/local/ytab.py treated-vs-control --project-config P/config/projec
   --normalization-run P/normalization/RUN --normalization betageom --output P/treated_vs_control/RUN
 ```
 
+A figure of a result, as the app draws it:
+
+```sh
+python scripts/local/ytab.py figure treated-vs-control P/treated_vs_control/RUN P/config/project.yaml \
+  --plot volcano --output volcano.svg
+python scripts/local/ytab.py figure multi-condition --list
+```
+
 ## Comet plots
 
 A comet plot shows every gene's reads under treatment against its reads in the control, on log axes, one panel per

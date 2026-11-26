@@ -71,7 +71,7 @@ comparisons_mc_ui <- function() ytab_two_column_layout(
       selectInput("mc_direction", "Calls shown", c("Depleted and enriched" = "both", "Depleted" = "depleted", "Enriched" = "enriched")),
       numericInput("mc_label_n", "Label top hits", 10, min = 0, max = 50, step = 1),
       textAreaInput("mc_label_genes", "Also label", "", rows = 2, placeholder = "Gene names or IDs, separated by commas or new lines")),
-    ytab_plot_downloads_ui("mc", c(anova = "Download ANOVA (TSV)", pairs = "Download all-pairs (TSV)")),
+    ytab_plot_downloads_ui("mc", c(anova = "Download ANOVA (TSV)", pairs = "Download all-pairs (TSV)"), capture = TRUE),
     ytab_plot_customization_controls("mc", include_points = TRUE, include_labels = FALSE, open = FALSE)),
   main = tagList(uiOutput("mc_summary"),
     ytab_plot_card("Multi-condition", uiOutput("mc_plot_frame"), description = uiOutput("mc_plot_caption")),
@@ -89,22 +89,29 @@ comparisons_gi_ui <- function() ytab_two_column_layout(
     actionButton("gi_run", "Run genetic interactions", class = "btn-primary"),
     tags$hr(),
     uiOutput("gi_result_selector"),
-    radioButtons("gi_plot", "Plot", c("Strain responses" = "scatter", "Interaction effects" = "forest", "Volcano" = "volcano")),
-    conditionalPanel("input.gi_plot == 'scatter'",
-      radioButtons("gi_colour_by", "Colour by", c("Interaction call" = "call", "Gene set" = "sets"), inline = TRUE),
-      conditionalPanel("input.gi_colour_by == 'sets'",
-        uiOutput("gi_comet_sets_selector"),
-        textAreaInput("gi_comet_genes", "Highlight my genes", "", rows = 2,
-                      placeholder = "Gene names or IDs, separated by commas or new lines"))),
-    conditionalPanel("input.gi_plot != 'forest'",
-      selectInput("gi_direction", "Calls shown", c("All interactions" = "all", "Aggravating" = "Aggravating", "Alleviating" = "Alleviating", "Suppressive" = "Suppressive")),
-      numericInput("gi_label_n", "Label top hits", 10, min = 0, max = 50, step = 1),
-      textAreaInput("gi_label_genes", "Also label", "", rows = 2, placeholder = "Gene names or IDs, separated by commas or new lines")),
-    ytab_plot_downloads_ui("gi", c(genes = "Download gene table (TSV)")),
+    # These describe a result. With none selected they are controls for a plot that does not exist, and on a
+    # dataset whose design cannot support the analysis they would never become usable.
+    conditionalPanel("output.gi_has_result === true",
+      radioButtons("gi_plot", "Plot", c("Strain responses" = "scatter", "Interaction effects" = "forest", "Volcano" = "volcano")),
+      conditionalPanel("input.gi_plot == 'scatter'",
+        radioButtons("gi_colour_by", "Colour by", c("Interaction call" = "call", "Gene set" = "sets"), inline = TRUE),
+        conditionalPanel("input.gi_colour_by == 'sets'",
+          uiOutput("gi_comet_sets_selector"),
+          textAreaInput("gi_comet_genes", "Highlight my genes", "", rows = 2,
+                        placeholder = "Gene names or IDs, separated by commas or new lines"))),
+      conditionalPanel("input.gi_plot != 'forest'",
+        selectInput("gi_direction", "Calls shown", c("All interactions" = "all", "Aggravating" = "Aggravating", "Alleviating" = "Alleviating", "Suppressive" = "Suppressive")),
+        numericInput("gi_label_n", "Label top hits", 10, min = 0, max = 50, step = 1),
+        textAreaInput("gi_label_genes", "Also label", "", rows = 2, placeholder = "Gene names or IDs, separated by commas or new lines")),),
+    ytab_plot_downloads_ui("gi", c(genes = "Download gene table (TSV)"), capture = TRUE),
     ytab_plot_customization_controls("gi", include_points = TRUE, include_labels = FALSE, open = FALSE)),
   main = tagList(uiOutput("gi_summary"),
-    ytab_plot_card("Genetic interactions", uiOutput("gi_plot_frame"), description = uiOutput("gi_plot_caption")),
-    ytab_table_card("Genes", DT::DTOutput("gi_table")), gi_methods_text()))
+    # The card explains a plot, so it appears with the plot. Without a result the empty state above says what
+    # to do, and a described-but-blank card only adds a few hundred pixels of nothing.
+    conditionalPanel("output.gi_has_result === true",
+      ytab_plot_card("Genetic interactions", uiOutput("gi_plot_frame"), description = uiOutput("gi_plot_caption")),
+      ytab_table_card("Genes", DT::DTOutput("gi_table"))),
+    gi_methods_text()))
 
 comparisons_module_ui <- function() navset_tab(id = "fitness_tabs",
   nav_panel("Design", value = "fitness_design", fitness_design_ui()),
@@ -293,7 +300,7 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     a <- mc_assignment(); ref <- reference_files()
     if (length(unique(a$condition)) < 2L) { showNotification("Assign at least two conditions.", type = "error"); return() }
     out <- ytab_new_run_dir(file.path(active()$project_root, "multicondition"), "multicondition")
-    args <- c("--project-config", active_project_path(), "--normalized", file.path(input$mc_norm_run, "experiment", "methods"),
+    args <- c("--project-config", active_project_path(), ytab_flag("--normalized", if (length(input$mc_norm_run)) file.path(input$mc_norm_run, "experiment", "methods"), required = TRUE),
               "--normalization", input$mc_method %||% "betageom", as.vector(rbind("--sample", paste0(a$observation_id, "=", a$condition))),
               "--reference-condition", input$mc_reference %||% a$condition[[1L]], "--test", input$mc_test %||% "both",
               "--fdr", as.character(input$mc_fdr %||% .05), if (isTRUE(input$mc_stratify)) "--stratify-libraries", "--output", out)
@@ -360,26 +367,50 @@ comparisons_server <- function(input, output, session, repo_root, active, active
               list(direction = input$mc_direction, label_n = input$mc_label_n %||% 10, label_genes = input$mc_label_genes,
                    comet = if (identical(choice, "comet")) mc_comet(), interactive = interactive)) }
   output$mc_plotly <- plotly::renderPlotly(tvc_plotly(mc_current_plot()))
-  output$mc_table <- DT::renderDT({
+  # The screen shows one pair's tested genes; the download used to copy every pair from the run.
+  mc_genes_display <- reactive({
     d <- mc_data(); p <- d$pairs; req(nrow(p) > 0); pair <- input$mc_pair %||% unique(p$pair)[[1L]]
     p <- p[p$pair == pair & p$status == "tested", intersect(c("ORF", "Name", "n_sites", "log2FC", "p_value", "q_all_pairs", "call_all_pairs", "mean_control", "mean_treatment"), names(p)), drop = FALSE]
     if (nrow(d$anova)) p <- merge(p, d$anova[, c("ORF", "q_bh", "call")], by = "ORF", all.x = TRUE, suffixes = c("", "_anova"))
     for (column in intersect(c("log2FC", "p_value", "q_all_pairs", "mean_control", "mean_treatment", "q_bh"), names(p))) p[[column]] <- signif(p[[column]], 3)
     names(p)[names(p) == "q_bh"] <- "q_anova"; names(p)[names(p) == "call"] <- "call_anova"
-    ytab_datatable(p[order(p$q_all_pairs), , drop = FALSE], page_length = 15L)
+    p[order(p$q_all_pairs), , drop = FALSE]
   })
+  output$mc_table <- DT::renderDT(ytab_datatable(mc_genes_display(), page_length = 15L))
   mc_name <- function(ext) paste0(project_display_label(active()), "_multicondition_", input$mc_plot %||% "volcano", "_", basename(mc_selected()), ext)
   for (format in c("png", "pdf")) local({ ext <- format
     output[[paste0("mc_download_", ext)]] <- downloadHandler(filename = function() mc_name(paste0(".", ext)), content = function(file) { s <- cmp_display(input, "mc", identical(input$mc_plot, "heatmap"))
       ytab_save_ggplot(file, mc_current_plot(FALSE), width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) }) })
+    ytab_plot_capture_server(input, output, session, "mc", "mc_plotly", function() sub("[.]$", "", mc_name("")))
   output$mc_download_anova <- downloadHandler(filename = function() mc_name("_anova.tsv"), content = function(file) file.copy(file.path(mc_selected(), "tests", "anova_genes.tsv"), file))
-  output$mc_download_pairs <- downloadHandler(filename = function() mc_name("_pairs.tsv"), content = function(file) file.copy(file.path(mc_selected(), "tests", "pairs_genes.tsv"), file))
+  output$mc_download_pairs <- downloadHandler(filename = function() mc_name("_pairs.tsv"),
+    content = function(file) utils::write.table(mc_genes_display(), file, sep = "	", quote = FALSE, row.names = FALSE, na = ""))
 
   # ---- Genetic interactions --------------------------------------------------------------------------------------
+  # Which sample-sheet column names the strain. The named columns are tried first; otherwise any column that
+  # varies and is not a condition or a role will do. Falling back to the first column regardless offered
+  # "reference strain: treated" against "query strain: control" -- conditions presented as strains, which is a
+  # comparison this analysis cannot make and a reader should never be shown as a default.
+  gi_condition_like <- c("role", "condition", "guessed_condition", "treatment", "sample_role", "pool", "guessed_pool")
+  gi_strain_column_choices <- reactive({
+    obs <- gi_obs(); req(nrow(obs) > 0)
+    columns <- cmp_label_columns(obs)
+    varies <- columns[vapply(columns, function(x)
+      length(unique(as.character(obs[[x]])[nzchar(as.character(obs[[x]]))])) >= 2L, logical(1))]
+    named <- intersect(c("background", "strain", "guessed_background"), columns)
+    plausible <- c(named, setdiff(varies, c(named, gi_condition_like)))
+    list(columns = columns, default = plausible[1] %||% NA_character_)
+  })
   output$gi_strain_controls <- renderUI({
-    obs <- gi_obs(); req(nrow(obs) > 0); columns <- cmp_label_columns(obs)
-    default <- intersect(c("background", "strain", "guessed_background"), columns)[1] %||% columns[1]
-    tagList(selectInput("gi_strain_column", "Strain from sample sheet column", columns, default), uiOutput("gi_strain_pick"))
+    x <- gi_strain_column_choices()
+    if (is.na(x$default))
+      return(tagList(
+        tags$p(class = "text-warning",
+               "No sample-sheet column distinguishes two strains. Genetic interactions compares a reference and a query strain; the Samples tab shows what this dataset carries."),
+        selectInput("gi_strain_column", "Strain from sample sheet column", x$columns, x$columns[1]),
+        uiOutput("gi_strain_pick")))
+    tagList(selectInput("gi_strain_column", "Strain from sample sheet column", x$columns, x$default),
+            uiOutput("gi_strain_pick"))
   })
   gi_assignment <- reactive({
     obs <- gi_obs(); column <- input$gi_strain_column; req(nrow(obs) > 0, column %in% names(obs))
@@ -401,8 +432,8 @@ comparisons_server <- function(input, output, session, repo_root, active, active
     # instead of saying that the two strains have no assigned libraries.
     if (!nrow(a)) { showNotification("No libraries are assigned to those two strains.", type = "error"); return() }
     out <- ytab_new_run_dir(file.path(active()$project_root, "genetic_interactions"), "gi")
-    args <- c("--normalized", file.path(input$gi_norm_run, "experiment", "methods"), "--normalization", input$gi_method %||% "betageom",
-              "--gff", ref$gff, "--reference", ref$fasta, "--output", out, "--reference-strain", input$gi_reference, "--query-strain", input$gi_query,
+    args <- c(ytab_flag("--normalized", if (length(input$gi_norm_run)) file.path(input$gi_norm_run, "experiment", "methods"), required = TRUE), "--normalization", input$gi_method %||% "betageom",
+              ytab_flag("--gff", ref$gff, required = TRUE), ytab_flag("--reference", ref$fasta, required = TRUE), "--output", out, ytab_flag("--reference-strain", input$gi_reference, required = TRUE), ytab_flag("--query-strain", input$gi_query, required = TRUE),
               as.vector(rbind("--sample", paste0(a$observation_id, "=", a$strain, ":", a$role))), "--fdr", as.character(input$gi_fdr %||% .05),
               "--rope", as.character(input$gi_rope %||% 0), "--correction", input$gi_correction %||% "bh", "--confidence", as.character(input$gi_confidence %||% .95))
     start("ytab_genetic_interactions.py", args, "genetic_interactions", "Genetic interactions started.")
@@ -410,6 +441,8 @@ comparisons_server <- function(input, output, session, repo_root, active, active
 
   gi_selected <- reactive({ x <- gi_runs(); req(nrow(x) > 0); path <- input$gi_result %||% x$path[[1L]]; req(path %in% x$path); path })
   gi_data <- reactive(list(manifest = read_json_safely(file.path(gi_selected(), "run_manifest.json")), genes = named(ytab_read_analysis_tsv(file.path(gi_selected(), "genes.tsv")))))
+  output$gi_has_result <- reactive(nrow(gi_runs()) > 0)
+  outputOptions(output, "gi_has_result", suspendWhenHidden = FALSE)
   output$gi_result_selector <- renderUI({ x <- gi_runs(); if (!nrow(x)) return(tags$p(class = "text-muted", "No genetic-interaction result yet.")); selectInput("gi_result", "Result", ytab_run_choices(x)) })
   output$gi_summary <- renderUI({
     gate <- ytab_design_gate(design_support(), "Genetic interactions", "Genetic interactions are not available for this dataset")
@@ -461,16 +494,19 @@ comparisons_server <- function(input, output, session, repo_root, active, active
                    comet = if (identical(input$gi_plot, "scatter") && identical(input$gi_colour_by, "sets")) gi_comet(),
                    interactive = interactive)) }
   output$gi_plotly <- plotly::renderPlotly(tvc_plotly(gi_current_plot()))
-  output$gi_table <- DT::renderDT({
+  gi_genes_display <- reactive({
     g <- gi_data()$genes; req(nrow(g) > 0); g <- g[g$status == "tested", , drop = FALSE]
     keep <- intersect(c("ORF", "Name", "log2FC_reference", "log2FC_query", "delta_log2FC", "delta_lower", "delta_upper", "p_value", "p_adjusted", "q_bh", "call", "interaction", "sites_reference", "sites_query"), names(g))
     g <- g[, keep, drop = FALSE]; for (column in keep[vapply(g, is.numeric, logical(1))]) g[[column]] <- signif(g[[column]], 3)
-    ytab_datatable(g[order(g$p_value), , drop = FALSE], page_length = 15L)
+    g[order(g$p_value), , drop = FALSE]
   })
+  output$gi_table <- DT::renderDT(ytab_datatable(gi_genes_display(), page_length = 15L))
   gi_name <- function(ext) paste0(project_display_label(active()), "_gi_", input$gi_plot %||% "scatter", "_", basename(gi_selected()), ext)
   for (format in c("png", "pdf")) local({ ext <- format
     output[[paste0("gi_download_", ext)]] <- downloadHandler(filename = function() gi_name(paste0(".", ext)), content = function(file) { s <- cmp_display(input, "gi", identical(input$gi_plot, "forest"))
       ytab_save_ggplot(file, gi_current_plot(FALSE), width = switch(s$width, wide = 13, full = 16, 10), height = max(4, as.numeric(sub("px", "", s$height)) / 75)) }) })
-  output$gi_download_genes <- downloadHandler(filename = function() gi_name("_genes.tsv"), content = function(file) file.copy(file.path(gi_selected(), "genes.tsv"), file))
+    ytab_plot_capture_server(input, output, session, "gi", "gi_plotly", function() sub("[.]$", "", gi_name("")))
+  output$gi_download_genes <- downloadHandler(filename = function() gi_name("_genes.tsv"),
+    content = function(file) utils::write.table(gi_genes_display(), file, sep = "	", quote = FALSE, row.names = FALSE, na = ""))
   invisible(list(norm_runs = norm_runs, mc_runs = mc_runs, gi_runs = gi_runs, mc_data = mc_data, gi_data = gi_data, mc_assignment = mc_assignment, gi_assignment = gi_assignment))
 }

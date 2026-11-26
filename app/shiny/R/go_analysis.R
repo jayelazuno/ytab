@@ -496,7 +496,7 @@ go_analysis_ui <- function() {
         ),
         main = tagList(
           ytab_section_header("Selected gene set",
-                              "GO enrichment uses S. cerevisiae ORF IDs resolved through the existing C. glabrata annotation lookup."),
+                              HTML("GO enrichment uses <em>S. cerevisiae</em> ORF IDs resolved through the existing <em>C. glabrata</em> annotation lookup.")),
           uiOutput("go_gene_set_summary"),
           DT::DTOutput("go_gene_set_table"),
           tags$div(class = "ytab-actions",

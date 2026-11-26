@@ -37,11 +37,53 @@ Start it and double-click this again:
   Podman          — run 'podman machine start'"
 fi
 
-[ -n "$RUNTIME" ] || fail "No container runtime was found. Install one of these, then double-click this again:
-  Docker Desktop  https://docs.docker.com/get-started/get-docker/   (free for personal, educational and
-                  small-business use; larger organizations need a subscription)
-  Podman Desktop  https://podman-desktop.io                         (open source, no subscription)
-  Colima          'brew install colima docker' then 'colima start'  (open source, no subscription)"
+# Offering to install the runtime, rather than only naming it.
+#
+# Colima is the one offered: it is open source and carries no subscription, where Docker Desktop is free only for
+# personal, educational and small-business use and would otherwise be installed by default on a laboratory machine
+# that never agreed to its terms. Docker Desktop stays a documented choice, never an automatic one.
+#
+# The install is offered, never silent. It puts software on someone's computer, and that is their decision.
+ask() {
+  printf '\n%s ' "$1"
+  if [ ! -t 0 ]; then printf '(no terminal to answer on: assuming no)\n'; return 1; fi
+  read -r reply
+  case "$reply" in [yY]|[yY][eE][sS]) return 0 ;; *) return 1 ;; esac
+}
+
+install_colima() {
+  if ! command -v brew >/dev/null 2>&1; then
+    say "Colima is installed with Homebrew, the package manager for macOS, which is not on this computer."
+    printf '  Homebrew installs into /opt/homebrew and will ask for your password.\n'
+    printf '  It is widely used and open source: https://brew.sh\n'
+    ask "Install Homebrew now? [y/N]" || return 1
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || return 1
+    # A fresh install is not on PATH until a new shell starts, so this one is told where to look.
+    for prefix in /opt/homebrew /usr/local; do
+      [ -x "$prefix/bin/brew" ] && eval "$("$prefix/bin/brew" shellenv)" && break
+    done
+    command -v brew >/dev/null 2>&1 || { say "Homebrew did not end up on PATH. Open a new Terminal and run this again."; return 1; }
+  fi
+  say "Installing Colima and the docker command (a few minutes)…"
+  brew install colima docker || return 1
+  say "Starting Colima…"
+  colima start || return 1
+}
+
+if [ -z "$RUNTIME" ]; then
+  say "YTAB runs inside a container, and this computer has no container runtime yet."
+  printf '  Colima        open source, no subscription  (offered below)\n'
+  printf '  Docker Desktop  https://docs.docker.com/get-started/get-docker/\n'
+  printf '                  free for personal, educational and small-business use;\n'
+  printf '                  larger organizations need a subscription\n'
+  printf '  Podman Desktop  https://podman-desktop.io\n'
+  if ask "Install Colima now? [y/N]"; then
+    install_colima || fail "The Colima install did not finish. Install a runtime from the list above and double-click this again."
+    command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1 && RUNTIME="docker"
+  fi
+fi
+
+[ -n "$RUNTIME" ] || fail "No container runtime is available. Install one of the above, then double-click this again."
 
 say "Using $RUNTIME"
 

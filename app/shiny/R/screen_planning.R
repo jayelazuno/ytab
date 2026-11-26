@@ -148,6 +148,7 @@ screen_coverage_server <- function(input, output, session, repo_root, active, ac
     output[[paste0("sc_download_", ext)]] <- downloadHandler(filename = function() download_name(paste0(".", ext)),
       content = function(file) ytab_save_ggplot(file, poisson_plot(), width = 9, height = 6))
   })
+    ytab_plot_capture_server(input, output, session, "sc", "sc_plot_primary", function() sub("[.]$", "", download_name("")))
   output$sc_download_curve <- downloadHandler(filename = function() download_name("_curve.tsv"), content = function(file) {
     d <- current(); n <- d$represented; k <- seq(0, max(25000, ceiling(-n*log1p(-target())))*1.04, length.out = 201)
     utils::write.table(data.frame(colonies = round(k), expected_recovered_genes = n*(1-exp(-k/n)), represented_genes = n,
@@ -175,7 +176,7 @@ screen_coverage_ui <- function() {
           p("\\[\\begin{aligned} C(K) & = 1-e^{-K/N} \\\\ C & = \\text{expected fraction of represented genes recovered} \\\\ K & = \\text{idealized gene-hit opportunities / picks} \\\\ N & = \\text{represented genes in the theoretical benchmark} \\\\ K_{95} & = -N\\ln(0.05) \\approx 2.9957N \\approx 3N \\end{aligned}\\]"))),
           p("Equal gene probabilities are assumed. The model does not account for insertion bias, gene length, abundance skew, growth or bottlenecks. It gives a represented-union benchmark and does not determine pool allocation.")),
         tags$h3("Expected recovery versus total colonies"),uiOutput("sc_frame_primary"),uiOutput("sc_poisson_target"),
-        ytab_plot_downloads_ui("sc", c(curve = "Download curve (TSV)")),
+        ytab_plot_downloads_ui("sc", c(curve = "Download curve (TSV)"), capture = TRUE),
         ytab_methods_drawer(
         panel_card("Model, equations and statistical interpretation",withMathJax(tagList(
           p("Each pick is an idealized opportunity to hit one of N equally recoverable represented genes:"),

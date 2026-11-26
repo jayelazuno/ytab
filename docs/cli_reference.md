@@ -101,8 +101,8 @@ P/config/project.yaml --profile core|classifier|fitness|all` runs the standard p
 
 | command | what it does |
 |---|---|
-| `essentiality` | Essentiality for a project in one step: Hermes HMM (label-free), current RF scores and the hybrid when labels are given |
-| `hermes-hmm` | Label-free Hermes window HMM essentiality for any yeast (haploid reference FASTA + GFF + hit files) |
+| `essentiality` | Essentiality for a project in one step: window HMM (label-free), current RF scores and the hybrid when labels are given |
+| `figure` | A PNG or SVG of any analysis run's plot, as the app draws it (needs chromote and Chrome); `figure TAB --list` names a tab's plots |
 | `hybrid-inputs` | Hybrid essentiality gene features from parents normalized with any method (default BGC; reuses earlier results) |
 | `classifier` | Existing essentiality classifier |
 | `cross-species` | Essentiality across species: HMM calls of one-to-one orthologs (S. cerevisiae hub) in two or more projects |
@@ -116,7 +116,7 @@ P/config/project.yaml --profile core|classifier|fitness|all` runs the standard p
 | `fitness-zscore` | Local-abundance z-score on explicit inputs (feature tables or a normalization run) |
 | `treated-vs-control` | Treated vs control for a project by resampling or the control-conditioned Gumbel (normalization run + comparison design) |
 | `tvc-agreement` | Agreement between treated-vs-control methods (z-score, resampling, Gumbel, published calls): Spearman of effects, Jaccard of calls |
-| `resampling` | Hermes site-restricted resampling on a ttr/totreads/nzmean normalization output |
+| `resampling` | Site-restricted resampling on a ttr/totreads/nzmean normalization output |
 | `control-gumbel` | Control-conditioned count-aware Hermes Gumbel on a ttr/totreads/nzmean normalization output |
 | `multicondition-project` | Multi-condition tests and their plots in one step for a project (reference from the project config) |
 | `multicondition` | Hermes multi-condition tests (permutation ANOVA and all-pairs resampling) on a normalization output |
@@ -161,6 +161,8 @@ P/config/project.yaml --profile core|classifier|fitness|all` runs the standard p
 | command | what it does |
 |---|---|
 | `donor-reads` | Reads from the transposon donor (plasmid or donor locus) per library, without remapping to the genome |
+| `comet` | Comet plot: per-gene treated vs control reads with gene-set overlays and ortholog-name labels |
+| `window-hmm` | Label-free window HMM essentiality for any yeast (haploid reference FASTA + GFF + hit files) |
 | `design-check` | Which analyses a project's experimental design supports (essentiality, treated vs control, multi-condition, GI), with which libraries, and why others are not possible |
 
 ## Options of each command
@@ -931,7 +933,7 @@ options:
 
 ### essentiality
 
-Essentiality for a project in one step: Hermes HMM (label-free), current RF scores and the hybrid when labels are given. Stage: Essentiality.
+Essentiality for a project in one step: window HMM (label-free), current RF scores and the hybrid when labels are given. Stage: Essentiality.
 
 ```text
 usage: ytab_essentiality.py [-h] --project-config PROJECT_CONFIG
@@ -949,7 +951,7 @@ Essentiality for one project in one step (used by the app's Essentiality tab): H
 
   1. HMM (label-free, any yeast; `ytab hermes-hmm`) on independent parent libraries of one strain, or reuse an
      earlier HMM fit (--hmm-run);
-  2. model table (`ytab_essentiality_model_menu.py`): HMM calls, plus the current random forest's scores when its
+  2. model table (`ytab_essentiality_hybrid_model.py`): HMM calls, plus the current random forest's scores when its
      prediction table is given (--rf), plus the hybrid (random forest on gene features + HMM posteriors) when
      curated labels are also given (--labels);
   3. plot summaries: window posteriors and insertion counts along each chromosome (plots/windows.tsv.gz); the
@@ -1003,68 +1005,13 @@ options:
                         earlier run and exit
 ```
 
-### hermes-hmm
+### figure
 
-Label-free Hermes window HMM essentiality for any yeast (haploid reference FASTA + GFF + hit files). Stage: Essentiality.
+A PNG or SVG of any analysis run's plot, as the app draws it (needs chromote and Chrome); `figure TAB --list` names a tab's plots. Stage: Essentiality.
 
 ```text
-usage: ytab_hermes_hmm.py [-h] [--fasta FASTA] [--gff GFF] [--hits HITS]
-                          [--project PROJECT]
-                          [--libraries LIBRARIES [LIBRARIES ...]]
-                          [--window WINDOW] [--min-reads MIN_READS] [--each]
-                          [--allow-high-mask]
-                          [--sequence-covariate {motif,learned}] [--rescore]
-                          output
-
-Run the Hermes window HMM (label-free essentiality) on Hermes libraries of any yeast species.
-
-Inputs: the genome FASTA the reads were aligned to, its GFF annotation, and one or more Hermes hit files
-(YTAB *_hits.txt, or any CSV/TSV with chromosome, position and read-count columns). Libraries are fitted
-jointly; use independent parent libraries of one strain.
-
-  ytab hermes-hmm OUTPUT --fasta genome.fna --gff genes.gff --hits lib1_hits.txt --hits lib2_hits.txt
-  ytab hermes-hmm OUTPUT --project PROJECT --libraries SAMPLE1 SAMPLE2      (genome and GFF from the project config)
-With no inputs: Gale 2020 parents Cg1-Cg3 on the C. glabrata reference (the validated configuration).
-
-Checks for other species:
-- the FASTA must be the haploid reference used for alignment. A reference with two near-identical
-  haplotypes (e.g. full diploid C. albicans) makes almost every 50-mer occur twice, so almost every window
-  is masked. The run stops when > 50% of windows are masked (--allow-high-mask to override);
-- hit-file chromosome names must match the FASTA (stops if > 10% of insertion sites are on unknown
-  chromosomes);
-- genes on chromosomes absent from the FASTA (e.g. the C. albicans B haplotype) are excluded and counted.
-Ploidy: in a diploid, a heterozygous insertion in an essential gene is viable, so essential genes keep
-insertions. Use haploid strains (or haploid derivatives) for essentiality.
-Sequence covariate: `--sequence-covariate motif` (default, hermes_hmm_v2) counts the Hermes nTnnnnAn target;
-`learned` (hermes_hmm_v3) learns the target-site preference from the libraries' own insertion sites (YTAB hit files
-with their W/C strand), so any transposon (Hermes, Ac/Ds, ...) can be modelled; it also writes target_model.tsv.
-Writes genes.tsv, windows.npz, fit.json. Reads no essentiality labels.
-  ytab hermes-hmm FIT_DIR --rescore     rewrite FIT_DIR/genes.tsv with the current gene-scoring defaults (no refit)
-
-positional arguments:
-  output
-
-options:
-  -h, --help            show this help message and exit
-  --fasta FASTA         Haploid genome FASTA the reads were aligned to
-  --gff GFF             GFF annotation of that genome
-  --hits HITS           Hermes hit file; repeat for each library
-  --project PROJECT     YTAB project whose create_hit_file outputs and
-                        reference to use
-  --libraries LIBRARIES [LIBRARIES ...]
-                        Independent parent libraries of one strain in
-                        --project (sample IDs)
-  --window WINDOW
-  --min-reads MIN_READS
-  --each                also fit each library alone
-  --allow-high-mask     run even if > 50% of windows are unmappable
-  --sequence-covariate {motif,learned}
-                        motif: Hermes nTnnnnAn count (v2); learned: target
-                        preference learned from the libraries' sites (v3, any
-                        transposon)
-  --rescore             OUTPUT is a saved fit (fit.json, windows.npz): rewrite
-                        its genes.tsv with the current gene-scoring defaults,
-                        without refitting
+Error: Unknown tab '--help'. One of: essentiality, treated-vs-control, multi-condition, genetic-interactions, normalization, cross-species
+Execution halted
 ```
 
 ### hybrid-inputs
@@ -1318,7 +1265,7 @@ usage: ytab_treated_vs_control.py [-h] --project-config PROJECT_CONFIG
                                   --normalization-run NORMALIZATION_RUN
                                   [--normalization NORMALIZATION]
                                   [--comparisons COMPARISONS] [--fdr FDR]
-                                  --output OUTPUT
+                                  --output OUTPUT [--dry-run]
 
 Treated-vs-control gene calls by resampling or the control-conditioned Gumbel (used by the app's Treated vs Control tab).
 
@@ -1346,6 +1293,8 @@ options:
                         Comma-separated comparison IDs (default: all included)
   --fdr FDR
   --output OUTPUT
+  --dry-run             validate the inputs and report what would be written,
+                        then stop
 ```
 
 ### tvc-agreement
@@ -1377,7 +1326,7 @@ options:
 
 ### resampling
 
-Hermes site-restricted resampling on a ttr/totreads/nzmean normalization output. Stage: Condition comparisons.
+Site-restricted resampling on a ttr/totreads/nzmean normalization output. Stage: Condition comparisons.
 
 ```text
 usage: ytab_resampling.py [-h] --normalized NORMALIZED
@@ -2209,6 +2158,118 @@ options:
   --threads THREADS
 ```
 
+### comet
+
+Comet plot: per-gene treated vs control reads with gene-set overlays and ortholog-name labels. Stage: Other.
+
+```text
+usage: ytab_comet.py [-h] [-o OUTPUT] [--gene-sets GENE_SETS]
+                     [--orthologs ORTHOLOGS] [--id-column ID_COLUMN]
+                     [--name-column NAME_COLUMN] [--set-order [SET_ORDER ...]]
+                     [--label-sets [LABEL_SETS ...]]
+                     [--label-count LABEL_COUNT]
+                     [--label-min-reads LABEL_MIN_READS]
+                     [--direction {both,depleted,enriched}]
+                     [--label-genes [LABEL_GENES ...]] [--min-reads MIN_READS]
+                     [--labels [LABELS ...]] [--title TITLE]
+                     run_dirs [run_dirs ...]
+
+Comet plot from a treated-vs-control run: write the plot-ready table, then draw it.
+
+  python ytab_comet.py RUN_DIR --gene-sets SETS.gmt --orthologs TABLE.txt -o OUT_DIR
+
+RUN_DIR is a treated_vs_parent run directory. The table is written first and the figure is drawn from it, so
+the figure can be redrawn, restyled or replaced without recomputing anything.
+
+positional arguments:
+  run_dirs              one panel per run directory
+
+options:
+  -h, --help            show this help message and exit
+  -o, --output OUTPUT   default: <first run directory>/comet, where the app
+                        looks for it
+  --gene-sets GENE_SETS
+  --orthologs ORTHOLOGS
+  --id-column ID_COLUMN
+  --name-column NAME_COLUMN
+  --set-order [SET_ORDER ...]
+  --label-sets [LABEL_SETS ...]
+  --label-count LABEL_COUNT
+  --label-min-reads LABEL_MIN_READS
+  --direction {both,depleted,enriched}
+                        which hits may be labelled; every set member is drawn
+                        either way
+  --label-genes [LABEL_GENES ...]
+  --min-reads MIN_READS
+  --labels [LABELS ...]
+                        panel labels; default: each run's background
+  --title TITLE
+```
+
+### window-hmm
+
+Label-free window HMM essentiality for any yeast (haploid reference FASTA + GFF + hit files). Stage: Other.
+
+```text
+usage: ytab_window_hmm.py [-h] [--fasta FASTA] [--gff GFF] [--hits HITS]
+                          [--project PROJECT]
+                          [--libraries LIBRARIES [LIBRARIES ...]]
+                          [--window WINDOW] [--min-reads MIN_READS] [--each]
+                          [--allow-high-mask]
+                          [--sequence-covariate {motif,learned}] [--rescore]
+                          output
+
+Run the Hermes window HMM (label-free essentiality) on Hermes libraries of any yeast species.
+
+Inputs: the genome FASTA the reads were aligned to, its GFF annotation, and one or more Hermes hit files
+(YTAB *_hits.txt, or any CSV/TSV with chromosome, position and read-count columns). Libraries are fitted
+jointly; use independent parent libraries of one strain.
+
+  ytab hermes-hmm OUTPUT --fasta genome.fna --gff genes.gff --hits lib1_hits.txt --hits lib2_hits.txt
+  ytab hermes-hmm OUTPUT --project PROJECT --libraries SAMPLE1 SAMPLE2      (genome and GFF from the project config)
+With no inputs: Gale 2020 parents Cg1-Cg3 on the C. glabrata reference (the validated configuration).
+
+Checks for other species:
+- the FASTA must be the haploid reference used for alignment. A reference with two near-identical
+  haplotypes (e.g. full diploid C. albicans) makes almost every 50-mer occur twice, so almost every window
+  is masked. The run stops when > 50% of windows are masked (--allow-high-mask to override);
+- hit-file chromosome names must match the FASTA (stops if > 10% of insertion sites are on unknown
+  chromosomes);
+- genes on chromosomes absent from the FASTA (e.g. the C. albicans B haplotype) are excluded and counted.
+Ploidy: in a diploid, a heterozygous insertion in an essential gene is viable, so essential genes keep
+insertions. Use haploid strains (or haploid derivatives) for essentiality.
+Sequence covariate: `--sequence-covariate motif` (default, hermes_hmm_v2) counts the Hermes nTnnnnAn target;
+`learned` (hermes_hmm_v3) learns the target-site preference from the libraries' own insertion sites (YTAB hit files
+with their W/C strand), so any transposon (Hermes, Ac/Ds, ...) can be modelled; it also writes target_model.tsv.
+Writes genes.tsv, windows.npz, fit.json. Reads no essentiality labels.
+  ytab hermes-hmm FIT_DIR --rescore     rewrite FIT_DIR/genes.tsv with the current gene-scoring defaults (no refit)
+
+positional arguments:
+  output
+
+options:
+  -h, --help            show this help message and exit
+  --fasta FASTA         Haploid genome FASTA the reads were aligned to
+  --gff GFF             GFF annotation of that genome
+  --hits HITS           Hermes hit file; repeat for each library
+  --project PROJECT     YTAB project whose create_hit_file outputs and
+                        reference to use
+  --libraries LIBRARIES [LIBRARIES ...]
+                        Independent parent libraries of one strain in
+                        --project (sample IDs)
+  --window WINDOW
+  --min-reads MIN_READS
+  --each                also fit each library alone
+  --allow-high-mask     run even if > 50% of windows are unmappable
+  --sequence-covariate {motif,learned}
+                        motif: Hermes nTnnnnAn count (v2); learned: target
+                        preference learned from the libraries' sites (v3, any
+                        transposon)
+  --rescore             OUTPUT is a saved fit (fit.json, windows.npz): rewrite
+                        its genes.tsv with the current gene-scoring defaults,
+                        without refitting
+```
+
 ### design-check
 
 Which analyses a project's experimental design supports (essentiality, treated vs control, multi-condition, GI), with which libraries, and why others are not possible. Stage: Other. Takes `--project-config`.
@@ -2224,7 +2285,7 @@ and applies each analysis's own minimum design (docs/design_guide.md):
   essentiality (HMM)        >= 1 unselected parent library of a strain; denser = better (pool independent inductions)
   treated vs control:
     resampling              >= 1 control and >= 1 treated library of a strain and condition, from the same pool
-    z-score (Gale 2020)     as resampling, and >= 2 controls in the strain (its noise model compares two controls)
+    z-score (Gale 2020)     as resampling, and >= 2 controls in the strain (its noise model compares controls with each other)
     control-cond. Gumbel    >= 2 controls (depletion only)
   multi-condition           >= 2 conditions (one the reference) in a pool, or strains made as separate libraries
   genetic interactions      2 strains x (control, treated) in the same condition, >= 2 control/treated pairs per strain
@@ -2241,3 +2302,4 @@ options:
   --project-config PROJECT_CONFIG
   --json
 ```
+

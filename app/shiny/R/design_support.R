@@ -37,6 +37,12 @@ ytab_design_gate <- function(support, prefix, title) {
   if (!nrow(rows)) return(NULL)
   reasons <- unique(sprintf("%s: %s", sub("^[^,]*,?\\s*", "", rows$analysis), rows$why))
   reasons <- ifelse(startsWith(reasons, ": "), sub("^: ", "", reasons), reasons)
+  # Each reason is written as a fragment ("one strain only; needs a reference ..."), so it needs a capital and a
+  # full stop before it can sit between two sentences. Without them the gate reads as one run-on line.
+  reasons <- trimws(reasons)
+  reasons <- reasons[nzchar(reasons)]
+  reasons <- paste0(toupper(substring(reasons, 1, 1)), substring(reasons, 2))
+  reasons <- ifelse(grepl("[.!?]$", reasons), reasons, paste0(reasons, "."))
   ytab_empty_state(title, paste0(
     "This dataset's experimental design does not support it. ",
     paste(reasons, collapse = " "),
